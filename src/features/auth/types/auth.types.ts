@@ -6,10 +6,8 @@ export type AuthUser = {
   email: string;
   fullName?: string;
   avatarUrl?: string;
-
   // Role dùng để phân quyền route: user | admin
   role: AuthRole;
-
   // Loại user phụ: student | lecturer | researcher
   userType?: UserType;
 };
