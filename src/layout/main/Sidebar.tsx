@@ -1,0 +1,142 @@
+import {
+  Bookmark,
+  CircleHelp,
+  FileText,
+  LayoutDashboard,
+  Rss,
+  Search,
+  User,
+} from "lucide-react";
+import { NavLink } from "react-router-dom";
+import logoImage from "@/assets/images/logo.png";
+import { ROUTES } from "@/app/router";
+import { getCurrentUser } from "@/features/auth/utils/authStorage";
+
+const workspaceMenuItems = [
+  { label: "Dashboard", path: ROUTES.DASHBOARD, icon: LayoutDashboard },
+  { label: "New Feed", path: ROUTES.FEED, icon: Rss },
+  { label: "Search Papers", path: ROUTES.SEARCH, icon: Search },
+  { label: "Bookmarks", path: ROUTES.BOOKMARKS, icon: Bookmark },
+  { label: "Export Reports", path: ROUTES.REPORT, icon: FileText },
+  { label: "Help Guide", path: ROUTES.GUIDE, icon: CircleHelp },
+];
+
+const accountMenuItems = [
+  { label: "User Profile", path: ROUTES.PROFILE, icon: User },
+];
+
+function getInitials(name: string) {
+  return name
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join("")
+    .toUpperCase();
+}
+
+export default function MainSidebar() {
+  const currentUser = getCurrentUser();
+  const displayName = currentUser?.fullName ?? "Nguyen Van A";
+  const displayEmail = currentUser?.email ?? "nguyenvana@email.com";
+  const initials = getInitials(displayName) || "NV";
+
+  return (
+    <aside className="sticky top-0 flex h-screen w-56 shrink-0 flex-col bg-[#03120a] text-slate-400">
+      <div className="flex items-center gap-3 border-b border-white/5 px-4 py-5">
+        <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-lg bg-white shadow-sm">
+          <img
+            src={logoImage}
+            alt="Owlreka logo"
+            className="h-full w-full object-cover"
+          />
+        </div>
+        <div className="min-w-0">
+          <h1 className="truncate text-sm font-bold text-white">Owlreka</h1>
+          <p className="mt-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+            Trend Intelligence
+          </p>
+        </div>
+      </div>
+
+      <div className="flex-1 px-2.5 py-5">
+        <p className="mb-2 px-2 text-[10px] font-bold uppercase tracking-wider text-slate-600">
+          Workspace
+        </p>
+
+        <nav className="space-y-1">
+          {workspaceMenuItems.map((item) => {
+            const Icon = item.icon;
+
+            return (
+              <NavLink
+                key={item.path}
+                to={item.path}
+                className={({ isActive }) =>
+                  [
+                    "flex items-center gap-3 rounded-lg px-2.5 py-2 text-xs font-medium transition",
+                    isActive
+                      ? "bg-emerald-600 text-white shadow-sm"
+                      : "text-slate-400 hover:bg-white/5 hover:text-white",
+                  ].join(" ")
+                }
+              >
+                <Icon className="h-4 w-4 shrink-0" />
+                <span className="truncate">{item.label}</span>
+              </NavLink>
+            );
+          })}
+        </nav>
+      </div>
+
+      <div className="border-t border-white/5 px-2.5 py-4">
+        <div className="mb-4 flex items-center gap-3 rounded-lg bg-white/[0.06] px-2.5 py-2.5">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-xs font-bold text-white">
+            {initials}
+          </div>
+          <div className="min-w-0">
+            <p className="truncate text-xs font-bold text-white">
+              {displayName}
+            </p>
+            <p className="mt-0.5 truncate text-[10px] text-slate-500">
+              {displayEmail}
+            </p>
+          </div>
+        </div>
+
+        <p className="mb-2 px-2 text-[10px] font-bold uppercase tracking-wider text-slate-600">
+          Account
+        </p>
+
+        <nav className="space-y-1">
+          {accountMenuItems.map((item) => {
+            const Icon = item.icon;
+
+            return (
+              <NavLink
+                key={item.path}
+                to={item.path}
+                className={({ isActive }) =>
+                  [
+                    "flex items-center gap-3 rounded-lg px-2.5 py-2 text-xs font-medium transition",
+                    isActive
+                      ? "bg-emerald-600 text-white shadow-sm"
+                      : "text-slate-400 hover:bg-white/5 hover:text-white",
+                  ].join(" ")
+                }
+              >
+                <Icon className="h-4 w-4 shrink-0" />
+                <span className="truncate">{item.label}</span>
+              </NavLink>
+            );
+          })}
+
+          <button
+            type="button"
+            className="flex w-full items-center gap-3 rounded-lg px-2.5 py-2 text-left text-xs font-medium text-slate-400 transition hover:bg-white/5 hover:text-white"
+          ></button>
+        </nav>
+      </div>
+    </aside>
+  );
+}
