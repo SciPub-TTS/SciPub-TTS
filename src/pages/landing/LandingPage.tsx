@@ -1,15 +1,19 @@
 import {
   ArrowRight,
   BookOpen,
+  ChevronDown,
   LineChart,
   Search,
   Sparkles,
 } from "lucide-react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 
 import { ROUTES } from "@/app/router";
 import heroImage from "@/assets/images/hero.png";
 import logoImage from "@/assets/images/logo.png";
+import { getCurrentUser } from "@/features/auth/utils/authStorage";
+import { isAuthenticated } from "@/features/auth/utils/authGuard";
 import MainFooter from "@/layout/main/Footer";
 
 const highlights = [
@@ -33,10 +37,45 @@ const highlights = [
   },
 ];
 
+type LandingSectionLink = {
+  id: string;
+  label: string;
+};
+
+const landingSectionLinks: LandingSectionLink[] = [
+  { id: "overview", label: "Overview" },
+  { id: "core-features", label: "Core Features" },
+];
+
+function getInitials(name: string) {
+  return name
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join("")
+    .toUpperCase();
+}
+
 export default function LandingPage() {
+  const [isSectionMenuOpen, setIsSectionMenuOpen] = useState(false);
+  const currentUser = getCurrentUser();
+  const loggedIn = isAuthenticated();
+  const displayName = currentUser?.fullName ?? "User";
+  const initials = getInitials(displayName) || "U";
+
+  function handleSectionSelect(sectionId: string) {
+    document
+      .getElementById(sectionId)
+      ?.scrollIntoView({ behavior: "smooth", block: "start" });
+
+    window.history.replaceState(null, "", `#${sectionId}`);
+    setIsSectionMenuOpen(false);
+  }
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-950">
-      <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 px-6 py-4 backdrop-blur">
+      <header className="dynamic-divider-bottom sticky top-0 z-40 border-b border-slate-200/80 bg-white/95 px-6 py-4 shadow-[0_10px_30px_rgba(15,23,42,0.06)] backdrop-blur">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
           <Link to={ROUTES.HOME} className="flex items-center gap-3">
             <img
@@ -48,6 +87,36 @@ export default function LandingPage() {
           </Link>
 
           <nav className="hidden items-center gap-6 text-sm font-medium text-slate-600 md:flex">
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setIsSectionMenuOpen((isOpen) => !isOpen)}
+                className="inline-flex items-center gap-1.5 hover:text-emerald-700"
+              >
+                Sections
+                <ChevronDown
+                  className={`h-4 w-4 transition ${
+                    isSectionMenuOpen ? "rotate-180" : ""
+                  }`}
+                />
+              </button>
+
+              {isSectionMenuOpen && (
+                <div className="absolute left-0 top-8 w-56 rounded-lg border border-slate-200 bg-white p-1.5 shadow-lg">
+                  {landingSectionLinks.map((section) => (
+                    <button
+                      key={section.id}
+                      type="button"
+                      onClick={() => handleSectionSelect(section.id)}
+                      className="block w-full rounded-md px-3 py-2 text-left text-sm font-medium text-slate-600 hover:bg-emerald-50 hover:text-emerald-700"
+                    >
+                      {section.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
             <Link to={ROUTES.SEARCH} className="hover:text-emerald-700">
               Search
             </Link>
@@ -59,25 +128,46 @@ export default function LandingPage() {
             </Link>
           </nav>
 
-          <div className="flex items-center gap-2">
+          {loggedIn ? (
             <Link
-              to={ROUTES.LOGIN}
-              className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100"
+              to={ROUTES.PROFILE}
+              aria-label="Open user profile"
+              className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-emerald-600 text-sm font-bold text-white"
             >
-              Login
+              {currentUser?.avatarUrl ? (
+                <img
+                  src={currentUser.avatarUrl}
+                  alt={displayName}
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                initials
+              )}
             </Link>
-            <Link
-              to={ROUTES.REGISTER}
-              className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700"
-            >
-              Register
-            </Link>
-          </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <Link
+                to={ROUTES.LOGIN}
+                className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100"
+              >
+                Login
+              </Link>
+              <Link
+                to={ROUTES.REGISTER}
+                className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700"
+              >
+                Register
+              </Link>
+            </div>
+          )}
         </div>
       </header>
 
       <main>
-        <section className="border-b border-slate-200 bg-white px-6 py-16 md:py-20">
+        <section
+          id={landingSectionLinks[0].id}
+          className="dynamic-divider-bottom scroll-mt-24 border-b border-slate-200 bg-white px-6 py-16 md:py-20"
+        >
           <div className="mx-auto grid max-w-7xl items-center gap-12 lg:grid-cols-[1.05fr_0.95fr]">
             <div>
               <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-sm font-medium text-emerald-700">
@@ -125,7 +215,10 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <section className="px-6 py-12">
+        <section
+          id={landingSectionLinks[1].id}
+          className="scroll-mt-24 px-6 py-12"
+        >
           <div className="mx-auto grid max-w-7xl gap-4 md:grid-cols-3">
             {highlights.map((item) => {
               const Icon = item.icon;

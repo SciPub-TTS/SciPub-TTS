@@ -3,14 +3,19 @@ import {
   CircleHelp,
   FileText,
   LayoutDashboard,
+  LogOut,
   Rss,
   Search,
   User,
 } from "lucide-react";
-import { NavLink } from "react-router-dom";
-import logoImage from "@/assets/images/logo.png";
+import { NavLink, useNavigate } from "react-router-dom";
+
 import { ROUTES } from "@/app/router";
-import { getCurrentUser } from "@/features/auth/utils/authStorage";
+import logoImage from "@/assets/images/logo.png";
+import {
+  clearAuthStorage,
+  getCurrentUser,
+} from "@/features/auth/utils/authStorage";
 
 const workspaceMenuItems = [
   { label: "Dashboard", path: ROUTES.DASHBOARD, icon: LayoutDashboard },
@@ -36,10 +41,16 @@ function getInitials(name: string) {
 }
 
 export default function MainSidebar() {
+  const navigate = useNavigate();
   const currentUser = getCurrentUser();
   const displayName = currentUser?.fullName ?? "Nguyen Van A";
   const displayEmail = currentUser?.email ?? "nguyenvana@email.com";
   const initials = getInitials(displayName) || "NV";
+
+  function handleLogout() {
+    clearAuthStorage();
+    navigate(ROUTES.LOGIN);
+  }
 
   return (
     <aside className="sticky top-0 flex h-screen w-56 shrink-0 flex-col bg-[#03120a] text-slate-400">
@@ -89,54 +100,60 @@ export default function MainSidebar() {
         </nav>
       </div>
 
-      <div className="border-t border-white/5 px-2.5 py-4">
-        <div className="mb-4 flex items-center gap-3 rounded-lg bg-white/[0.06] px-2.5 py-2.5">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-xs font-bold text-white">
-            {initials}
+      {currentUser && (
+        <div className="border-t border-white/5 px-2.5 py-4">
+          <div className="mb-4 flex items-center gap-3 rounded-lg bg-white/[0.06] px-2.5 py-2.5">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-xs font-bold text-white">
+              {initials}
+            </div>
+            <div className="min-w-0">
+              <p className="truncate text-xs font-bold text-white">
+                {displayName}
+              </p>
+              <p className="mt-0.5 truncate text-[10px] text-slate-500">
+                {displayEmail}
+              </p>
+            </div>
           </div>
-          <div className="min-w-0">
-            <p className="truncate text-xs font-bold text-white">
-              {displayName}
-            </p>
-            <p className="mt-0.5 truncate text-[10px] text-slate-500">
-              {displayEmail}
-            </p>
-          </div>
+
+          <p className="mb-2 px-2 text-[10px] font-bold uppercase tracking-wider text-slate-600">
+            Account
+          </p>
+
+          <nav className="space-y-1">
+            {accountMenuItems.map((item) => {
+              const Icon = item.icon;
+
+              return (
+                <NavLink
+                  key={item.path}
+                  to={item.path}
+                  className={({ isActive }) =>
+                    [
+                      "flex items-center gap-3 rounded-lg px-2.5 py-2 text-xs font-medium transition",
+                      isActive
+                        ? "bg-emerald-600 text-white shadow-sm"
+                        : "text-slate-400 hover:bg-white/5 hover:text-white",
+                    ].join(" ")
+                  }
+                >
+                  <Icon className="h-4 w-4 shrink-0" />
+                  <span className="truncate">{item.label}</span>
+                </NavLink>
+              );
+            })}
+
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="flex w-full items-center gap-3 rounded-lg px-2.5 py-2 text-left text-xs font-medium text-slate-400 transition hover:bg-white/5 hover:text-white"
+            >
+              <LogOut className="h-4 w-4 shrink-0" />
+              <span className="truncate">Log out</span>
+            </button>
+          </nav>
         </div>
-
-        <p className="mb-2 px-2 text-[10px] font-bold uppercase tracking-wider text-slate-600">
-          Account
-        </p>
-
-        <nav className="space-y-1">
-          {accountMenuItems.map((item) => {
-            const Icon = item.icon;
-
-            return (
-              <NavLink
-                key={item.path}
-                to={item.path}
-                className={({ isActive }) =>
-                  [
-                    "flex items-center gap-3 rounded-lg px-2.5 py-2 text-xs font-medium transition",
-                    isActive
-                      ? "bg-emerald-600 text-white shadow-sm"
-                      : "text-slate-400 hover:bg-white/5 hover:text-white",
-                  ].join(" ")
-                }
-              >
-                <Icon className="h-4 w-4 shrink-0" />
-                <span className="truncate">{item.label}</span>
-              </NavLink>
-            );
-          })}
-
-          <button
-            type="button"
-            className="flex w-full items-center gap-3 rounded-lg px-2.5 py-2 text-left text-xs font-medium text-slate-400 transition hover:bg-white/5 hover:text-white"
-          ></button>
-        </nav>
-      </div>
+      )}
     </aside>
   );
 }

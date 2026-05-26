@@ -2,17 +2,23 @@ import { Link } from "react-router-dom";
 
 import { ROUTES } from "@/app/router";
 import { getCurrentUser } from "@/features/auth/utils/authStorage";
-import { clearAuthStorage } from "@/features/auth/utils/authStorage";
 import { isAuthenticated } from "@/features/auth/utils/authGuard";
+
+function getInitials(name: string) {
+  return name
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join("")
+    .toUpperCase();
+}
 
 export default function MainHeaderAccount() {
   const user = getCurrentUser();
   const loggedIn = isAuthenticated();
-
-  function handleLogout() {
-    clearAuthStorage();
-    window.location.href = ROUTES.LOGIN;
-  }
+  const displayName = user?.fullName ?? "User";
+  const initials = getInitials(displayName) || "U";
 
   if (!loggedIn) {
     return (
@@ -35,23 +41,20 @@ export default function MainHeaderAccount() {
   }
 
   return (
-    <div className="flex items-center gap-3">
-      <div className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-600 text-sm font-semibold text-white">
-        {user?.fullName?.charAt(0).toUpperCase() ?? "U"}
-      </div>
-
-      <div className="hidden text-sm md:block">
-        <p className="font-medium text-slate-800">{user?.fullName ?? "User"}</p>
-        <p className="text-xs text-slate-500">{user?.email}</p>
-      </div>
-
-      <button
-        type="button"
-        onClick={handleLogout}
-        className="rounded-lg border border-slate-200 px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-50"
-      >
-        Logout
-      </button>
-    </div>
+    <Link
+      to={ROUTES.PROFILE}
+      aria-label="Open user profile"
+      className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-emerald-600 text-sm font-bold text-white"
+    >
+      {user?.avatarUrl ? (
+        <img
+          src={user.avatarUrl}
+          alt={displayName}
+          className="h-full w-full object-cover"
+        />
+      ) : (
+        initials
+      )}
+    </Link>
   );
 }
