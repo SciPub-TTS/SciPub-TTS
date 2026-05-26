@@ -1,50 +1,39 @@
-import { useNavigate } from "react-router-dom";
-
-import { ROUTES } from "@/app/router";
-import {
-  clearAuthStorage,
-  getCurrentUser,
-} from "@/features/auth/utils/authStorage";
-import BreadcrumbBar from "../components/BreadcrumbBar";
+import { getCurrentUser } from "@/features/auth/utils/authStorage";
 import LanguageSwitcher from "../components/LanguageSwitcher";
 
-export default function AdminHeader() {
-  const navigate = useNavigate();
-  const user = getCurrentUser();
+function getInitials(name: string) {
+  return name
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join("")
+    .toUpperCase();
+}
 
-  function handleLogout() {
-    clearAuthStorage();
-    navigate(ROUTES.LOGIN);
-  }
+export default function AdminHeader() {
+  const user = getCurrentUser();
+  const displayName = user?.fullName ?? "Admin";
+  const initials = getInitials(displayName) || "AD";
 
   return (
-    <header className="sticky top-0 z-40 border-b border-slate-800 bg-slate-950 px-6 py-3">
+    <header className="dynamic-divider-bottom sticky top-0 z-40 border-b border-slate-200/80 bg-white/95 px-8 py-5 shadow-[0_10px_30px_rgba(15,23,42,0.06)] backdrop-blur">
       <div className="flex items-center justify-between gap-4">
-        <BreadcrumbBar variant="dark" />
+        <div>
+          <h1 className="text-2xl font-bold text-slate-950">
+            Admin Control Panel
+          </h1>
+          <p className="mt-2 text-sm font-medium text-slate-500">
+            Manage users, research subfields, API usage.
+          </p>
+        </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-10">
           <LanguageSwitcher />
 
-          <div className="hidden text-right text-sm md:block">
-            <p className="font-medium text-white">
-              {user?.fullName ?? "Admin"}
-            </p>
-            <p className="text-xs text-slate-400">
-              {user?.email ?? "Admin Console"}
-            </p>
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-600 text-sm font-bold text-white">
+            {initials}
           </div>
-
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-600 text-sm font-semibold text-white">
-            {user?.fullName?.charAt(0).toUpperCase() ?? "A"}
-          </div>
-
-          <button
-            type="button"
-            onClick={handleLogout}
-            className="rounded-lg border border-slate-700 px-3 py-1.5 text-sm text-slate-200 hover:bg-slate-900"
-          >
-            Logout
-          </button>
         </div>
       </div>
     </header>

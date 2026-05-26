@@ -43,7 +43,7 @@ const projectItems = [
 
 export default function MainFooter() {
   return (
-    <footer className="border-t border-slate-200 bg-slate-50 px-6 text-xs text-slate-500">
+    <footer className="dynamic-divider-top border-t border-slate-200 bg-slate-50 px-6 text-xs text-slate-500 shadow-[0_-10px_30px_rgba(15,23,42,0.04)]">
       <div className="mx-auto grid max-w-7xl gap-10 py-8 md:grid-cols-[1.6fr_1fr_1fr]">
         <section>
           <h2 className="text-sm font-bold text-slate-900">
@@ -103,7 +103,7 @@ export default function MainFooter() {
         </section>
       </div>
 
-      <div className="border-t border-slate-200 py-4">
+      <div className="dynamic-divider-top border-t border-slate-200 py-4">
         <div className="mx-auto flex max-w-7xl flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <p className="text-slate-500">
             &copy; 2026 SJPTTS &mdash; For academic review and demonstration
