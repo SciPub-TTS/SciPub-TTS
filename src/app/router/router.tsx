@@ -3,8 +3,8 @@ import { createBrowserRouter, Navigate } from "react-router-dom";
 import { ROUTES } from "./routes";
 import { ROUTE_SEGMENTS } from "./routeSegments";
 
-import MainLayout from "@/layouts/main/MainLayout";
-import AdminLayout from "@/layouts/admin/AdminLayout";
+import MainLayout from "@/layout/main/MainLayout";
+import AdminLayout from "@/layout/admin/AdminLayout";
 
 import GuestOnlyRoute from "@/features/auth/components/GuestOnlyRoute";
 import ProtectedRoute from "@/features/auth/components/ProtectedRoute";
@@ -16,21 +16,27 @@ import {
 import LoginPage from "@/pages/auth/LoginPage";
 import RegisterPage from "@/pages/auth/RegisterPage";
 
-import LandingPage from "@/pages/LandingPage";
-import GuideHelpPage from "@/pages/GuideHelpPage";
-import SearchPage from "@/pages/SearchPage";
-import DashboardPage from "@/pages/dashboard/DashboardPage";
-import PaperDetailPage from "@/pages/PaperDetailPage";
+import LandingPage from "@/pages/landing/LandingPage";
+import GuideHelpPage from "@/pages/guide/GuideHelpPage";
+import SearchPage from "@/pages/search/SearchPage";
+import DashboardPage from "@/pages/dashboard";
+import PaperDetailPage from "@/pages/papers/PaperDetailPage";
 
-import ProfilePage from "@/pages/profile/ProfilePage";
-import BookmarksPage from "@/pages/bookmarks/BookmarksPage";
-import FeedPage from "@/pages/feed/FeedPage";
-import ReportPage from "@/pages/report/ReportPage";
+import ProfilePage from "@/pages/profile";
+import BookmarksPage from "@/pages/bookmarks/BookMarkLibraryPage";
+import FeedPage from "@/pages/feed";
+import ReportPage from "@/pages/report";
 
 import AdminDashboardPage from "@/pages/admin/AdminDashboardPage";
-import AdminUsersPage from "@/pages/admin/AdminUsersPage";
-import AdminFieldsPage from "@/pages/admin/AdminFieldsPage";
-import AdminSyncPage from "@/pages/admin/AdminSyncPage";
+
+function PlaceholderPage({ title }: { title: string }) {
+  return (
+    <section className="rounded-lg border border-dashed border-slate-300 bg-white p-8">
+      <h1 className="text-2xl font-semibold text-slate-900">{title}</h1>
+      <p className="mt-2 text-sm text-slate-500">This page is being built.</p>
+    </section>
+  );
+}
 
 export const router = createBrowserRouter([
   {
@@ -49,12 +55,13 @@ export const router = createBrowserRouter([
 
   {
     path: ROUTES.HOME,
+    element: <LandingPage />,
+  },
+
+  {
+    path: ROUTES.HOME,
     element: <MainLayout />,
     children: [
-      {
-        index: true,
-        element: <LandingPage />,
-      },
       {
         path: ROUTE_SEGMENTS.GUIDE,
         element: <GuideHelpPage />,
@@ -113,15 +120,15 @@ export const router = createBrowserRouter([
           },
           {
             path: ROUTE_SEGMENTS.ADMIN_USERS,
-            element: <AdminUsersPage />,
+            element: <PlaceholderPage title="Admin Users" />,
           },
           {
             path: ROUTE_SEGMENTS.ADMIN_FIELDS,
-            element: <AdminFieldsPage />,
+            element: <PlaceholderPage title="Admin Fields" />,
           },
           {
             path: ROUTE_SEGMENTS.ADMIN_SYNC,
-            element: <AdminSyncPage />,
+            element: <PlaceholderPage title="Admin Sync" />,
           },
         ],
       },

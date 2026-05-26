@@ -1,6 +1,6 @@
 import BreadcrumbBar from "../components/BreadcrumbBar";
 import LanguageSwitcher from "../components/LanguageSwitcher";
-import MainHeaderAccount from "./MainHeaderAccount";
+import MainHeaderAccount from "./HeaderAccount";
 
 export default function MainHeader() {
   return (

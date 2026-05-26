@@ -1,6 +1,10 @@
-﻿// Barrel export -- src/pages/public
-// Export cac members ra ngoai, vi du:
-//   export { default as MyComponent } from './MyComponent'
-//   export * from './types'
-
-export {};
+export default function DashboardPage() {
+  return (
+    <section className="rounded-lg border border-slate-200 bg-white p-8">
+      <h1 className="text-2xl font-semibold text-slate-900">Dashboard</h1>
+      <p className="mt-2 text-sm text-slate-500">
+        Dashboard page is being built.
+      </p>
+    </section>
+  );
+}
