@@ -19,7 +19,7 @@ import RegisterPage from "@/pages/auth/RegisterPage";
 import LandingPage from "@/pages/landing/LandingPage";
 import GuideHelpPage from "@/pages/guide/GuideHelpPage";
 import SearchPage from "@/pages/search/SearchPage";
-import DashboardPage from "@/pages/dashboard";
+import DashboardPage from "@/pages/dashboard/DashboardPage.tsx";
 import PaperDetailPage from "@/pages/papers/PaperDetailPage";
 
 import ProfilePage from "@/pages/profile";
