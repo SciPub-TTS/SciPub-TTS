@@ -19,7 +19,6 @@ import RegisterPage from "@/features/auth/components/RegisterPage";
 import LandingPage from "@/features/landing/components/LandingPage";
 import GuideHelpPage from "@/features/guide/components/GuideHelpPage";
 import SearchPage from "@/features/search/components/SearchPage";
-import DashboardPage from "@/features/dashboard/components/DashboardPage";
 import PaperDetailPage from "@/features/detailpapers/components/PaperDetailPage";
 
 import ProfilePage from "@/features/profile/components/ProfilePage";
@@ -28,6 +27,7 @@ import FeedPage from "@/features/newfeeds/components/FeedPage";
 import ReportPage from "@/features/reports/components/ReportPage";
 
 import AdminDashboardPage from "@/features/admin/components/AdminDashboardPage";
+import DashboardPage from "@/features/dashboard/DashboardPage.tsx";
 
 export const router = createBrowserRouter([
   {
