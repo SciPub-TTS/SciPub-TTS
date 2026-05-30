@@ -12,22 +12,9 @@ import {
   AUTH_ROLES,
   AUTHENTICATED_ROLES,
 } from "@/features/auth/constants/roles";
-
-import LoginPage from "@/pages/auth/LoginPage";
-import RegisterPage from "@/pages/auth/RegisterPage";
-
-import LandingPage from "@/pages/landing/LandingPage";
-import GuideHelpPage from "@/pages/guide/GuideHelpPage";
-import SearchPage from "@/pages/search/SearchPage";
 import DashboardPage from "@/features/dashboard/DashboardPage.tsx";
-import PaperDetailPage from "@/pages/papers/PaperDetailPage";
 
-import ProfilePage from "@/pages/profile";
-import BookmarksPage from "@/pages/bookmarks/BookMarkLibraryPage";
-import FeedPage from "@/pages/feed";
-import ReportPage from "@/pages/report";
 
-import AdminDashboardPage from "@/pages/admin/AdminDashboardPage";
 
 function PlaceholderPage({ title }: { title: string }) {
   return (
