@@ -1,6 +1,6 @@
 import {Bar, BarChart, CartesianGrid, Legend, Line, LineChart, Tooltip, XAxis, YAxis} from "recharts";
 import {useState} from "react";
-import {publicationTrend, topicMetrics, topicTrend} from "@/pages/dashboard/constants/topic-data.ts";
+import {publicationTrend, topicMetrics, topicTrend} from "@/features/dashboard/constants/topic-data.ts";
 
 export default function ChartPart(){
     return(

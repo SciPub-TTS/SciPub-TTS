@@ -1,4 +1,4 @@
-import {LIST_TOPICS, type TopicData} from "@/pages/dashboard/constants/topic-data.ts";
+import {LIST_TOPICS, type TopicData} from "@/features/dashboard/constants/topic-data.ts";
 import {Link} from "react-router-dom";
 import {Check} from "lucide-react";
 

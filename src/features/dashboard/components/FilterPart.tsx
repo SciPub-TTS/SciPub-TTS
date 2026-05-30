@@ -1,5 +1,5 @@
 import {Cloud, Filter} from "lucide-react";
-import {type FilterData, MENU_FILTER} from "@/pages/dashboard/constants/filter-data.ts";
+import {type FilterData, MENU_FILTER} from "@/features/dashboard/constants/filter-data.ts";
 
 export default function FilterPart(){
     return(

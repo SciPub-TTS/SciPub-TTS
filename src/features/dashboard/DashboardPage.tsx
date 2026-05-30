@@ -1,7 +1,7 @@
-import FilterPart from "@/pages/dashboard/components/FilterPart.tsx";
-import MetricPart from "@/pages/dashboard/components/MetricPart.tsx";
-import ChartPart from "@/pages/dashboard/components/ChartPart.tsx";
-import TrendingPart from "@/pages/dashboard/components/TrendingPart.tsx";
+import FilterPart from "@/features/dashboard/components/FilterPart.tsx";
+import MetricPart from "@/features/dashboard/components/MetricPart.tsx";
+import ChartPart from "@/features/dashboard/components/ChartPart.tsx";
+import TrendingPart from "@/features/dashboard/components/TrendingPart.tsx";
 
 export default function DashboardPage() {
   return (
