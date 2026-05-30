@@ -136,3 +136,67 @@ Chỉ cần i18n cho text thuộc giao diện hệ thống, ví dụ:
 ## 7. Lưu ý khi code chung
 
 Nếu component có text hiển thị cho user, hãy kiểm tra trước trong `en.ts` và `vi.ts` đã có key phù hợp chưa. Nếu chưa có thì thêm key mới, tránh tự hard-code text trong component.
+
+## `api`
+
+Chứa cấu hình và các hàm liên quan đến việc kết nối với máy chủ, ví dụ như cấu hình đường dẫn, phương thức gửi yêu cầu, xử lý phản hồi hoặc lỗi từ máy chủ.
+
+## `app`
+
+Chứa phần khởi tạo chính của ứng dụng, thường là nơi cấu hình tổng thể như định tuyến, bố cục chính, nhà cung cấp trạng thái hoặc các thiết lập toàn cục.
+
+## `assets`
+
+Chứa tài nguyên tĩnh của dự án như hình ảnh, biểu tượng, phông chữ, âm thanh hoặc các tệp dùng chung trong giao diện.
+
+## `components`
+
+Chứa các thành phần giao diện dùng lại nhiều nơi trong ứng dụng như nút bấm, ô nhập liệu, bảng, hộp thoại, thẻ hiển thị thông tin.
+
+## `constants`
+
+Chứa các giá trị cố định được dùng trong toàn dự án, giúp tránh viết lặp lại và dễ thay đổi khi cần.
+
+## `features`
+
+Chứa các chức năng lớn của hệ thống, được chia theo từng nghiệp vụ cụ thể như đăng nhập, quản lý người dùng, quản lý sản phẩm, đơn hàng.
+
+## `hooks`
+
+Chứa các hàm xử lý logic dùng lại trong React, giúp tách phần xử lý ra khỏi giao diện và làm mã nguồn gọn hơn.
+
+## `layout`
+
+Chứa các bố cục chung của trang như khung trang chính, thanh bên, thanh điều hướng, phần đầu trang, phần chân trang.
+
+## `lib`
+
+Chứa các thư viện tự viết, cấu hình công cụ, hàm hỗ trợ nâng cao hoặc phần kết nối với thư viện bên ngoài.
+
+## `pages`
+
+Chứa các trang chính của ứng dụng, mỗi tệp thường tương ứng với một màn hình hoặc một đường dẫn trên trang web.
+
+## `services`
+
+Chứa các hàm xử lý nghiệp vụ và giao tiếp với máy chủ, thường dùng để gọi dữ liệu, gửi dữ liệu, cập nhật hoặc xóa dữ liệu.
+
+## `store`
+
+Chứa phần quản lý trạng thái chung của ứng dụng, ví dụ như thông tin người dùng, giỏ hàng, trạng thái đăng nhập hoặc dữ liệu dùng ở nhiều màn hình.
+
+## `styles`
+
+Chứa các tệp định dạng giao diện như màu sắc, khoảng cách, kiểu chữ, bố cục, hiệu ứng và các thiết lập giao diện dùng chung.
+
+## `types`
+
+Chứa các kiểu dữ liệu dùng trong TypeScript, giúp kiểm soát cấu trúc dữ liệu và hạn chế lỗi khi lập trình.
+
+## `utils`
+
+Chứa các hàm tiện ích dùng chung trong nhiều nơi, thường là các hàm xử lý dữ liệu, định dạng ngày tháng, định dạng tiền tệ hoặc kiểm tra dữ liệu đơn giản.
+
+## `validators`
+
+Chứa các hàm hoặc quy tắc kiểm tra dữ liệu đầu vào, ví dụ như kiểm tra email, mật khẩu, số điện thoại, biểu mẫu đăng nhập hoặc đăng ký.
