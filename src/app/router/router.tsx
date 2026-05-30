@@ -13,30 +13,21 @@ import {
   AUTHENTICATED_ROLES,
 } from "@/features/auth/constants/roles";
 
-import LoginPage from "@/pages/auth/LoginPage";
-import RegisterPage from "@/pages/auth/RegisterPage";
+import LoginPage from "@/features/auth/components/LoginPage";
+import RegisterPage from "@/features/auth/components/RegisterPage";
 
-import LandingPage from "@/pages/landing/LandingPage";
-import GuideHelpPage from "@/pages/guide/GuideHelpPage";
-import SearchPage from "@/pages/search/SearchPage";
-import DashboardPage from "@/pages/dashboard";
-import PaperDetailPage from "@/pages/papers/PaperDetailPage";
+import LandingPage from "@/features/landing/components/LandingPage";
+import GuideHelpPage from "@/features/guide/components/GuideHelpPage";
+import SearchPage from "@/features/search/components/SearchPage";
+import DashboardPage from "@/features/dashboard/components/DashboardPage";
+import PaperDetailPage from "@/features/detailpapers/components/PaperDetailPage";
 
-import ProfilePage from "@/pages/profile";
-import BookmarksPage from "@/pages/bookmarks/BookMarkLibraryPage";
-import FeedPage from "@/pages/feed";
-import ReportPage from "@/pages/report";
+import ProfilePage from "@/features/profile/components/ProfilePage";
+import BookmarksPage from "@/features/bookmarks/components/BookmarksPage";
+import FeedPage from "@/features/newfeeds/components/FeedPage";
+import ReportPage from "@/features/reports/components/ReportPage";
 
-import AdminDashboardPage from "@/pages/admin/AdminDashboardPage";
-
-function PlaceholderPage({ title }: { title: string }) {
-  return (
-    <section className="rounded-lg border border-dashed border-slate-300 bg-white p-8">
-      <h1 className="text-2xl font-semibold text-slate-900">{title}</h1>
-      <p className="mt-2 text-sm text-slate-500">This page is being built.</p>
-    </section>
-  );
-}
+import AdminDashboardPage from "@/features/admin/components/AdminDashboardPage";
 
 export const router = createBrowserRouter([
   {
@@ -120,15 +111,42 @@ export const router = createBrowserRouter([
           },
           {
             path: ROUTE_SEGMENTS.ADMIN_USERS,
-            element: <PlaceholderPage title="Admin Users" />,
+            element: (
+              <section className="rounded-lg border border-dashed border-slate-300 bg-white p-8">
+                <h1 className="text-2xl font-semibold text-slate-900">
+                  Admin Users
+                </h1>
+                <p className="mt-2 text-sm text-slate-500">
+                  This page is being built.
+                </p>
+              </section>
+            ),
           },
           {
             path: ROUTE_SEGMENTS.ADMIN_FIELDS,
-            element: <PlaceholderPage title="Admin Fields" />,
+            element: (
+              <section className="rounded-lg border border-dashed border-slate-300 bg-white p-8">
+                <h1 className="text-2xl font-semibold text-slate-900">
+                  Admin Fields
+                </h1>
+                <p className="mt-2 text-sm text-slate-500">
+                  This page is being built.
+                </p>
+              </section>
+            ),
           },
           {
             path: ROUTE_SEGMENTS.ADMIN_SYNC,
-            element: <PlaceholderPage title="Admin Sync" />,
+            element: (
+              <section className="rounded-lg border border-dashed border-slate-300 bg-white p-8">
+                <h1 className="text-2xl font-semibold text-slate-900">
+                  Admin Sync
+                </h1>
+                <p className="mt-2 text-sm text-slate-500">
+                  This page is being built.
+                </p>
+              </section>
+            ),
           },
         ],
       },

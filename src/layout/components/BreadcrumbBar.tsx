@@ -14,13 +14,32 @@ function formatSegment(segment: string) {
     .replace(/\b\w/g, (char) => char.toUpperCase());
 }
 
+function getBreadcrumbItems(pathname: string) {
+  const segments = pathname.split("/").filter(Boolean);
+
+  if (segments[0] === "papers" && segments[1]) {
+    return [
+      { label: "Search", path: ROUTES.SEARCH },
+      { label: "Detail-Paper" },
+    ];
+  }
+
+  return segments.map((segment, index) => ({
+    label: formatSegment(segment),
+    path:
+      index === segments.length - 1
+        ? undefined
+        : `/${segments.slice(0, index + 1).join("/")}`,
+  }));
+}
+
 export default function BreadcrumbBar({
   variant = "light",
 }: BreadcrumbBarProps) {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const segments = location.pathname.split("/").filter(Boolean);
+  const breadcrumbItems = getBreadcrumbItems(location.pathname);
 
   const isDark = variant === "dark";
   const textClass = isDark ? "text-slate-200" : "text-slate-900";
@@ -36,7 +55,9 @@ export default function BreadcrumbBar({
     : "border-slate-200 bg-white text-slate-300 hover:text-slate-600";
 
   const currentLabel =
-    segments.length > 0 ? formatSegment(segments[segments.length - 1]) : "Home";
+    breadcrumbItems.length > 0
+      ? breadcrumbItems[breadcrumbItems.length - 1].label
+      : "Home";
 
   return (
     <div className="flex flex-1 items-center gap-4">
@@ -61,11 +82,41 @@ export default function BreadcrumbBar({
           <Home className="h-4 w-4" />
         </Link>
 
-        <ChevronRight className={`h-4 w-4 shrink-0 ${mutedClass}`} />
+        {breadcrumbItems.length > 0 && (
+          <ChevronRight className={`h-4 w-4 shrink-0 ${mutedClass}`} />
+        )}
 
-        <span className={`truncate text-sm font-bold ${textClass}`}>
-          {currentLabel}
-        </span>
+        {breadcrumbItems.length > 1 ? (
+          <div className="flex min-w-0 items-center gap-3">
+            {breadcrumbItems.map((item, index) => {
+              const isLast = index === breadcrumbItems.length - 1;
+
+              return (
+                <div key={`${item.label}-${index}`} className="flex items-center gap-3">
+                  {item.path && !isLast ? (
+                    <Link
+                      to={item.path}
+                      className={`truncate text-sm font-bold ${homeLinkClass}`}
+                    >
+                      {item.label}
+                    </Link>
+                  ) : (
+                    <span className={`truncate text-sm font-bold ${textClass}`}>
+                      {item.label}
+                    </span>
+                  )}
+                  {!isLast && (
+                    <ChevronRight className={`h-4 w-4 shrink-0 ${mutedClass}`} />
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <span className={`truncate text-sm font-bold ${textClass}`}>
+            {currentLabel}
+          </span>
+        )}
       </nav>
     </div>
   );

@@ -1,0 +1,483 @@
+import { Check, ChevronDown, Search, Tag } from "lucide-react";
+import type { ChangeEvent, MouseEvent, UIEvent } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
+
+import { mockSearchYearRange } from "@/features/search/services";
+import type {
+  CheckboxFilterProps,
+  CitationFilterProps,
+  MultiSelectFilterProps,
+  OrcidFilterProps,
+  SearchFilters,
+  YearFilterProps,
+} from "@/features/search/types";
+import {
+  hasInvalidCitationRange,
+  hasInvalidYearRange,
+} from "@/features/search/utils";
+
+const { currentYear, minimumYear } = mockSearchYearRange;
+
+export function MultiSelectFilter({
+  filterKey,
+  hasMoreOptions = false,
+  isLoadingOptions = false,
+  isLoadingMoreOptions = false,
+  label,
+  options,
+  selected,
+  onChange,
+  onLoadMoreOptions,
+  onSearchKeywordChange,
+}: MultiSelectFilterProps) {
+  const [optionKeyword, setOptionKeyword] = useState("");
+  const detailsRef = useRef<HTMLDetailsElement>(null);
+  const selectedOptionLabel =
+    selected.length > 0 ? `${selected.length} selected` : "Any";
+
+  // Filter option labels locally while the user types in the option search box.
+  const visibleOptions = useMemo(() => {
+    const normalizedKeyword = optionKeyword.trim().toLowerCase();
+
+    if (!normalizedKeyword) {
+      return options;
+    }
+
+    return options.filter((option) =>
+      option.toLowerCase().startsWith(normalizedKeyword),
+    );
+  }, [optionKeyword, options]);
+
+  function toggleOption(option: string) {
+    // If the option already exists, remove it; otherwise append it.
+    if (selected.includes(option)) {
+      onChange(selected.filter((item) => item !== option));
+      return;
+    }
+
+    onChange([...selected, option]);
+  }
+
+  function handleOptionKeywordChange(event: ChangeEvent<HTMLInputElement>) {
+    const nextOptionKeyword = event.target.value;
+    setOptionKeyword(nextOptionKeyword);
+    onSearchKeywordChange?.(nextOptionKeyword);
+  }
+
+  function handleOptionCheckboxChange(event: ChangeEvent<HTMLInputElement>) {
+    // currentTarget is the input that fired the event.
+    const option = event.currentTarget.value;
+
+    toggleOption(option);
+  }
+
+  function handleOptionListScroll(event: UIEvent<HTMLDivElement>) {
+    if (!hasMoreOptions || isLoadingOptions || isLoadingMoreOptions || !onLoadMoreOptions) {
+      return;
+    }
+
+    const optionContainer = event.currentTarget;
+    const reachedBottom =
+      optionContainer.scrollTop + optionContainer.clientHeight >=
+      optionContainer.scrollHeight - 24;
+
+    if (reachedBottom) {
+      onLoadMoreOptions();
+    }
+  }
+
+  const handleDetailsToggle = useCallback(() => {
+    const currentDropdown = detailsRef.current;
+
+    if (!currentDropdown?.open) {
+      return;
+    }
+
+    // Keep only one MultiSelect dropdown open at a time to avoid stacked overlays.
+    const allDropdowns = document.querySelectorAll<HTMLDetailsElement>(
+      'details[data-search-multiselect="true"]',
+    );
+
+    allDropdowns.forEach((dropdown) => {
+      if (dropdown !== currentDropdown) {
+        dropdown.open = false;
+      }
+    });
+  }, []);
+
+  return (
+    <div className="space-y-2">
+      <span className="block text-[10px] font-extrabold uppercase tracking-[0.28em] text-slate-600">
+        {label}
+      </span>
+
+      <details
+        ref={detailsRef}
+        className="group relative"
+        data-filter-key={filterKey}
+        data-search-multiselect="true"
+        onToggle={handleDetailsToggle}
+      >
+        <summary className="flex h-10 cursor-pointer list-none items-center justify-between rounded-lg border border-slate-300 bg-white px-3 text-sm font-semibold text-slate-800 outline-none transition hover:border-emerald-700">
+          <span className="truncate">{selectedOptionLabel}</span>
+          <ChevronDown className="h-4 w-4 text-slate-600 transition group-open:rotate-180" />
+        </summary>
+
+        <div className="absolute left-0 top-full z-50 mt-2 w-full min-w-0 max-w-full overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl">
+          <div className="border-b border-slate-200 bg-slate-50/80 p-2">
+            <p className="mb-1 px-1 text-[10px] font-extrabold uppercase tracking-[0.2em] text-slate-600">
+              Search
+            </p>
+            <div className="flex h-9 items-center gap-2 rounded-lg border border-slate-300 bg-white px-2">
+              <Search className="h-4 w-4 text-slate-500" />
+              <input
+                type="search"
+                value={optionKeyword}
+                onChange={handleOptionKeywordChange}
+                placeholder={`Search ${label.toLowerCase()}`}
+                className="min-w-0 flex-1 bg-transparent text-sm font-semibold text-slate-800 outline-none placeholder:text-slate-500"
+              />
+            </div>
+            {isLoadingOptions && (
+              <p className="px-1 pt-1 text-xs font-semibold text-slate-500">
+                Loading options...
+              </p>
+            )}
+          </div>
+
+          <div
+            className="max-h-56 overflow-x-hidden overflow-y-auto p-2"
+            onScroll={handleOptionListScroll}
+          >
+            {visibleOptions.length > 0 ? (
+              visibleOptions.map((option) => (
+                <label
+                  key={option}
+                  className="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-2 text-sm font-semibold text-slate-700 hover:bg-emerald-50 hover:text-emerald-900"
+                >
+                  <input
+                    type="checkbox"
+                    value={option}
+                    checked={selected.includes(option)}
+                    onChange={handleOptionCheckboxChange}
+                    className="h-4 w-4 rounded border-slate-300 accent-emerald-900"
+                  />
+                  <span className="min-w-0 flex-1 truncate">{option}</span>
+                </label>
+              ))
+            ) : isLoadingOptions ? (
+              <p className="px-2 py-3 text-sm font-semibold text-slate-500">
+                Searching...
+              </p>
+            ) : (
+              <p className="px-2 py-3 text-sm font-semibold text-slate-500">
+                No options match "{optionKeyword}"
+              </p>
+            )}
+
+            {isLoadingMoreOptions && (
+              <p className="px-2 py-3 text-sm font-semibold text-slate-500">
+                Loading more options...
+              </p>
+            )}
+          </div>
+        </div>
+      </details>
+    </div>
+  );
+}
+
+export function CheckboxFilter({
+  label,
+  checked,
+  onChange,
+}: CheckboxFilterProps) {
+  const checkboxLabel = checked ? "True" : "False";
+
+  // A controlled checkbox reads from props and reports changes upward.
+  function handleCheckboxChange(event: ChangeEvent<HTMLInputElement>) {
+    const isChecked = event.target.checked;
+
+    onChange(isChecked);
+  }
+
+  return (
+    <label className="space-y-2">
+      <span className="block text-[10px] font-extrabold uppercase tracking-[0.28em] text-slate-600">
+        {label}
+      </span>
+
+      <span className="flex h-10 items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 text-sm font-semibold text-slate-800">
+        <input
+          type="checkbox"
+          checked={checked}
+          onChange={handleCheckboxChange}
+          className="h-4 w-4 rounded border-slate-300 accent-emerald-900"
+        />
+        {checkboxLabel}
+      </span>
+    </label>
+  );
+}
+
+export function YearFilter({ filters, updateFilter }: YearFilterProps) {
+  const yearRangeIsInvalid = hasInvalidYearRange(filters);
+  const invalidYearMessage =
+    filters.yearMode === "range"
+      ? `Year must be ${minimumYear}-${currentYear} and From cannot be greater than To.`
+      : `Year must be ${minimumYear}-${currentYear}.`;
+  const inputClassName = [
+    "h-9 rounded-md border bg-white px-2 text-sm font-semibold text-slate-800 outline-none transition focus:border-emerald-800",
+    yearRangeIsInvalid ? "border-red-400" : "border-slate-300",
+  ].join(" ");
+
+  function handleYearModeClick(event: MouseEvent<HTMLButtonElement>) {
+    // Button values are strings, so cast them to the union type used by filters.
+    const nextYearMode = event.currentTarget.value as SearchFilters["yearMode"];
+
+    updateFilter("yearMode", nextYearMode);
+  }
+
+  function handleYearFromChange(event: ChangeEvent<HTMLInputElement>) {
+    updateFilter("yearFrom", event.target.value);
+  }
+
+  function handleYearToChange(event: ChangeEvent<HTMLInputElement>) {
+    updateFilter("yearTo", event.target.value);
+  }
+
+  function handleYearExactChange(event: ChangeEvent<HTMLInputElement>) {
+    updateFilter("yearExact", event.target.value);
+  }
+
+  return (
+    <label className="space-y-2">
+      <span className="block text-[10px] font-extrabold uppercase tracking-[0.28em] text-slate-600">
+        Year
+      </span>
+
+      <div className="rounded-lg border border-slate-300 bg-white p-2">
+        <div className="mb-2 grid grid-cols-2 gap-1 rounded-md bg-slate-100 p-1">
+          {(["range", "exact"] as const).map((mode) => (
+            <button
+              key={mode}
+              type="button"
+              value={mode}
+              onClick={handleYearModeClick}
+              className={[
+                "rounded px-2 py-1.5 text-xs font-bold capitalize transition",
+                filters.yearMode === mode
+                  ? "bg-white text-emerald-900 shadow-sm"
+                  : "text-slate-600 hover:text-slate-950",
+              ].join(" ")}
+            >
+              {mode}
+            </button>
+          ))}
+        </div>
+
+        {filters.yearMode === "range" ? (
+          <div className="grid grid-cols-2 gap-2">
+            <input
+              type="number"
+              min={minimumYear}
+              max={currentYear}
+              value={filters.yearFrom}
+              onChange={handleYearFromChange}
+              placeholder="From"
+              aria-label="Year from"
+              className={inputClassName}
+            />
+            <input
+              type="number"
+              min={minimumYear}
+              max={currentYear}
+              value={filters.yearTo}
+              onChange={handleYearToChange}
+              placeholder="To"
+              aria-label="Year to"
+              className={inputClassName}
+            />
+          </div>
+        ) : (
+          <input
+            type="number"
+            min={minimumYear}
+            max={currentYear}
+            value={filters.yearExact}
+            onChange={handleYearExactChange}
+            placeholder="Exact year"
+            aria-label="Exact publication year"
+            className={["w-full", inputClassName].join(" ")}
+          />
+        )}
+      </div>
+
+      {yearRangeIsInvalid && (
+        <p className="text-xs font-semibold text-red-600">
+          {invalidYearMessage}
+        </p>
+      )}
+    </label>
+  );
+}
+
+export function CitationFilter({ filters, updateFilter }: CitationFilterProps) {
+  const citationRangeIsInvalid = hasInvalidCitationRange(filters);
+  const rangeInputClassName = [
+    "h-9 rounded-md border px-2 text-sm font-semibold text-slate-800 outline-none focus:border-emerald-800",
+    citationRangeIsInvalid ? "border-red-400" : "border-slate-300",
+  ].join(" ");
+
+  function handleCitationModeClick(event: MouseEvent<HTMLButtonElement>) {
+    // The cast narrows the string value to "range" | "exact".
+    const nextCitationMode = event.currentTarget
+      .value as SearchFilters["citationMode"];
+
+    updateFilter("citationMode", nextCitationMode);
+  }
+
+  function handleCitationMinChange(event: ChangeEvent<HTMLInputElement>) {
+    updateFilter("citationMin", event.target.value);
+  }
+
+  function handleCitationMaxChange(event: ChangeEvent<HTMLInputElement>) {
+    updateFilter("citationMax", event.target.value);
+  }
+
+  function handleCitationExactChange(event: ChangeEvent<HTMLInputElement>) {
+    updateFilter("citationExact", event.target.value);
+  }
+
+  return (
+    <div className="space-y-2">
+      <span className="block text-[10px] font-extrabold uppercase tracking-[0.28em] text-slate-600">
+        Citation Count
+      </span>
+
+      <div className="rounded-lg border border-slate-300 bg-white p-2">
+        <div className="mb-2 grid grid-cols-2 gap-1 rounded-md bg-slate-100 p-1">
+          {(["range", "exact"] as const).map((mode) => (
+            <button
+              key={mode}
+              type="button"
+              value={mode}
+              onClick={handleCitationModeClick}
+              className={[
+                "rounded px-2 py-1.5 text-xs font-bold capitalize transition",
+                filters.citationMode === mode
+                  ? "bg-white text-emerald-900 shadow-sm"
+                  : "text-slate-600 hover:text-slate-950",
+              ].join(" ")}
+            >
+              {mode}
+            </button>
+          ))}
+        </div>
+
+        {filters.citationMode === "range" ? (
+          <>
+            <div className="grid grid-cols-2 gap-2">
+              <input
+                type="number"
+                min="0"
+                value={filters.citationMin}
+                onChange={handleCitationMinChange}
+                placeholder="Min"
+                aria-label="Minimum citation count"
+                className={rangeInputClassName}
+              />
+              <input
+                type="number"
+                min="0"
+                value={filters.citationMax}
+                onChange={handleCitationMaxChange}
+                placeholder="Max"
+                aria-label="Maximum citation count"
+                className={rangeInputClassName}
+              />
+            </div>
+
+            {citationRangeIsInvalid && (
+              <p className="mt-2 text-xs font-semibold text-red-600">
+                Min citations cannot be greater than max citations.
+              </p>
+            )}
+          </>
+        ) : (
+          <input
+            type="number"
+            min="0"
+            value={filters.citationExact}
+            onChange={handleCitationExactChange}
+            placeholder="Exact count"
+            aria-label="Exact citation count"
+            className="h-9 w-full rounded-md border border-slate-300 px-2 text-sm font-semibold text-slate-800 outline-none focus:border-emerald-800"
+          />
+        )}
+      </div>
+    </div>
+  );
+}
+
+export function OrcidFilter({ value, updateFilter }: OrcidFilterProps) {
+  function handleOrcidConditionClick(event: MouseEvent<HTMLButtonElement>) {
+    // The ORCID condition can only be "", "is", or "is not".
+    const nextCondition = event.currentTarget
+      .value as SearchFilters["indexedByOrcid"];
+
+    updateFilter("indexedByOrcid", nextCondition);
+  }
+
+  return (
+    <div className="space-y-2">
+      <span className="block text-[10px] font-extrabold uppercase tracking-[0.28em] text-slate-600">
+        Indexed by ORCID
+      </span>
+
+      <div className="flex h-10 items-center overflow-visible rounded-lg border border-slate-300 bg-white text-sm font-semibold text-slate-800">
+        <div className="flex h-full items-center gap-2 border-r border-slate-200 px-3">
+          <Tag className="h-4 w-4 text-slate-600" />
+          Work
+        </div>
+
+        <details className="group relative h-full">
+          <summary className="flex h-full min-w-20 cursor-pointer list-none items-center justify-center gap-1 bg-slate-100 px-3 text-slate-900 shadow-sm">
+            {value || "is"}
+            <ChevronDown className="h-4 w-4 transition group-open:rotate-180" />
+          </summary>
+
+          <div className="absolute left-0 z-30 mt-1 w-36 rounded-xl border border-slate-200 bg-white p-1.5 shadow-xl">
+            {(["is", "is not"] as const).map((condition) => (
+              <button
+                key={condition}
+                type="button"
+                value={condition}
+                onClick={handleOrcidConditionClick}
+                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-semibold text-slate-700 hover:bg-emerald-50 hover:text-emerald-900"
+              >
+                <span className="h-4 w-4">
+                  {value === condition && <Check className="h-4 w-4" />}
+                </span>
+                {condition}
+              </button>
+            ))}
+          </div>
+        </details>
+
+        <div className="flex-1 px-3">Has an ORCID</div>
+      </div>
+    </div>
+  );
+}
+
+/*
+SEARCH_FILE_NOTE
+Syntax su dung:
+- Reusable controls, controlled inputs, local state cho search keyword trong option.
+File nay lam gi:
+- Dinh nghia MultiSelect/Checkbox/Year/Citation/ORCID controls.
+Flow chay:
+- SearchFiltersPanel goi control nay; control emit onChange de cap nhat filter state.
+*/
+
