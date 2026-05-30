@@ -1,36 +1,6 @@
 import type { SearchFilters } from "../types";
 
-export const searchTabs = ["Works"];
-
-export const resultSortOptions = [
-  "Latest",
-  "Most cited",
-  "Trending",
-];
-
-export const suggestedSearches = [
-  "Topic 1",
-  "Topic 2",
-  "Topic 3",
-  "Topic 4",
-  "Topic 5",
-  "Topic 6",
-  "Topic 7",
-];
-
-export const currentYear = new Date().getFullYear();
-export const minimumYear = 1900;
-
-export const multiFilterOptions = {
-  type: ["Journal article", "Conference paper", "Preprint", "Dataset"],
-  subField: ["Machine Learning", "NLP", "Computer Vision", "Bioinformatics"],
-  author: ["Yoshua Bengio", "Geoffrey Hinton", "Yann LeCun", "Fei-Fei Li"],
-  institution: ["FPT University", "Stanford", "MIT", "National University"],
-  country: ["Vietnam", "United States", "Japan", "Singapore"],
-  source: ["OpenAlex", "Crossref", "PubMed", "Scopus", "Web of Science"],
-  award: ["Best Paper", "Highly Cited", "Editor's Choice", "Open Science"],
-};
-
+// Local form defaults. API-backed option lists live in services.
 export const initialFilters: SearchFilters = {
   yearMode: "range",
   yearFrom: "",
@@ -51,3 +21,14 @@ export const initialFilters: SearchFilters = {
   award: [],
   indexedByOrcid: "",
 };
+
+/*
+SEARCH_FILE_NOTE
+Syntax su dung:
+- File index trong module search dung de gom export hoac constants/types.
+File nay lam gi:
+- Giu vai tro diem tap trung import/export trong tung folder.
+Flow chay:
+- Cac file khac import tu index de gon duong dan va de maintain.
+*/
+

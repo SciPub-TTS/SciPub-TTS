@@ -17,7 +17,7 @@ const systemStatusItems = [
   {
     icon: RefreshCcw,
     label: "Sync:",
-    value: "Admin",
+    value: "Admin and System",
   },
   {
     icon: CalendarClock,
@@ -50,8 +50,8 @@ export default function MainFooter() {
             Scientific Journal Publication Trend Tracking System
           </h2>
           <p className="mt-3 max-w-md leading-5 text-slate-600">
-            A publication trend intelligence platform for researchers, lecturers,
-            and students. Built in Vietnam, FPT University
+            A publication trend intelligence platform for researchers,
+            lecturers, and students. Built in Vietnam, FPT University
           </p>
         </section>
 
