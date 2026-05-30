@@ -54,7 +54,7 @@ export default function MainSidebar() {
 
   return (
     <aside className="sticky top-0 flex h-screen w-56 shrink-0 flex-col bg-[#03120a] text-slate-400">
-      <div className="flex items-center gap-3 border-b border-white/5 px-4 py-5">
+      <div className="flex items-center gap-3 border-b border-white/5 px-4 py-5 select-none">
         <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-lg bg-white shadow-sm">
           <img
             src={logoImage}
