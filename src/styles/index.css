@@ -63,3 +63,104 @@ body {
     animation: none;
   }
 }
+
+@keyframes float-node {
+  0% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-12px);
+  }
+
+  100% {
+    transform: translateY(0);
+  }
+}
+
+.floating-node {
+  animation: float-node 4.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .floating-node {
+    animation: none;
+  }
+}
+
+@keyframes draw-paper-underline {
+  from {
+    stroke-dashoffset: 540;
+  }
+
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.paper-underline-path {
+  stroke-dasharray: 540;
+  stroke-dashoffset: 540;
+  animation: draw-paper-underline 2.6s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .paper-underline-path {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes draw-module-trend {
+  from {
+    stroke-dashoffset: 420;
+  }
+
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.module-trend-path {
+  stroke-dasharray: 420;
+  stroke-dashoffset: 420;
+  animation: draw-module-trend 2.8s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .module-trend-path {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.reveal-on-scroll {
+  opacity: 0;
+  transform: translateY(-18px);
+  transition:
+    opacity 0.7s ease,
+    transform 0.7s ease;
+}
+
+.reveal-on-scroll.revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal-on-scroll,
+  .reveal-on-scroll.revealed {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
