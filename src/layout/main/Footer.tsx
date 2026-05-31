@@ -121,10 +121,6 @@ export default function MainFooter() {
             &copy; 2026 SJPTTS &mdash; For academic review and demonstration
             purposes.
           </p>
-          <div className="flex items-center gap-2 font-medium text-slate-500">
-            <span className="h-2 w-2 rounded-full bg-emerald-500" />
-            <span>All systems operational</span>
-          </div>
         </div>
       </div>
     </footer>

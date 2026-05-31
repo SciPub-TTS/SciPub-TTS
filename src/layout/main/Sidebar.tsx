@@ -43,9 +43,10 @@ function getInitials(name: string) {
 export default function MainSidebar() {
   const navigate = useNavigate();
   const currentUser = getCurrentUser();
-  const displayName = currentUser?.fullName ?? "Nguyen Van A";
-  const displayEmail = currentUser?.email ?? "nguyenvana@email.com";
-  const initials = getInitials(displayName) || "NV";
+  const loggedIn = Boolean(currentUser);
+  const displayName = currentUser?.fullName ?? "Guest";
+  const displayEmail = currentUser?.email ?? "Sign in to manage your profile";
+  const initials = getInitials(displayName) || "G";
 
   function handleLogout() {
     clearAuthStorage();
@@ -66,7 +67,9 @@ export default function MainSidebar() {
           />
         </div>
         <div className="min-w-0">
-          <h1 className="truncate text-lg font-bold text-white">Owlreka</h1>
+          <h1 className="font-brand truncate text-xl font-normal text-white">
+            Owlreka
+          </h1>
         </div>
       </Link>
 
@@ -100,49 +103,50 @@ export default function MainSidebar() {
         </nav>
       </div>
 
-      {currentUser && (
-        <div className="border-t border-emerald-400/20 px-2.5 py-4">
-          <div className="mb-4 flex items-center gap-3 rounded-lg border border-white/10 bg-white/[0.08] px-2.5 py-2.5">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-xs font-bold text-white">
-              {initials}
-            </div>
-            <div className="min-w-0">
-              <p className="truncate text-xs font-bold text-white">
-                {displayName}
-              </p>
-              <p className="mt-0.5 truncate text-[10px] text-slate-400">
-                {displayEmail}
-              </p>
-            </div>
+      <div className="border-t border-emerald-400/20 px-2.5 py-4">
+        <div className="mb-4 flex items-center gap-3 rounded-lg border border-white/10 bg-white/[0.08] px-2.5 py-2.5">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-xs font-bold text-white">
+            {initials}
           </div>
+          <div className="min-w-0">
+            <p className="truncate text-xs font-bold text-white">
+              {displayName}
+            </p>
+            <p className="mt-0.5 truncate text-[10px] text-slate-400">
+              {displayEmail}
+            </p>
+          </div>
+        </div>
 
-          <p className="mb-2 px-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">
-            Account
-          </p>
+        <p className="mb-2 px-2 text-[14px] font-bold uppercase tracking-wider text-white">
+          Account
+        </p>
 
-          <nav className="space-y-1">
-            {accountMenuItems.map((item) => {
-              const Icon = item.icon;
+        <nav className="space-y-1">
+          {accountMenuItems.map((item) => {
+            const Icon = item.icon;
+            const targetPath = loggedIn ? item.path : ROUTES.LOGIN;
 
-              return (
-                <NavLink
-                  key={item.path}
-                  to={item.path}
-                  className={({ isActive }) =>
-                    [
-                      "flex items-center gap-3 rounded-lg px-2.5 py-2 text-xs font-medium transition",
-                      isActive
-                        ? "bg-emerald-600 text-white shadow-sm ring-1 ring-emerald-300/40"
-                        : "text-slate-300 hover:bg-emerald-500/15 hover:text-emerald-100",
-                    ].join(" ")
-                  }
-                >
-                  <Icon className="h-4 w-4 shrink-0" />
-                  <span className="truncate">{item.label}</span>
-                </NavLink>
-              );
-            })}
+            return (
+              <NavLink
+                key={item.path}
+                to={targetPath}
+                className={({ isActive }) =>
+                  [
+                    "flex items-center gap-3 rounded-lg px-2.5 py-2 text-xs font-medium transition",
+                    loggedIn && isActive
+                      ? "bg-emerald-600 text-white shadow-sm ring-1 ring-emerald-300/40"
+                      : "text-slate-300 hover:bg-emerald-500/15 hover:text-emerald-100",
+                  ].join(" ")
+                }
+              >
+                <Icon className="h-4 w-4 shrink-0" />
+                <span className="truncate">{item.label}</span>
+              </NavLink>
+            );
+          })}
 
+          {loggedIn && (
             <button
               type="button"
               onClick={handleLogout}
@@ -151,9 +155,9 @@ export default function MainSidebar() {
               <LogOut className="h-4 w-4 shrink-0" />
               <span className="truncate">Log out</span>
             </button>
-          </nav>
-        </div>
-      )}
+          )}
+        </nav>
+      </div>
     </aside>
   );
 }

@@ -37,6 +37,7 @@ type OptionItem = {
 };
 
 type FilterOptionsApiData = {
+  totalWorks: number;
   year: SearchYearRange;
   citation: { minimumCitation: number; maximumCitation: number };
   type: OptionItem[];
@@ -95,6 +96,7 @@ export type SearchOptionsState = {
   citationRange: { minimumCitation: number; maximumCitation: number };
   filterOptions: SearchFilterOptions;
   optionValueLookup: SearchOptionValueLookup;
+  totalIndexedPapers: number;
   yearRange: SearchYearRange;
 };
 
@@ -126,8 +128,7 @@ export type RemoteFilterOptionsPage = {
   valueLookup: Record<string, string>;
 };
 
-// TODO: Replace these mock metadata values with the search metadata API response.
-export const mockSearchTabs = ["Works"];
+export const searchTabs = ["Works"];
 
 // The first option is the default sort used by the search hook.
 export const mockResultSortOptions = ["Most cited", "Latest", "Trending"];
@@ -208,6 +209,7 @@ export async function getSearchFilterOptions(
       source: mapOptionsToValueLookup(data.source, true),
       award: mapOptionsToValueLookup(data.award, true),
     },
+    totalIndexedPapers: data.totalWorks,
     yearRange: data.year,
   };
 }
@@ -671,4 +673,3 @@ function decodeHtmlEntities(value: string) {
   htmlEntityDecoder.innerHTML = value;
   return htmlEntityDecoder.value;
 }
-

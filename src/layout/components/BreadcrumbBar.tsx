@@ -45,16 +45,16 @@ export default function BreadcrumbBar({
 
   const isDark = variant === "dark";
   const textClass = isDark ? "text-slate-100" : "text-slate-950";
-  const mutedClass = isDark ? "text-slate-400" : "text-slate-500";
+  const mutedClass = isDark ? "text-slate-700" : "text-slate-500";
   const homeLinkClass = isDark
-    ? "text-emerald-300 hover:text-cyan-200"
-    : "text-emerald-800 hover:text-sky-700";
+    ? "<text-emerald-4></text-emerald-4>00 hover:text-[#059669]"
+    : "text-emerald-900 hover:text-[#059669]";
   const boxClass = isDark
-    ? "border-slate-600 bg-slate-900"
-    : "border-slate-300 bg-white";
+    ? "border-black bg-slate-900"
+    : "border-black bg-white";
   const controlClass = isDark
-    ? "border-slate-600 bg-slate-900 text-slate-300 hover:border-cyan-300 hover:text-cyan-200"
-    : "border-slate-300 bg-white text-slate-600 hover:border-sky-500 hover:text-sky-700";
+    ? "border-black bg-slate-900 text-slate-300 hover:border-[#059669] hover:text-[#059669]"
+    : "border-black bg-white text-slate-600 hover:border-[#059669] hover:text-[#059669]";
 
   const currentLabel =
     breadcrumbItems.length > 0
@@ -81,11 +81,11 @@ export default function BreadcrumbBar({
           aria-label="Go to home"
           className={`flex h-5 w-5 shrink-0 items-center justify-center transition ${homeLinkClass}`}
         >
-          <Home className="h-4 w-4" />
+          <Home className="h-5 w-5" />
         </Link>
 
         {breadcrumbItems.length > 0 && (
-          <ChevronRight className={`h-4 w-4 shrink-0 ${mutedClass}`} />
+          <ChevronRight className={`h-5 w-5 shrink-0 ${mutedClass}`} />
         )}
 
         {breadcrumbItems.length > 1 ? (
@@ -94,7 +94,10 @@ export default function BreadcrumbBar({
               const isLast = index === breadcrumbItems.length - 1;
 
               return (
-                <div key={`${item.label}-${index}`} className="flex items-center gap-3">
+                <div
+                  key={`${item.label}-${index}`}
+                  className="flex items-center gap-3"
+                >
                   {item.path && !isLast ? (
                     <Link
                       to={item.path}
@@ -108,7 +111,9 @@ export default function BreadcrumbBar({
                     </span>
                   )}
                   {!isLast && (
-                    <ChevronRight className={`h-4 w-4 shrink-0 ${mutedClass}`} />
+                    <ChevronRight
+                      className={`h-5 w-5 shrink-0 ${mutedClass}`}
+                    />
                   )}
                 </div>
               );

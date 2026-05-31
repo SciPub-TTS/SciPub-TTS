@@ -56,7 +56,9 @@ export default function AdminSidebar() {
           />
         </div>
         <div className="min-w-0">
-          <h1 className="truncate text-sm font-bold text-white">Owlreka</h1>
+          <h1 className="font-brand truncate text-lg font-normal text-white">
+            Owlreka
+          </h1>
           <p className="mt-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-400">
             Admin Console
           </p>

@@ -1,3 +1,4 @@
+import { LoaderCircle } from "lucide-react";
 import type { MouseEvent, RefObject } from "react";
 import { memo, useEffect, useRef } from "react";
 
@@ -61,11 +62,19 @@ function SearchResultsComponent({
     onLoadMoreResults,
   ]);
 
+  if (isLoadingResults) {
+    return (
+      <section>
+        <SearchLoadingState />
+      </section>
+    );
+  }
+
   if (!hasSearched) {
     return (
       <section>
-        <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center">
-          <p className="text-lg font-bold text-slate-900">
+        <div className="rounded-2xl border border-slate-600 bg-white p-8 text-center">
+          <p className="text-lg font-bold text-black">
             Enter a keyword or choose filters, then click Search.
           </p>
         </div>
@@ -94,7 +103,7 @@ function SearchResultsComponent({
         />
 
         {isLoadingMoreResults && (
-          <p className="py-2 text-center text-sm font-semibold text-slate-600">
+          <p className="py-2 text-center text-sm font-semibold text-black">
             Loading more results...
           </p>
         )}
@@ -104,6 +113,17 @@ function SearchResultsComponent({
 }
 
 export const SearchResults = memo(SearchResultsComponent);
+
+function SearchLoadingState() {
+  return (
+    <div className="rounded-2xl border border-[#059669] bg-white p-8 text-center shadow-sm">
+      <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[#A3E635]/20 text-[#059669]">
+        <LoaderCircle className="h-6 w-6 animate-spin" />
+      </div>
+      <p className="mt-4 text-lg font-bold text-black">Searching papers...</p>
+    </div>
+  );
+}
 
 function ResultsHeader({
   appliedSearchQuery,
@@ -129,20 +149,20 @@ function ResultsHeader({
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div>
-        <h2 className="text-2xl font-semibold text-slate-950">
+        <h2 className="text-2xl font-semibold text-black">
           Results for{" "}
-          <span className="italic text-emerald-950">"{resultTitle}"</span>
+          <span className="italic text-[#14532D]">"{resultTitle}"</span>
         </h2>
-        <p className="mt-1 text-xs font-extrabold uppercase tracking-[0.24em] text-slate-500">
+        <p className="mt-1 text-xs font-extrabold uppercase tracking-[0.24em] text-black">
           {resultMetaText}
         </p>
       </div>
 
       <div className="flex items-center gap-2">
-        <span className="text-[10px] font-extrabold uppercase tracking-[0.24em] text-slate-500">
+        <span className="text-[10px] font-extrabold uppercase tracking-[0.24em] text-black">
           Sort:
         </span>
-        <div className="flex overflow-hidden rounded-lg border border-slate-200 bg-white">
+        <div className="flex overflow-hidden rounded-lg border border-slate-400 bg-white divide-x divide-slate-400">
           {mockResultSortOptions.map((sortOption) => (
             <button
               key={sortOption}
@@ -153,8 +173,8 @@ function ResultsHeader({
               className={[
                 "px-4 py-2 text-xs font-bold transition disabled:cursor-not-allowed disabled:opacity-60",
                 selectedSort === sortOption
-                  ? "bg-emerald-950 text-white"
-                  : "text-slate-600 hover:bg-slate-50 hover:text-slate-950",
+                  ? "bg-[#14532D] text-white"
+                  : "text-black hover:bg-slate-200 hover:text-black",
               ].join(" ")}
             >
               {sortOption}
@@ -177,16 +197,16 @@ function ResultsList({
 }) {
   if (isLoadingResults) {
     return (
-      <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center">
-        <p className="text-lg font-bold text-slate-900">Loading results...</p>
+      <div className="rounded-2xl border border-slate-600 bg-white p-8 text-center">
+        <p className="text-lg font-bold text-black">Loading results...</p>
       </div>
     );
   }
 
   if (hasSearched && visiblePaperResults.length === 0) {
     return (
-      <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center">
-        <p className="text-lg font-bold text-slate-900">
+      <div className="rounded-2xl border  border-slate-600 bg-white p-8 text-center">
+        <p className="text-lg font-bold text-black">
           No papers matched this search.
         </p>
       </div>
@@ -209,10 +229,5 @@ function ResultsList({
     resultItems.push(<PaperResultCard key={paper.id} paper={paper} />);
   }
 
-  return (
-    <div className="space-y-4">
-      {resultItems}
-    </div>
-  );
+  return <div className="space-y-4">{resultItems}</div>;
 }
-

@@ -41,7 +41,7 @@ export function SearchFiltersPanel({
 }: SearchFiltersPanelProps) {
   // The filter panel is split into header, grid, summary, and actions.
   return (
-    <div className="border-t border-slate-200 bg-slate-50/80">
+    <div className="rounded-b-2xl border-t border-slate-400 bg-slate-50/80">
       <SearchFiltersHeader
         activeFilterCount={activeFilterCount}
         filtersOpen={filtersOpen}
@@ -96,15 +96,19 @@ function SearchFiltersHeader({
     ? expandedChevronClassName
     : collapsedChevronClassName;
   const toggleLabel = filtersOpen ? "Collapse filters" : "Expand filters";
+  const headerClassName = [
+    "flex flex-col gap-3 px-5 py-4 md:flex-row md:items-center md:justify-between",
+    filtersOpen ? "border-b border-slate-400" : "rounded-b-2xl",
+  ].join(" ");
 
   return (
-    <div className="flex flex-col gap-3 border-b border-slate-200 px-5 py-4 md:flex-row md:items-center md:justify-between">
+    <div className={headerClassName}>
       <div className="flex items-center gap-2">
-        <SlidersHorizontal className="h-4 w-4 text-slate-700" />
-        <span className="text-sm font-bold text-slate-800">
+        <SlidersHorizontal className="h-4 w-4 text-black" />
+        <span className="text-sm font-bold text-black">
           Advanced filters
         </span>
-        <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-emerald-900 px-1.5 text-[10px] font-bold text-white">
+        <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-[#14532D] px-1.5 text-[10px] font-bold text-white">
           {activeFilterCount}
         </span>
 
@@ -113,15 +117,15 @@ function SearchFiltersHeader({
           onClick={onToggleFilters}
           aria-expanded={filtersOpen}
           aria-label={toggleLabel}
-          className="flex h-7 w-7 items-center justify-center rounded-md border border-slate-300 bg-white text-slate-700 transition hover:border-emerald-700 hover:text-emerald-900"
+          className="flex h-7 w-7 items-center justify-center rounded-md border border-slate-400 bg-white text-black transition hover:border-[#15803D] hover:text-[#15803D]"
         >
           <ChevronDown className={`h-4 w-4 transition ${chevronClassName}`} />
         </button>
       </div>
 
-      <p className="text-[11px] font-extrabold uppercase tracking-[0.28em] text-slate-600">
+      <p className="text-[11px] font-extrabold uppercase tracking-[0.28em] text-black">
         Match:{" "}
-        <span className="text-slate-900">
+        <span className="text-black">
           {formatFullNumber(matchedPaperCount)} papers
         </span>
       </p>
@@ -138,13 +142,13 @@ function FilterVisibilityToggle({
 
   return (
     <div className="flex items-center justify-between px-5 pt-5">
-      <p className="text-xs font-bold text-slate-700">
+      <p className="text-xs font-bold text-black">
         Showing {visibleFilterCount} of 12 filters
       </p>
       <button
         type="button"
         onClick={onToggleMoreFilters}
-        className="rounded-full border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-emerald-900 transition hover:border-emerald-700 hover:bg-emerald-50"
+        className="rounded-full border border-slate-400 bg-white px-3 py-1.5 text-xs font-bold text-[#14532D] transition hover:border-[#15803D] hover:bg-[#A3E635]/20"
       >
         {toggleButtonLabel}
       </button>
@@ -330,8 +334,8 @@ function AppliedFilterSummary({ summary }: AppliedFilterSummaryProps) {
   }
 
   return (
-    <div className="border-t border-slate-200 px-5 py-4">
-      <p className="mb-2 text-xs font-extrabold uppercase tracking-[0.24em] text-slate-600">
+    <div className="border-t border-slate-400 px-5 py-4">
+      <p className="mb-2 text-xs font-extrabold uppercase tracking-[0.24em] text-black">
         Applied filters
       </p>
 
@@ -339,7 +343,7 @@ function AppliedFilterSummary({ summary }: AppliedFilterSummaryProps) {
         {summary.map((item) => (
           <span
             key={item}
-            className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-950 ring-1 ring-emerald-200"
+            className="rounded-full bg-[#A3E635]/20 px-3 py-1 text-xs font-bold text-[#14532D] ring-1 ring-[#059669]"
           >
             {item}
           </span>
@@ -367,7 +371,7 @@ function FilterActions({
           type="button"
           onClick={onApplyFilters}
           disabled={hasFormError || isLoadingResults}
-          className="inline-flex items-center gap-2 rounded-lg bg-emerald-950 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:bg-slate-400"
+          className="inline-flex items-center gap-2 rounded-lg bg-[#14532D] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#15803D] disabled:cursor-not-allowed disabled:bg-slate-400"
         >
           <Filter className="h-4 w-4" />
           {isLoadingResults ? "Applying..." : "Apply filters"}
@@ -376,13 +380,13 @@ function FilterActions({
         <button
           type="button"
           onClick={onResetFilters}
-          className="text-sm font-bold text-slate-700 transition hover:text-slate-950"
+          className="text-sm font-bold text-black transition hover:text-black"
         >
           Reset all
         </button>
       </div>
 
-      <p className="text-xs font-bold text-slate-700">
+      <p className="text-xs font-bold text-black">
         {activeFilterCount} {selectedFilterLabel}
       </p>
     </div>

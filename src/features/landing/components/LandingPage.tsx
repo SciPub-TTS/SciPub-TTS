@@ -75,15 +75,15 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-950">
-      <header className="dynamic-divider-bottom sticky top-0 z-40 border-b border-slate-200/80 bg-white/95 px-6 py-4 shadow-[0_10px_30px_rgba(15,23,42,0.06)] backdrop-blur">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
+      <header className="dynamic-divider-bottom sticky top-0 z-40 border-b border-slate-200/80 bg-white/95 px-6 py-4 shadow-[0_10px_30px_rgba(15,23,42,0.06)] backdrop-blur lg:px-10 2xl:px-14">
+        <div className="relative z-30 mx-auto flex max-w-[1600px] items-center justify-between gap-4">
           <Link to={ROUTES.HOME} className="flex items-center gap-3">
             <img
               src={logoImage}
               alt="Research Trend"
               className="h-10 w-10 rounded-lg object-cover"
             />
-            <span className="text-base font-semibold">Owlreka</span>
+            <span className="font-brand text-3xl font-normal">Owlreka</span>
           </Link>
 
           <nav className="hidden items-center gap-6 text-sm font-medium text-slate-600 md:flex">
@@ -91,7 +91,7 @@ export default function LandingPage() {
               <button
                 type="button"
                 onClick={() => setIsSectionMenuOpen((isOpen) => !isOpen)}
-                className="inline-flex items-center gap-1.5 hover:text-emerald-700"
+                className="inline-flex items-center gap-1.5 hover:text-emerald-700 text-black"
               >
                 Sections
                 <ChevronDown
@@ -102,13 +102,13 @@ export default function LandingPage() {
               </button>
 
               {isSectionMenuOpen && (
-                <div className="absolute left-0 top-8 w-56 rounded-lg border border-slate-200 bg-white p-1.5 shadow-lg">
+                <div className="absolute left-0 top-8 z-50 w-56 rounded-lg border border-slate-200 bg-white p-1.5 shadow-lg">
                   {landingSectionLinks.map((section) => (
                     <button
                       key={section.id}
                       type="button"
                       onClick={() => handleSectionSelect(section.id)}
-                      className="block w-full rounded-md px-3 py-2 text-left text-sm font-medium text-slate-600 hover:bg-emerald-50 hover:text-emerald-700"
+                      className="block w-full rounded-md px-3 py-2 text-left text-sm font-medium text-black hover:bg-emerald-200 hover:text-emerald-700"
                     >
                       {section.label}
                     </button>
@@ -117,13 +117,22 @@ export default function LandingPage() {
               )}
             </div>
 
-            <Link to={ROUTES.SEARCH} className="hover:text-emerald-700">
+            <Link
+              to={ROUTES.SEARCH}
+              className="hover:text-emerald-700 text-black"
+            >
               Search
             </Link>
-            <Link to={ROUTES.DASHBOARD} className="hover:text-emerald-700">
+            <Link
+              to={ROUTES.DASHBOARD}
+              className="hover:text-emerald-700 text-black"
+            >
               Dashboard
             </Link>
-            <Link to={ROUTES.GUIDE} className="hover:text-emerald-700">
+            <Link
+              to={ROUTES.GUIDE}
+              className="hover:text-emerald-700 text-black"
+            >
               Guide
             </Link>
           </nav>
@@ -148,13 +157,13 @@ export default function LandingPage() {
             <div className="flex items-center gap-2">
               <Link
                 to={ROUTES.LOGIN}
-                className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100"
+                className="rounded-lg border border-black px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100"
               >
                 Login
               </Link>
               <Link
                 to={ROUTES.REGISTER}
-                className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700"
+                className="rounded-lg bg-emerald-700 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700"
               >
                 Register
               </Link>
@@ -166,20 +175,20 @@ export default function LandingPage() {
       <main>
         <section
           id={landingSectionLinks[0].id}
-          className="dynamic-divider-bottom scroll-mt-24 border-b border-slate-200 bg-white px-6 py-16 md:py-20"
+          className="dynamic-divider-bottom scroll-mt-24 border-b border-slate-200 bg-white px-6 py-16 md:py-20 lg:px-10 2xl:px-14"
         >
-          <div className="mx-auto grid max-w-7xl items-center gap-12 lg:grid-cols-[1.05fr_0.95fr]">
+          <div className="mx-auto grid max-w-[1600px] items-center gap-12 lg:grid-cols-[1.12fr_0.88fr] xl:gap-16">
             <div>
               <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-sm font-medium text-emerald-700">
                 <Sparkles className="h-4 w-4" />
                 Publication trend intelligence
               </div>
 
-              <h1 className="max-w-3xl text-4xl font-bold leading-tight text-slate-950 md:text-6xl">
+              <h1 className="max-w-5xl text-4xl font-bold leading-tight text-slate-950 md:text-6xl">
                 Discover, track, and organize scientific publication trends.
               </h1>
 
-              <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-600">
+              <p className="mt-6 max-w-3xl text-lg leading-8 text-slate-600">
                 Research Trend helps students, lecturers, and researchers
                 explore academic papers, monitor topic momentum, and keep useful
                 work in one focused workspace.
@@ -217,9 +226,9 @@ export default function LandingPage() {
 
         <section
           id={landingSectionLinks[1].id}
-          className="scroll-mt-24 px-6 py-12"
+          className="scroll-mt-24 px-6 py-12 lg:px-10 2xl:px-14"
         >
-          <div className="mx-auto grid max-w-7xl gap-4 md:grid-cols-3">
+          <div className="mx-auto grid max-w-[1600px] gap-6 md:grid-cols-3">
             {highlights.map((item) => {
               const Icon = item.icon;
 

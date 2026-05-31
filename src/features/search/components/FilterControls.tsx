@@ -98,7 +98,7 @@ export function MultiSelectFilter({
 
   return (
     <div className="space-y-2">
-      <span className="block text-[10px] font-extrabold uppercase tracking-[0.28em] text-slate-600">
+      <span className="block text-[10px] font-extrabold uppercase tracking-[0.28em] text-black">
         {label}
       </span>
 
@@ -109,28 +109,28 @@ export function MultiSelectFilter({
         data-search-multiselect="true"
         onToggle={handleDetailsToggle}
       >
-        <summary className="flex h-10 cursor-pointer list-none items-center justify-between rounded-lg border border-slate-300 bg-white px-3 text-sm font-semibold text-slate-800 outline-none transition hover:border-emerald-700">
+        <summary className="flex h-10 cursor-pointer list-none items-center justify-between rounded-lg border border-slate-400 bg-white px-3 text-sm font-semibold text-black outline-none transition hover:border-[#15803D]">
           <span className="truncate">{selectedOptionLabel}</span>
-          <ChevronDown className="h-4 w-4 text-slate-600 transition group-open:rotate-180" />
+          <ChevronDown className="h-4 w-4 text-black transition group-open:rotate-180" />
         </summary>
 
-        <div className="absolute left-0 top-full z-50 mt-2 w-full min-w-0 max-w-full overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl">
-          <div className="border-b border-slate-200 bg-slate-50/80 p-2">
-            <p className="mb-1 px-1 text-[10px] font-extrabold uppercase tracking-[0.2em] text-slate-600">
+        <div className="absolute left-0 top-full z-50 mt-2 w-full min-w-0 max-w-full overflow-hidden rounded-xl border border-slate-300 bg-white shadow-xl">
+          <div className="border-b border-slate-300 bg-slate-50/80 p-2">
+            <p className="mb-1 px-1 text-[10px] font-extrabold uppercase tracking-[0.2em] text-black">
               Search
             </p>
-            <div className="flex h-9 items-center gap-2 rounded-lg border border-slate-300 bg-white px-2">
-              <Search className="h-4 w-4 text-slate-500" />
+            <div className="flex h-9 items-center gap-2 rounded-lg border border-slate-400 bg-white px-2">
+              <Search className="h-4 w-4 text-black" />
               <input
                 type="search"
                 value={optionKeyword}
                 onChange={handleOptionKeywordChange}
                 placeholder={`Search ${label.toLowerCase()}`}
-                className="min-w-0 flex-1 bg-transparent text-sm font-semibold text-slate-800 outline-none placeholder:text-slate-500"
+                className="min-w-0 flex-1 bg-transparent text-sm font-semibold text-black outline-none placeholder:text-black"
               />
             </div>
             {isLoadingOptions && (
-              <p className="px-1 pt-1 text-xs font-semibold text-slate-500">
+              <p className="px-1 pt-1 text-xs font-semibold text-black">
                 Loading options...
               </p>
             )}
@@ -144,30 +144,30 @@ export function MultiSelectFilter({
               visibleOptions.map((option) => (
                 <label
                   key={option}
-                  className="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-2 text-sm font-semibold text-slate-700 hover:bg-emerald-50 hover:text-emerald-900"
+                  className="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-2 text-sm font-semibold text-black hover:bg-[#A3E635]/20 hover:text-[#15803D]"
                 >
                   <input
                     type="checkbox"
                     value={option}
                     checked={selected.includes(option)}
                     onChange={handleOptionCheckboxChange}
-                    className="h-4 w-4 rounded border-slate-300 accent-emerald-900"
+                    className="h-4 w-4 rounded border-slate-400 accent-[#14532D]"
                   />
                   <span className="min-w-0 flex-1 truncate">{option}</span>
                 </label>
               ))
             ) : isLoadingOptions ? (
-              <p className="px-2 py-3 text-sm font-semibold text-slate-500">
+              <p className="px-2 py-3 text-sm font-semibold text-black">
                 Searching...
               </p>
             ) : (
-              <p className="px-2 py-3 text-sm font-semibold text-slate-500">
+              <p className="px-2 py-3 text-sm font-semibold text-black">
                 No options match "{optionKeyword}"
               </p>
             )}
 
             {isLoadingMoreOptions && (
-              <p className="px-2 py-3 text-sm font-semibold text-slate-500">
+              <p className="px-2 py-3 text-sm font-semibold text-black">
                 Loading more options...
               </p>
             )}
@@ -194,16 +194,16 @@ export function CheckboxFilter({
 
   return (
     <label className="space-y-2">
-      <span className="block text-[10px] font-extrabold uppercase tracking-[0.28em] text-slate-600">
+      <span className="block text-[10px] font-extrabold uppercase tracking-[0.28em] text-black">
         {label}
       </span>
 
-      <span className="flex h-10 items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 text-sm font-semibold text-slate-800">
+      <span className="flex h-10 items-center gap-2 rounded-lg border border-slate-400 bg-white px-3 text-sm font-semibold text-black">
         <input
           type="checkbox"
           checked={checked}
           onChange={handleCheckboxChange}
-          className="h-4 w-4 rounded border-slate-300 accent-emerald-900"
+          className="h-4 w-4 rounded border-slate-400 accent-[#14532D]"
         />
         {checkboxLabel}
       </span>
@@ -218,8 +218,8 @@ export function YearFilter({ filters, updateFilter }: YearFilterProps) {
       ? `Year must be ${minimumYear}-${currentYear} and From cannot be greater than To.`
       : `Year must be ${minimumYear}-${currentYear}.`;
   const inputClassName = [
-    "h-9 rounded-md border bg-white px-2 text-sm font-semibold text-slate-800 outline-none transition focus:border-emerald-800",
-    yearRangeIsInvalid ? "border-red-400" : "border-slate-300",
+    "h-9 rounded-md border bg-white px-2 text-sm font-semibold text-black outline-none transition focus:border-[#15803D]",
+    yearRangeIsInvalid ? "border-red-500" : "border-slate-400",
   ].join(" ");
 
   function handleYearModeClick(event: MouseEvent<HTMLButtonElement>) {
@@ -243,11 +243,11 @@ export function YearFilter({ filters, updateFilter }: YearFilterProps) {
 
   return (
     <label className="space-y-2">
-      <span className="block text-[10px] font-extrabold uppercase tracking-[0.28em] text-slate-600">
+      <span className="block text-[10px] font-extrabold uppercase tracking-[0.28em] text-black">
         Year
       </span>
 
-      <div className="rounded-lg border border-slate-300 bg-white p-2">
+      <div className="rounded-lg border border-slate-400 bg-white p-2">
         <div className="mb-2 grid grid-cols-2 gap-1 rounded-md bg-slate-100 p-1">
           {(["range", "exact"] as const).map((mode) => (
             <button
@@ -258,8 +258,8 @@ export function YearFilter({ filters, updateFilter }: YearFilterProps) {
               className={[
                 "rounded px-2 py-1.5 text-xs font-bold capitalize transition",
                 filters.yearMode === mode
-                  ? "bg-white text-emerald-900 shadow-sm"
-                  : "text-slate-600 hover:text-slate-950",
+                  ? "bg-white text-[#14532D] shadow-sm"
+                  : "text-black hover:text-black",
               ].join(" ")}
             >
               {mode}
@@ -316,8 +316,8 @@ export function YearFilter({ filters, updateFilter }: YearFilterProps) {
 export function CitationFilter({ filters, updateFilter }: CitationFilterProps) {
   const citationRangeIsInvalid = hasInvalidCitationRange(filters);
   const rangeInputClassName = [
-    "h-9 rounded-md border px-2 text-sm font-semibold text-slate-800 outline-none focus:border-emerald-800",
-    citationRangeIsInvalid ? "border-red-400" : "border-slate-300",
+    "h-9 rounded-md border px-2 text-sm font-semibold text-black outline-none focus:border-[#15803D]",
+    citationRangeIsInvalid ? "border-red-500" : "border-slate-400",
   ].join(" ");
 
   function handleCitationModeClick(event: MouseEvent<HTMLButtonElement>) {
@@ -342,11 +342,11 @@ export function CitationFilter({ filters, updateFilter }: CitationFilterProps) {
 
   return (
     <div className="space-y-2">
-      <span className="block text-[10px] font-extrabold uppercase tracking-[0.28em] text-slate-600">
+      <span className="block text-[10px] font-extrabold uppercase tracking-[0.28em] text-black">
         Citation Count
       </span>
 
-      <div className="rounded-lg border border-slate-300 bg-white p-2">
+      <div className="rounded-lg border border-slate-400 bg-white p-2">
         <div className="mb-2 grid grid-cols-2 gap-1 rounded-md bg-slate-100 p-1">
           {(["range", "exact"] as const).map((mode) => (
             <button
@@ -357,8 +357,8 @@ export function CitationFilter({ filters, updateFilter }: CitationFilterProps) {
               className={[
                 "rounded px-2 py-1.5 text-xs font-bold capitalize transition",
                 filters.citationMode === mode
-                  ? "bg-white text-emerald-900 shadow-sm"
-                  : "text-slate-600 hover:text-slate-950",
+                  ? "bg-white text-[#14532D] shadow-sm"
+                  : "text-black hover:text-black",
               ].join(" ")}
             >
               {mode}
@@ -403,7 +403,7 @@ export function CitationFilter({ filters, updateFilter }: CitationFilterProps) {
             onChange={handleCitationExactChange}
             placeholder="Exact count"
             aria-label="Exact citation count"
-            className="h-9 w-full rounded-md border border-slate-300 px-2 text-sm font-semibold text-slate-800 outline-none focus:border-emerald-800"
+            className="h-9 w-full rounded-md border border-slate-400 px-2 text-sm font-semibold text-black outline-none focus:border-[#15803D]"
           />
         )}
       </div>
@@ -422,30 +422,30 @@ export function OrcidFilter({ value, updateFilter }: OrcidFilterProps) {
 
   return (
     <div className="space-y-2">
-      <span className="block text-[10px] font-extrabold uppercase tracking-[0.28em] text-slate-600">
+      <span className="block text-[10px] font-extrabold uppercase tracking-[0.28em] text-black">
         Indexed by ORCID
       </span>
 
-      <div className="flex h-10 items-center overflow-visible rounded-lg border border-slate-300 bg-white text-sm font-semibold text-slate-800">
-        <div className="flex h-full items-center gap-2 border-r border-slate-200 px-3">
-          <Tag className="h-4 w-4 text-slate-600" />
+      <div className="flex h-10 items-center overflow-visible rounded-lg border border-slate-400 bg-white text-sm font-semibold text-black">
+        <div className="flex h-full items-center gap-2 border-r border-slate-300 px-3">
+          <Tag className="h-4 w-4 text-black" />
           Work
         </div>
 
         <details className="group relative h-full">
-          <summary className="flex h-full min-w-20 cursor-pointer list-none items-center justify-center gap-1 bg-slate-100 px-3 text-slate-900 shadow-sm">
+          <summary className="flex h-full min-w-20 cursor-pointer list-none items-center justify-center gap-1 bg-slate-100 px-3 text-black shadow-sm">
             {value || "is"}
             <ChevronDown className="h-4 w-4 transition group-open:rotate-180" />
           </summary>
 
-          <div className="absolute left-0 z-30 mt-1 w-36 rounded-xl border border-slate-200 bg-white p-1.5 shadow-xl">
+          <div className="absolute left-0 z-30 mt-1 w-36 rounded-xl border border-slate-300 bg-white p-1.5 shadow-xl">
             {(["is", "is not"] as const).map((condition) => (
               <button
                 key={condition}
                 type="button"
                 value={condition}
                 onClick={handleOrcidConditionClick}
-                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-semibold text-slate-700 hover:bg-emerald-50 hover:text-emerald-900"
+                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-semibold text-black hover:bg-[#A3E635]/20 hover:text-[#15803D]"
               >
                 <span className="h-4 w-4">
                   {value === condition && <Check className="h-4 w-4" />}

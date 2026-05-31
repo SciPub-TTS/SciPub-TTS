@@ -25,14 +25,14 @@ export default function MainHeaderAccount() {
       <div className="flex items-center gap-2">
         <Link
           to={ROUTES.LOGIN}
-          className="flex h-10 min-w-24 items-center justify-center rounded-lg border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-sky-500 hover:bg-sky-50 hover:text-sky-700"
+          className="flex h-10 min-w-24 items-center justify-center rounded-lg border border-black bg-white px-4 text-sm font-semibold text-black shadow-sm transition hover:border-[#059669] hover:bg-emerald-100 hover:text-[#059669]"
         >
           Login
         </Link>
 
         <Link
           to={ROUTES.REGISTER}
-          className="flex h-10 min-w-24 items-center justify-center rounded-lg border border-emerald-600 bg-emerald-600 px-4 text-sm font-semibold text-white shadow-sm transition hover:border-emerald-700 hover:bg-emerald-700"
+          className="flex h-10 min-w-24 items-center justify-center rounded-lg border border-emerald-500 bg-emerald-600 px-4 text-sm font-semibold text-white shadow-sm transition hover:border-emerald-800 hover:bg-emerald-800"
         >
           Register
         </Link>
