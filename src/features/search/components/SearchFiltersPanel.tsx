@@ -265,9 +265,16 @@ function SearchFilterGrid({
       <MultiSelectFilter
         filterKey="country"
         label="Country"
+        hasMoreOptions={hasMoreFilterOptions.country}
+        isLoadingOptions={isLoadingFilterOptions.country}
+        isLoadingMoreOptions={isLoadingMoreFilterOptions.country}
         options={filterOptions.country}
         selected={filters.country}
         onChange={handleCountryChange}
+        onLoadMoreOptions={() => onLoadMoreFilterOptions("country")}
+        onSearchKeywordChange={(keyword) =>
+          onFilterOptionSearch("country", keyword)
+        }
       />
 
       {showAllFilters && (
@@ -381,14 +388,4 @@ function FilterActions({
     </div>
   );
 }
-
-/*
-SEARCH_FILE_NOTE
-Syntax su dung:
-- Component composition + typed props.
-File nay lam gi:
-- Render 12 filter + actions Apply/Reset + summary filter.
-Flow chay:
-- Nhan state/handlers tu hook -> doi filter -> callback update state.
-*/
 

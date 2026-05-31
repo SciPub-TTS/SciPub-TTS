@@ -4,6 +4,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { ROUTES } from "@/app/router";
 
 type BreadcrumbBarProps = {
+  homePath?: string;
   variant?: "light" | "dark";
 };
 
@@ -34,6 +35,7 @@ function getBreadcrumbItems(pathname: string) {
 }
 
 export default function BreadcrumbBar({
+  homePath = ROUTES.HOME,
   variant = "light",
 }: BreadcrumbBarProps) {
   const location = useLocation();
@@ -42,17 +44,17 @@ export default function BreadcrumbBar({
   const breadcrumbItems = getBreadcrumbItems(location.pathname);
 
   const isDark = variant === "dark";
-  const textClass = isDark ? "text-slate-200" : "text-slate-900";
-  const mutedClass = isDark ? "text-slate-500" : "text-slate-400";
+  const textClass = isDark ? "text-slate-100" : "text-slate-950";
+  const mutedClass = isDark ? "text-slate-400" : "text-slate-500";
   const homeLinkClass = isDark
-    ? "text-slate-500 hover:text-slate-200"
-    : "text-slate-400 hover:text-slate-700";
+    ? "text-emerald-300 hover:text-cyan-200"
+    : "text-emerald-800 hover:text-sky-700";
   const boxClass = isDark
-    ? "border-slate-800 bg-slate-900"
-    : "border-slate-200 bg-white";
+    ? "border-slate-600 bg-slate-900"
+    : "border-slate-300 bg-white";
   const controlClass = isDark
-    ? "border-slate-800 bg-slate-900 text-slate-500 hover:text-slate-200"
-    : "border-slate-200 bg-white text-slate-300 hover:text-slate-600";
+    ? "border-slate-600 bg-slate-900 text-slate-300 hover:border-cyan-300 hover:text-cyan-200"
+    : "border-slate-300 bg-white text-slate-600 hover:border-sky-500 hover:text-sky-700";
 
   const currentLabel =
     breadcrumbItems.length > 0
@@ -75,7 +77,7 @@ export default function BreadcrumbBar({
         className={`flex min-w-0 flex-1 items-center gap-3 rounded-lg border px-4 py-2.5 ${boxClass}`}
       >
         <Link
-          to={ROUTES.HOME}
+          to={homePath}
           aria-label="Go to home"
           className={`flex h-5 w-5 shrink-0 items-center justify-center transition ${homeLinkClass}`}
         >

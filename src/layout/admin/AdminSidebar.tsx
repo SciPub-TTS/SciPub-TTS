@@ -1,5 +1,5 @@
 import { LayoutDashboard, LogOut, Users } from "lucide-react";
-import { NavLink, useNavigate } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 
 import { ROUTES } from "@/app/router";
 import logoImage from "@/assets/images/logo.png";
@@ -43,8 +43,11 @@ export default function AdminSidebar() {
   }
 
   return (
-    <aside className="sticky top-0 flex h-screen w-56 shrink-0 flex-col bg-[#03120a] text-slate-400">
-      <div className="flex items-center gap-3 border-b border-white/5 px-4 py-5">
+    <aside className="sticky top-0 flex h-screen w-56 shrink-0 flex-col bg-[#03120a] text-slate-200">
+      <Link
+        to={ROUTES.HOME}
+        className="flex items-center gap-3 border-b border-emerald-400/20 px-4 py-5 transition hover:bg-emerald-500/10"
+      >
         <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-lg bg-white shadow-sm">
           <img
             src={logoImage}
@@ -54,14 +57,14 @@ export default function AdminSidebar() {
         </div>
         <div className="min-w-0">
           <h1 className="truncate text-sm font-bold text-white">Owlreka</h1>
-          <p className="mt-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+          <p className="mt-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-400">
             Admin Console
           </p>
         </div>
-      </div>
+      </Link>
 
       <div className="flex-1 px-2.5 py-5">
-        <p className="mb-2 px-2 text-[10px] font-bold uppercase tracking-wider text-slate-600">
+        <p className="mb-2 px-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">
           Admin
         </p>
 
@@ -77,8 +80,8 @@ export default function AdminSidebar() {
                   [
                     "flex items-center gap-3 rounded-lg px-2.5 py-2 text-xs font-medium transition",
                     isActive
-                      ? "bg-emerald-600 text-white shadow-sm"
-                      : "text-slate-400 hover:bg-white/5 hover:text-white",
+                      ? "bg-emerald-600 text-white shadow-sm ring-1 ring-emerald-300/40"
+                      : "text-slate-300 hover:bg-emerald-500/15 hover:text-emerald-100",
                   ].join(" ")
                 }
               >
@@ -91,8 +94,8 @@ export default function AdminSidebar() {
       </div>
 
       {currentUser && (
-        <div className="border-t border-white/5 px-2.5 py-4">
-          <div className="mb-4 flex items-center gap-3 rounded-lg bg-white/[0.06] px-2.5 py-2.5">
+        <div className="border-t border-emerald-400/20 px-2.5 py-4">
+          <div className="mb-4 flex items-center gap-3 rounded-lg border border-white/10 bg-white/[0.08] px-2.5 py-2.5">
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-xs font-bold text-white">
               {initials}
             </div>
@@ -100,7 +103,7 @@ export default function AdminSidebar() {
               <p className="truncate text-xs font-bold text-white">
                 {displayName}
               </p>
-              <p className="mt-0.5 truncate text-[10px] text-slate-500">
+              <p className="mt-0.5 truncate text-[10px] text-slate-400">
                 Admin
               </p>
             </div>
@@ -109,7 +112,7 @@ export default function AdminSidebar() {
           <button
             type="button"
             onClick={handleLogout}
-            className="flex w-full items-center gap-3 rounded-lg px-2.5 py-2 text-left text-xs font-medium text-slate-400 transition hover:bg-white/5 hover:text-white"
+            className="flex w-full items-center gap-3 rounded-lg px-2.5 py-2 text-left text-xs font-medium text-slate-300 transition hover:bg-rose-500/15 hover:text-rose-100"
           >
             <LogOut className="h-4 w-4 shrink-0" />
             <span className="truncate">Log out</span>

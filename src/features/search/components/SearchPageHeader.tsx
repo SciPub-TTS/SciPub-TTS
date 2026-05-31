@@ -29,13 +29,3 @@ export function SearchPageHeader({
   );
 }
 
-/*
-SEARCH_FILE_NOTE
-Syntax su dung:
-- Presentational component nhan props.
-File nay lam gi:
-- Hien thi tieu de trang va nut Save this search.
-Flow chay:
-- Nhan callback onSaveSearch tu component cha de xu ly khi click.
-*/
-

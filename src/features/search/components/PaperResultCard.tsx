@@ -205,13 +205,3 @@ function PaperResultCardComponent({ paper }: PaperResultCardProps) {
 
 export const PaperResultCard = memo(PaperResultCardComponent);
 
-/*
-SEARCH_FILE_NOTE
-Syntax su dung:
-- Typed props, JSX render card.
-File nay lam gi:
-- Hien thi chi tiet 1 paper result (title, authors, citations, doi, pdf, tags).
-Flow chay:
-- SearchResults map tung paper va truyen vao card nay.
-*/
-

@@ -1,7 +1,8 @@
 import { Check, ChevronDown, Search, Tag } from "lucide-react";
 import type { ChangeEvent, MouseEvent, UIEvent } from "react";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useRef, useState } from "react";
 
+import { SEARCH_MIN_CITATION } from "@/features/search/constants";
 import { mockSearchYearRange } from "@/features/search/services";
 import type {
   CheckboxFilterProps,
@@ -32,26 +33,16 @@ export function MultiSelectFilter({
 }: MultiSelectFilterProps) {
   const [optionKeyword, setOptionKeyword] = useState("");
   const detailsRef = useRef<HTMLDetailsElement>(null);
-  const selectedOptionLabel =
-    selected.length > 0 ? `${selected.length} selected` : "Any";
+  let selectedOptionLabel = "Any";
+  if (selected.length > 0) {
+    selectedOptionLabel = `${selected.length} selected`;
+  }
 
-  // Filter option labels locally while the user types in the option search box.
-  const visibleOptions = useMemo(() => {
-    const normalizedKeyword = optionKeyword.trim().toLowerCase();
-
-    if (!normalizedKeyword) {
-      return options;
-    }
-
-    return options.filter((option) =>
-      option.toLowerCase().startsWith(normalizedKeyword),
-    );
-  }, [optionKeyword, options]);
+  const visibleOptions = getVisibleOptions(options, optionKeyword);
 
   function toggleOption(option: string) {
-    // If the option already exists, remove it; otherwise append it.
     if (selected.includes(option)) {
-      onChange(selected.filter((item) => item !== option));
+      onChange(removeSelectedOption(selected, option));
       return;
     }
 
@@ -86,7 +77,7 @@ export function MultiSelectFilter({
     }
   }
 
-  const handleDetailsToggle = useCallback(() => {
+  function handleDetailsToggle() {
     const currentDropdown = detailsRef.current;
 
     if (!currentDropdown?.open) {
@@ -103,7 +94,7 @@ export function MultiSelectFilter({
         dropdown.open = false;
       }
     });
-  }, []);
+  }
 
   return (
     <div className="space-y-2">
@@ -380,7 +371,7 @@ export function CitationFilter({ filters, updateFilter }: CitationFilterProps) {
             <div className="grid grid-cols-2 gap-2">
               <input
                 type="number"
-                min="0"
+                min={SEARCH_MIN_CITATION}
                 value={filters.citationMin}
                 onChange={handleCitationMinChange}
                 placeholder="Min"
@@ -389,7 +380,7 @@ export function CitationFilter({ filters, updateFilter }: CitationFilterProps) {
               />
               <input
                 type="number"
-                min="0"
+                min={SEARCH_MIN_CITATION}
                 value={filters.citationMax}
                 onChange={handleCitationMaxChange}
                 placeholder="Max"
@@ -407,7 +398,7 @@ export function CitationFilter({ filters, updateFilter }: CitationFilterProps) {
         ) : (
           <input
             type="number"
-            min="0"
+            min={SEARCH_MIN_CITATION}
             value={filters.citationExact}
             onChange={handleCitationExactChange}
             placeholder="Exact count"
@@ -471,13 +462,33 @@ export function OrcidFilter({ value, updateFilter }: OrcidFilterProps) {
   );
 }
 
-/*
-SEARCH_FILE_NOTE
-Syntax su dung:
-- Reusable controls, controlled inputs, local state cho search keyword trong option.
-File nay lam gi:
-- Dinh nghia MultiSelect/Checkbox/Year/Citation/ORCID controls.
-Flow chay:
-- SearchFiltersPanel goi control nay; control emit onChange de cap nhat filter state.
-*/
+function getVisibleOptions(options: string[], keyword: string) {
+  const normalizedKeyword = keyword.trim().toLowerCase();
+
+  if (!normalizedKeyword) {
+    return options;
+  }
+
+  const visibleOptions: string[] = [];
+
+  for (const option of options) {
+    if (option.toLowerCase().startsWith(normalizedKeyword)) {
+      visibleOptions.push(option);
+    }
+  }
+
+  return visibleOptions;
+}
+
+function removeSelectedOption(selected: string[], optionToRemove: string) {
+  const nextSelected: string[] = [];
+
+  for (const option of selected) {
+    if (option !== optionToRemove) {
+      nextSelected.push(option);
+    }
+  }
+
+  return nextSelected;
+}
 

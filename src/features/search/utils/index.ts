@@ -1,5 +1,9 @@
+import {
+  SEARCH_MIN_CITATION,
+  SEARCH_VISIBLE_SAVED_SEARCH_LIMIT,
+} from "../constants";
 import { mockSearchYearRange } from "../services";
-import type { PaperResult, SavedSearch, SearchFilters } from "../types";
+import type { SavedSearch, SearchFilters } from "../types";
 
 const { currentYear, minimumYear } = mockSearchYearRange;
 
@@ -182,44 +186,18 @@ export function getVisibleSearchSuggestions(
 
   // Empty keyword shows all saved searches; typed keyword filters them.
   if (normalizedKeyword) {
-    matchedSearches = savedSearches.filter((savedSearch) =>
-      savedSearchMatchesKeyword(savedSearch, normalizedKeyword),
-    );
+    matchedSearches = [];
+
+    for (const savedSearch of savedSearches) {
+      if (savedSearchMatchesKeyword(savedSearch, normalizedKeyword)) {
+        matchedSearches.push(savedSearch);
+      }
+    }
   }
 
-  return showAll ? matchedSearches : matchedSearches.slice(0, 5);
-}
-
-export function filterPaperResults(papers: PaperResult[], keyword: string) {
-  const normalizedKeyword = keyword.trim().toLowerCase();
-
-  if (!normalizedKeyword) {
-    return papers;
-  }
-
-  return papers.filter((paper) => paperMatchesKeyword(paper, normalizedKeyword));
-}
-
-export function sortPaperResults(
-  papers: PaperResult[],
-  selectedSort: string,
-) {
-  // Copy before sorting because Array.sort mutates the original array.
-  const sortedPapers = [...papers];
-
-  if (selectedSort === "Most cited") {
-    return sortPapersByCitationCount(sortedPapers);
-  }
-
-  if (selectedSort === "Latest") {
-    return sortPapersByPublishedYear(sortedPapers);
-  }
-
-  if (selectedSort === "Trending") {
-    return sortPapersByTrendScore(sortedPapers);
-  }
-
-  return sortPapersByCitationCount(sortedPapers);
+  return showAll
+    ? matchedSearches
+    : matchedSearches.slice(0, SEARCH_VISIBLE_SAVED_SEARCH_LIMIT);
 }
 
 function hasYearFilter(filters: SearchFilters) {
@@ -259,7 +237,7 @@ function addCitationSummary(summary: string[], filters: SearchFilters) {
   }
 
   if (filters.citationMode === "range" && hasCitationFilter(filters)) {
-    const citationMin = filters.citationMin || 0;
+    const citationMin = filters.citationMin || SEARCH_MIN_CITATION;
     const citationMax = filters.citationMax || "max";
 
     summary.push(`Citation: ${citationMin}-${citationMax}`);
@@ -285,58 +263,4 @@ function savedSearchMatchesKeyword(
 ) {
   return savedSearch.query.toLowerCase().includes(normalizedKeyword);
 }
-
-function paperMatchesKeyword(paper: PaperResult, normalizedKeyword: string) {
-  const searchableFields = [paper.title, paper.abstract, paper.fullText];
-
-  // A manual loop is easier to step through than nested array callbacks.
-  for (const searchableText of searchableFields) {
-    if (searchableText.toLowerCase().includes(normalizedKeyword)) {
-      return true;
-    }
-  }
-
-  return false;
-}
-
-function sortPapersByCitationCount(papers: PaperResult[]) {
-  return papers.sort((firstPaper, secondPaper) => {
-    return secondPaper.citations - firstPaper.citations;
-  });
-}
-
-function sortPapersByPublishedYear(papers: PaperResult[]) {
-  return papers.sort((firstPaper, secondPaper) => {
-    return secondPaper.year - firstPaper.year;
-  });
-}
-
-function sortPapersByTrendScore(papers: PaperResult[]) {
-  return papers.sort((firstPaper, secondPaper) => {
-    const firstTrendScore = getPaperTrendScore(firstPaper);
-    const secondTrendScore = getPaperTrendScore(secondPaper);
-
-    return secondTrendScore - firstTrendScore;
-  });
-}
-
-function getPaperTrendScore(paper: PaperResult) {
-  let trendScore = paper.growthPercent;
-
-  if (paper.isTrendTopic) {
-    trendScore += 100;
-  }
-
-  return trendScore;
-}
-
-/*
-SEARCH_FILE_NOTE
-Syntax su dung:
-- File index trong module search dung de gom export hoac constants/types.
-File nay lam gi:
-- Giu vai tro diem tap trung import/export trong tung folder.
-Flow chay:
-- Cac file khac import tu index de gon duong dan va de maintain.
-*/
 

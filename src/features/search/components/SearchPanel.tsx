@@ -5,6 +5,7 @@ import {
   mockSearchTabs,
   mockSuggestedSearches,
 } from "@/features/search/services";
+import { SEARCH_VISIBLE_SAVED_SEARCH_LIMIT } from "@/features/search/constants";
 import type {
   SavedSearchButtonProps,
   SavedSearchDropdownProps,
@@ -216,7 +217,8 @@ function SavedSearchDropdown({
   onSavedSearchSelect,
   onToggleSearchSuggestions,
 }: SavedSearchDropdownProps) {
-  const hasMoreThanFiveSuggestions = matchedSavedSearchCount > 5;
+  const hasMoreThanFiveSuggestions =
+    matchedSavedSearchCount > SEARCH_VISIBLE_SAVED_SEARCH_LIMIT;
   const hasVisibleSearchSuggestions = visibleSearchSuggestions.length > 0;
   const emptySuggestionMessage = `No saved searches match "${searchQuery}".`;
 
@@ -339,14 +341,4 @@ function SuggestedSearchList({ onSelect }: SuggestedSearchListProps) {
     </div>
   );
 }
-
-/*
-SEARCH_FILE_NOTE
-Syntax su dung:
-- Controlled input, typed props, event handlers.
-File nay lam gi:
-- Chua o search input, saved-search dropdown, suggested searches va filters panel.
-Flow chay:
-- User nhap/chon/xoa -> callback len hook -> hook goi API va cap nhat state.
-*/
 
