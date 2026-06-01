@@ -1,13 +1,15 @@
-import {Cloud, Filter} from "lucide-react";
+import {CircleQuestionMark, Cloud, Filter} from "lucide-react";
 import {type FilterData, MENU_FILTER} from "@/features/dashboard/constants/filter-data.ts";
 
 export default function FilterPart(){
     return(
         <div className="rounded-lg border border-slate-200 bg-white px-8 py-3
-        flex flex-col overflow-y-auto gap-3 justify-start items-end">
+        flex flex-col overflow-y-auto gap-3 justify-start items-end relative">
+            <CircleQuestionMark className="absolute mr-[77vw] mt-[12vh] cursor-pointer"/>
+
             <div className="flex flex-row overflow-y-auto justify-between items-end w-full">
                 <div className="rounded-lg border border-slate-200 bg-gray-50
-            flex flex-row gap-2 w-fit px-2 py-1 h-fit">
+            flex flex-row gap-2 w-fit px-2 py-1 h-fit cursor-pointer">
                     <Filter width={16}/> Filters
                 </div>
 

@@ -1,12 +1,6 @@
 import {BarChart3, CalendarPlus, FileText, Layers, Quote, RefreshCw, Sparkles, TrendingUp} from "lucide-react";
+import type {MetricData} from "@/features/dashboard/types/metric.ts";
 
-export type MetricData = {
-    title: string;
-    className?: string;
-    value: string;
-    changes: string
-    icon: React.ComponentType<{ className?: string }>;
-}
 
 export const MENU_METRICS: MetricData[] = [
     {

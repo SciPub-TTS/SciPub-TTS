@@ -1,12 +1,4 @@
-export type TopicData = {
-    name: string;
-    works: number;
-    citations: number;
-    score: number;
-    change: number;
-    state: string;
-    isFollowed: boolean;
-}
+import type {TopicData} from "@/features/dashboard/types/topic.ts";
 
 export const LIST_TOPICS: TopicData[] = [
     {
