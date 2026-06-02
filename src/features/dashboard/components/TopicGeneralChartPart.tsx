@@ -14,10 +14,10 @@ import {
 } from "recharts";
 import {useState} from "react";
 import {
-    publicationTrend,
     topicGrowthMetrics,
     topicTrend
 } from "@/features/dashboard/constants/topic-data.ts";
+import {usePublicationTrend} from "@/features/dashboard/hooks/usePublicationTrend.ts";
 
 export default function TopicGeneralChartPart(){
     return(
@@ -34,6 +34,8 @@ export default function TopicGeneralChartPart(){
 }
 
 function GeneralPart(){
+    const {publicationTrend} = usePublicationTrend();
+
     return(
         <div className="rounded-lg border border-slate-200 bg-white p-4
         flex flex-col gap-2 w-full">

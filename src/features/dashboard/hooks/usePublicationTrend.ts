@@ -1,0 +1,33 @@
+import {useEffect, useState} from "react";
+import type {PublicationTrend} from "@/features/dashboard/types/publication.ts";
+import {statisticService} from "@/features/dashboard/services/statistic-service.ts";
+
+export function usePublicationTrend() {
+    const [loading, setLoading] = useState<boolean>(false);
+    const [publicationTrend, setPublicationTrend] = useState<PublicationTrend[]>([]);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        const fetchPublicationTrend = async () =>{
+            setLoading(true);
+            setError(null);
+
+            try {
+                const data:PublicationTrend[] = await statisticService.getPublicationTrend();
+                setPublicationTrend(data);
+            }catch (err) {
+                setError(
+                    err instanceof Error
+                        ? err.message
+                        : "Failed to load publication trend"
+                );
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchPublicationTrend();
+    })
+
+    return {loading, publicationTrend, error};
+}
