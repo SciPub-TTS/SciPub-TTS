@@ -80,6 +80,7 @@ function GeneralPart(){
 
 function EmergingPart(){
     const [line, setLine] = useState<string | null>(null);
+    const [showLegend, setShowLegend] = useState(true);
 
     const topicKeys = Object.keys(topicTrend[0]).filter(
         key => key !== "name"
@@ -110,6 +111,14 @@ function EmergingPart(){
                         Temporal changes in activity across emerging topics
                     </h2>
                 </div>
+
+                <button
+                    onClick={() => setShowLegend(prev => !prev)}
+                    className="px-3 text-sm border rounded-md border-blue-500
+                    bg-blue-100 font-semibold cursor-pointer"
+                >
+                    {showLegend ? "Hide Legend" : "Show Legend"}
+                </button>
             </div>
 
             <LineChart
@@ -143,10 +152,13 @@ function EmergingPart(){
                 <XAxis dataKey="name" />
                 <Tooltip />
                 <YAxis width="auto" label={{ position: 'insideLeft', angle: -90 }} />
-                <Legend align="right"
+                {showLegend && (
+                    <Legend
+                        align="right"
                         onMouseEnter={(e) => setLine(e.dataKey as string)}
                         onMouseLeave={() => setLine(null)}
-                />
+                    />
+                )}
             </LineChart>
         </div>
     )
