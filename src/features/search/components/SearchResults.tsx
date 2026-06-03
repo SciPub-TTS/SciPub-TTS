@@ -1,4 +1,4 @@
-import type { MouseEvent } from "react";
+import type { MouseEvent, RefObject } from "react";
 import { memo, useEffect, useRef } from "react";
 
 import { mockResultSortOptions } from "@/features/search/services";
@@ -13,7 +13,9 @@ import { PaperResultCard } from "./PaperResultCard";
 
 function SearchResultsComponent({
   appliedSearchQuery,
+  autoLoadAnchorIndex,
   canLoadMoreResults,
+  hasSearched,
   isLoadingResults,
   isLoadingMoreResults,
   responseTimeSeconds,
@@ -42,7 +44,7 @@ function SearchResultsComponent({
       },
       {
         root: null,
-        rootMargin: "240px 0px",
+        rootMargin: "0px",
         threshold: 0,
       },
     );
@@ -52,9 +54,25 @@ function SearchResultsComponent({
     return () => {
       observer.disconnect();
     };
-  }, [canLoadMoreResults, isLoadingMoreResults, onLoadMoreResults]);
+  }, [
+    autoLoadAnchorIndex,
+    canLoadMoreResults,
+    isLoadingMoreResults,
+    onLoadMoreResults,
+  ]);
 
-  // Result count is based on the list currently rendered, not the mock summary.
+  if (!hasSearched) {
+    return (
+      <section>
+        <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center">
+          <p className="text-lg font-bold text-slate-900">
+            Enter a keyword or choose filters, then click Search.
+          </p>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section>
       <div className="space-y-4">
@@ -68,7 +86,10 @@ function SearchResultsComponent({
         />
 
         <ResultsList
+          autoLoadAnchorIndex={autoLoadAnchorIndex}
+          hasSearched={hasSearched}
           isLoadingResults={isLoadingResults}
+          lazyLoadAnchorRef={lazyLoadAnchorRef}
           visiblePaperResults={visiblePaperResults}
         />
 
@@ -76,10 +97,6 @@ function SearchResultsComponent({
           <p className="py-2 text-center text-sm font-semibold text-slate-600">
             Loading more results...
           </p>
-        )}
-
-        {canLoadMoreResults && (
-          <div ref={lazyLoadAnchorRef} className="h-1 w-full" />
         )}
       </div>
     </section>
@@ -149,7 +166,15 @@ function ResultsHeader({
   );
 }
 
-function ResultsList({ isLoadingResults, visiblePaperResults }: ResultsListProps) {
+function ResultsList({
+  autoLoadAnchorIndex,
+  hasSearched,
+  isLoadingResults,
+  lazyLoadAnchorRef,
+  visiblePaperResults,
+}: ResultsListProps & {
+  lazyLoadAnchorRef: RefObject<HTMLDivElement | null>;
+}) {
   if (isLoadingResults) {
     return (
       <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center">
@@ -158,8 +183,7 @@ function ResultsList({ isLoadingResults, visiblePaperResults }: ResultsListProps
     );
   }
 
-  // Guard clause keeps the empty state separate from the normal result list.
-  if (visiblePaperResults.length === 0) {
+  if (hasSearched && visiblePaperResults.length === 0) {
     return (
       <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center">
         <p className="text-lg font-bold text-slate-900">
@@ -169,22 +193,26 @@ function ResultsList({ isLoadingResults, visiblePaperResults }: ResultsListProps
     );
   }
 
+  const resultItems = [];
+  for (let index = 0; index < visiblePaperResults.length; index += 1) {
+    if (index === autoLoadAnchorIndex) {
+      resultItems.push(
+        <div
+          key="auto-load-anchor"
+          ref={lazyLoadAnchorRef}
+          className="h-1 w-full"
+        />,
+      );
+    }
+
+    const paper = visiblePaperResults[index];
+    resultItems.push(<PaperResultCard key={paper.id} paper={paper} />);
+  }
+
   return (
     <div className="space-y-4">
-      {visiblePaperResults.map((paper) => (
-        <PaperResultCard key={paper.id} paper={paper} />
-      ))}
+      {resultItems}
     </div>
   );
 }
-
-/*
-SEARCH_FILE_NOTE
-Syntax su dung:
-- memo + useEffect + IntersectionObserver.
-File nay lam gi:
-- Hien thi ket qua search, loading state, va auto-load-more.
-Flow chay:
-- Hook cap danh sach results -> component render; anchor visible thi goi onLoadMoreResults.
-*/
 

@@ -10,6 +10,7 @@ export default function SearchPageContent() {
     activeFilterCount,
     appliedFilterSummary,
     appliedSearchQuery,
+    autoLoadAnchorIndex,
     canLoadMoreResults,
     filterOptions,
     filters,
@@ -31,6 +32,7 @@ export default function SearchPageContent() {
     handleToggleMoreFilters,
     handleToggleSearchSuggestions,
     hasFormError,
+    hasSearched,
     hasMoreFilterOptions,
     isLoadingFilterOptions,
     isLoadingMoreFilterOptions,
@@ -99,7 +101,9 @@ export default function SearchPageContent() {
 
       <SearchResults
         appliedSearchQuery={appliedSearchQuery}
+        autoLoadAnchorIndex={autoLoadAnchorIndex}
         canLoadMoreResults={canLoadMoreResults}
+        hasSearched={hasSearched}
         isLoadingResults={isLoadingResults}
         isLoadingMoreResults={isLoadingMoreResults}
         responseTimeSeconds={responseTimeSeconds}
@@ -112,14 +116,4 @@ export default function SearchPageContent() {
     </section>
   );
 }
-
-/*
-SEARCH_FILE_NOTE
-Syntax su dung:
-- Function component + destructuring state/handlers tu custom hook.
-File nay lam gi:
-- Ghep Header + SearchPanel + SearchResults.
-Flow chay:
-- Lay state/handlers tu useSearchPageState roi truyen props xuong component con.
-*/
 
