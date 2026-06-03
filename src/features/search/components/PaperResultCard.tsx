@@ -225,3 +225,4 @@ function PaperResultCardComponent({ paper }: PaperResultCardProps) {
 }
 
 export const PaperResultCard = memo(PaperResultCardComponent);
+
