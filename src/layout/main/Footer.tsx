@@ -12,6 +12,7 @@ const systemStatusItems = [
     icon: Database,
     label: "Data Source:",
     value: "OpenAlex",
+    href: "https://docs.openalex.org",
     labelClassName: "text-blue-600",
   },
   {
@@ -73,9 +74,20 @@ export default function MainFooter() {
                   >
                     {item.label}
                   </span>
-                  <span className="font-semibold text-slate-700">
-                    {item.value}
-                  </span>
+                  {item.href ? (
+                    <a
+                      href={item.href}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="font-semibold text-slate-700 underline-offset-2 transition hover:text-blue-700 hover:underline"
+                    >
+                      {item.value}
+                    </a>
+                  ) : (
+                    <span className="font-semibold text-slate-700">
+                      {item.value}
+                    </span>
+                  )}
                 </div>
               );
             })}
@@ -109,10 +121,6 @@ export default function MainFooter() {
             &copy; 2026 SJPTTS &mdash; For academic review and demonstration
             purposes.
           </p>
-          <div className="flex items-center gap-2 font-medium text-slate-500">
-            <span className="h-2 w-2 rounded-full bg-emerald-500" />
-            <span>All systems operational</span>
-          </div>
         </div>
       </div>
     </footer>

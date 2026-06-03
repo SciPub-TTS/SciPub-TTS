@@ -49,6 +49,7 @@ export type SearchFilters = {
 export type RemoteOptionFilterKey =
   | "author"
   | "institution"
+  | "country"
   | "award"
   | "source";
 
@@ -268,7 +269,9 @@ export type OrcidFilterProps = {
 
 export type SearchResultsProps = {
   appliedSearchQuery: string;
+  autoLoadAnchorIndex: number;
   canLoadMoreResults: boolean;
+  hasSearched: boolean;
   isLoadingResults: boolean;
   isLoadingMoreResults: boolean;
   responseTimeSeconds: number;
@@ -289,17 +292,9 @@ export type ResultsHeaderProps = {
 };
 
 export type ResultsListProps = {
+  autoLoadAnchorIndex: number;
+  hasSearched: boolean;
   isLoadingResults: boolean;
   visiblePaperResults: PaperResult[];
 };
-
-/*
-SEARCH_FILE_NOTE
-Syntax su dung:
-- File index trong module search dung de gom export hoac constants/types.
-File nay lam gi:
-- Giu vai tro diem tap trung import/export trong tung folder.
-Flow chay:
-- Cac file khac import tu index de gon duong dan va de maintain.
-*/
 

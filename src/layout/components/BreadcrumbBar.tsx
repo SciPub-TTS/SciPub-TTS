@@ -4,6 +4,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { ROUTES } from "@/app/router";
 
 type BreadcrumbBarProps = {
+  homePath?: string;
   variant?: "light" | "dark";
 };
 
@@ -34,6 +35,7 @@ function getBreadcrumbItems(pathname: string) {
 }
 
 export default function BreadcrumbBar({
+  homePath = ROUTES.HOME,
   variant = "light",
 }: BreadcrumbBarProps) {
   const location = useLocation();
@@ -42,17 +44,17 @@ export default function BreadcrumbBar({
   const breadcrumbItems = getBreadcrumbItems(location.pathname);
 
   const isDark = variant === "dark";
-  const textClass = isDark ? "text-slate-200" : "text-slate-900";
-  const mutedClass = isDark ? "text-slate-500" : "text-slate-400";
+  const textClass = isDark ? "text-slate-100" : "text-slate-950";
+  const mutedClass = isDark ? "text-slate-700" : "text-slate-500";
   const homeLinkClass = isDark
-    ? "text-slate-500 hover:text-slate-200"
-    : "text-slate-400 hover:text-slate-700";
+    ? "<text-emerald-4></text-emerald-4>00 hover:text-[#059669]"
+    : "text-emerald-900 hover:text-[#059669]";
   const boxClass = isDark
-    ? "border-slate-800 bg-slate-900"
-    : "border-slate-200 bg-white";
+    ? "border-black bg-slate-900"
+    : "border-black bg-white";
   const controlClass = isDark
-    ? "border-slate-800 bg-slate-900 text-slate-500 hover:text-slate-200"
-    : "border-slate-200 bg-white text-slate-300 hover:text-slate-600";
+    ? "border-black bg-slate-900 text-slate-300 hover:border-[#059669] hover:text-[#059669]"
+    : "border-black bg-white text-slate-600 hover:border-[#059669] hover:text-[#059669]";
 
   const currentLabel =
     breadcrumbItems.length > 0
@@ -75,15 +77,15 @@ export default function BreadcrumbBar({
         className={`flex min-w-0 flex-1 items-center gap-3 rounded-lg border px-4 py-2.5 ${boxClass}`}
       >
         <Link
-          to={ROUTES.HOME}
+          to={homePath}
           aria-label="Go to home"
           className={`flex h-5 w-5 shrink-0 items-center justify-center transition ${homeLinkClass}`}
         >
-          <Home className="h-4 w-4" />
+          <Home className="h-5 w-5" />
         </Link>
 
         {breadcrumbItems.length > 0 && (
-          <ChevronRight className={`h-4 w-4 shrink-0 ${mutedClass}`} />
+          <ChevronRight className={`h-5 w-5 shrink-0 ${mutedClass}`} />
         )}
 
         {breadcrumbItems.length > 1 ? (
@@ -92,7 +94,10 @@ export default function BreadcrumbBar({
               const isLast = index === breadcrumbItems.length - 1;
 
               return (
-                <div key={`${item.label}-${index}`} className="flex items-center gap-3">
+                <div
+                  key={`${item.label}-${index}`}
+                  className="flex items-center gap-3"
+                >
                   {item.path && !isLast ? (
                     <Link
                       to={item.path}
@@ -106,7 +111,9 @@ export default function BreadcrumbBar({
                     </span>
                   )}
                   {!isLast && (
-                    <ChevronRight className={`h-4 w-4 shrink-0 ${mutedClass}`} />
+                    <ChevronRight
+                      className={`h-5 w-5 shrink-0 ${mutedClass}`}
+                    />
                   )}
                 </div>
               );

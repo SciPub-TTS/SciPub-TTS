@@ -8,7 +8,7 @@ import {
   Search,
   User,
 } from "lucide-react";
-import { NavLink, useNavigate } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 
 import { ROUTES } from "@/app/router";
 import logoImage from "@/assets/images/logo.png";
@@ -43,9 +43,10 @@ function getInitials(name: string) {
 export default function MainSidebar() {
   const navigate = useNavigate();
   const currentUser = getCurrentUser();
-  const displayName = currentUser?.fullName ?? "Nguyen Van A";
-  const displayEmail = currentUser?.email ?? "nguyenvana@email.com";
-  const initials = getInitials(displayName) || "NV";
+  const loggedIn = Boolean(currentUser);
+  const displayName = currentUser?.fullName ?? "Guest";
+  const displayEmail = currentUser?.email ?? "Sign in to manage your profile";
+  const initials = getInitials(displayName) || "G";
 
   function handleLogout() {
     clearAuthStorage();
@@ -53,8 +54,11 @@ export default function MainSidebar() {
   }
 
   return (
-    <aside className="sticky top-0 flex h-screen w-56 shrink-0 flex-col bg-[#03120a] text-slate-400">
-      <div className="flex items-center gap-3 border-b border-white/5 px-4 py-5 select-none">
+    <aside className="sticky top-0 flex h-screen w-56 shrink-0 flex-col bg-[#000000] text-slate-200">
+      <Link
+        to={ROUTES.HOME}
+        className="flex items-center gap-3 border-b border-emerald-400/20 px-4 py-5 transition hover:bg-emerald-500/10"
+      >
         <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-lg bg-white shadow-sm">
           <img
             src={logoImage}
@@ -63,12 +67,14 @@ export default function MainSidebar() {
           />
         </div>
         <div className="min-w-0">
-          <h1 className="truncate text-sm font-bold text-white">Owlreka</h1>
+          <h1 className="font-brand truncate text-xl font-normal text-white">
+            Owlreka
+          </h1>
         </div>
-      </div>
+      </Link>
 
       <div className="flex-1 px-2.5 py-5">
-        <p className="mb-2 px-2 text-[10px] font-bold uppercase tracking-wider text-slate-600">
+        <p className="mb-2 px-2 text-[14px] font-bold uppercase tracking-wider text-white">
           Workspace
         </p>
 
@@ -84,8 +90,8 @@ export default function MainSidebar() {
                   [
                     "flex items-center gap-3 rounded-lg px-2.5 py-2 text-xs font-medium transition",
                     isActive
-                      ? "bg-emerald-600 text-white shadow-sm"
-                      : "text-slate-400 hover:bg-white/5 hover:text-white",
+                      ? "bg-emerald-600 text-white shadow-sm ring-1 ring-emerald-300/40"
+                      : "text-slate-300 hover:bg-emerald-500/15 hover:text-emerald-100",
                   ].join(" ")
                 }
               >
@@ -97,60 +103,61 @@ export default function MainSidebar() {
         </nav>
       </div>
 
-      {currentUser && (
-        <div className="border-t border-white/5 px-2.5 py-4">
-          <div className="mb-4 flex items-center gap-3 rounded-lg bg-white/[0.06] px-2.5 py-2.5">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-xs font-bold text-white">
-              {initials}
-            </div>
-            <div className="min-w-0">
-              <p className="truncate text-xs font-bold text-white">
-                {displayName}
-              </p>
-              <p className="mt-0.5 truncate text-[10px] text-slate-500">
-                {displayEmail}
-              </p>
-            </div>
+      <div className="border-t border-emerald-400/20 px-2.5 py-4">
+        <div className="mb-4 flex items-center gap-3 rounded-lg border border-white/10 bg-white/[0.08] px-2.5 py-2.5">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-xs font-bold text-white">
+            {initials}
           </div>
+          <div className="min-w-0">
+            <p className="truncate text-xs font-bold text-white">
+              {displayName}
+            </p>
+            <p className="mt-0.5 truncate text-[10px] text-slate-400">
+              {displayEmail}
+            </p>
+          </div>
+        </div>
 
-          <p className="mb-2 px-2 text-[10px] font-bold uppercase tracking-wider text-slate-600">
-            Account
-          </p>
+        <p className="mb-2 px-2 text-[14px] font-bold uppercase tracking-wider text-white">
+          Account
+        </p>
 
-          <nav className="space-y-1">
-            {accountMenuItems.map((item) => {
-              const Icon = item.icon;
+        <nav className="space-y-1">
+          {accountMenuItems.map((item) => {
+            const Icon = item.icon;
+            const targetPath = loggedIn ? item.path : ROUTES.LOGIN;
 
-              return (
-                <NavLink
-                  key={item.path}
-                  to={item.path}
-                  className={({ isActive }) =>
-                    [
-                      "flex items-center gap-3 rounded-lg px-2.5 py-2 text-xs font-medium transition",
-                      isActive
-                        ? "bg-emerald-600 text-white shadow-sm"
-                        : "text-slate-400 hover:bg-white/5 hover:text-white",
-                    ].join(" ")
-                  }
-                >
-                  <Icon className="h-4 w-4 shrink-0" />
-                  <span className="truncate">{item.label}</span>
-                </NavLink>
-              );
-            })}
+            return (
+              <NavLink
+                key={item.path}
+                to={targetPath}
+                className={({ isActive }) =>
+                  [
+                    "flex items-center gap-3 rounded-lg px-2.5 py-2 text-xs font-medium transition",
+                    loggedIn && isActive
+                      ? "bg-emerald-600 text-white shadow-sm ring-1 ring-emerald-300/40"
+                      : "text-slate-300 hover:bg-emerald-500/15 hover:text-emerald-100",
+                  ].join(" ")
+                }
+              >
+                <Icon className="h-4 w-4 shrink-0" />
+                <span className="truncate">{item.label}</span>
+              </NavLink>
+            );
+          })}
 
+          {loggedIn && (
             <button
               type="button"
               onClick={handleLogout}
-              className="flex w-full items-center gap-3 rounded-lg px-2.5 py-2 text-left text-xs font-medium text-slate-400 transition hover:bg-white/5 hover:text-white"
+              className="flex w-full items-center gap-3 rounded-lg px-2.5 py-2 text-left text-xs font-medium text-slate-300 transition hover:bg-rose-500/15 hover:text-rose-100"
             >
               <LogOut className="h-4 w-4 shrink-0" />
               <span className="truncate">Log out</span>
             </button>
-          </nav>
-        </div>
-      )}
+          )}
+        </nav>
+      </div>
     </aside>
   );
 }

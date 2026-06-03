@@ -13,30 +13,30 @@ export default function LanguageSwitcher() {
   }
 
   return (
-    <div className="flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs">
+    <div className="flex h-10 min-w-28 items-center justify-center gap-1 rounded-lg border border-black bg-white px-3 text-xs font-semibold shadow-sm">
       <button
         type="button"
         onClick={() => handleChangeLanguage(LANGUAGES.VI)}
         className={[
-          "rounded px-2 py-1 transition",
+          "flex h-7 min-w-9 items-center justify-center rounded px-2 transition",
           currentLanguage === LANGUAGES.VI
-            ? "bg-emerald-50 font-semibold text-emerald-600"
-            : "text-slate-500 hover:bg-slate-100",
+            ? "bg-red-600 text-yellow-300 shadow-sm"
+            : "text-slate-600 hover:bg-red-100 hover:text-red-600",
         ].join(" ")}
       >
         VI
       </button>
 
-      <span className="text-slate-300">|</span>
+      <span className="text-gray-700 font-black"> | </span>
 
       <button
         type="button"
         onClick={() => handleChangeLanguage(LANGUAGES.EN)}
         className={[
-          "rounded px-2 py-1 transition",
+          "flex h-7 min-w-9 items-center justify-center rounded px-2 transition",
           currentLanguage === LANGUAGES.EN
-            ? "bg-emerald-50 font-semibold text-emerald-600"
-            : "text-slate-500 hover:bg-slate-100",
+            ? "bg-blue-900 text-white shadow-sm"
+            : "text-gray-600 hover:bg-blue-100 hover:text-blue-900",
         ].join(" ")}
       >
         EN

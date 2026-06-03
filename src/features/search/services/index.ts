@@ -8,8 +8,17 @@ import type {
   SearchYearRange,
 } from "../types";
 import { getAccessToken } from "@/features/auth/utils/authStorage";
+import {
+  SEARCH_DEFAULT_PAGE,
+  SEARCH_FILTER_OPTION_LIMIT,
+  SEARCH_MIN_YEAR,
+  SEARCH_RECENT_SEARCH_LIMIT,
+  SEARCH_WORKS_PER_PAGE,
+} from "../constants";
 
-const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL || "http://localhost:8080").replace(/\/$/, "");
+const apiBaseUrl = (
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:8080"
+).replace(/\/$/, "");
 
 type SearchOptionGroupKey =
   | "type"
@@ -28,6 +37,7 @@ type OptionItem = {
 };
 
 type FilterOptionsApiData = {
+  totalWorks: number;
   year: SearchYearRange;
   citation: { minimumCitation: number; maximumCitation: number };
   type: OptionItem[];
@@ -86,10 +96,14 @@ export type SearchOptionsState = {
   citationRange: { minimumCitation: number; maximumCitation: number };
   filterOptions: SearchFilterOptions;
   optionValueLookup: SearchOptionValueLookup;
+  totalIndexedPapers: number;
   yearRange: SearchYearRange;
 };
 
-export type SearchOptionValueLookup = Record<SearchOptionGroupKey, Record<string, string>>;
+export type SearchOptionValueLookup = Record<
+  SearchOptionGroupKey,
+  Record<string, string>
+>;
 
 export type SearchWorksRequest = {
   appliedSearchQuery: string;
@@ -114,8 +128,7 @@ export type RemoteFilterOptionsPage = {
   valueLookup: Record<string, string>;
 };
 
-// TODO: Replace these mock metadata values with the search metadata API response.
-export const mockSearchTabs = ["Works"];
+export const searchTabs = ["Works"];
 
 // The first option is the default sort used by the search hook.
 export const mockResultSortOptions = ["Most cited", "Latest", "Trending"];
@@ -141,7 +154,7 @@ export const emptySearchFilterOptions: SearchFilterOptions = {
 };
 
 export const mockSearchYearRange: SearchYearRange = {
-  minimumYear: 1900,
+  minimumYear: SEARCH_MIN_YEAR,
   currentYear: new Date().getFullYear(),
 };
 
@@ -165,9 +178,9 @@ export const searchSummaryStats: SearchSummaryStats = {
 };
 
 export async function getSearchFilterOptions(
-  limit = 100,
+  limit = SEARCH_FILTER_OPTION_LIMIT,
   keyword = "",
-  page = 1,
+  page = SEARCH_DEFAULT_PAGE,
 ): Promise<SearchOptionsState> {
   const endpoint = new URL(`${apiBaseUrl}/api/search/filters/options`);
   endpoint.searchParams.set("limit", String(limit));
@@ -196,6 +209,7 @@ export async function getSearchFilterOptions(
       source: mapOptionsToValueLookup(data.source, true),
       award: mapOptionsToValueLookup(data.award, true),
     },
+    totalIndexedPapers: data.totalWorks,
     yearRange: data.year,
   };
 }
@@ -204,7 +218,7 @@ export async function getRemoteFilterOptionsPage(
   filterKey: RemoteOptionFilterKey,
   keyword: string,
   page: number,
-  limit = 100,
+  limit = SEARCH_FILTER_OPTION_LIMIT,
 ): Promise<RemoteFilterOptionsPage> {
   const optionsState = await getSearchFilterOptions(limit, keyword, page);
   const options = optionsState.filterOptions[filterKey];
@@ -218,10 +232,11 @@ export async function getRemoteFilterOptionsPage(
   };
 }
 
-export async function searchWorks(request: SearchWorksRequest): Promise<SearchWorksState> {
+export async function searchWorks(
+  request: SearchWorksRequest,
+): Promise<SearchWorksState> {
   const endpoint = new URL(`${apiBaseUrl}/api/search/works`);
   const { filters } = request;
-  const maxPerPage = 100;
 
   appendIfFilled(endpoint, "query", request.appliedSearchQuery.trim());
 
@@ -292,29 +307,41 @@ export async function searchWorks(request: SearchWorksRequest): Promise<SearchWo
   appendIfFilled(endpoint, "indexedByOrcid", filters.indexedByOrcid);
   appendIfFilled(endpoint, "sort", request.selectedSort);
   endpoint.searchParams.set("page", String(request.page));
-  endpoint.searchParams.set("perPage", String(maxPerPage));
+  endpoint.searchParams.set("perPage", String(SEARCH_WORKS_PER_PAGE));
 
   const data = await requestData<SearchWorksApiResponse>(endpoint.toString());
+  const works: PaperResult[] = [];
+
+  for (const item of data.results) {
+    works.push(mapApiWorkToPaperResult(item));
+  }
 
   return {
     page: data.meta.page,
     perPage: data.meta.perPage,
     responseTimeSeconds: data.meta.dbResponseTimeMs / 1000,
     totalCount: data.meta.totalCount,
-    works: data.results.map(mapApiWorkToPaperResult),
+    works,
   };
 }
 
-export async function getRecentSearches(limit = 5): Promise<SavedSearch[]> {
+export async function getRecentSearches(
+  limit = SEARCH_RECENT_SEARCH_LIMIT,
+): Promise<SavedSearch[]> {
   const endpoint = new URL(`${apiBaseUrl}/api/search/history/recent`);
   endpoint.searchParams.set("limit", String(limit));
 
   const data = await requestData<SearchHistoryApiItem[]>(endpoint.toString());
+  const savedSearches: SavedSearch[] = [];
 
-  return data.map((item) => ({
-    query: item.query,
-    savedAt: item.savedAt,
-  }));
+  for (const item of data) {
+    savedSearches.push({
+      query: item.query,
+      savedAt: item.savedAt,
+    });
+  }
+
+  return savedSearches;
 }
 
 export async function saveSearchHistory(query: string): Promise<void> {
@@ -381,10 +408,20 @@ async function requestData<T>(url: string, init?: RequestInit): Promise<T> {
   return envelope.data;
 }
 
-function mapOptionsToLabels(options: OptionItem[], includeStableSuffix: boolean) {
-  return buildDisplayOptions(options, includeStableSuffix)
-    .filter((option) => Boolean(option.value))
-    .map((option) => option.label);
+function mapOptionsToLabels(
+  options: OptionItem[],
+  includeStableSuffix: boolean,
+) {
+  const displayOptions = buildDisplayOptions(options, includeStableSuffix);
+  const labels: string[] = [];
+
+  for (const option of displayOptions) {
+    if (option.value) {
+      labels.push(option.label);
+    }
+  }
+
+  return labels;
 }
 
 function mapOptionsToValueLookup(
@@ -421,30 +458,39 @@ function buildDisplayOptions(
     }
   }
 
-  return options.map((option) => {
+  const displayOptions: OptionItem[] = [];
+
+  for (const option of options) {
+    const sanitizedLabel = sanitizePlainText(option.label);
     const optionValue = resolveOptionValue(option);
 
     if (!optionValue) {
-      return {
+      displayOptions.push({
         ...option,
+        label: sanitizedLabel,
         value: "",
-      };
+      });
+      continue;
     }
 
     if (!includeStableSuffix || !duplicatedLabelSet.has(option.label)) {
-      return {
+      displayOptions.push({
         ...option,
+        label: sanitizedLabel,
         value: optionValue,
-      };
+      });
+      continue;
     }
 
     const stableSuffix = extractLastSegment(optionValue);
-    return {
+    displayOptions.push({
       ...option,
       value: optionValue,
-      label: `${option.label} (${stableSuffix})`,
-    };
-  });
+      label: `${sanitizedLabel} (${stableSuffix})`,
+    });
+  }
+
+  return displayOptions;
 }
 
 function resolveOptionValue(option: OptionItem) {
@@ -477,21 +523,29 @@ function appendMappedValues(
 }
 
 function mapApiWorkToPaperResult(work: SearchWorksApiItem): PaperResult {
-  const title = work.title || "Untitled";
+  const title = sanitizePlainText(work.title) || "Untitled";
   const normalizedType = normalizeTypeLabel(work.type);
-  const normalizedSource = work.sourceName || "Unknown source";
-  const normalizedTopic = work.topicName?.trim() || normalizedSource;
-  const normalizedSubField = work.subFieldName?.trim() || "Unknown subfield";
+  const normalizedSource =
+    sanitizePlainText(work.sourceName) || "Unknown source";
+  const normalizedTopic =
+    sanitizePlainText(work.topicName).trim() || normalizedSource;
+  const normalizedSubField =
+    sanitizePlainText(work.subFieldName).trim() || "Unknown subfield";
   const currentYear = new Date().getFullYear();
-  const publicationYear = normalizePublicationYear(work.publicationYear, currentYear);
+  const publicationYear = normalizePublicationYear(
+    work.publicationYear,
+    currentYear,
+  );
   const citedByCount = work.citedByCount || 0;
   const summary =
-    work.abstractText?.trim() || `OpenAlex result from ${normalizedSource}.`;
+    sanitizePlainText(work.abstractText).trim() ||
+    `OpenAlex result from ${normalizedSource}.`;
+  const authors = mapAuthorNames(work.authors);
 
   return {
     id: extractLastSegment(work.id),
     title,
-    authors: work.authors,
+    authors,
     venue: normalizedSource,
     citations: citedByCount,
     year: publicationYear,
@@ -526,14 +580,20 @@ function normalizePublicationYear(
 }
 
 function normalizeTypeLabel(type: string | null) {
-  if (!type) {
+  const normalizedType = sanitizePlainText(type).trim();
+
+  if (!normalizedType) {
     return "Work";
   }
 
-  return type
-    .split("-")
-    .map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1))
-    .join(" ");
+  const segments = normalizedType.split("-");
+  const normalizedSegments: string[] = [];
+
+  for (const segment of segments) {
+    normalizedSegments.push(segment.charAt(0).toUpperCase() + segment.slice(1));
+  }
+
+  return normalizedSegments.join(" ");
 }
 
 function normalizeDoi(doi: string | null) {
@@ -545,9 +605,20 @@ function normalizeDoi(doi: string | null) {
 }
 
 function buildTags(subField: string, topicName: string) {
-  const tags = [subField, topicName];
+  const tags: string[] = [];
+  const values = [subField, topicName];
 
-  return tags.filter((tag) => tag.trim().length > 0).slice(0, 3);
+  for (const value of values) {
+    if (value.trim().length > 0) {
+      tags.push(value);
+    }
+
+    if (tags.length === 3) {
+      break;
+    }
+  }
+
+  return tags;
 }
 
 function extractLastSegment(value: string) {
@@ -560,13 +631,45 @@ function extractLastSegment(value: string) {
   return value.slice(lastSlashIndex + 1);
 }
 
-/*
-SEARCH_FILE_NOTE
-Syntax su dung:
-- File index trong module search dung de gom export hoac constants/types.
-File nay lam gi:
-- Giu vai tro diem tap trung import/export trong tung folder.
-Flow chay:
-- Cac file khac import tu index de gon duong dan va de maintain.
-*/
+function mapAuthorNames(authorNames: string[]) {
+  const result: string[] = [];
 
+  for (const authorName of authorNames) {
+    const normalizedName = sanitizePlainText(authorName);
+    if (normalizedName.length > 0) {
+      result.push(normalizedName);
+    }
+  }
+
+  return result;
+}
+
+let htmlEntityDecoder: HTMLTextAreaElement | null = null;
+
+function sanitizePlainText(value: string | null | undefined) {
+  if (!value) {
+    return "";
+  }
+
+  const decodedText = decodeHtmlEntities(value);
+  const withoutHtmlTags = decodedText.replace(/<[^>]*>/g, " ");
+
+  return withoutHtmlTags.replace(/\s+/g, " ").trim();
+}
+
+function decodeHtmlEntities(value: string) {
+  if (!value.includes("&")) {
+    return value;
+  }
+
+  if (typeof document === "undefined") {
+    return value;
+  }
+
+  if (!htmlEntityDecoder) {
+    htmlEntityDecoder = document.createElement("textarea");
+  }
+
+  htmlEntityDecoder.innerHTML = value;
+  return htmlEntityDecoder.value;
+}
