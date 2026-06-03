@@ -91,7 +91,7 @@ export default function LandingPage() {
           }
         });
       },
-      { threshold: 0.15 }
+      { threshold: 0.15 },
     );
 
     nodes.forEach((node) => observer.observe(node));
@@ -103,7 +103,7 @@ export default function LandingPage() {
     if (!rail) return;
 
     const prefersReducedMotion = window.matchMedia(
-      "(prefers-reduced-motion: reduce)"
+      "(prefers-reduced-motion: reduce)",
     ).matches;
     if (prefersReducedMotion) return;
 
@@ -167,8 +167,9 @@ export default function LandingPage() {
               >
                 Sections
                 <ChevronDown
-                  className={`h-4 w-4 transition ${isSectionMenuOpen ? "rotate-180" : ""
-                    }`}
+                  className={`h-4 w-4 transition ${
+                    isSectionMenuOpen ? "rotate-180" : ""
+                  }`}
                 />
               </button>
 
@@ -249,8 +250,6 @@ export default function LandingPage() {
 
       <main className="px-4 pb-14 pt-6 md:px-8 md:pt-10">
         <section id="overview" className="mx-auto max-w-[1320px]">
-
-
           <div className="grid gap-8 lg:grid-cols-[1.55fr_0.85fr] lg:items-start">
             <div className="lg:pl-4">
               <div className="flex items-start gap-4 md:gap-6">
@@ -263,7 +262,9 @@ export default function LandingPage() {
                   </p>
                   <h1 className="max-w-[860px] text-[46px] font-semibold leading-[0.94] tracking-[-0.02em] md:text-[72px] lg:text-[86px]">
                     See the{" "}
-                    <span className="font-serif italic text-emerald-600">signal</span>
+                    <span className="font-serif italic text-emerald-600">
+                      signal
+                    </span>
                     <br />
                     behind every
                     <br />
@@ -292,9 +293,10 @@ export default function LandingPage() {
 
             <div className="border-l-2 border-emerald-600 pl-8 pt-8 lg:pl-8">
               <p className="max-w-[500px] text-[17px] leading-[1.75] text-slate-800 md:text-[18px]">
-                A research trend observatory that watches <em>millions of papers</em>{" "}
-                so you can track topic growth, citation momentum, and rising
-                keywords before they become mainstream.
+                A research trend observatory that watches{" "}
+                <em>millions of papers</em> so you can track topic growth,
+                citation momentum, and rising keywords before they become
+                mainstream.
               </p>
               <div className="mt-10 flex flex-wrap items-center gap-3">
                 <Link
@@ -357,19 +359,25 @@ export default function LandingPage() {
                     <p className="text-[11px] uppercase tracking-[0.14em] text-slate-500">
                       Active Trends
                     </p>
-                    <p className="mt-1 text-3xl font-semibold text-amber-500">42</p>
+                    <p className="mt-1 text-3xl font-semibold text-amber-500">
+                      42
+                    </p>
                   </article>
                   <article className="rounded-2xl border border-blue-200 bg-blue-50 p-4">
                     <p className="text-[11px] uppercase tracking-[0.14em] text-slate-500">
                       Topics
                     </p>
-                    <p className="mt-1 text-3xl font-semibold text-blue-600">186</p>
+                    <p className="mt-1 text-3xl font-semibold text-blue-600">
+                      186
+                    </p>
                   </article>
                   <article className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
                     <p className="text-[11px] uppercase tracking-[0.14em] text-slate-500">
                       Fields
                     </p>
-                    <p className="mt-1 text-3xl font-semibold text-emerald-600">12</p>
+                    <p className="mt-1 text-3xl font-semibold text-emerald-600">
+                      12
+                    </p>
                   </article>
                 </div>
 
@@ -397,7 +405,6 @@ export default function LandingPage() {
                 </article>
               </div>
             </div>
-
           </div>
 
           <section className="mt-16 rounded-[28px] border border-slate-200/80 bg-[#f2f4f3] px-6 py-12 md:px-10 md:py-16">
@@ -552,8 +559,8 @@ export default function LandingPage() {
                   Follow Topics and Authors
                 </h3>
                 <p className="mt-3 text-[16px] leading-[1.75] text-slate-500">
-                  Follow research topics and academic authors to receive relevant
-                  publication updates.
+                  Follow research topics and academic authors to receive
+                  relevant publication updates.
                 </p>
                 <div className="mt-6 border-t border-dashed border-slate-200 pt-3">
                   <div className="flex items-center">
@@ -578,8 +585,8 @@ export default function LandingPage() {
                   Generate Simple Reports
                 </h3>
                 <p className="mt-3 text-[16px] leading-[1.75] text-slate-500">
-                  Create analytical reports with publication totals, topic trends,
-                  top papers, and relevant journals.
+                  Create analytical reports with publication totals, topic
+                  trends, top papers, and relevant journals.
                 </p>
                 <div className="mt-6 border-t border-dashed border-slate-200 pt-3">
                   <div className="flex items-end gap-1.5">
@@ -609,12 +616,16 @@ export default function LandingPage() {
             <div className="mb-8 flex items-end justify-between gap-4">
               <h2 className="text-[44px] font-semibold leading-[0.95] tracking-[-0.02em] text-[#0b0f0e] md:text-[64px]">
                 Topics moving{" "}
-                <span className="font-serif italic text-amber-500">right now</span>
+                <span className="font-serif italic text-amber-500">
+                  right now
+                </span>
               </h2>
-
             </div>
 
-          <div id="live-trends-rail" className="no-scrollbar -mx-1 overflow-x-auto pb-2">
+            <div
+              id="live-trends-rail"
+              className="no-scrollbar -mx-1 overflow-x-auto pb-2"
+            >
               <div className="flex min-w-max gap-4 px-1">
                 <article className="w-[320px] rounded-2xl border border-slate-200 bg-white p-5 shadow-none transition hover:border-emerald-300 hover:shadow-[0_10px_28px_rgba(22,163,74,0.18)]">
                   <div className="mb-8 flex items-center justify-between text-[13px] text-slate-400">
@@ -632,13 +643,17 @@ export default function LandingPage() {
                       <p className="text-[12px] uppercase tracking-[0.12em] text-slate-400">
                         Score
                       </p>
-                      <p className="text-[40px] font-semibold text-amber-500">96</p>
+                      <p className="text-[40px] font-semibold text-amber-500">
+                        96
+                      </p>
                     </div>
                     <div className="text-right">
                       <p className="text-[12px] uppercase tracking-[0.12em] text-slate-400">
                         Growth
                       </p>
-                      <p className="text-[32px] font-semibold text-emerald-600">+48%</p>
+                      <p className="text-[32px] font-semibold text-emerald-600">
+                        +48%
+                      </p>
                     </div>
                   </div>
                 </article>
@@ -659,13 +674,17 @@ export default function LandingPage() {
                       <p className="text-[12px] uppercase tracking-[0.12em] text-slate-400">
                         Score
                       </p>
-                      <p className="text-[40px] font-semibold text-emerald-600">87</p>
+                      <p className="text-[40px] font-semibold text-emerald-600">
+                        87
+                      </p>
                     </div>
                     <div className="text-right">
                       <p className="text-[12px] uppercase tracking-[0.12em] text-slate-400">
                         Growth
                       </p>
-                      <p className="text-[32px] font-semibold text-emerald-600">+32%</p>
+                      <p className="text-[32px] font-semibold text-emerald-600">
+                        +32%
+                      </p>
                     </div>
                   </div>
                 </article>
@@ -686,13 +705,17 @@ export default function LandingPage() {
                       <p className="text-[12px] uppercase tracking-[0.12em] text-slate-400">
                         Score
                       </p>
-                      <p className="text-[40px] font-semibold text-emerald-600">79</p>
+                      <p className="text-[40px] font-semibold text-emerald-600">
+                        79
+                      </p>
                     </div>
                     <div className="text-right">
                       <p className="text-[12px] uppercase tracking-[0.12em] text-slate-400">
                         Growth
                       </p>
-                      <p className="text-[32px] font-semibold text-emerald-600">+24%</p>
+                      <p className="text-[32px] font-semibold text-emerald-600">
+                        +24%
+                      </p>
                     </div>
                   </div>
                 </article>
@@ -713,13 +736,17 @@ export default function LandingPage() {
                       <p className="text-[12px] uppercase tracking-[0.12em] text-slate-400">
                         Score
                       </p>
-                      <p className="text-[40px] font-semibold text-blue-600">71</p>
+                      <p className="text-[40px] font-semibold text-blue-600">
+                        71
+                      </p>
                     </div>
                     <div className="text-right">
                       <p className="text-[12px] uppercase tracking-[0.12em] text-slate-400">
                         Growth
                       </p>
-                      <p className="text-[32px] font-semibold text-emerald-600">+19%</p>
+                      <p className="text-[32px] font-semibold text-emerald-600">
+                        +19%
+                      </p>
                     </div>
                   </div>
                 </article>
@@ -731,7 +758,9 @@ export default function LandingPage() {
                       Rising
                     </span>
                   </div>
-                  <p className="text-[14px] text-slate-500">Health Informatics</p>
+                  <p className="text-[14px] text-slate-500">
+                    Health Informatics
+                  </p>
                   <h3 className="mt-6 text-[16px] font-semibold text-slate-900">
                     Digital Health
                   </h3>
@@ -740,13 +769,17 @@ export default function LandingPage() {
                       <p className="text-[12px] uppercase tracking-[0.12em] text-slate-400">
                         Score
                       </p>
-                      <p className="text-[40px] font-semibold text-blue-600">68</p>
+                      <p className="text-[40px] font-semibold text-blue-600">
+                        68
+                      </p>
                     </div>
                     <div className="text-right">
                       <p className="text-[12px] uppercase tracking-[0.12em] text-slate-400">
                         Growth
                       </p>
-                      <p className="text-[32px] font-semibold text-emerald-600">+15%</p>
+                      <p className="text-[32px] font-semibold text-emerald-600">
+                        +15%
+                      </p>
                     </div>
                   </div>
                 </article>
@@ -767,13 +800,17 @@ export default function LandingPage() {
                       <p className="text-[12px] uppercase tracking-[0.12em] text-slate-400">
                         Score
                       </p>
-                      <p className="text-[40px] font-semibold text-slate-500">52</p>
+                      <p className="text-[40px] font-semibold text-slate-500">
+                        52
+                      </p>
                     </div>
                     <div className="text-right">
                       <p className="text-[12px] uppercase tracking-[0.12em] text-slate-400">
                         Growth
                       </p>
-                      <p className="text-[32px] font-semibold text-emerald-600">+4%</p>
+                      <p className="text-[32px] font-semibold text-emerald-600">
+                        +4%
+                      </p>
                     </div>
                   </div>
                 </article>
@@ -794,13 +831,17 @@ export default function LandingPage() {
                       <p className="text-[12px] uppercase tracking-[0.12em] text-slate-400">
                         Score
                       </p>
-                      <p className="text-[40px] font-semibold text-blue-600">64</p>
+                      <p className="text-[40px] font-semibold text-blue-600">
+                        64
+                      </p>
                     </div>
                     <div className="text-right">
                       <p className="text-[12px] uppercase tracking-[0.12em] text-slate-400">
                         Growth
                       </p>
-                      <p className="text-[32px] font-semibold text-emerald-600">+22%</p>
+                      <p className="text-[32px] font-semibold text-emerald-600">
+                        +22%
+                      </p>
                     </div>
                   </div>
                 </article>
@@ -832,12 +873,14 @@ export default function LandingPage() {
 
               <h2 className="relative z-10 max-w-[980px] text-[58px] font-semibold leading-[0.95] tracking-[-0.02em] text-[#0b0f0e] md:text-[72px]">
                 See the{" "}
-                <span className="font-serif italic text-emerald-600">signal</span>{" "}
+                <span className="font-serif italic text-emerald-600">
+                  signal
+                </span>{" "}
                 behind scientific publications.
               </h2>
 
               <div className="relative z-10 mt-10 grid gap-4 lg:grid-cols-3">
-              <article className="rounded-3xl border border-slate-200 bg-white p-7">
+                <article className="rounded-3xl border border-slate-200 bg-white p-7">
                   <div className="mb-12 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-200 text-slate-500">
                     <Search className="h-6 w-6" />
                   </div>
@@ -864,14 +907,16 @@ export default function LandingPage() {
                   </ul>
                 </article>
 
-              <article className="relative rounded-3xl border border-emerald-500/45 bg-[#0c241a] p-7 text-white shadow-[0_14px_30px_rgba(2,23,15,0.26)]">
+                <article className="relative rounded-3xl border border-emerald-500/45 bg-[#0c241a] p-7 text-white shadow-[0_14px_30px_rgba(2,23,15,0.26)]">
                   <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-emerald-600 px-4 py-1 text-[12px] font-semibold uppercase tracking-[0.08em]">
                     Recommended
                   </span>
                   <div className="mb-12 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-950/70 text-emerald-400">
                     <TrendingUp className="h-6 w-6" />
                   </div>
-                  <h3 className="text-[16px] font-semibold">Research Trend Tracker</h3>
+                  <h3 className="text-[16px] font-semibold">
+                    Research Trend Tracker
+                  </h3>
                   <ul className="mt-6 space-y-3 text-[16px] text-emerald-50">
                     <li className="flex items-center gap-3">
                       <Check className="h-5 w-5 text-emerald-400" />
@@ -892,7 +937,7 @@ export default function LandingPage() {
                   </ul>
                 </article>
 
-              <article className="rounded-3xl border border-slate-200 bg-white p-7">
+                <article className="rounded-3xl border border-slate-200 bg-white p-7">
                   <div className="mb-12 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-100 text-blue-600">
                     <Star className="h-6 w-6" />
                   </div>
@@ -1001,14 +1046,16 @@ export default function LandingPage() {
 
                 <h2 className="max-w-[560px] text-[44px] font-semibold leading-[0.95] tracking-[-0.02em] text-[#0b0f0e] md:text-[64px]">
                   A{" "}
-                  <span className="font-serif italic text-emerald-600">topic constellation</span>{" "}
+                  <span className="font-serif italic text-emerald-600">
+                    topic constellation
+                  </span>{" "}
                   of connected research.
                 </h2>
 
                 <p className="mt-5 max-w-[500px] text-[16px] leading-[1.75] text-slate-600">
                   Every paper is a node. Every author, topic, and field is a
-                  link. Explore how ideas connect across disciplines and watch new
-                  clusters emerge in real time.
+                  link. Explore how ideas connect across disciplines and watch
+                  new clusters emerge in real time.
                 </p>
 
                 <div className="mt-6 flex flex-wrap gap-2">
@@ -1047,7 +1094,12 @@ export default function LandingPage() {
                     viewBox="0 0 800 520"
                     aria-hidden="true"
                   >
-                    <g stroke="#9ed8af" strokeWidth="1.5" strokeDasharray="4 6" fill="none">
+                    <g
+                      stroke="#9ed8af"
+                      strokeWidth="1.5"
+                      strokeDasharray="4 6"
+                      fill="none"
+                    >
                       <line x1="390" y1="250" x2="300" y2="120" />
                       <line x1="390" y1="250" x2="390" y2="70" />
                       <line x1="390" y1="250" x2="660" y2="110" />
@@ -1066,19 +1118,35 @@ export default function LandingPage() {
                     <div className="text-[12px]">96</div>
                   </div>
                   <div className="absolute left-[86px] top-[100px] h-[66px] w-[66px] rounded-full border-2 border-emerald-500 bg-white text-center text-[14px] leading-tight text-emerald-600 shadow-[0_0_22px_rgba(16,185,129,0.25)]">
-                    <div className="pt-3">Open<br />Science</div>
+                    <div className="pt-3">
+                      Open
+                      <br />
+                      Science
+                    </div>
                   </div>
                   <div className="absolute left-[350px] top-[40px] h-[60px] w-[60px] rounded-full border-2 border-emerald-500 bg-white text-center text-[13px] leading-tight text-emerald-600 shadow-[0_0_20px_rgba(16,185,129,0.22)]">
-                    <div className="pt-2.5">AI in<br />Edu</div>
+                    <div className="pt-2.5">
+                      AI in
+                      <br />
+                      Edu
+                    </div>
                   </div>
                   <div className="absolute right-[72px] top-[92px] h-[64px] w-[64px] rounded-full border-2 border-blue-500 bg-white text-center text-[13px] leading-tight text-blue-600 shadow-[0_0_20px_rgba(59,130,246,0.24)]">
-                    <div className="pt-2">Green<br />Comp</div>
+                    <div className="pt-2">
+                      Green
+                      <br />
+                      Comp
+                    </div>
                   </div>
                   <div className="absolute right-[44px] top-[256px] h-[52px] w-[52px] rounded-full border-2 border-blue-500 bg-white text-center text-[12px] leading-tight text-blue-600 shadow-[0_0_16px_rgba(59,130,246,0.2)]">
                     <div className="pt-2">XAI</div>
                   </div>
                   <div className="absolute right-[106px] bottom-[60px] h-[62px] w-[62px] rounded-full border-2 border-emerald-500 bg-white text-center text-[12px] leading-tight text-emerald-600 shadow-[0_0_18px_rgba(16,185,129,0.2)]">
-                    <div className="pt-2">Digital<br />Health</div>
+                    <div className="pt-2">
+                      Digital
+                      <br />
+                      Health
+                    </div>
                   </div>
                   <div className="absolute left-[125px] bottom-[52px] h-[54px] w-[54px] rounded-full border-2 border-slate-500 bg-white text-center text-[12px] leading-tight text-slate-600 shadow-[0_0_14px_rgba(100,116,139,0.2)]">
                     <div className="pt-2">Biblio</div>
@@ -1101,8 +1169,8 @@ export default function LandingPage() {
 
             <h2 className="max-w-[920px] text-[44px] font-semibold leading-[1.02] tracking-[-0.02em] text-[#0b0f0e] md:text-[64px]">
               Follow{" "}
-              <span className="font-serif italic text-emerald-600">topics</span>.
-              {" "}Track{" "}
+              <span className="font-serif italic text-emerald-600">topics</span>
+              . Track{" "}
               <span className="font-serif italic text-blue-600">authors</span>.
               <br />
               Understand trends.
@@ -1110,8 +1178,8 @@ export default function LandingPage() {
 
             <div className="mt-4 flex flex-wrap items-end justify-between gap-4">
               <p className="text-[16px] leading-[1.7] text-slate-600">
-                Every recommendation comes with an explanation - see exactly why a
-                paper showed up.
+                Every recommendation comes with an explanation - see exactly why
+                a paper showed up.
               </p>
 
               <div className="flex flex-wrap items-center gap-2">
@@ -1160,7 +1228,9 @@ export default function LandingPage() {
                 </div>
                 <div className="mt-8 border-t border-slate-200 pt-5">
                   <div className="flex items-center justify-between">
-                    <p className="text-[16px] text-slate-500">❞ 124 citations</p>
+                    <p className="text-[16px] text-slate-500">
+                      ❞ 124 citations
+                    </p>
                     <button
                       type="button"
                       className="inline-flex items-center gap-2 text-[16px] font-semibold text-emerald-600"
@@ -1177,7 +1247,8 @@ export default function LandingPage() {
                   ✧ Matched followed author
                 </span>
                 <h3 className="mt-5 text-[16px] font-semibold leading-[1.5] text-slate-900">
-                  Measuring the Open Access Citation Advantage Across 12M Articles
+                  Measuring the Open Access Citation Advantage Across 12M
+                  Articles
                 </h3>
                 <p className="mt-6 text-[16px] text-blue-600">
                   Jason R Priem, H. Piwowar
@@ -1195,7 +1266,9 @@ export default function LandingPage() {
                 </div>
                 <div className="mt-8 border-t border-slate-200 pt-5">
                   <div className="flex items-center justify-between">
-                    <p className="text-[16px] text-slate-500">❞ 312 citations</p>
+                    <p className="text-[16px] text-slate-500">
+                      ❞ 312 citations
+                    </p>
                     <button
                       type="button"
                       className="inline-flex items-center gap-2 text-[16px] font-semibold text-emerald-600"
@@ -1261,7 +1334,9 @@ export default function LandingPage() {
 
             <h2 className="reveal-on-scroll max-w-[980px] text-[44px] font-semibold leading-[0.98] tracking-[-0.02em] text-[#0b0f0e] md:text-[76px]">
               From research interest to{" "}
-              <span className="font-serif italic text-emerald-600">insight</span>{" "}
+              <span className="font-serif italic text-emerald-600">
+                insight
+              </span>{" "}
               in four steps.
             </h2>
 
@@ -1278,7 +1353,8 @@ export default function LandingPage() {
                       Choose research interests
                     </h3>
                     <p className="mt-2 text-[16px] text-slate-600">
-                      Select fields, topics, authors, or keywords you care about.
+                      Select fields, topics, authors, or keywords you care
+                      about.
                     </p>
                   </div>
                   <div className="inline-flex h-14 w-14 items-center justify-center rounded-full border-2 border-emerald-500 bg-emerald-50 text-emerald-600 shadow-[0_0_0_6px_rgba(34,197,94,0.18)]">
@@ -1360,10 +1436,11 @@ export default function LandingPage() {
             <div className="relative">
               <h2 className="max-w-[980px] text-[44px] font-semibold leading-[0.98] tracking-[-0.02em] text-[#0b0f0e] md:text-[76px]">
                 For students, lecturers, and{" "}
-                <span className="font-serif italic text-emerald-600">researchers</span>.
+                <span className="font-serif italic text-emerald-600">
+                  researchers
+                </span>
+                .
               </h2>
-
-
             </div>
 
             <div className="mt-10 overflow-hidden rounded-2xl border border-slate-200 bg-white">
@@ -1372,7 +1449,9 @@ export default function LandingPage() {
                   <span className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-600">
                     <GraduationCap className="h-7 w-7" />
                   </span>
-                  <h3 className="mt-5 text-[16px] font-semibold text-slate-900">Student</h3>
+                  <h3 className="mt-5 text-[16px] font-semibold text-slate-900">
+                    Student
+                  </h3>
                   <ul className="mt-4 space-y-2 text-[16px] text-slate-900">
                     <li>✓ Find reference papers</li>
                     <li>✓ Follow topics for assignments</li>
@@ -1382,11 +1461,12 @@ export default function LandingPage() {
                 </article>
 
                 <article className="reveal-on-scroll border-b border-slate-200 p-6 lg:border-b-0 lg:border-r">
-
                   <span className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-100 text-blue-600">
                     <BookOpen className="h-7 w-7" />
                   </span>
-                  <h3 className="mt-5 text-[16px] font-semibold text-slate-900">Lecturer</h3>
+                  <h3 className="mt-5 text-[16px] font-semibold text-slate-900">
+                    Lecturer
+                  </h3>
                   <ul className="mt-4 space-y-2 text-[16px] text-slate-900">
                     <li>✓ Track research topics</li>
                     <li>✓ Recommend reading materials</li>
@@ -1399,7 +1479,9 @@ export default function LandingPage() {
                   <span className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-100 text-amber-600">
                     <Microscope className="h-7 w-7" />
                   </span>
-                  <h3 className="mt-5 text-[16px] font-semibold text-slate-900">Researcher</h3>
+                  <h3 className="mt-5 text-[16px] font-semibold text-slate-900">
+                    Researcher
+                  </h3>
                   <ul className="mt-4 space-y-2 text-[16px] text-slate-900">
                     <li>✓ Discover emerging topics</li>
                     <li>✓ Compare topic growth</li>
@@ -1422,12 +1504,14 @@ export default function LandingPage() {
               }}
             />
             <div className="relative z-10 mx-auto max-w-[980px] text-center">
-            <div className="flex items-end justify-center gap-3 text-emerald-300">
-              <span className="font-serif text-[44px] italic leading-none">§09</span>
-              <span className="pb-1.5 text-[18px] uppercase tracking-[0.2em]">
-                The Invitation
-              </span>
-            </div>
+              <div className="flex items-end justify-center gap-3 text-emerald-300">
+                <span className="font-serif text-[44px] italic leading-none">
+                  §09
+                </span>
+                <span className="pb-1.5 text-[18px] uppercase tracking-[0.2em]">
+                  The Invitation
+                </span>
+              </div>
               <h2 className="mt-4 text-[44px] font-semibold leading-[0.98] md:text-[76px]">
                 Step Into Your{" "}
                 <span className="font-serif italic text-emerald-400">
@@ -1469,6 +1553,3 @@ export default function LandingPage() {
     </div>
   );
 }
-
-
-
