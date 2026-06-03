@@ -155,7 +155,7 @@ export default function LandingPage() {
               alt="Research Trend"
               className="h-10 w-10 rounded-lg object-cover"
             />
-            <span className="text-base font-semibold">Owlreka</span>
+            <span className="font-brand text-3xl font-normal">Owlreka</span>
           </Link>
 
           <nav className="hidden items-center gap-6 text-sm font-medium text-slate-600 md:flex">
@@ -163,7 +163,7 @@ export default function LandingPage() {
               <button
                 type="button"
                 onClick={() => setIsSectionMenuOpen((isOpen) => !isOpen)}
-                className="inline-flex items-center gap-1.5 hover:text-emerald-700"
+                className="inline-flex items-center gap-1.5 hover:text-emerald-700 text-black"
               >
                 Sections
                 <ChevronDown
@@ -192,13 +192,22 @@ export default function LandingPage() {
               )}
             </div>
 
-            <Link to={ROUTES.SEARCH} className="hover:text-emerald-700">
+            <Link
+              to={ROUTES.SEARCH}
+              className="hover:text-emerald-700 text-black"
+            >
               Search
             </Link>
-            <Link to={ROUTES.DASHBOARD} className="hover:text-emerald-700">
+            <Link
+              to={ROUTES.DASHBOARD}
+              className="hover:text-emerald-700 text-black"
+            >
               Dashboard
             </Link>
-            <Link to={ROUTES.GUIDE} className="hover:text-emerald-700">
+            <Link
+              to={ROUTES.GUIDE}
+              className="hover:text-emerald-700 text-black"
+            >
               Guide
             </Link>
           </nav>
@@ -223,13 +232,13 @@ export default function LandingPage() {
             <div className="flex items-center gap-2">
               <Link
                 to={ROUTES.LOGIN}
-                className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100"
+                className="rounded-lg border border-black px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100"
               >
                 Login
               </Link>
               <Link
                 to={ROUTES.REGISTER}
-                className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700"
+                className="rounded-lg bg-emerald-700 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700"
               >
                 Register
               </Link>

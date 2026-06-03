@@ -170,7 +170,6 @@ export function useSearchPageState() {
     startPage: number,
     appendResults: boolean,
     isMounted = true,
-    captureIndexedCount = false,
   ) {
     if (!appendResults) {
       setIsLoadingResults(true);
@@ -202,10 +201,6 @@ export function useSearchPageState() {
       setNextQueryTriggerIndex(getNextQueryTriggerIndex(startPage));
       setResponseTimeSeconds(result.responseTimeSeconds);
       setMatchedPaperCount(result.totalCount);
-
-      if (captureIndexedCount) {
-        setTotalIndexedPapers(result.totalCount);
-      }
 
       const loadedResultCount = (result.nextPage - 1) * result.perPage;
       const hasNextPage =
@@ -270,6 +265,7 @@ export function useSearchPageState() {
         setSavedSearches(recentSearches);
         setFilterOptions(optionsState.filterOptions);
         setOptionValueLookup(optionsState.optionValueLookup);
+        setTotalIndexedPapers(optionsState.totalIndexedPapers);
         baseOptionsRef.current = optionsState.filterOptions;
         baseOptionValueLookupRef.current = optionsState.optionValueLookup;
         setIsLoadingResults(false);
