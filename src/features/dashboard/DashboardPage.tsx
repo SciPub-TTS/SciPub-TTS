@@ -1,4 +1,3 @@
-import FilterPart from "@/features/dashboard/components/FilterPart.tsx";
 import MetricPart from "@/features/dashboard/components/MetricPart.tsx";
 import TopicGeneralChartPart from "@/features/dashboard/components/TopicGeneralChartPart.tsx";
 import TrendingPart from "@/features/dashboard/components/TrendingPart.tsx";
@@ -16,7 +15,7 @@ export default function DashboardPage() {
             </h2>
         </div>
 
-        <FilterPart/>
+        {/*<FilterPart/>*/}
 
         <MetricPart/>
 
