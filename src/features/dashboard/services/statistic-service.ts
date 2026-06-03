@@ -135,22 +135,46 @@ export const MOCK_PUBLICATION_TRENDING: PublicationTrend[] = [
     }
 ];
 
+const apiBaseUrl = (
+    import.meta.env.VITE_API_BASE_URL || "http://localhost:8080"
+).replace(/\/$/, "");
+
+async function requestData<T>(url: string): Promise<T> {
+    const response = await fetch(url);
+    if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
+    return response.json() as Promise<T>;
+}
+
 export const statisticService = {
-    getMetricList: async():Promise<MetricResponse[]> => {
+
+    getMetricList: async(period?: string):Promise<MetricResponse[]> => {
         if(USE_MOCK) {
             return MOCK_METRICS_RESPONSE;
         }
 
-        // TODO: Replace with API call
-        return [];
+        if(!period) return [];
+
+        const endpoint = new URL(`${apiBaseUrl}/api/metrics`);
+        const startOfDay = new Date(period);
+        startOfDay.setHours(0, 0, 0, 0);
+        endpoint.searchParams.append("period", startOfDay.toISOString());
+
+        return await requestData<MetricResponse[]>(endpoint.toString());
     },
 
-    getPublicationTrend: async():Promise<PublicationTrend[]> => {
+    getPublicationTrend: async(yearFrom?: number, yearTo?: number):Promise<PublicationTrend[]> => {
         if(USE_MOCK) {
             return MOCK_PUBLICATION_TRENDING;
         }
 
-        // TODO: Replace with API call
-        return [];
+        if(!yearFrom || !yearTo) {
+            return [];
+        }
+
+        const endpoint = new URL(`${apiBaseUrl}/api/publication-trends`);
+        endpoint.searchParams.append("yearFrom", String(yearFrom));
+        endpoint.searchParams.append("yearTo", String(yearTo));
+
+        return await requestData<PublicationTrend[]>(endpoint.toString());
     }
 }
