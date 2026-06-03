@@ -1,7 +1,8 @@
 import FilterPart from "@/features/dashboard/components/FilterPart.tsx";
 import MetricPart from "@/features/dashboard/components/MetricPart.tsx";
-import ChartPart from "@/features/dashboard/components/ChartPart.tsx";
+import TopicGeneralChartPart from "@/features/dashboard/components/TopicGeneralChartPart.tsx";
 import TrendingPart from "@/features/dashboard/components/TrendingPart.tsx";
+import TopicSpecificChartPart from "@/features/dashboard/components/TopicSpecificChartPart.tsx";
 
 export default function DashboardPage() {
   return (
@@ -19,9 +20,11 @@ export default function DashboardPage() {
 
         <MetricPart/>
 
-        <ChartPart/>
+        <TopicGeneralChartPart/>
 
         <TrendingPart/>
+
+        <TopicSpecificChartPart/>
     </div>
   );
 }

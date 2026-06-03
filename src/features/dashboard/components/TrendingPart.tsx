@@ -1,6 +1,7 @@
-import {LIST_TOPICS, type TopicData} from "@/features/dashboard/constants/topic-data.ts";
+import {LIST_TOPICS} from "@/features/dashboard/constants/topic-data.ts";
 import {Link} from "react-router-dom";
 import {Check} from "lucide-react";
+import type {TopicData} from "@/features/dashboard/types/topic.ts";
 
 export default function TrendingPart (){
     return (
@@ -36,7 +37,7 @@ const stateStyle = {
 function Topic({topic, id}:
                {topic:TopicData, id:number}){
     return(
-        <div className={`grid grid-cols-[33%_47%_20%] justify-between border-b-1
+        <div className={`grid grid-cols-[33%_40%_27%] justify-between border-b-1
         border-slate-200 items-center px-4 py-2 ${id === 9 ? `!border-none`: null}`}>
             <div className="flex flex-row items-center gap-6">
                 <p>{id + 1}</p>
@@ -52,7 +53,7 @@ function Topic({topic, id}:
                 </div>
             </div>
 
-            <div className="w-[70%]">
+            <div className="w-[80%]">
                 <div className="flex flex-row items-center gap-1">
                     <div className="w-full h-2 bg-slate-200 rounded-full">
                         <div
@@ -70,13 +71,9 @@ function Topic({topic, id}:
                 </p>
             </div>
 
-            <div className="flex flex-row items-center gap-4 justify-between">
+            <div className="flex flex-row items-center gap-10 justify-between">
                 <div
-                    className={`
-                        px-3 py-1
-                        rounded-xl
-                        text-sm
-                        font-medium
+                    className={`w-24 text-center px-3 py-1 rounded-xl text-sm font-medium
                         ${stateStyle[topic.state as keyof typeof stateStyle]}
                     `}
                 >
@@ -84,16 +81,16 @@ function Topic({topic, id}:
                 </div>
 
                 {topic.isFollowed ? (
-                    <button className="bg-green-600 text-white font-semibold
-                    py-2 px-4 rounded-xl cursor-pointer">
-                        + Follow
-                    </button>
-                ):(
                     <div className="flex flex-row items-center gap-2 font-semibold
                     bg-green-100 border-2 border-green-300 text-green-800 px-2 py-1 rounded-xl">
                         <Check/>
                         Following
                     </div>
+                ):(
+                    <button className="bg-green-600 text-white font-bold
+                    py-[1vh] px-2 rounded-xl cursor-pointer w-[8vw]">
+                        + Follow
+                    </button>
                 )}
             </div>
         </div>
