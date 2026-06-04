@@ -43,10 +43,10 @@ export default function AdminSidebar() {
   }
 
   return (
-    <aside className="sticky top-0 flex h-screen w-56 shrink-0 flex-col bg-[#03120a] text-slate-200">
+    <aside className="fixed inset-y-0 left-0 z-50 flex h-screen w-56 flex-col bg-[#03120a] text-slate-200">
       <Link
         to={ROUTES.HOME}
-        className="flex items-center gap-3 border-b border-emerald-400/20 px-4 py-5 transition hover:bg-emerald-500/10"
+        className="flex min-h-[76px] items-center gap-3 border-b border-emerald-400/20 px-4 transition hover:bg-emerald-500/10"
       >
         <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-lg bg-white shadow-sm">
           <img

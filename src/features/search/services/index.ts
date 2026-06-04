@@ -558,9 +558,9 @@ function mapApiWorkToPaperResult(work: SearchWorksApiItem): PaperResult {
     topic: normalizedTopic,
     subField: normalizedSubField,
     growthPercent: 0,
-    isTrendTopic: Boolean(work.hasOrcid || work.openAccess),
+    isTrendTopic: false,
     saved: false,
-    trend: Boolean(work.openAccess),
+    trend: false,
   };
 }
 

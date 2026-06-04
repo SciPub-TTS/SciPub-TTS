@@ -29,8 +29,8 @@ export default function SearchPageContent() {
     handleSelectSort,
     handleSuggestedSearch,
     handleToggleFilters,
-    handleToggleMoreFilters,
     handleToggleSearchSuggestions,
+    handleToggleVisibleFilterWidget,
     hasFormError,
     hasSearched,
     hasMoreFilterOptions,
@@ -45,10 +45,10 @@ export default function SearchPageContent() {
     responseTimeSeconds,
     searchQuery,
     selectedSort,
-    showAllFilters,
     showAllSearchSuggestions,
     totalIndexedPapers,
     updateFilter,
+    visibleFilterWidgets,
     visiblePaperResults,
     visibleSearchSuggestions,
   } = useSearchPageState();
@@ -78,9 +78,9 @@ export default function SearchPageContent() {
         matchedPaperCount={matchedPaperCount}
         matchedSavedSearchCount={matchedSavedSearchCount}
         searchQuery={searchQuery}
-        showAllFilters={showAllFilters}
         showAllSearchSuggestions={showAllSearchSuggestions}
         totalIndexedPapers={totalIndexedPapers}
+        visibleFilterWidgets={visibleFilterWidgets}
         visibleSearchSuggestions={visibleSearchSuggestions}
         onApplyFilters={handleApplyFilters}
         onFilterOptionSearch={handleFilterOptionSearch}
@@ -94,8 +94,8 @@ export default function SearchPageContent() {
         onSearchQueryChange={handleSearchQueryChange}
         onSuggestedSearchSelect={handleSuggestedSearch}
         onToggleFilters={handleToggleFilters}
-        onToggleMoreFilters={handleToggleMoreFilters}
         onToggleSearchSuggestions={handleToggleSearchSuggestions}
+        onToggleVisibleFilterWidget={handleToggleVisibleFilterWidget}
         updateFilter={updateFilter}
       />
 

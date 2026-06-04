@@ -46,6 +46,20 @@ export type SearchFilters = {
   indexedByOrcid: "" | "is" | "is not";
 };
 
+export type SearchFilterWidgetKey =
+  | "year"
+  | "type"
+  | "openAccess"
+  | "subField"
+  | "author"
+  | "institution"
+  | "pdf"
+  | "country"
+  | "citation"
+  | "source"
+  | "award"
+  | "indexedByOrcid";
+
 export type RemoteOptionFilterKey =
   | "author"
   | "institution"
@@ -111,9 +125,9 @@ export type SearchPanelProps = {
   matchedPaperCount: number;
   matchedSavedSearchCount: number;
   searchQuery: string;
-  showAllFilters: boolean;
   showAllSearchSuggestions: boolean;
   totalIndexedPapers: number;
+  visibleFilterWidgets: SearchFilterWidgetKey[];
   visibleSearchSuggestions: SavedSearch[];
   onApplyFilters: () => void;
   onFilterOptionSearch: (filterKey: RemoteOptionFilterKey, keyword: string) => void;
@@ -127,8 +141,8 @@ export type SearchPanelProps = {
   onSearchQueryChange: (query: string) => void;
   onSuggestedSearchSelect: (query: string) => void;
   onToggleFilters: () => void;
-  onToggleMoreFilters: () => void;
   onToggleSearchSuggestions: () => void;
+  onToggleVisibleFilterWidget: (widgetKey: SearchFilterWidgetKey) => void;
   updateFilter: UpdateSearchFilter;
 };
 
@@ -180,13 +194,13 @@ export type SearchFiltersPanelProps = {
   hasMoreFilterOptions: RemoteOptionStateMap;
   isLoadingResults: boolean;
   matchedPaperCount: number;
-  showAllFilters: boolean;
+  visibleFilterWidgets: SearchFilterWidgetKey[];
   onApplyFilters: () => void;
   onFilterOptionSearch: (filterKey: RemoteOptionFilterKey, keyword: string) => void;
   onLoadMoreFilterOptions: (filterKey: RemoteOptionFilterKey) => void;
   onResetFilters: () => void;
   onToggleFilters: () => void;
-  onToggleMoreFilters: () => void;
+  onToggleVisibleFilterWidget: (widgetKey: SearchFilterWidgetKey) => void;
   updateFilter: UpdateSearchFilter;
 };
 
@@ -198,8 +212,8 @@ export type SearchFiltersHeaderProps = {
 };
 
 export type FilterVisibilityToggleProps = {
-  showAllFilters: boolean;
-  onToggleMoreFilters: () => void;
+  visibleFilterWidgets: SearchFilterWidgetKey[];
+  onToggleVisibleFilterWidget: (widgetKey: SearchFilterWidgetKey) => void;
 };
 
 export type SearchFilterGridProps = {
@@ -208,7 +222,7 @@ export type SearchFilterGridProps = {
   hasMoreFilterOptions: RemoteOptionStateMap;
   isLoadingFilterOptions: RemoteOptionStateMap;
   isLoadingMoreFilterOptions: RemoteOptionStateMap;
-  showAllFilters: boolean;
+  visibleFilterWidgets: SearchFilterWidgetKey[];
   onFilterOptionSearch: (filterKey: RemoteOptionFilterKey, keyword: string) => void;
   onLoadMoreFilterOptions: (filterKey: RemoteOptionFilterKey) => void;
   updateFilter: UpdateSearchFilter;
@@ -282,19 +296,8 @@ export type SearchResultsProps = {
   onSelectSort: (sortOption: string) => void;
 };
 
-export type ResultsHeaderProps = {
-  appliedSearchQuery: string;
-  isLoadingResults: boolean;
-  responseTimeSeconds: number;
-  totalResultCount: number;
-  selectedSort: string;
-  onSelectSort: (sortOption: string) => void;
-};
-
 export type ResultsListProps = {
   autoLoadAnchorIndex: number;
-  hasSearched: boolean;
-  isLoadingResults: boolean;
   visiblePaperResults: PaperResult[];
 };
 

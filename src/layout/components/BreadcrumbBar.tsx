@@ -2,6 +2,7 @@ import { ArrowLeft, ChevronRight, Home } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 
 import { ROUTES } from "@/app/router";
+import { markSearchPageRestorePending } from "@/features/search/utils/navigationState";
 
 type BreadcrumbBarProps = {
   homePath?: string;
@@ -42,13 +43,14 @@ export default function BreadcrumbBar({
   const navigate = useNavigate();
 
   const breadcrumbItems = getBreadcrumbItems(location.pathname);
+  const isPaperDetailPage = location.pathname.startsWith("/papers/");
 
   const isDark = variant === "dark";
   const textClass = isDark ? "text-slate-100" : "text-slate-950";
   const mutedClass = isDark ? "text-slate-700" : "text-slate-500";
   const homeLinkClass = isDark
-    ? "<text-emerald-4></text-emerald-4>00 hover:text-[#059669]"
-    : "text-emerald-900 hover:text-[#059669]";
+    ? "text-emerald-500 hover:text-[#059669]"
+    : "text-black hover:text-[#059669]";
   const boxClass = isDark
     ? "border-black bg-slate-900"
     : "border-black bg-white";
@@ -101,6 +103,11 @@ export default function BreadcrumbBar({
                   {item.path && !isLast ? (
                     <Link
                       to={item.path}
+                      onClick={
+                        isPaperDetailPage && item.path === ROUTES.SEARCH
+                          ? markSearchPageRestorePending
+                          : undefined
+                      }
                       className={`truncate text-sm font-bold ${homeLinkClass}`}
                     >
                       {item.label}
