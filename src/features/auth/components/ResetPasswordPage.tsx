@@ -63,11 +63,12 @@ export default function ResetPasswordPage() {
         e.preventDefault();
 
         if (newPassword.length < 10) {
-            setError("Mật khẩu phải có ít nhất 10 ký tự.");
+            setError("Password must be at least 10 characters long.");
             return;
         }
+
         if (newPassword !== confirmNewPassword) {
-            setError("Mật khẩu xác nhận không khớp.");
+            setError("Password confirmation does not match.");
             return;
         }
 
@@ -84,11 +85,12 @@ export default function ResetPasswordPage() {
             navigate(ROUTES.LOGIN, {
                 replace: true,
                 state: {
-                    successMessage: response.message ?? "Mật khẩu đã được đặt lại. Vui lòng đăng nhập.",
+                    successMessage:
+                        response.message ?? "Your password has been reset. Please log in.",
                 },
             });
         } catch (err) {
-            setError(getApiErrorMessage(err, "Không thể đặt lại mật khẩu. Link có thể đã hết hạn."));
+            setError(getApiErrorMessage(err, "Unable to reset password. The link may have expired."));
         } finally {
             setSubmitting(false);
         }

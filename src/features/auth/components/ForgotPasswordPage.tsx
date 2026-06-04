@@ -28,7 +28,7 @@ export default function ForgotPasswordPage() {
                 },
             });
         } catch (err) {
-            setError(getApiErrorMessage(err, "Không thể gửi yêu cầu. Vui lòng thử lại."));
+            setError(getApiErrorMessage(err, "Unable to send request. Please try again."));
         } finally {
             setSubmitting(false);
         }

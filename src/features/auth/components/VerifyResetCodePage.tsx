@@ -16,8 +16,7 @@ export default function VerifyResetCodePage() {
         email?: string;
     } | null;
 
-    const email =
-        locationState?.email || getPasswordRecoveryEmail() || "";
+    const email = locationState?.email || getPasswordRecoveryEmail() || "";
 
     const [digits, setDigits] = useState<string[]>(Array(CODE_LENGTH).fill(""));
     const [submitting, setSubmitting] = useState(false);
@@ -28,15 +27,21 @@ export default function VerifyResetCodePage() {
 
     const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
-    // Countdown for resend
+    // Countdown for resending the verification code
     useEffect(() => {
         if (countdown <= 0) return;
+
         const t = setTimeout(() => setCountdown((c) => c - 1), 1000);
+
         return () => clearTimeout(t);
     }, [countdown]);
 
     function handleOTPChange(index: number, value: string) {
-        const cleaned = value.replace(/[^a-zA-z0-9]/g, "").toUpperCase().slice(-1);
+        const cleaned = value
+            .replace(/[^a-zA-Z0-9]/g, "")
+            .toUpperCase()
+            .slice(-1);
+
         const next = [...digits];
         next[index] = cleaned;
         setDigits(next);
@@ -54,18 +59,30 @@ export default function VerifyResetCodePage() {
 
     function handlePaste(e: React.ClipboardEvent) {
         e.preventDefault();
-        const pasted = e.clipboardData.getData("text").replace(/[^a-zA-z0-9]/g, "").toUpperCase().slice(0, CODE_LENGTH);
+
+        const pasted = e.clipboardData
+            .getData("text")
+            .replace(/[^a-zA-Z0-9]/g, "")
+            .toUpperCase()
+            .slice(0, CODE_LENGTH);
+
         const next = Array(CODE_LENGTH).fill("");
-        pasted.split("").forEach((c, i) => { next[i] = c; });
+
+        pasted.split("").forEach((c, i) => {
+            next[i] = c;
+        });
+
         setDigits(next);
         inputRefs.current[Math.min(pasted.length, CODE_LENGTH - 1)]?.focus();
     }
 
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
+
         const code = digits.join("");
+
         if (code.length < CODE_LENGTH) {
-            setError("Vui lòng nhập đầy đủ mã xác thực.");
+            setError("Please enter the complete verification code.");
             return;
         }
 
@@ -77,10 +94,12 @@ export default function VerifyResetCodePage() {
 
             navigate(ROUTES.FORGOT_PASSWORD_RESET, {
                 replace: true,
-                state: { resetGrantToken: response.data.resetGrantToken },
+                state: {
+                    resetGrantToken: response.data.resetGrantToken,
+                },
             });
         } catch (err) {
-            setError(getApiErrorMessage(err, "Mã không hợp lệ hoặc đã hết hạn."));
+            setError(getApiErrorMessage(err, "The code is invalid or has expired."));
             setDigits(Array(CODE_LENGTH).fill(""));
             inputRefs.current[0]?.focus();
         } finally {
@@ -90,16 +109,19 @@ export default function VerifyResetCodePage() {
 
     async function handleResend() {
         if (!email || countdown > 0) return;
+
         try {
             setResending(true);
             setError("");
+
             const response = await submitForgotPasswordRequest({ email });
-            setSuccessMsg(response.message ?? "Đã gửi lại mã xác thực.");
+
+            setSuccessMsg(response.message ?? "A new verification code has been sent.");
             setCountdown(60);
             setDigits(Array(CODE_LENGTH).fill(""));
             inputRefs.current[0]?.focus();
         } catch (err) {
-            setError(getApiErrorMessage(err, "Không thể gửi lại mã."));
+            setError(getApiErrorMessage(err, "Unable to resend the code."));
         } finally {
             setResending(false);
         }

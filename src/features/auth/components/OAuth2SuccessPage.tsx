@@ -6,12 +6,11 @@ import { AUTH_ROLES } from "@/features/auth/constants/roles";
 import { getApiErrorMessage } from "@/features/auth/utils/getApiErrorMessage";
 
 type Status = "loading" | "error";
-
 const ERROR_MESSAGES: Record<string, string> = {
-  account_banned: "Tài khoản của bạn đã bị khóa. Vui lòng liên hệ hỗ trợ.",
-  invalid_user_info: "Không thể lấy thông tin từ Google. Vui lòng thử lại.",
-  oauth2_user_not_found: "Không tìm thấy tài khoản. Vui lòng đăng ký trước.",
-  google_email_not_verified: "Email Google của bạn chưa được xác thực.",
+  account_banned: "Your account has been banned. Please contact support.",
+  invalid_user_info: "Unable to retrieve information from Google. Please try again.",
+  oauth2_user_not_found: "Account not found. Please register first.",
+  google_email_not_verified: "Your Google email has not been verified.",
 };
 
 export default function OAuth2SuccessPage() {
@@ -19,18 +18,19 @@ export default function OAuth2SuccessPage() {
   const [status, setStatus] = useState<Status>("loading");
   const [errorMessage, setErrorMessage] = useState("");
 
-  // Đọc error từ URL nếu backend redirect về với ?error=
+  // Read error from URL if the backend redirects back with ?error=
   const searchParams = new URLSearchParams(window.location.search);
   const urlError = searchParams.get("error");
 
-  // useRef để tránh chạy 2 lần do React StrictMode
+  // useRef prevents the effect from running twice because of React StrictMode
   const hasCalled = useRef(false);
 
   useEffect(() => {
-    // Nếu backend redirect về với ?error= thì hiện lỗi luôn, không gọi API
+    // If the backend redirects back with ?error=, show the error immediately
+    // and do not call the API
     if (urlError) {
       setErrorMessage(
-        ERROR_MESSAGES[urlError] ?? "Đăng nhập Google thất bại. Vui lòng thử lại."
+          ERROR_MESSAGES[urlError] ?? "Google login failed. Please try again."
       );
       setStatus("error");
       return;
@@ -41,23 +41,23 @@ export default function OAuth2SuccessPage() {
 
     async function handleOAuth2Callback() {
       try {
-        // Bước 1: Gọi /refresh — browser tự attach HttpOnly cookie
-        // Backend đọc refresh token từ cookie → trả về access token
+        // Step 1: Call /refresh — the browser automatically attaches the HttpOnly cookie.
+        // The backend reads the refresh token from the cookie and returns an access token.
         const refreshResponse = await authApi.refresh();
         setAuthSession(refreshResponse.data);
 
-        // Bước 2: Gọi /me để lấy thông tin user đầy đủ
+        // Step 2: Call /me to get the full user information.
         const meResponse = await authApi.me();
         setCurrentUser(meResponse.data);
 
-        // Bước 3: Navigate theo role
+        // Step 3: Navigate based on role.
         const role = meResponse.data.role;
         const redirectTo =
-          role === AUTH_ROLES.ADMIN ? "/admin/dashboard" : "/";
+            role === AUTH_ROLES.ADMIN ? "/admin/dashboard" : "/";
 
         navigate(redirectTo, { replace: true });
       } catch (err) {
-        const msg = getApiErrorMessage(err, "Đăng nhập Google thất bại. Vui lòng thử lại.");
+        const msg = getApiErrorMessage(err, "Google login failed. Please try again.");
         setErrorMessage(msg);
         setStatus("error");
       }
@@ -65,7 +65,6 @@ export default function OAuth2SuccessPage() {
 
     handleOAuth2Callback();
   }, [navigate, urlError]);
-
   // ── Error state ──────────────────────────────────────────────────────────
   if (status === "error") {
     return (
