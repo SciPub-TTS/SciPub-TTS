@@ -1,0 +1,192 @@
+import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { authApi } from "@/features/auth/services/auth.api";
+import { setAuthSession, setCurrentUser } from "@/features/auth/utils/authStorage";
+import { AUTH_ROLES } from "@/features/auth/constants/roles";
+import { getApiErrorMessage } from "@/features/auth/utils/getApiErrorMessage";
+
+type Status = "loading" | "error";
+
+const ERROR_MESSAGES: Record<string, string> = {
+  account_banned: "Tài khoản của bạn đã bị khóa. Vui lòng liên hệ hỗ trợ.",
+  invalid_user_info: "Không thể lấy thông tin từ Google. Vui lòng thử lại.",
+  oauth2_user_not_found: "Không tìm thấy tài khoản. Vui lòng đăng ký trước.",
+  google_email_not_verified: "Email Google của bạn chưa được xác thực.",
+};
+
+export default function OAuth2SuccessPage() {
+  const navigate = useNavigate();
+  const [status, setStatus] = useState<Status>("loading");
+  const [errorMessage, setErrorMessage] = useState("");
+
+  // Đọc error từ URL nếu backend redirect về với ?error=
+  const searchParams = new URLSearchParams(window.location.search);
+  const urlError = searchParams.get("error");
+
+  // useRef để tránh chạy 2 lần do React StrictMode
+  const hasCalled = useRef(false);
+
+  useEffect(() => {
+    // Nếu backend redirect về với ?error= thì hiện lỗi luôn, không gọi API
+    if (urlError) {
+      setErrorMessage(
+        ERROR_MESSAGES[urlError] ?? "Đăng nhập Google thất bại. Vui lòng thử lại."
+      );
+      setStatus("error");
+      return;
+    }
+
+    if (hasCalled.current) return;
+    hasCalled.current = true;
+
+    async function handleOAuth2Callback() {
+      try {
+        // Bước 1: Gọi /refresh — browser tự attach HttpOnly cookie
+        // Backend đọc refresh token từ cookie → trả về access token
+        const refreshResponse = await authApi.refresh();
+        setAuthSession(refreshResponse.data);
+
+        // Bước 2: Gọi /me để lấy thông tin user đầy đủ
+        const meResponse = await authApi.me();
+        setCurrentUser(meResponse.data);
+
+        // Bước 3: Navigate theo role
+        const role = meResponse.data.role;
+        const redirectTo =
+          role === AUTH_ROLES.ADMIN ? "/admin/dashboard" : "/";
+
+        navigate(redirectTo, { replace: true });
+      } catch (err) {
+        const msg = getApiErrorMessage(err, "Đăng nhập Google thất bại. Vui lòng thử lại.");
+        setErrorMessage(msg);
+        setStatus("error");
+      }
+    }
+
+    handleOAuth2Callback();
+  }, [navigate, urlError]);
+
+  // ── Error state ──────────────────────────────────────────────────────────
+  if (status === "error") {
+    return (
+      <div className="min-h-screen bg-white flex flex-col">
+        {/* Header */}
+        <header className="flex items-center px-8 h-14 border-b border-slate-100">
+          <div className="flex items-center gap-2.5">
+            <div className="w-7 h-7 rounded-md bg-emerald-800 flex items-center justify-center">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <path d="M2 10 Q7 2 12 10" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" fill="none" />
+                <circle cx="7" cy="5.5" r="1.2" fill="#6ee7b7" />
+              </svg>
+            </div>
+            <div>
+              <div className="text-sm font-semibold text-slate-900 leading-none">Research Trend Tracker</div>
+              <div className="text-[10px] tracking-widest text-slate-400 leading-none mt-0.5">RTT · V2.4</div>
+            </div>
+          </div>
+        </header>
+
+        <div className="flex flex-1 items-center justify-center px-6 py-16">
+          <div className="w-full max-w-[380px] text-center">
+            {/* Error icon */}
+            <div className="w-14 h-14 rounded-2xl bg-red-50 border border-red-100 flex items-center justify-center mx-auto mb-6">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="12" r="10" stroke="#ef4444" strokeWidth="1.5" />
+                <path d="M12 8v5" stroke="#ef4444" strokeWidth="1.8" strokeLinecap="round" />
+                <circle cx="12" cy="16.5" r="1.3" fill="#ef4444" />
+              </svg>
+            </div>
+
+            <h1 className="font-serif text-[1.8rem] leading-tight text-slate-950 mb-1">
+              Đăng nhập
+            </h1>
+            <h1 className="font-serif text-[1.8rem] leading-tight italic text-red-600 mb-4">
+              thất bại.
+            </h1>
+
+            <p className="text-sm text-slate-500 leading-relaxed mb-8 max-w-xs mx-auto">
+              {errorMessage}
+            </p>
+
+            <div className="flex flex-col gap-3">
+              <a
+                href="/login"
+                className="inline-flex items-center justify-center gap-2 h-11 px-6 rounded-lg bg-emerald-800 text-white text-sm font-semibold hover:bg-emerald-900 transition-all"
+              >
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                  <path d="M9 2L4 7l5 5" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                Quay lại đăng nhập
+              </a>
+
+              <button
+                onClick={() => window.location.href = "/login"}
+                className="inline-flex items-center justify-center h-11 px-6 rounded-lg border border-slate-200 text-slate-600 text-sm font-medium hover:bg-slate-50 transition-all"
+              >
+                Thử lại với Google
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Loading state ─────────────────────────────────────────────────────────
+  return (
+    <div className="min-h-screen bg-white flex flex-col items-center justify-center gap-5">
+      {/* Logo */}
+      <div className="flex items-center gap-2.5 mb-4">
+        <div className="w-8 h-8 rounded-lg bg-emerald-800 flex items-center justify-center">
+          <svg width="16" height="16" viewBox="0 0 14 14" fill="none">
+            <path d="M2 10 Q7 2 12 10" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" fill="none" />
+            <circle cx="7" cy="5.5" r="1.2" fill="#6ee7b7" />
+          </svg>
+        </div>
+        <div>
+          <div className="text-sm font-semibold text-slate-900 leading-none">Research Trend Tracker</div>
+          <div className="text-[10px] tracking-widest text-slate-400 leading-none mt-0.5">RTT · V2.4</div>
+        </div>
+      </div>
+
+      {/* Spinner */}
+      <div className="relative w-12 h-12">
+        <svg className="animate-spin w-12 h-12 text-emerald-600" viewBox="0 0 24 24" fill="none">
+          <circle className="opacity-20" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
+          <path
+            className="opacity-90"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+          />
+        </svg>
+      </div>
+
+      {/* Steps indicator */}
+      <div className="flex flex-col items-center gap-2 mt-2">
+        <p className="text-sm font-medium text-slate-700">Đang xử lý đăng nhập Google…</p>
+        <p className="text-xs text-slate-400">Vui lòng không đóng trang này</p>
+      </div>
+
+      {/* Progress steps */}
+      <div className="flex items-center gap-3 mt-4">
+        {[
+          "Xác thực Google",
+          "Tạo phiên đăng nhập",
+          "Tải thông tin",
+        ].map((step, i) => (
+          <div key={step} className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5">
+              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"
+                style={{ animationDelay: `${i * 0.3}s` }}
+              />
+              <span className="text-xs text-slate-400">{step}</span>
+            </div>
+            {i < 2 && (
+              <div className="w-4 h-px bg-slate-200" />
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
