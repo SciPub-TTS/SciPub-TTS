@@ -1,4 +1,5 @@
-import {MENU_METRICS, type MetricData} from "@/features/dashboard/constants/metric-data.ts";
+import {MENU_METRICS} from "@/features/dashboard/constants/metric-data.ts";
+import type {MetricData} from "@/features/dashboard/types/metric.ts";
 
 export default function MetricPart() {
     return (
