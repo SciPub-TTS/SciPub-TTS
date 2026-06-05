@@ -46,15 +46,19 @@ export function formatPublishedLabel(
   publicationYear: number | null,
   publicationDate: string | null,
 ) {
-  if (publicationYear) {
-    return `Published ${publicationYear}`;
-  }
-
   if (publicationDate?.trim()) {
     const date = new Date(publicationDate);
     if (!Number.isNaN(date.getTime())) {
-      return `Published ${date.getFullYear()}`;
+      return `Published ${new Intl.DateTimeFormat("en-US", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      }).format(date)}`;
     }
+  }
+
+  if (publicationYear) {
+    return `Published ${publicationYear}`;
   }
 
   return "";
@@ -142,6 +146,10 @@ export function extractLastSegment(value: string) {
   }
 
   return normalizedValue.slice(lastSlashIndex + 1);
+}
+
+export function normalizeOpenAlexWorkId(value: string) {
+  return extractLastSegment(value).toUpperCase();
 }
 
 export function formatDecimalValue(value: number | null) {

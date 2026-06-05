@@ -101,11 +101,13 @@ export function SearchPanel({
   );
 }
 
-function SearchTabsHeader({
-  totalIndexedPapers,
-}: {
+type SearchTabsHeaderProps = {
   totalIndexedPapers: number;
-}) {
+};
+
+function SearchTabsHeader(props: SearchTabsHeaderProps) {
+  const { totalIndexedPapers } = props;
+
   // Format display text before JSX so the markup stays simple.
   const indexedPaperLabel =
     totalIndexedPapers > 0

@@ -135,15 +135,19 @@ function SearchLoadingState() {
   );
 }
 
-function SortActions({
-  isLoadingResults,
-  selectedSort,
-  onSelectSort,
-}: {
+type SortActionsProps = {
   isLoadingResults: boolean;
   selectedSort: string;
   onSelectSort: (sortOption: string) => void;
-}) {
+};
+
+type ResultsListWithAnchorProps = ResultsListProps & {
+  lazyLoadAnchorRef: RefObject<HTMLDivElement | null>;
+};
+
+function SortActions(props: SortActionsProps) {
+  const { isLoadingResults, selectedSort, onSelectSort } = props;
+
   function handleSortClick(event: MouseEvent<HTMLButtonElement>) {
     // value comes from the clicked sort button.
     const sortOption = event.currentTarget.value;
@@ -179,13 +183,9 @@ function SortActions({
   );
 }
 
-function ResultsList({
-  autoLoadAnchorIndex,
-  lazyLoadAnchorRef,
-  visiblePaperResults,
-}: ResultsListProps & {
-  lazyLoadAnchorRef: RefObject<HTMLDivElement | null>;
-}) {
+function ResultsList(props: ResultsListWithAnchorProps) {
+  const { autoLoadAnchorIndex, lazyLoadAnchorRef, visiblePaperResults } = props;
+
   const resultItems: ReactNode[] = [];
   for (let index = 0; index < visiblePaperResults.length; index += 1) {
     if (index === autoLoadAnchorIndex) {

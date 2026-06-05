@@ -7,19 +7,17 @@ import {
   FileText,
   Globe2,
 } from "lucide-react";
-import { Link } from "react-router-dom";
-
-import { routePaths } from "@/app/router";
 import EntityCanvasLink from "@/features/entity-canvas/components/EntityCanvasLink";
 import MetadataBadge from "@/layout/components/MetadataBadge";
 
 import type { PaperDetailData } from "../types";
 
-export default function PaperDetailHeader({
-  paperDetail,
-}: {
+type PaperDetailHeaderProps = {
   paperDetail: PaperDetailData;
-}) {
+};
+
+export default function PaperDetailHeader(props: PaperDetailHeaderProps) {
+  const { paperDetail } = props;
   const [isBookmarked, setIsBookmarked] = useState(false);
   const hasPdfUrl = Boolean(paperDetail.pdfUrl?.trim());
 
@@ -94,20 +92,12 @@ export default function PaperDetailHeader({
           {isBookmarked ? "Saved" : "Bookmark"}
         </button>
 
-        <Link
-          to={routePaths.report()}
-          className="inline-flex items-center gap-2 rounded-xl border border-black bg-white px-4 py-2.5 text-sm font-semibold text-slate-800 transition hover:bg-slate-50"
-        >
-          <FileText className="h-4 w-4" />
-          Add to Report Page
-        </Link>
-
         {hasPdfUrl ? (
           <a
             href={paperDetail.pdfUrl || undefined}
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center gap-2 rounded-xl border border-[#000000] bg-[#ffffff] px-4 py-2.5 text-sm font-semibold text-[#2ca31f] transition hover:bg-[#a3f8a0]"
+            className="inline-flex items-center gap-2 rounded-xl border border-[#000000] bg-[#ffffff] px-4 py-2.5 text-sm font-semibold text-[#2ca31f] transition hover:bg-[#a3f8a0] hover:text-black"
           >
             <FileText className="h-4 w-4" />
             PDF

@@ -44,6 +44,99 @@ type EntityCanvasProps = {
   onToggleFollow: (entry: EntityCanvasEntry) => void;
 };
 
+type EntityCanvasPanelProps = {
+  activeIndex: number;
+  breadcrumbs: EntityCanvasEntry[];
+  entry: EntityCanvasEntry;
+  canGoBack: boolean;
+  isActive: boolean;
+  isFollowed: (entry: EntityCanvasEntry) => boolean;
+  onBack: () => void;
+  onClose: () => void;
+  onJumpTo: (index: number) => void;
+  onToggleFollow: (entry: EntityCanvasEntry) => void;
+};
+
+type CanvasHeaderProps = {
+  activeIndex: number;
+  breadcrumbs: EntityCanvasEntry[];
+  canGoBack: boolean;
+  isActive: boolean;
+  onBack: () => void;
+  onClose: () => void;
+  onJumpTo: (index: number) => void;
+  openAlexId: string;
+  subtitle: string;
+  title: string;
+};
+
+type BreadcrumbTrailProps = {
+  activeIndex: number;
+  breadcrumbs: EntityCanvasEntry[];
+  onJumpTo: (index: number) => void;
+};
+
+type CanvasFooterProps = {
+  children: ReactNode;
+};
+
+type CanvasLoadingStateProps = {
+  activeIndex: number;
+  breadcrumbs: EntityCanvasEntry[];
+  canGoBack: boolean;
+  isActive: boolean;
+  onBack: () => void;
+  onClose: () => void;
+  onJumpTo: (index: number) => void;
+};
+
+type CanvasErrorStateProps = {
+  activeIndex: number;
+  breadcrumbs: EntityCanvasEntry[];
+  canGoBack: boolean;
+  isActive: boolean;
+  message: string;
+  onBack: () => void;
+  onClose: () => void;
+  onJumpTo: (index: number) => void;
+};
+
+type SectionCardProps = {
+  children: ReactNode;
+  title: string;
+};
+
+type SummaryGridProps = {
+  items: SummaryItem[];
+};
+
+type StatsGridProps = {
+  items: SummaryItem[];
+};
+
+type StaticTagListProps = {
+  items: string[];
+  tone: "default" | "topic";
+};
+
+type EntityTagListProps = {
+  items: EntityRef[];
+  tone: "default" | "topic";
+};
+
+type EntityListProps = {
+  items: EntityRef[];
+};
+
+type WorkListProps = {
+  items: WorkItem[];
+  onNavigateToWork: () => void;
+};
+
+type QuickLinksListProps = {
+  items: SummaryItem[];
+};
+
 export default function EntityCanvas({
   stack,
   onClose,
@@ -105,29 +198,20 @@ export default function EntityCanvas({
   );
 }
 
-function EntityCanvasPanel({
-  activeIndex,
-  breadcrumbs,
-  entry,
-  canGoBack,
-  isActive,
-  isFollowed,
-  onBack,
-  onClose,
-  onJumpTo,
-  onToggleFollow,
-}: {
-  activeIndex: number;
-  breadcrumbs: EntityCanvasEntry[];
-  entry: EntityCanvasEntry;
-  canGoBack: boolean;
-  isActive: boolean;
-  isFollowed: (entry: EntityCanvasEntry) => boolean;
-  onBack: () => void;
-  onClose: () => void;
-  onJumpTo: (index: number) => void;
-  onToggleFollow: (entry: EntityCanvasEntry) => void;
-}) {
+function EntityCanvasPanel(props: EntityCanvasPanelProps) {
+  const {
+    activeIndex,
+    breadcrumbs,
+    entry,
+    canGoBack,
+    isActive,
+    isFollowed,
+    onBack,
+    onClose,
+    onJumpTo,
+    onToggleFollow,
+  } = props;
+
   const [entity, setEntity] = useState<OpenAlexEntity | null>(null);
   const [topWorks, setTopWorks] = useState<WorkItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -366,29 +450,20 @@ function EntityCanvasPanel({
   );
 }
 
-function CanvasHeader({
-  activeIndex,
-  breadcrumbs,
-  canGoBack,
-  isActive,
-  onBack,
-  onClose,
-  onJumpTo,
-  openAlexId,
-  subtitle,
-  title,
-}: {
-  activeIndex: number;
-  breadcrumbs: EntityCanvasEntry[];
-  canGoBack: boolean;
-  isActive: boolean;
-  onBack: () => void;
-  onClose: () => void;
-  onJumpTo: (index: number) => void;
-  openAlexId: string;
-  subtitle: string;
-  title: string;
-}) {
+function CanvasHeader(props: CanvasHeaderProps) {
+  const {
+    activeIndex,
+    breadcrumbs,
+    canGoBack,
+    isActive,
+    onBack,
+    onClose,
+    onJumpTo,
+    openAlexId,
+    subtitle,
+    title,
+  } = props;
+
   return (
     <div className="border-b border-slate-200 bg-white px-6 py-5">
       <div className="flex items-start justify-between gap-3">
@@ -440,15 +515,9 @@ function CanvasHeader({
   );
 }
 
-function BreadcrumbTrail({
-  activeIndex,
-  breadcrumbs,
-  onJumpTo,
-}: {
-  activeIndex: number;
-  breadcrumbs: EntityCanvasEntry[];
-  onJumpTo: (index: number) => void;
-}) {
+function BreadcrumbTrail(props: BreadcrumbTrailProps) {
+  const { activeIndex, breadcrumbs, onJumpTo } = props;
+
   return (
     <div className="flex min-w-0 flex-wrap items-center gap-1 text-sm text-slate-500">
       {breadcrumbs.map((item, index) => {
@@ -479,7 +548,9 @@ function BreadcrumbTrail({
   );
 }
 
-function CanvasFooter({ children }: { children: ReactNode }) {
+function CanvasFooter(props: CanvasFooterProps) {
+  const { children } = props;
+
   return (
     <div className="border-t border-slate-200 bg-white px-6 py-4">
       {children}
@@ -487,23 +558,17 @@ function CanvasFooter({ children }: { children: ReactNode }) {
   );
 }
 
-function CanvasLoadingState({
-  activeIndex,
-  breadcrumbs,
-  canGoBack,
-  isActive,
-  onBack,
-  onClose,
-  onJumpTo,
-}: {
-  activeIndex: number;
-  breadcrumbs: EntityCanvasEntry[];
-  canGoBack: boolean;
-  isActive: boolean;
-  onBack: () => void;
-  onClose: () => void;
-  onJumpTo: (index: number) => void;
-}) {
+function CanvasLoadingState(props: CanvasLoadingStateProps) {
+  const {
+    activeIndex,
+    breadcrumbs,
+    canGoBack,
+    isActive,
+    onBack,
+    onClose,
+    onJumpTo,
+  } = props;
+
   return (
     <>
       <CanvasHeader
@@ -527,25 +592,18 @@ function CanvasLoadingState({
   );
 }
 
-function CanvasErrorState({
-  activeIndex,
-  breadcrumbs,
-  canGoBack,
-  isActive,
-  message,
-  onBack,
-  onClose,
-  onJumpTo,
-}: {
-  activeIndex: number;
-  breadcrumbs: EntityCanvasEntry[];
-  canGoBack: boolean;
-  isActive: boolean;
-  message: string;
-  onBack: () => void;
-  onClose: () => void;
-  onJumpTo: (index: number) => void;
-}) {
+function CanvasErrorState(props: CanvasErrorStateProps) {
+  const {
+    activeIndex,
+    breadcrumbs,
+    canGoBack,
+    isActive,
+    message,
+    onBack,
+    onClose,
+    onJumpTo,
+  } = props;
+
   return (
     <>
       <CanvasHeader
@@ -567,13 +625,9 @@ function CanvasErrorState({
   );
 }
 
-function SectionCard({
-  children,
-  title,
-}: {
-  children: ReactNode;
-  title: string;
-}) {
+function SectionCard(props: SectionCardProps) {
+  const { children, title } = props;
+
   return (
     <article className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
       <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">
@@ -584,7 +638,9 @@ function SectionCard({
   );
 }
 
-function SummaryGrid({ items }: { items: SummaryItem[] }) {
+function SummaryGrid(props: SummaryGridProps) {
+  const { items } = props;
+
   return (
     <div className="space-y-3">
       {items.map((item) => (
@@ -614,7 +670,9 @@ function SummaryGrid({ items }: { items: SummaryItem[] }) {
   );
 }
 
-function StatsGrid({ items }: { items: SummaryItem[] }) {
+function StatsGrid(props: StatsGridProps) {
+  const { items } = props;
+
   return (
     <div className="grid gap-3 sm:grid-cols-2">
       {items.map((item) => (
@@ -634,13 +692,9 @@ function StatsGrid({ items }: { items: SummaryItem[] }) {
   );
 }
 
-function StaticTagList({
-  items,
-  tone,
-}: {
-  items: string[];
-  tone: "default" | "topic";
-}) {
+function StaticTagList(props: StaticTagListProps) {
+  const { items, tone } = props;
+
   return (
     <div className="flex flex-wrap gap-2">
       {items.map((item) => (
@@ -650,13 +704,9 @@ function StaticTagList({
   );
 }
 
-function EntityTagList({
-  items,
-  tone,
-}: {
-  items: EntityRef[];
-  tone: "default" | "topic";
-}) {
+function EntityTagList(props: EntityTagListProps) {
+  const { items, tone } = props;
+
   return (
     <div className="flex flex-wrap gap-2">
       {items.map((item) => (
@@ -674,7 +724,9 @@ function EntityTagList({
   );
 }
 
-function EntityList({ items }: { items: EntityRef[] }) {
+function EntityList(props: EntityListProps) {
+  const { items } = props;
+
   return (
     <div className="space-y-2">
       {items.map((item) => (
@@ -693,13 +745,9 @@ function EntityList({ items }: { items: EntityRef[] }) {
   );
 }
 
-function WorkList({
-  items,
-  onNavigateToWork,
-}: {
-  items: WorkItem[];
-  onNavigateToWork: () => void;
-}) {
+function WorkList(props: WorkListProps) {
+  const { items, onNavigateToWork } = props;
+
   return (
     <div className="space-y-3">
       {items.map((item) => (
@@ -733,7 +781,9 @@ function WorkList({
   );
 }
 
-function QuickLinksList({ items }: { items: SummaryItem[] }) {
+function QuickLinksList(props: QuickLinksListProps) {
+  const { items } = props;
+
   return (
     <div className="space-y-3">
       {items.map((item) => (

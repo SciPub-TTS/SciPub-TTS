@@ -12,28 +12,48 @@ import type {
 import type { PaperSourceAccessSectionData } from "../../view-models/sourceAccessSection";
 import DetailSectionCard from "./DetailSectionCard";
 
-export default function PaperSourceAccessSection({
-  section,
-}: {
+type PaperSourceAccessSectionProps = {
   section: PaperSourceAccessSectionData;
-}) {
+};
+
+type SummaryGridProps = {
+  items: PaperDetailSummaryItem[];
+};
+
+type TagClusterProps = {
+  icon: ReactNode;
+  items: string[];
+  title: string;
+};
+
+type EntityTagClusterProps = {
+  icon: ReactNode;
+  items: PaperDetailEntityRef[];
+  title: string;
+};
+
+export default function PaperSourceAccessSection(
+  props: PaperSourceAccessSectionProps,
+) {
+  const { section } = props;
+
   return (
     <DetailSectionCard
       icon={<Landmark className="h-5 w-5" />}
       title="Source & Access"
     >
-      <div className="space-y-2 text-sm text-slate-700">
+      <div className="space-y-2 text-sm font-semibold text-[#9a6700]">
         {section.source ? (
           <EntityCanvasLink
             entityId={section.source.id}
             entityType={section.source.type}
             label={section.source.name}
-            className="text-left text-base font-semibold text-blue-700 hover:text-blue-900"
+            className="text-left text-base font-bold text-black transition hover:text-blue-700 hover:underline hover:decoration-blue-700 hover:underline-offset-4"
           >
             {section.source.name}
           </EntityCanvasLink>
         ) : (
-          <p className="font-semibold text-slate-900">{section.sourceName}</p>
+          <p className="font-bold text-black">{section.sourceName}</p>
         )}
         <p>{section.sourceType}</p>
         {section.sourceHostOrganization ? (
@@ -64,15 +84,17 @@ export default function PaperSourceAccessSection({
   );
 }
 
-function SummaryGrid({ items }: { items: PaperDetailSummaryItem[] }) {
+function SummaryGrid(props: SummaryGridProps) {
+  const { items } = props;
+
   return (
-    <div className="grid gap-4 border-t border-slate-200 pt-5 sm:grid-cols-2">
+    <div className="grid gap-4 border-t border-black pt-5 sm:grid-cols-2">
       {items.map((item) => (
         <div
           key={`${item.label}-${item.value}`}
           className="min-w-0 space-y-1"
         >
-          <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500">
+          <p className="text-xs font-bold uppercase tracking-[0.18em] text-black">
             {item.label}
           </p>
           {item.href ? (
@@ -80,12 +102,12 @@ function SummaryGrid({ items }: { items: PaperDetailSummaryItem[] }) {
               href={item.href}
               target="_blank"
               rel="noreferrer"
-              className="block overflow-hidden break-all text-sm font-semibold text-blue-700 hover:text-blue-900"
+              className="block overflow-hidden break-all text-sm font-semibold text-[#9a6700] transition hover:text-blue-700 hover:underline hover:decoration-blue-700 hover:underline-offset-4"
             >
               {item.value}
             </a>
           ) : (
-            <p className="break-words text-sm font-medium text-slate-800">
+            <p className="break-words text-sm font-semibold text-[#9a6700]">
               {item.value}
             </p>
           )}
@@ -95,22 +117,16 @@ function SummaryGrid({ items }: { items: PaperDetailSummaryItem[] }) {
   );
 }
 
-function TagCluster({
-  icon,
-  items,
-  title,
-}: {
-  icon: ReactNode;
-  items: string[];
-  title: string;
-}) {
+function TagCluster(props: TagClusterProps) {
+  const { icon, items, title } = props;
+
   if (items.length === 0) {
     return null;
   }
 
   return (
-    <div className="border-t border-slate-200 pt-4">
-      <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.22em] text-slate-500">
+    <div className="border-t border-black pt-4">
+      <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.22em] text-black">
         {icon}
         {title}
       </div>
@@ -123,22 +139,16 @@ function TagCluster({
   );
 }
 
-function EntityTagCluster({
-  icon,
-  items,
-  title,
-}: {
-  icon: ReactNode;
-  items: PaperDetailEntityRef[];
-  title: string;
-}) {
+function EntityTagCluster(props: EntityTagClusterProps) {
+  const { icon, items, title } = props;
+
   if (items.length === 0) {
     return null;
   }
 
   return (
-    <div className="border-t border-slate-200 pt-4">
-      <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.22em] text-slate-500">
+    <div className="border-t border-black pt-4">
+      <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.22em] text-black">
         {icon}
         {title}
       </div>

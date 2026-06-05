@@ -10,12 +10,19 @@ import {
   mapTopics,
 } from "./paperDetailContributorsMapper";
 import { buildHeaderBadges } from "./paperDetailHeaderMapper";
-import { buildMetrics, buildQuickLinks } from "./paperDetailMetricsMapper";
 import {
+  buildImpactChartItems,
+  buildImpactPieChartItems,
+  buildMetrics,
+  buildQuickLinks,
+} from "./paperDetailMetricsMapper";
+import {
+  extractLastSegment,
   formatLanguageLabel,
   formatPublishedLabel,
   formatTypeLabel,
   normalizeIdentifierLabel,
+  normalizeOpenAlexWorkId,
   reconstructAbstractText,
 } from "./paperDetailShared";
 
@@ -45,9 +52,13 @@ export function mapWorkDetailToPaperDetail(
   const doiHref = work.doi?.trim() || null;
   const headerBadges = buildHeaderBadges(work, normalizedType);
   const accessItems = buildAccessItems(work, normalizedSourceName);
-  const metrics = buildMetrics(work, authors.length, institutions.length);
+  const impactChartItems = buildImpactChartItems(work.counts_by_year);
+  const impactPieChartItems = buildImpactPieChartItems(work.locations);
+  const items = buildMetrics(work, authors.length, institutions.length);
   const quickLinks = buildQuickLinks(work);
   const pdfUrl = resolveWorkPdfUrl(work);
+  const referencedWorks = mapWorkLinks(work.referenced_works);
+  const relatedWorks = mapWorkLinks(work.related_works);
   const source = mapNamedEntityToDetailRef(
     work.primary_location?.source || work.best_oa_location?.source,
     "source",
@@ -65,14 +76,18 @@ export function mapWorkDetailToPaperDetail(
     doiHref,
     doiLabel,
     headerBadges,
+    impactChartItems,
+    impactPieChartItems,
     indexedIn: work.indexed_in,
     institutions,
     keywords,
     languageLabel,
-    metrics,
+    items,
     pdfUrl,
     publishedLabel,
     quickLinks,
+    referencedWorks,
+    relatedWorks,
     source,
     sourceHostOrganization:
       work.primary_location?.source?.host_organization_name?.trim() || null,
@@ -81,4 +96,14 @@ export function mapWorkDetailToPaperDetail(
     title: normalizedTitle,
     topics,
   };
+}
+
+function mapWorkLinks(workIds: string[]) {
+  return workIds
+    .map((workId) => extractLastSegment(workId))
+    .filter(Boolean)
+    .map((workId) => ({
+      id: workId,
+      label: normalizeOpenAlexWorkId(workId),
+    }));
 }

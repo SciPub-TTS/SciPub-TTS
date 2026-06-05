@@ -1,14 +1,14 @@
 import type { ReactNode } from "react";
 
-export default function DetailSectionCard({
-  children,
-  icon,
-  title,
-}: {
+type DetailSectionCardProps = {
   children: ReactNode;
   icon: ReactNode;
   title: string;
-}) {
+};
+
+export default function DetailSectionCard(props: DetailSectionCardProps) {
+  const { children, icon, title } = props;
+
   return (
     <article className="rounded-3xl border border-black bg-white p-6 shadow-sm">
       <div className="flex items-center gap-3">

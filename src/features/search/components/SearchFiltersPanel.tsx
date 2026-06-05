@@ -9,10 +9,7 @@ import type {
   SearchFiltersPanelProps,
   SearchFilterWidgetKey,
 } from "@/features/search/types";
-import {
-  formatFullNumber,
-  normalizeSearchFilterWidgetKey,
-} from "@/features/search/utils";
+import { normalizeSearchFilterWidgetKey } from "@/features/search/utils";
 import {
   AuthorFilterWidget,
   AwardFilterWidget,
@@ -96,7 +93,6 @@ export function SearchFiltersPanel({
 function SearchFiltersHeader({
   activeFilterCount,
   filtersOpen,
-  matchedPaperCount,
   onToggleFilters,
 }: SearchFiltersHeaderProps) {
   const chevronClassName = filtersOpen ? "rotate-180" : "";
@@ -125,13 +121,6 @@ function SearchFiltersHeader({
           <ChevronDown className={`h-4 w-4 transition ${chevronClassName}`} />
         </button>
       </div>
-
-      <p className="text-[11px] font-extrabold uppercase tracking-[0.28em] text-black">
-        Match:{" "}
-        <span className="text-black">
-          {formatFullNumber(matchedPaperCount)} papers
-        </span>
-      </p>
     </div>
   );
 }

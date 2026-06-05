@@ -117,6 +117,7 @@ export type OpenAlexWorkDetailApi = {
   keywords: OpenAlexKeyword[];
   language: string | null;
   locations_count: number | null;
+  locations: OpenAlexLocation[];
   open_access: {
     any_repository_has_fulltext: boolean | null;
     is_oa: boolean | null;
@@ -127,6 +128,7 @@ export type OpenAlexWorkDetailApi = {
   primary_topic: OpenAlexTopic | null;
   publication_date: string | null;
   publication_year: number | null;
+  referenced_works: string[];
   referenced_works_count: number | null;
   related_works: string[];
   title: string | null;
@@ -147,10 +149,26 @@ export type PaperDetailMetric = {
   tone?: "default" | "positive";
 };
 
+export type PaperDetailImpactChartItem = {
+  citations: number;
+  year: number;
+};
+
+export type PaperDetailImpactPieChartItem = {
+  color: string;
+  label: string;
+  value: number;
+};
+
 export type PaperDetailEntityRef = {
   id: string;
   name: string;
   type: "author" | "topic" | "institution" | "source";
+};
+
+export type PaperDetailWorkLink = {
+  id: string;
+  label: string;
 };
 
 export type PaperDetailBadge = {
@@ -161,7 +179,7 @@ export type PaperDetailBadge = {
 };
 
 export type PaperDetailQuickLink = {
-  href: string;
+  href: string | null;
   label: string;
   value: string;
 };
@@ -190,14 +208,18 @@ export type PaperDetailData = {
   doiHref: string | null;
   doiLabel: string;
   headerBadges: PaperDetailBadge[];
+  impactChartItems: PaperDetailImpactChartItem[];
+  impactPieChartItems: PaperDetailImpactPieChartItem[];
   indexedIn: string[];
   institutions: PaperDetailInstitution[];
+  items: PaperDetailMetric[];
   keywords: string[];
   languageLabel: string;
-  metrics: PaperDetailMetric[];
   pdfUrl: string | null;
   publishedLabel: string;
   quickLinks: PaperDetailQuickLink[];
+  referencedWorks: PaperDetailWorkLink[];
+  relatedWorks: PaperDetailWorkLink[];
   source: PaperDetailEntityRef | null;
   sourceHostOrganization: string | null;
   sourceName: string;

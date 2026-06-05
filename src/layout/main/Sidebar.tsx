@@ -58,7 +58,7 @@ export default function MainSidebar() {
     <div className="fixed inset-y-0 left-0 z-50 flex h-screen w-56 flex-col bg-[#000000] text-slate-200">
       <Link
         to={ROUTES.HOME}
-        className="flex min-h-[76px] items-center gap-3 border-b border-emerald-400/20 px-4 transition hover:bg-emerald-500/10"
+        className="flex min-h-[76px] items-center gap-3 border-b-2 border-[#3c8534] px-4"
       >
         <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-lg bg-white shadow-sm">
           <img
@@ -96,7 +96,7 @@ export default function MainSidebar() {
                     "flex items-center gap-3 rounded-lg px-2.5 py-2 text-xs font-medium transition",
                     isActive || isSearchSectionActive
                       ? "bg-emerald-600 text-white shadow-sm ring-1 ring-emerald-300/40"
-                      : "text-slate-300 hover:bg-emerald-500/15 hover:text-emerald-100",
+                      : "text-slate-300 ",
                   ].join(" ")
                 }
               >
@@ -108,7 +108,7 @@ export default function MainSidebar() {
         </nav>
       </div>
 
-      <div className="border-t border-emerald-400/20 px-2.5 py-4">
+      <div className="border-t-2 border-[#3c8534] px-2.5 py-4">
         <div className="mb-4 flex items-center gap-3 rounded-lg border border-white/10 bg-white/[0.08] px-2.5 py-2.5">
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-xs font-bold text-white">
             {initials}

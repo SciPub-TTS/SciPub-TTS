@@ -1,5 +1,9 @@
 import { AlertCircle, ScrollText } from "lucide-react";
 
+type PaperDetailErrorStateProps = {
+  message: string;
+};
+
 export function PaperDetailLoadingState() {
   return (
     <section className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
@@ -11,7 +15,9 @@ export function PaperDetailLoadingState() {
   );
 }
 
-export function PaperDetailErrorState({ message }: { message: string }) {
+export function PaperDetailErrorState(props: PaperDetailErrorStateProps) {
+  const { message } = props;
+
   return (
     <section className="rounded-3xl border border-rose-200 bg-rose-50 p-8 shadow-sm">
       <div className="flex items-center gap-3 text-rose-700">

@@ -6,19 +6,49 @@ import type { PaperDetailAuthor, PaperDetailInstitution } from "../../types";
 import type { PaperContributorsSectionData } from "../../view-models/contributorsSection";
 import DetailSectionCard from "./DetailSectionCard";
 
-export default function PaperContributorsSection({
-  section,
-}: {
+type PaperContributorsSectionProps = {
   section: PaperContributorsSectionData;
-}) {
+};
+
+type AuthorListProps = {
+  authors: PaperDetailAuthor[];
+};
+
+type InstitutionListProps = {
+  institutions: PaperDetailInstitution[];
+};
+
+export default function PaperContributorsSection(
+  props: PaperContributorsSectionProps,
+) {
+  const { section } = props;
+  const hasCorrespondingAuthor = section.authors.some(
+    (author) => author.isCorresponding,
+  );
+
   return (
     <DetailSectionCard
       icon={<Users className="h-5 w-5" />}
       title="Authors & Institutions"
     >
-      <AuthorList authors={section.authors} />
-      <div className="border-t border-slate-200 pt-4">
-        <h3 className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">
+      <div>
+        <h3 className="text-base font-semibold uppercase tracking-[0.18em] text-black">
+          Authors
+        </h3>
+        {hasCorrespondingAuthor ? (
+          <p className="mt-2 text-sm text-black">
+            <span className="font-semibold">Corresponding author</span>
+            {" - "}
+            main contact for the paper and editorial communication.
+          </p>
+        ) : null}
+        <div className="mt-3">
+          <AuthorList authors={section.authors} />
+        </div>
+      </div>
+
+      <div className="border-t border-black pt-4">
+        <h3 className="text-base font-semibold uppercase tracking-[0.18em] text-black">
           Institutions
         </h3>
         <InstitutionList institutions={section.institutions} />
@@ -27,50 +57,66 @@ export default function PaperContributorsSection({
   );
 }
 
-function AuthorList({ authors }: { authors: PaperDetailAuthor[] }) {
+function AuthorList(props: AuthorListProps) {
+  const { authors } = props;
+
   if (authors.length === 0) {
     return (
-      <p className="text-sm text-slate-500">
-        Author information is not available.
-      </p>
+      <p className="text-lg text-black">Author information is not available.</p>
     );
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {authors.map((author) => (
         <div
           key={author.id}
-          className="flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-slate-700"
+          className="flex flex-wrap items-center gap-x-2 gap-y-2 text-base text-black"
         >
           {author.entityId ? (
             <EntityCanvasLink
               entityId={author.entityId}
               entityType="author"
               label={author.name}
-              className="cursor-pointer text-[1.02rem] font-semibold text-blue-700 underline decoration-blue-300 underline-offset-4 transition hover:text-blue-900 hover:decoration-blue-700"
+              className="cursor-pointer text-sm font-semibold text-black transition hover:text-blue-700 hover:underline hover:decoration-blue-700 hover:underline-offset-4"
             >
               {author.name}
             </EntityCanvasLink>
           ) : (
-            <span className="text-[1.02rem] font-semibold text-slate-900">
+            <span className="text-sm font-semibold text-black">
               {author.name}
             </span>
           )}
+
+          {author.position || author.isCorresponding || author.isFollowed ? (
+            <span className="text-black">-</span>
+          ) : null}
+
           {author.position ? (
-            <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
+            <span className="text-sm font-medium text-black">
               {formatAuthorPosition(author.position)}
             </span>
           ) : null}
+
+          {author.position && (author.isCorresponding || author.isFollowed) ? (
+            <span className="text-black">-</span>
+          ) : null}
+
           {author.isCorresponding ? (
-            <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">
+            <span
+              className="inline-flex items-center rounded-full border border-[#3c8534] bg-[#ECFFF5] px-3 py-1 text-sm font-semibold text-[#1f5f1b]"
+              title="Main contact for the paper and editorial communication"
+            >
               Corresponding
             </span>
           ) : null}
+
+          {author.isCorresponding && author.isFollowed ? (
+            <span className="text-black">-</span>
+          ) : null}
+
           {author.isFollowed ? (
-            <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
-              Following
-            </span>
+            <span className="text-sm font-medium text-black">Following</span>
           ) : null}
         </div>
       ))}
@@ -78,20 +124,18 @@ function AuthorList({ authors }: { authors: PaperDetailAuthor[] }) {
   );
 }
 
-function InstitutionList({
-  institutions,
-}: {
-  institutions: PaperDetailInstitution[];
-}) {
+function InstitutionList(props: InstitutionListProps) {
+  const { institutions } = props;
+
   return (
-    <div className="mt-3 flex flex-wrap gap-2">
+    <div className="mt-4 flex flex-wrap gap-3">
       {institutions.map((institution) => (
         <EntityCanvasLink
           key={institution.id}
           entityId={institution.id}
           entityType="institution"
           label={institution.name}
-          className="cursor-pointer rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-blue-700 underline decoration-blue-200 underline-offset-4 transition hover:border-slate-300 hover:bg-slate-100 hover:text-blue-900 hover:decoration-blue-700"
+          className="cursor-pointer rounded-full border border-black bg-gradient-to-r from-[#EEF6FF] via-[#F6FAFF] to-[#DCEEFF] px-4 py-2 text-sm font-semibold text-black transition hover:text-blue-700 hover:underline hover:decoration-blue-700 hover:underline-offset-4"
         >
           {institution.name}
           {institution.countryCode ? ` (${institution.countryCode})` : ""}

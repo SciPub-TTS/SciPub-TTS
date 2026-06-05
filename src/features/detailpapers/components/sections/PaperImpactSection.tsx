@@ -4,46 +4,54 @@ import type { PaperDetailMetric } from "../../types";
 import type { PaperImpactSectionData } from "../../view-models/impactSection";
 import DetailSectionCard from "./DetailSectionCard";
 
-export default function PaperImpactSection({
-  section,
-}: {
+type PaperImpactSectionProps = {
   section: PaperImpactSectionData;
-}) {
+};
+
+type MetricGridProps = {
+  items: PaperDetailMetric[];
+};
+
+export default function PaperImpactSection(props: PaperImpactSectionProps) {
+  const { section } = props;
+
   return (
     <DetailSectionCard
       icon={<ChartColumnBig className="h-5 w-5" />}
       title="Impact Statistics"
     >
-      <MetricGrid metrics={section.metrics} />
+      <MetricGrid items={section.items} />
     </DetailSectionCard>
   );
 }
 
-function MetricGrid({ metrics }: { metrics: PaperDetailMetric[] }) {
+function MetricGrid(props: MetricGridProps) {
+  const { items } = props;
+
   return (
     <div className="grid gap-3 sm:grid-cols-2">
-      {metrics.map((metric) => (
+      {items.map((item) => (
         <div
-          key={metric.label}
-          className="flex min-h-[132px] flex-col rounded-2xl border border-slate-200 bg-slate-50 p-4"
+          key={item.label}
+          className="flex min-h-[132px] flex-col overflow-hidden rounded-2xl border-2 border-[#3c8534] bg-white p-4"
         >
-          <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500">
-            {metric.label}
+          <p className="text-xs font-bold uppercase tracking-[0.18em] text-black">
+            {item.label}
           </p>
-          <p className="mt-2 text-2xl font-semibold text-slate-900">
-            {metric.value}
+          <p className="mt-2 text-2xl font-semibold text-[#9a6700]">
+            {item.value}
           </p>
-          {metric.badgeLabel ? (
+          {item.badgeLabel ? (
             <div className="mt-auto pt-4">
               <span
                 className={[
                   "inline-flex rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.16em]",
-                  metric.tone === "positive"
-                    ? "border-[#00A859] bg-[#ECFFF5] text-[#007A41]"
-                    : "border-slate-300 bg-white text-slate-600",
+                  item.tone === "positive"
+                    ? "border-[#3c8534] bg-[#ECFFF5] text-[#2c6b26]"
+                    : "border-[#9a6700] bg-[#fff8e7] text-[#9a6700]",
                 ].join(" ")}
               >
-                {metric.badgeLabel}
+                {item.badgeLabel}
               </span>
             </div>
           ) : null}

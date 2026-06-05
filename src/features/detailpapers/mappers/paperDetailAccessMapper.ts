@@ -8,7 +8,6 @@ import {
   formatLicenseLabel,
   formatOpenAccessStatus,
   formatTypeLabel,
-  normalizeIdentifierLabel,
 } from "./paperDetailShared";
 
 export function buildAccessItems(
@@ -21,12 +20,6 @@ export function buildAccessItems(
     items,
     "OA status",
     formatOpenAccessStatus(work.open_access?.oa_status || null),
-  );
-  addSummaryItem(
-    items,
-    "OA URL",
-    normalizeIdentifierLabel(work.open_access?.oa_url || null),
-    work.open_access?.oa_url || undefined,
   );
   addSummaryItem(items, "Best OA source", normalizedSourceName);
   addSummaryItem(
