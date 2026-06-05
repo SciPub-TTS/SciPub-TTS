@@ -16,9 +16,7 @@ import {
   SEARCH_WORKS_PER_PAGE,
 } from "../constants";
 
-const apiBaseUrl = (
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:8080"
-).replace(/\/$/, "");
+const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL ?? "").replace(/\/$/, "");
 
 type SearchOptionGroupKey =
   | "type"
