@@ -47,7 +47,7 @@ export default function BreadcrumbBar({
 
   const isDark = variant === "dark";
   const textClass = isDark ? "text-slate-100" : "text-slate-950";
-  const mutedClass = isDark ? "text-slate-700" : "text-slate-500";
+  const mutedClass = isDark ? "text-black" : "text-black";
   const homeLinkClass = isDark
     ? "text-emerald-500 hover:text-[#059669]"
     : "text-black hover:text-[#059669]";
@@ -55,8 +55,8 @@ export default function BreadcrumbBar({
     ? "border-black bg-slate-900"
     : "border-black bg-white";
   const controlClass = isDark
-    ? "border-black bg-slate-900 text-slate-300 hover:border-[#059669] hover:text-[#059669]"
-    : "border-black bg-white text-slate-600 hover:border-[#059669] hover:text-[#059669]";
+    ? "border-black bg-slate-900 text-black hover:border-[#059669] hover:text-[#059669]"
+    : "border-black bg-white text-black hover:border-[#059669] hover:text-[#059669]";
 
   const currentLabel =
     breadcrumbItems.length > 0

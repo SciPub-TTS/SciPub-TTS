@@ -9,7 +9,10 @@ import type {
   SearchFiltersPanelProps,
   SearchFilterWidgetKey,
 } from "@/features/search/types";
-import { formatFullNumber } from "@/features/search/utils";
+import {
+  formatFullNumber,
+  normalizeSearchFilterWidgetKey,
+} from "@/features/search/utils";
 import {
   AuthorFilterWidget,
   AwardFilterWidget,
@@ -211,7 +214,9 @@ function renderFilterWidget(
     updateFilter,
   }: RenderFilterWidgetParams,
 ) {
-  switch (widgetKey) {
+  const normalizedWidgetKey = normalizeSearchFilterWidgetKey(widgetKey);
+
+  switch (normalizedWidgetKey) {
     case "year":
       return (
         <YearFilterWidget

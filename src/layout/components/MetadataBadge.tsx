@@ -1,18 +1,18 @@
 import { TrendingUp } from "lucide-react";
 
 const metadataBadgeToneClassNames = {
-  // Generic metadata like work type.
+  // Generic metadata like work type uses the FPT blue.
   default:
-    "border border-black bg-white text-black shadow-[0_1px_2px_rgba(15,23,42,0.06)]",
-  // Taxonomy metadata like subfield.
+    "border border-[#005CB9] bg-[#EEF6FF] text-[#005CB9]",
+  // Taxonomy metadata like subfield uses the FPT orange.
   accent:
-    "border border-blue-700 bg-gradient-to-b from-blue-50 to-blue-100/80 text-blue-800 shadow-[0_1px_2px_rgba(59,130,246,0.12)]",
-  // Standard topic badge when the topic is not trending.
+    "border border-[#F37021] bg-[#FFF4EC] text-[#C24E0A]",
+  // Standard topic badge uses the FPT green.
   topic:
-    "border border-emerald-700 bg-gradient-to-b from-emerald-50 to-lime-50 text-emerald-900 shadow-[0_1px_2px_rgba(16,185,129,0.12)]",
-  // Highlighted topic badge for trending topics.
+    "border border-[#00A859] bg-[#ECFFF5] text-[#007A41]",
+  // Highlighted topic badge keeps the same green family in a stronger state.
   topicTrend:
-    "border border-emerald-700 bg-emerald-800 text-white shadow-[0_2px_8px_rgba(6,95,70,0.18)]",
+    "border border-[#00A859] bg-[#00A859] text-white",
 } as const;
 
 type MetadataBadgeTone = keyof typeof metadataBadgeToneClassNames;
@@ -30,8 +30,8 @@ export default function MetadataBadge({
   const showTopicIcon = tone === "topic" || tone === "topicTrend";
   const topicIconClassName =
     tone === "topicTrend"
-      ? "bg-amber-200 text-emerald-900"
-      : "border border-emerald-200 bg-white/80 text-emerald-700";
+      ? "bg-white/20 text-white"
+      : "border border-[#8DE0B7] bg-white text-[#00A859]";
 
   return (
     <span

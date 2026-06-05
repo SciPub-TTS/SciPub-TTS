@@ -5,7 +5,6 @@ const entityTypeLabels: Record<EntityType, string> = {
   topic: "Topic",
   institution: "Institution",
   source: "Source",
-  work: "Work",
 };
 
 const entityPrefixMap: Record<string, EntityType> = {
@@ -13,7 +12,6 @@ const entityPrefixMap: Record<string, EntityType> = {
   T: "topic",
   I: "institution",
   S: "source",
-  W: "work",
 };
 
 export function normalizeOpenAlexId(value: string) {

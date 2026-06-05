@@ -1,4 +1,4 @@
-export type EntityType = "author" | "topic" | "institution" | "source" | "work";
+export type EntityType = "author" | "topic" | "institution" | "source";
 
 export type EntityCanvasEntry = {
   id: string;
@@ -11,6 +11,7 @@ export type EntityCanvasContextValue = {
   openEntity: (entry: EntityCanvasEntry, options?: { replace?: boolean }) => void;
   closeCanvas: () => void;
   goBack: () => void;
+  goToIndex: (index: number) => void;
   isFollowed: (entry: EntityCanvasEntry) => boolean;
   toggleFollow: (entry: EntityCanvasEntry) => void;
 };

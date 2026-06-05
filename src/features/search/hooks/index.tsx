@@ -40,6 +40,7 @@ import {
   getVisibleSearchSuggestions,
   hasInvalidCitationRange,
   hasInvalidYearRange,
+  normalizeSearchFilterWidgetKeys,
 } from "../utils";
 import {
   clearSearchPageRestorePending,
@@ -164,7 +165,9 @@ export function useSearchPageState() {
   const [visibleFilterWidgets, setVisibleFilterWidgets] = useState<
     SearchFilterWidgetKey[]
   >(
-    restoredSnapshot?.visibleFilterWidgets ?? defaultVisibleFilterWidgets,
+    normalizeSearchFilterWidgetKeys(
+      restoredSnapshot?.visibleFilterWidgets ?? defaultVisibleFilterWidgets,
+    ),
   );
   const [selectedSort, setSelectedSort] = useState(
     restoredSnapshot?.selectedSort ?? mockResultSortOptions[0],
@@ -629,7 +632,7 @@ export function useSearchPageState() {
         return currentWidgets.filter((currentWidget) => currentWidget !== widgetKey);
       }
 
-      return [...currentWidgets, widgetKey];
+      return normalizeSearchFilterWidgetKeys([...currentWidgets, widgetKey]);
     });
   }
 
@@ -1015,15 +1018,22 @@ function readPersistedSearchPageSnapshot(): SearchPageSnapshot | null {
     }
 
     const parsedSnapshot = JSON.parse(storedSnapshot) as SearchPageSnapshot;
+    const normalizedVisibleFilterWidgets = normalizeSearchFilterWidgetKeys(
+      parsedSnapshot.visibleFilterWidgets || [],
+    );
 
     if (!mockResultSortOptions.includes(parsedSnapshot.selectedSort)) {
       return {
         ...parsedSnapshot,
         selectedSort: mockResultSortOptions[0],
+        visibleFilterWidgets: normalizedVisibleFilterWidgets,
       };
     }
 
-    return parsedSnapshot;
+    return {
+      ...parsedSnapshot,
+      visibleFilterWidgets: normalizedVisibleFilterWidgets,
+    };
   } catch {
     return null;
   }

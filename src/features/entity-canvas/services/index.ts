@@ -25,22 +25,27 @@ export async function getOpenAlexEntity(
     throw new Error("Entity ID is missing.");
   }
 
-  const endpoint = `${apiBaseUrl}/api/openalex/entities/${encodeURIComponent(entityType)}/${encodeURIComponent(normalizedEntityId)}`;
+  const endpoint = `${apiBaseUrl}/api/canvas/entities/${encodeURIComponent(entityType)}/${encodeURIComponent(normalizedEntityId)}`;
 
   return requestData<OpenAlexEntity>(endpoint);
 }
 
-export async function getOpenAlexWorks(params: {
-  filter: string;
+export async function getCanvasEntityTopWorks(params: {
+  entityId: string;
+  entityType: EntityType;
   sort?: string;
   perPage?: number;
   page?: number;
-  select?: string;
-  search?: string;
 }) {
-  const endpoint = new URL(`${apiBaseUrl}/api/openalex/works`);
+  const normalizedEntityId = params.entityId.trim();
+  if (!normalizedEntityId) {
+    throw new Error("Entity ID is missing.");
+  }
 
-  endpoint.searchParams.set("filter", params.filter);
+  const endpoint = new URL(
+    `${apiBaseUrl}/api/canvas/entities/${encodeURIComponent(params.entityType)}/${encodeURIComponent(normalizedEntityId)}/works`,
+  );
+
   if (params.sort) {
     endpoint.searchParams.set("sort", params.sort);
   }
@@ -49,12 +54,6 @@ export async function getOpenAlexWorks(params: {
   }
   if (params.page) {
     endpoint.searchParams.set("page", String(params.page));
-  }
-  if (params.select) {
-    endpoint.searchParams.set("select", params.select);
-  }
-  if (params.search) {
-    endpoint.searchParams.set("search", params.search);
   }
 
   const data = await requestData<OpenAlexWorksResponse>(endpoint.toString());

@@ -1,73 +1,54 @@
 import {
   ArrowLeft,
+  ChevronRight,
   ExternalLink,
   FileText,
   Link2,
   X,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import {
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
+import { Link } from "react-router-dom";
 
-import { formatCompactNumber, formatFullNumber } from "@/features/search/utils";
+import { routePaths } from "@/app/router";
+import { formatCompactNumber } from "@/features/search/utils";
 import MetadataBadge from "@/layout/components/MetadataBadge";
 
-import { getOpenAlexEntity, getOpenAlexWorks } from "../services";
+import { getCanvasEntityTopWorks, getOpenAlexEntity } from "../services";
 import type {
   EntityCanvasEntry,
-  EntityType,
   OpenAlexEntity,
-  OpenAlexWorkListItem,
 } from "../types";
+import { formatEntityTypeLabel, normalizeOpenAlexId } from "../utils";
+import type {
+  EntityRef,
+  SummaryItem,
+  WorkItem,
+} from "../view-model";
 import {
-  formatEntityTypeLabel,
-  getOpenAlexEntityUrl,
-  normalizeOpenAlexId,
-} from "../utils";
+  buildEntityCanvasState,
+  mapWorks,
+} from "../view-model";
 import EntityCanvasLink from "./EntityCanvasLink";
 
 type EntityCanvasProps = {
   stack: EntityCanvasEntry[];
   onClose: () => void;
   onBack: () => void;
+  onJumpTo: (index: number) => void;
   isFollowed: (entry: EntityCanvasEntry) => boolean;
   onToggleFollow: (entry: EntityCanvasEntry) => void;
 };
-
-type SummaryItem = {
-  label: string;
-  value: string;
-  href?: string;
-};
-
-type WorkItem = {
-  id: string;
-  title: string;
-  year?: number | null;
-  citations?: number | null;
-  pdfUrl?: string | null;
-};
-
-type EntityRef = {
-  id: string;
-  label: string;
-  type: EntityType;
-};
-
-const worksSelectFields = [
-  "id",
-  "display_name",
-  "publication_year",
-  "cited_by_count",
-  "ids",
-  "primary_location",
-  "best_oa_location",
-  "has_content",
-  "open_access",
-].join(",");
 
 export default function EntityCanvas({
   stack,
   onClose,
   onBack,
+  onJumpTo,
   isFollowed,
   onToggleFollow,
 }: EntityCanvasProps) {
@@ -75,41 +56,76 @@ export default function EntityCanvas({
     return null;
   }
 
-  const activeEntry = stack[stack.length - 1];
+  const activeIndex = stack.length - 1;
 
   return (
     <div className="fixed inset-0 z-[70]">
-      <div
-        className="absolute inset-0 bg-slate-900/30"
+      <button
+        type="button"
+        aria-label="Close entity canvas"
+        className="absolute inset-0 bg-slate-900/35"
         onClick={onClose}
       />
-      <aside className="absolute right-0 top-0 flex h-full w-[50vw] min-w-[360px] max-w-[780px] flex-col border-l border-slate-200 bg-white shadow-2xl">
-        <EntityCanvasPanel
-          entry={activeEntry}
-          canGoBack={stack.length > 1}
-          onBack={onBack}
-          onClose={onClose}
-          isFollowed={isFollowed}
-          onToggleFollow={onToggleFollow}
-        />
-      </aside>
+
+      <div className="absolute inset-0 overflow-hidden">
+        {stack.map((entry, index) => {
+          const isActive = index === activeIndex;
+          const panelOffset = Math.min((activeIndex - index) * 56, 168);
+
+          return (
+            <aside
+              key={`${entry.type}-${entry.id}-${index}`}
+              className={[
+                "absolute bottom-0 top-0 flex w-full max-w-[780px] flex-col overflow-hidden border-l border-slate-200 bg-white shadow-2xl transition-all duration-200 md:w-[50vw] md:min-w-[360px]",
+                isActive ? "pointer-events-auto" : "pointer-events-none",
+              ].join(" ")}
+              style={{
+                opacity: isActive ? 1 : 0.92,
+                right: `${panelOffset}px`,
+                zIndex: 80 + index,
+              }}
+            >
+              <EntityCanvasPanel
+                activeIndex={index}
+                breadcrumbs={stack}
+                entry={entry}
+                canGoBack={index > 0}
+                isActive={isActive}
+                isFollowed={isFollowed}
+                onBack={onBack}
+                onClose={onClose}
+                onJumpTo={onJumpTo}
+                onToggleFollow={onToggleFollow}
+              />
+            </aside>
+          );
+        })}
+      </div>
     </div>
   );
 }
 
 function EntityCanvasPanel({
+  activeIndex,
+  breadcrumbs,
   entry,
   canGoBack,
+  isActive,
+  isFollowed,
   onBack,
   onClose,
-  isFollowed,
+  onJumpTo,
   onToggleFollow,
 }: {
+  activeIndex: number;
+  breadcrumbs: EntityCanvasEntry[];
   entry: EntityCanvasEntry;
   canGoBack: boolean;
+  isActive: boolean;
+  isFollowed: (entry: EntityCanvasEntry) => boolean;
   onBack: () => void;
   onClose: () => void;
-  isFollowed: (entry: EntityCanvasEntry) => boolean;
+  onJumpTo: (index: number) => void;
   onToggleFollow: (entry: EntityCanvasEntry) => void;
 }) {
   const [entity, setEntity] = useState<OpenAlexEntity | null>(null);
@@ -169,21 +185,16 @@ function EntityCanvasPanel({
 
     async function loadTopWorks() {
       if (!entry.type) {
-        return;
-      }
-
-      const filter = buildWorksFilter(entry.type, entry.id);
-      if (!filter) {
         setTopWorks([]);
         return;
       }
 
       try {
-        const results = await getOpenAlexWorks({
-          filter,
-          sort: "cited_by_count:desc",
+        const results = await getCanvasEntityTopWorks({
+          entityId: entry.id,
+          entityType: entry.type,
           perPage: 3,
-          select: worksSelectFields,
+          sort: "cited_by_count:desc",
         });
 
         if (!mounted) {
@@ -209,8 +220,8 @@ function EntityCanvasPanel({
 
   const resolvedType = entry.type || "author";
   const typeLabel = formatEntityTypeLabel(resolvedType);
-  const isAuthorOrTopic = resolvedType === "author" || resolvedType === "topic";
   const followActive = isFollowed(entry);
+  const allowFollow = resolvedType === "author" || resolvedType === "topic";
 
   const canvasState = useMemo(() => {
     if (!entity) {
@@ -220,12 +231,18 @@ function EntityCanvasPanel({
     return buildEntityCanvasState(entity, resolvedType, topWorks, entry.label);
   }, [entity, entry.label, resolvedType, topWorks]);
 
+  const breadcrumbsToRender = breadcrumbs.slice(0, activeIndex + 1);
+
   if (isLoading) {
     return (
       <CanvasLoadingState
+        activeIndex={activeIndex}
+        breadcrumbs={breadcrumbsToRender}
         canGoBack={canGoBack}
+        isActive={isActive}
         onBack={onBack}
         onClose={onClose}
+        onJumpTo={onJumpTo}
       />
     );
   }
@@ -233,10 +250,14 @@ function EntityCanvasPanel({
   if (!canvasState) {
     return (
       <CanvasErrorState
+        activeIndex={activeIndex}
+        breadcrumbs={breadcrumbsToRender}
         canGoBack={canGoBack}
+        isActive={isActive}
         message={errorMessage || "Unable to load entity details."}
         onBack={onBack}
         onClose={onClose}
+        onJumpTo={onJumpTo}
       />
     );
   }
@@ -244,12 +265,16 @@ function EntityCanvasPanel({
   return (
     <>
       <CanvasHeader
+        activeIndex={activeIndex}
+        breadcrumbs={breadcrumbsToRender}
         canGoBack={canGoBack}
+        isActive={isActive}
         onBack={onBack}
         onClose={onClose}
-        title={canvasState.title}
-        subtitle={typeLabel}
+        onJumpTo={onJumpTo}
         openAlexId={canvasState.openAlexId}
+        subtitle={typeLabel}
+        title={canvasState.title}
       />
 
       <div className="flex-1 overflow-y-auto bg-slate-50 px-6 py-6">
@@ -281,14 +306,14 @@ function EntityCanvasPanel({
           ) : null}
 
           {canvasState.topics.length > 0 ? (
-            <SectionCard title="Top Topics">
-              <TagList items={canvasState.topics} tone="topic" />
+            <SectionCard title="Topics">
+              <EntityTagList items={canvasState.topics} tone="topic" />
             </SectionCard>
           ) : null}
 
           {canvasState.fields.length > 0 ? (
             <SectionCard title="Main Fields">
-              <TagList items={canvasState.fields} tone="default" />
+              <StaticTagList items={canvasState.fields} tone="default" />
             </SectionCard>
           ) : null}
 
@@ -306,7 +331,10 @@ function EntityCanvasPanel({
 
           {canvasState.topWorks.length > 0 ? (
             <SectionCard title="Top Works">
-              <WorkList items={canvasState.topWorks} />
+              <WorkList
+                items={canvasState.topWorks}
+                onNavigateToWork={onClose}
+              />
             </SectionCard>
           ) : null}
 
@@ -318,7 +346,7 @@ function EntityCanvasPanel({
         </div>
       </div>
 
-      {isAuthorOrTopic ? (
+      {allowFollow && isActive ? (
         <CanvasFooter>
           <button
             type="button"
@@ -339,64 +367,119 @@ function EntityCanvasPanel({
 }
 
 function CanvasHeader({
+  activeIndex,
+  breadcrumbs,
   canGoBack,
+  isActive,
   onBack,
   onClose,
-  title,
-  subtitle,
+  onJumpTo,
   openAlexId,
+  subtitle,
+  title,
 }: {
+  activeIndex: number;
+  breadcrumbs: EntityCanvasEntry[];
   canGoBack: boolean;
+  isActive: boolean;
   onBack: () => void;
   onClose: () => void;
-  title: string;
-  subtitle: string;
+  onJumpTo: (index: number) => void;
   openAlexId: string;
+  subtitle: string;
+  title: string;
 }) {
   return (
     <div className="border-b border-slate-200 bg-white px-6 py-5">
       <div className="flex items-start justify-between gap-3">
-        <div className="flex items-start gap-3">
-          {canGoBack ? (
-            <button
-              type="button"
-              onClick={onBack}
-              className="mt-1 flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 text-slate-600 transition hover:bg-slate-50"
-              aria-label="Go back"
-            >
-              <ArrowLeft className="h-4 w-4" />
-            </button>
-          ) : null}
-
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-emerald-700">
-              {subtitle}
-            </p>
-            <h2 className="mt-1 text-2xl font-semibold text-slate-950">
-              {title}
-            </h2>
-            {openAlexId ? (
-              <p className="mt-1 text-xs font-semibold text-slate-400">
-                OpenAlex · {openAlexId}
-              </p>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-3">
+            {canGoBack && isActive ? (
+              <button
+                type="button"
+                onClick={onBack}
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-slate-200 text-slate-600 transition hover:bg-slate-50"
+                aria-label="Go back"
+              >
+                <ArrowLeft className="h-4 w-4" />
+              </button>
             ) : null}
+
+            <BreadcrumbTrail
+              activeIndex={activeIndex}
+              breadcrumbs={breadcrumbs}
+              onJumpTo={onJumpTo}
+            />
           </div>
+
+          <div className="mt-4 inline-flex rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
+            {subtitle}
+          </div>
+
+          <h2 className="mt-3 text-2xl font-semibold text-slate-950">{title}</h2>
+
+          {openAlexId ? (
+            <p className="mt-1 text-xs font-semibold text-slate-400">
+              OpenAlex - {openAlexId}
+            </p>
+          ) : null}
         </div>
 
-        <button
-          type="button"
-          onClick={onClose}
-          aria-label="Close"
-          className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 text-slate-600 transition hover:bg-slate-50"
-        >
-          <X className="h-4 w-4" />
-        </button>
+        {isActive ? (
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-slate-200 text-slate-600 transition hover:bg-slate-50"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        ) : null}
       </div>
     </div>
   );
 }
 
-function CanvasFooter({ children }: { children: React.ReactNode }) {
+function BreadcrumbTrail({
+  activeIndex,
+  breadcrumbs,
+  onJumpTo,
+}: {
+  activeIndex: number;
+  breadcrumbs: EntityCanvasEntry[];
+  onJumpTo: (index: number) => void;
+}) {
+  return (
+    <div className="flex min-w-0 flex-wrap items-center gap-1 text-sm text-slate-500">
+      {breadcrumbs.map((item, index) => {
+        const label = item.label?.trim() || normalizeOpenAlexId(item.id);
+        const isLast = index === activeIndex;
+
+        return (
+          <div
+            key={`${item.type}-${item.id}-${index}`}
+            className="inline-flex min-w-0 items-center"
+          >
+            {index > 0 ? <ChevronRight className="mx-1 h-3.5 w-3.5" /> : null}
+            {isLast ? (
+              <span className="truncate font-semibold text-slate-900">{label}</span>
+            ) : (
+              <button
+                type="button"
+                onClick={() => onJumpTo(index)}
+                className="truncate transition hover:text-slate-700"
+              >
+                {label}
+              </button>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function CanvasFooter({ children }: { children: ReactNode }) {
   return (
     <div className="border-t border-slate-200 bg-white px-6 py-4">
       {children}
@@ -405,23 +488,35 @@ function CanvasFooter({ children }: { children: React.ReactNode }) {
 }
 
 function CanvasLoadingState({
+  activeIndex,
+  breadcrumbs,
   canGoBack,
+  isActive,
   onBack,
   onClose,
+  onJumpTo,
 }: {
+  activeIndex: number;
+  breadcrumbs: EntityCanvasEntry[];
   canGoBack: boolean;
+  isActive: boolean;
   onBack: () => void;
   onClose: () => void;
+  onJumpTo: (index: number) => void;
 }) {
   return (
     <>
       <CanvasHeader
+        activeIndex={activeIndex}
+        breadcrumbs={breadcrumbs}
         canGoBack={canGoBack}
+        isActive={isActive}
         onBack={onBack}
         onClose={onClose}
-        title="Loading"
-        subtitle="Entity"
+        onJumpTo={onJumpTo}
         openAlexId=""
+        subtitle="Entity"
+        title="Loading"
       />
       <div className="flex flex-1 items-center justify-center bg-slate-50 px-6 py-10">
         <p className="text-sm font-semibold text-slate-500">
@@ -433,25 +528,37 @@ function CanvasLoadingState({
 }
 
 function CanvasErrorState({
+  activeIndex,
+  breadcrumbs,
   canGoBack,
+  isActive,
   message,
   onBack,
   onClose,
+  onJumpTo,
 }: {
+  activeIndex: number;
+  breadcrumbs: EntityCanvasEntry[];
   canGoBack: boolean;
+  isActive: boolean;
   message: string;
   onBack: () => void;
   onClose: () => void;
+  onJumpTo: (index: number) => void;
 }) {
   return (
     <>
       <CanvasHeader
+        activeIndex={activeIndex}
+        breadcrumbs={breadcrumbs}
         canGoBack={canGoBack}
+        isActive={isActive}
         onBack={onBack}
         onClose={onClose}
-        title="Entity"
-        subtitle="Error"
+        onJumpTo={onJumpTo}
         openAlexId=""
+        subtitle="Error"
+        title="Entity"
       />
       <div className="flex flex-1 items-center justify-center bg-slate-50 px-6 py-10">
         <p className="text-sm font-semibold text-rose-600">{message}</p>
@@ -464,7 +571,7 @@ function SectionCard({
   children,
   title,
 }: {
-  children: React.ReactNode;
+  children: ReactNode;
   title: string;
 }) {
   return (
@@ -527,7 +634,7 @@ function StatsGrid({ items }: { items: SummaryItem[] }) {
   );
 }
 
-function TagList({
+function StaticTagList({
   items,
   tone,
 }: {
@@ -543,6 +650,30 @@ function TagList({
   );
 }
 
+function EntityTagList({
+  items,
+  tone,
+}: {
+  items: EntityRef[];
+  tone: "default" | "topic";
+}) {
+  return (
+    <div className="flex flex-wrap gap-2">
+      {items.map((item) => (
+        <EntityCanvasLink
+          key={`${item.type}-${item.id}`}
+          entityId={item.id}
+          entityType={item.type}
+          label={item.label}
+          className="rounded-full transition hover:opacity-90"
+        >
+          <MetadataBadge tone={tone} label={item.label} />
+        </EntityCanvasLink>
+      ))}
+    </div>
+  );
+}
+
 function EntityList({ items }: { items: EntityRef[] }) {
   return (
     <div className="space-y-2">
@@ -551,7 +682,8 @@ function EntityList({ items }: { items: EntityRef[] }) {
           key={`${item.type}-${item.id}`}
           entityId={item.id}
           entityType={item.type}
-          className="flex items-center gap-2 text-sm font-semibold text-blue-700 hover:text-blue-900"
+          label={item.label}
+          className="flex items-center gap-2 text-left text-sm font-semibold text-blue-700 hover:text-blue-900"
         >
           <Link2 className="h-4 w-4" />
           {item.label}
@@ -561,7 +693,13 @@ function EntityList({ items }: { items: EntityRef[] }) {
   );
 }
 
-function WorkList({ items }: { items: WorkItem[] }) {
+function WorkList({
+  items,
+  onNavigateToWork,
+}: {
+  items: WorkItem[];
+  onNavigateToWork: () => void;
+}) {
   return (
     <div className="space-y-3">
       {items.map((item) => (
@@ -569,15 +707,16 @@ function WorkList({ items }: { items: WorkItem[] }) {
           key={item.id}
           className="rounded-2xl border border-slate-200 bg-white p-4"
         >
-          <EntityCanvasLink
-            entityId={item.id}
-            entityType="work"
+          <Link
+            to={routePaths.paperDetail(item.id)}
+            onClick={onNavigateToWork}
             className="text-sm font-semibold text-blue-700 hover:text-blue-900"
           >
             {item.title}
-          </EntityCanvasLink>
+          </Link>
           <div className="mt-2 flex flex-wrap items-center gap-2 text-xs font-semibold text-slate-500">
             {item.year ? <span>{item.year}</span> : null}
+            {item.source ? <span>{item.source}</span> : null}
             {item.citations !== null && item.citations !== undefined ? (
               <span>{formatCompactNumber(item.citations)} citations</span>
             ) : null}
@@ -594,11 +733,7 @@ function WorkList({ items }: { items: WorkItem[] }) {
   );
 }
 
-function QuickLinksList({
-  items,
-}: {
-  items: Array<{ label: string; value: string; href?: string }>;
-}) {
+function QuickLinksList({ items }: { items: SummaryItem[] }) {
   return (
     <div className="space-y-3">
       {items.map((item) => (
@@ -624,499 +759,4 @@ function QuickLinksList({
       ))}
     </div>
   );
-}
-
-function buildEntityCanvasState(
-  entity: OpenAlexEntity,
-  entityType: EntityType,
-  topWorks: WorkItem[],
-  fallbackTitle?: string,
-) {
-  const displayName =
-    getString(entity.display_name) ||
-    getString(entity.name) ||
-    getString(entity.title) ||
-    fallbackTitle ||
-    "Unknown entity";
-  const openAlexId = normalizeOpenAlexId(getOpenAlexEntityId(entity));
-
-  const overviewItems: SummaryItem[] = [];
-  const keyStats: SummaryItem[] = [];
-  const activityItems: SummaryItem[] = [];
-  const quickLinks: Array<{ label: string; value: string; href?: string }> = [];
-
-  const orcid = getString(entity.orcid) || getString(getIds(entity).orcid);
-  const openAlexUrl = getOpenAlexEntityUrl(openAlexId);
-  const homepage = getString(entity.homepage_url) || getString(entity.homepage);
-  const updatedDate = formatDateLabel(getString(entity.updated_date));
-  const createdDate = formatDateLabel(getString(entity.created_date));
-
-  const summaryStats = asRecord(entity.summary_stats);
-  const hIndex = getNumber(summaryStats?.h_index);
-  const i10Index = getNumber(summaryStats?.i10_index);
-  const meanCitedness = getNumber(summaryStats?.["2yr_mean_citedness"]);
-
-  const worksCount = getNumber(entity.works_count);
-  const citedByCount = getNumber(entity.cited_by_count);
-
-  const countsByYear = normalizeCountsByYear(entity.counts_by_year);
-  const mostActive = findMostActiveYear(countsByYear);
-  const mostRecent = countsByYear[0];
-
-  const topics = extractEntityLabels(
-    entity.topics || entity.x_concepts || entity.concepts,
-  );
-  const fields = extractFieldLabels(entity, topics);
-
-  const institutions = extractInstitutionRefs(entity);
-  const relatedEntities = extractRelatedEntities(entity, entityType);
-
-  const description = getString(entity.description);
-  const observedNames = extractEntityLabels(
-    entity.display_name_alternatives || entity.observed_names,
-  );
-
-  if (displayName) {
-    overviewItems.push({ label: "Display name", value: displayName });
-  }
-  if (orcid) {
-    overviewItems.push({
-      label: "ORCID",
-      value: normalizeOrcidLabel(orcid),
-      href: normalizeOrcidUrl(orcid),
-    });
-  }
-  if (observedNames.length > 0) {
-    overviewItems.push({
-      label: "Observed names",
-      value: observedNames.join(", "),
-    });
-  }
-  const currentInstitution = getInstitutionLabel(entity.last_known_institution);
-  if (currentInstitution) {
-    overviewItems.push({ label: "Current institution", value: currentInstitution });
-  }
-  const pastInstitutions = institutions
-    .filter((institution) => institution.label !== currentInstitution)
-    .map((institution) => institution.label);
-  if (pastInstitutions.length > 0) {
-    overviewItems.push({
-      label: "Past institutions",
-      value: pastInstitutions.join(", "),
-    });
-  }
-  if (openAlexId) {
-    overviewItems.push({
-      label: "OpenAlex ID",
-      value: openAlexId,
-      href: openAlexUrl || undefined,
-    });
-  }
-
-  if (worksCount !== null) {
-    keyStats.push({ label: "Works count", value: formatFullNumber(worksCount) });
-  }
-  if (citedByCount !== null) {
-    keyStats.push({
-      label: "Citations count",
-      value: formatFullNumber(citedByCount),
-    });
-  }
-  if (hIndex !== null) {
-    keyStats.push({ label: "H-index", value: formatFullNumber(hIndex) });
-  }
-  if (i10Index !== null) {
-    keyStats.push({ label: "I10-index", value: formatFullNumber(i10Index) });
-  }
-  if (meanCitedness !== null) {
-    keyStats.push({
-      label: "2-yr mean citedness",
-      value: formatDecimalValue(meanCitedness),
-    });
-  }
-
-  if (mostActive) {
-    activityItems.push({
-      label: "Most active year",
-      value: String(mostActive.year),
-    });
-  }
-  if (mostRecent?.year && mostRecent.worksCount !== null) {
-    activityItems.push({
-      label: "Recent works",
-      value: `${mostRecent.year} · ${formatFullNumber(mostRecent.worksCount)} works`,
-    });
-  }
-  if (worksCount !== null) {
-    activityItems.push({
-      label: "Total works",
-      value: formatFullNumber(worksCount),
-    });
-  }
-
-  if (openAlexUrl) {
-    quickLinks.push({
-      label: "OpenAlex",
-      value: "View",
-      href: openAlexUrl,
-    });
-  }
-  if (orcid) {
-    quickLinks.push({
-      label: "ORCID",
-      value: "View",
-      href: normalizeOrcidUrl(orcid),
-    });
-  }
-  if (homepage) {
-    quickLinks.push({
-      label: "Homepage",
-      value: "Visit",
-      href: homepage,
-    });
-  }
-  if (updatedDate) {
-    quickLinks.push({ label: "Updated date", value: updatedDate });
-  }
-  if (createdDate) {
-    quickLinks.push({ label: "Created date", value: createdDate });
-  }
-
-  return {
-    activityItems,
-    description: description || "",
-    fields,
-    institutions,
-    keyStats,
-    openAlexId,
-    overviewItems,
-    quickLinks,
-    relatedEntities,
-    relatedEntitiesTitle:
-      entityType === "author" ? "Related Authors" : "Related Topics",
-    title: displayName,
-    topWorks,
-    topics,
-  };
-}
-
-function buildWorksFilter(entityType: EntityType, entityId: string) {
-  const normalizedId = normalizeOpenAlexId(entityId);
-
-  switch (entityType) {
-    case "author":
-      return `authorships.author.id:${normalizedId}`;
-    case "topic":
-      return `topics.id:${normalizedId}`;
-    case "institution":
-      return `authorships.institutions.id:${normalizedId}`;
-    case "source":
-      return `primary_location.source.id:${normalizedId}`;
-    case "work":
-      return "";
-    default:
-      return "";
-  }
-}
-
-function mapWorks(works: OpenAlexWorkListItem[]) {
-  return works
-    .map((work) => {
-      const title =
-        getString(work.display_name) ||
-        getString(work.title) ||
-        "Untitled work";
-      const id = normalizeOpenAlexId(
-        getString(getIds(work).openalex) || getString(work.id),
-      );
-
-      if (!id) {
-        return null;
-      }
-
-      return {
-        citations: getNumber(work.cited_by_count),
-        id,
-        pdfUrl: resolveWorkPdfUrl(work),
-        title,
-        year: getNumber(work.publication_year),
-      } as WorkItem;
-    })
-    .filter(Boolean) as WorkItem[];
-}
-
-function resolveWorkPdfUrl(work: OpenAlexWorkListItem) {
-  const primaryLocation = asRecord(work.primary_location);
-  const bestOaLocation = asRecord(work.best_oa_location);
-  const contentUrls = asRecord(work.content_urls);
-
-  const candidates = [
-    getString(bestOaLocation?.pdf_url),
-    getString(primaryLocation?.pdf_url),
-    getString(contentUrls?.pdf),
-  ];
-
-  return candidates.find(Boolean) || null;
-}
-
-function extractEntityLabels(list: unknown): string[] {
-  return asArray(list)
-    .map((item) => {
-      if (typeof item === "string") {
-        return item.trim();
-      }
-
-      const record = asRecord(item);
-      return (
-        getString(record?.display_name) ||
-        getString(record?.name) ||
-        getString(record?.label)
-      );
-    })
-    .filter(Boolean);
-}
-
-function extractFieldLabels(entity: OpenAlexEntity, topicNames: string[]) {
-  const fields: string[] = [];
-
-  const domain = getInstitutionLabel(entity.domain);
-  const field = getInstitutionLabel(entity.field);
-  const subfield = getInstitutionLabel(entity.subfield);
-
-  if (subfield) {
-    fields.push(subfield);
-  }
-  if (field) {
-    fields.push(field);
-  }
-  if (domain) {
-    fields.push(domain);
-  }
-
-  if (fields.length === 0 && topicNames.length > 0) {
-    return topicNames.slice(0, 6);
-  }
-
-  return uniqueStrings(fields);
-}
-
-function extractInstitutionRefs(entity: OpenAlexEntity): EntityRef[] {
-  const institutions: EntityRef[] = [];
-  const seen = new Set<string>();
-
-  const lastInstitution = asRecord(entity.last_known_institution);
-  const lastInstitutionRef = toEntityRef(lastInstitution, "institution");
-  if (lastInstitutionRef && !seen.has(lastInstitutionRef.id)) {
-    institutions.push(lastInstitutionRef);
-    seen.add(lastInstitutionRef.id);
-  }
-
-  const affiliations = asArray(entity.affiliations);
-  affiliations.forEach((affiliation) => {
-    const record = asRecord(affiliation);
-    const institution = asRecord(record?.institution) || record;
-    const ref = toEntityRef(institution, "institution");
-    if (ref && !seen.has(ref.id)) {
-      institutions.push(ref);
-      seen.add(ref.id);
-    }
-  });
-
-  const pastInstitutions = asArray(entity.past_institutions);
-  pastInstitutions.forEach((item) => {
-    const ref = toEntityRef(asRecord(item) || item, "institution");
-    if (ref && !seen.has(ref.id)) {
-      institutions.push(ref);
-      seen.add(ref.id);
-    }
-  });
-
-  return institutions;
-}
-
-function extractRelatedEntities(
-  entity: OpenAlexEntity,
-  entityType: EntityType,
-): EntityRef[] {
-  const relatedItems =
-    entityType === "author"
-      ? entity.related_authors || entity.related_authorships
-      : entity.related_topics || entity.related_concepts || entity.siblings;
-
-  const refs = asArray(relatedItems)
-    .map((item) => toEntityRef(asRecord(item) || item, entityType))
-    .filter(Boolean) as EntityRef[];
-
-  return refs.slice(0, 6);
-}
-
-function toEntityRef(item: unknown, type: EntityType): EntityRef | null {
-  const record = asRecord(item);
-  if (!record) {
-    return null;
-  }
-
-  const id = normalizeOpenAlexId(
-    getString(getIds(record).openalex) || getString(record.id),
-  );
-  const label =
-    getString(record.display_name) ||
-    getString(record.name) ||
-    getString(record.label);
-
-  if (!id || !label) {
-    return null;
-  }
-
-  return { id, label, type };
-}
-
-function normalizeCountsByYear(list: unknown) {
-  return asArray(list)
-    .map((item) => {
-      const record = asRecord(item);
-      if (!record) {
-        return null;
-      }
-
-      const year = getNumber(record.year);
-      const worksCount = getNumber(record.works_count);
-      const citedByCount = getNumber(record.cited_by_count);
-
-      if (!year) {
-        return null;
-      }
-
-      return {
-        citedByCount,
-        worksCount,
-        year,
-      };
-    })
-    .filter(Boolean)
-    .sort((left, right) => right!.year - left!.year) as Array<{
-    year: number;
-    worksCount: number | null;
-    citedByCount: number | null;
-  }>;
-}
-
-function findMostActiveYear(
-  counts: Array<{ year: number; worksCount: number | null }>,
-) {
-  let best: { year: number; worksCount: number | null } | null = null;
-
-  for (const entry of counts) {
-    if (entry.worksCount === null) {
-      continue;
-    }
-
-    if (!best || (best.worksCount ?? 0) < entry.worksCount) {
-      best = entry;
-    }
-  }
-
-  return best;
-}
-
-function getIds(entity: Record<string, unknown>) {
-  return (asRecord(entity.ids) || {}) as Record<string, unknown>;
-}
-
-function getOpenAlexEntityId(entity: OpenAlexEntity) {
-  return getString(getIds(entity).openalex) || getString(entity.id);
-}
-
-function getInstitutionLabel(value: unknown) {
-  const record = asRecord(value);
-  if (!record) {
-    return "";
-  }
-
-  return (
-    getString(record.display_name) ||
-    getString(record.name) ||
-    getString(record.label)
-  );
-}
-
-function normalizeOrcidLabel(value: string) {
-  return value.replace(/^https?:\/\/orcid\.org\//i, "");
-}
-
-function normalizeOrcidUrl(value: string) {
-  if (/^https?:\/\//i.test(value)) {
-    return value;
-  }
-
-  const normalized = normalizeOrcidLabel(value).trim();
-  if (!normalized) {
-    return "";
-  }
-
-  return `https://orcid.org/${normalized}`;
-}
-
-function formatDateLabel(value: string) {
-  if (!value) {
-    return "";
-  }
-
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    return "";
-  }
-
-  return date.toLocaleDateString("en-US", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
-}
-
-function formatDecimalValue(value: number) {
-  return new Intl.NumberFormat("en-US", {
-    maximumFractionDigits: 2,
-  }).format(value);
-}
-
-function uniqueStrings(items: string[]) {
-  const seen = new Set<string>();
-  const result: string[] = [];
-
-  items.forEach((item) => {
-    const normalized = item.trim();
-    if (!normalized || seen.has(normalized)) {
-      return;
-    }
-
-    seen.add(normalized);
-    result.push(normalized);
-  });
-
-  return result;
-}
-
-function asArray(value: unknown) {
-  return Array.isArray(value) ? value : [];
-}
-
-function asRecord(value: unknown) {
-  if (!value || typeof value !== "object" || Array.isArray(value)) {
-    return null;
-  }
-
-  return value as Record<string, unknown>;
-}
-
-function getString(value: unknown) {
-  return typeof value === "string" ? value.trim() : "";
-}
-
-function getNumber(value: unknown) {
-  if (typeof value !== "number" || Number.isNaN(value)) {
-    return null;
-  }
-
-  return value;
 }

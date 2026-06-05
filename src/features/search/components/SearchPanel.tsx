@@ -181,7 +181,7 @@ function SearchInputRow({
           onBlur={onSearchBlur}
           aria-label="Search papers"
           className="min-w-0 flex-1 bg-transparent text-base font-medium text-black outline-none placeholder:text-black disabled:cursor-not-allowed disabled:opacity-60"
-          placeholder="Search by title or abstract"
+          placeholder="Search by title or abstract."
         />
 
         {isSearchFocused && (
@@ -343,4 +343,3 @@ function SuggestedSearchList({ onSelect }: SuggestedSearchListProps) {
     </div>
   );
 }
-

@@ -36,7 +36,10 @@ export default function EntityCanvasLink({
     <button
       type="button"
       onClick={handleClick}
-      className={className}
+      className={[
+        "inline-flex min-w-0 items-center text-left align-top",
+        className || "",
+      ].join(" ")}
     >
       {children}
     </button>

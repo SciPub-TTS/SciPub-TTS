@@ -1,6 +1,7 @@
 import { Check, Plus } from "lucide-react";
 
 import type { SearchFilterWidgetKey } from "@/features/search/types";
+import { normalizeSearchFilterWidgetKeys } from "@/features/search/utils";
 
 import { searchFilterWidgetDefinitions } from "./filterWidgetConfig";
 
@@ -13,44 +14,52 @@ export default function SearchFilterAddMenu({
   onToggleWidget,
   visibleFilterWidgets,
 }: SearchFilterAddMenuProps) {
+  const selectedWidgetKeys = new Set(
+    normalizeSearchFilterWidgetKeys(visibleFilterWidgets),
+  );
+
   return (
     <details className="group relative">
-      <summary className="inline-flex cursor-pointer list-none items-center gap-2 rounded-full border border-slate-400 bg-white px-4 py-2 text-xs font-bold text-[#14532D] transition hover:border-[#15803D] hover:bg-[#A3E635]/20">
+      <summary className="inline-flex cursor-pointer list-none items-center gap-2 border border-slate-700 bg-white px-4 py-2 text-[11px] font-bold uppercase tracking-[0.22em] text-slate-900 transition hover:bg-slate-100">
         <Plus className="h-4 w-4" />
-        Add filter
+        Add Widget
       </summary>
 
-      <div className="absolute right-0 top-full z-50 mt-3 w-[320px] overflow-hidden rounded-3xl border border-slate-300 bg-white shadow-2xl">
-        <div className="max-h-[420px] overflow-y-auto py-2">
+      <div className="absolute right-0 top-full z-50 mt-2 w-[320px] overflow-hidden border border-slate-700 bg-white">
+        <div className="border-b border-slate-700 bg-slate-100 px-4 py-3">
+          <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-slate-700">
+            Widget Library
+          </p>
+        </div>
+
+        <div className="max-h-[420px] overflow-y-auto">
           {searchFilterWidgetDefinitions.map((definition, index) => {
             const Icon = definition.icon;
-            const isSelected = visibleFilterWidgets.includes(definition.key);
+            const isSelected = selectedWidgetKeys.has(definition.key);
 
             return (
               <div key={definition.key}>
                 <button
                   type="button"
                   onClick={() => onToggleWidget(definition.key)}
-                  className="flex w-full items-center gap-3 px-4 py-4 text-left text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                  className="flex w-full items-center gap-3 px-4 py-4 text-left text-sm font-semibold text-slate-800 transition hover:bg-slate-100"
                 >
-                  <Icon className="h-4 w-4 shrink-0" />
+                  <Icon className="h-4 w-4 shrink-0 text-slate-600" />
                   <span className="flex-1">{definition.label}</span>
                   <span
                     className={[
-                      "flex h-5 w-5 items-center justify-center rounded-md border bg-white",
+                      "flex h-5 w-5 items-center justify-center border",
                       isSelected
-                        ? "border-black bg-[#059669]"
-                        : "border-black",
+                        ? "border-slate-900 bg-slate-900 text-white"
+                        : "border-slate-900 bg-white text-transparent",
                     ].join(" ")}
                   >
-                    {isSelected ? (
-                      <Check className="h-3.5 w-3.5 text-white" />
-                    ) : null}
+                    <Check className="h-3.5 w-3.5" />
                   </span>
                 </button>
 
                 {index < searchFilterWidgetDefinitions.length - 1 ? (
-                  <div className="mx-4 border-t border-slate-200" />
+                  <div className="border-t border-slate-300" />
                 ) : null}
               </div>
             );

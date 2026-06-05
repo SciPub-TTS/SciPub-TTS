@@ -141,14 +141,23 @@ export type PaperDetailSummaryItem = {
 };
 
 export type PaperDetailMetric = {
+  badgeLabel?: string;
   label: string;
   value: string;
   tone?: "default" | "positive";
 };
 
+export type PaperDetailEntityRef = {
+  id: string;
+  name: string;
+  type: "author" | "topic" | "institution" | "source";
+};
+
 export type PaperDetailBadge = {
   label: string;
   tone: "default" | "accent" | "topic" | "topicTrend";
+  entityId?: string;
+  entityType?: "topic";
 };
 
 export type PaperDetailQuickLink = {
@@ -159,6 +168,7 @@ export type PaperDetailQuickLink = {
 
 export type PaperDetailAuthor = {
   id: string;
+  entityId: string | null;
   isCorresponding: boolean;
   isFollowed?: boolean;
   name: string;
@@ -188,8 +198,10 @@ export type PaperDetailData = {
   pdfUrl: string | null;
   publishedLabel: string;
   quickLinks: PaperDetailQuickLink[];
+  source: PaperDetailEntityRef | null;
   sourceHostOrganization: string | null;
   sourceName: string;
   sourceType: string;
   title: string;
+  topics: PaperDetailEntityRef[];
 };
