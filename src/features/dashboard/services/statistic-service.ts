@@ -135,7 +135,9 @@ export const MOCK_PUBLICATION_TRENDING: PublicationTrend[] = [
   },
 ];
 
-const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL ?? "").replace(/\/$/, "");
+const apiBaseUrl = (
+  import.meta.env.VITE_API_BASE_URL || window.location.origin
+).replace(/\/$/, "");
 
 async function requestData<T>(url: string): Promise<T> {
   const response = await fetch(url);
@@ -178,4 +180,3 @@ export const statisticService = {
     return await requestData<PublicationTrend[]>(endpoint.toString());
   },
 };
-
