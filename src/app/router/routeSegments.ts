@@ -6,6 +6,7 @@ export const ROUTE_SEGMENTS = {
   PAPER_DETAIL: "papers/:paperId",
 
   PROFILE: "profile",
+  PROFILE_SECURITY: "profile/security",
   BOOKMARKS: "bookmarks",
   FEED: "feed",
   REPORT: "report",
