@@ -22,22 +22,6 @@ export const registerSchema = z
     path: ["confirmPassword"],
     message: "Passwords do not match",
   });
-    .object({
-        firstName: z.string().min(1, "First name is required"),
-        lastName: z.string().min(1, "Last name is required"),
-        email: z.string().email("Invalid email address"),
-        password: z
-            .string()
-            .min(10, "Password must be at least 10 characters long"),
-        confirmPassword: z.string(),
-        // acceptTerms: z.boolean().refine(Boolean, {
-        //     message: "You must accept the Terms and Conditions",
-        // }),
-    })
-    .refine((data) => data.password === data.confirmPassword, {
-        path: ["confirmPassword"],
-        message: "Passwords do not match",
-    });
 
 export const forgotPasswordSchema = z.object({
   email: z.string().email("Invalid email address"),
