@@ -9,7 +9,7 @@ import type {AuthResponse } from "@/features/auth/types/auth.types";
 import type {ApiResponse} from "@/types/common.types.ts";
 
 const API_BASE_URL =
-    import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8080/api";
+    import.meta.env.VITE_BACKEND_URL;
 
 export const http = axios.create({
     baseURL: API_BASE_URL,

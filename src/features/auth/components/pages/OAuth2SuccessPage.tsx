@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { authApi } from "@/features/auth/services/auth.api";
-import { setAuthSession, setCurrentUser } from "@/features/auth/utils/authStorage";
-import { AUTH_ROLES } from "@/features/auth/constants/roles";
-import { getApiErrorMessage } from "@/features/auth/utils/getApiErrorMessage";
+import { authApi } from "@/features/auth/services/auth.api.ts";
+import { setAuthSession, setCurrentUser } from "@/features/auth/utils/authStorage.ts";
+import { AUTH_ROLES } from "@/features/auth/constants/roles.ts";
+import { getApiErrorMessage } from "@/features/auth/utils/getApiErrorMessage.ts";
 
 type Status = "loading" | "error";
 const ERROR_MESSAGES: Record<string, string> = {
@@ -97,10 +97,10 @@ export default function OAuth2SuccessPage() {
             </div>
 
             <h1 className="font-serif text-[1.8rem] leading-tight text-slate-950 mb-1">
-              Đăng nhập
+              Login
             </h1>
             <h1 className="font-serif text-[1.8rem] leading-tight italic text-red-600 mb-4">
-              thất bại.
+              Failed.
             </h1>
 
             <p className="text-sm text-slate-500 leading-relaxed mb-8 max-w-xs mx-auto">
@@ -115,7 +115,7 @@ export default function OAuth2SuccessPage() {
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
                   <path d="M9 2L4 7l5 5" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
-                Quay lại đăng nhập
+                Go back to Login
               </a>
 
               <button
@@ -162,16 +162,16 @@ export default function OAuth2SuccessPage() {
 
       {/* Steps indicator */}
       <div className="flex flex-col items-center gap-2 mt-2">
-        <p className="text-sm font-medium text-slate-700">Đang xử lý đăng nhập Google…</p>
-        <p className="text-xs text-slate-400">Vui lòng không đóng trang này</p>
+        <p className="text-sm font-medium text-slate-700">Processing Google login…</p>
+        <p className="text-xs text-slate-400">Please do not close this page</p>
       </div>
 
       {/* Progress steps */}
       <div className="flex items-center gap-3 mt-4">
         {[
-          "Xác thực Google",
-          "Tạo phiên đăng nhập",
-          "Tải thông tin",
+          "Google login",
+          "Create session",
+          "Download information",
         ].map((step, i) => (
           <div key={step} className="flex items-center gap-2">
             <div className="flex items-center gap-1.5">
