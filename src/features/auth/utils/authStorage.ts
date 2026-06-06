@@ -1,41 +1,161 @@
-import { AUTH_STORAGE_KEYS } from "../constants/storageKeys";
-import type { AuthUser } from "../types/auth.types";
+// import { AUTH_STORAGE_KEYS } from "../constants/storageKeys";
+// import type { AuthUser } from "../types/auth.types";
+//
+// function canUseLocalStorage() {
+//   return typeof window !== "undefined" && Boolean(window.localStorage);
+// }
+//
+// export function getAccessToken() {
+//   if (!canUseLocalStorage()) return null;
+//
+//   return localStorage.getItem(AUTH_STORAGE_KEYS.ACCESS_TOKEN);
+// }
+//
+// export function getCurrentUser(): AuthUser | null {
+//   if (!canUseLocalStorage()) return null;
+//
+//   const rawUser = localStorage.getItem(AUTH_STORAGE_KEYS.USER);
+//
+//   if (!rawUser) return null;
+//
+//   try {
+//     return JSON.parse(rawUser) as AuthUser;
+//   } catch {
+//     localStorage.removeItem(AUTH_STORAGE_KEYS.USER);
+//     return null;
+//   }
+// }
+//
+// export function saveAuthToStorage(token: string, user: AuthUser) {
+//   if (!canUseLocalStorage()) return;
+//
+//   localStorage.setItem(AUTH_STORAGE_KEYS.ACCESS_TOKEN, token);
+//   localStorage.setItem(AUTH_STORAGE_KEYS.USER, JSON.stringify(user));
+// }
+//
+// export function clearAuthStorage() {
+//   if (!canUseLocalStorage()) return;
+//
+//   localStorage.removeItem(AUTH_STORAGE_KEYS.ACCESS_TOKEN);
+//   localStorage.removeItem(AUTH_STORAGE_KEYS.USER);
+// }
 
-function canUseLocalStorage() {
-  return typeof window !== "undefined" && Boolean(window.localStorage);
-}
 
-export function getAccessToken() {
-  if (!canUseLocalStorage()) return null;
+import { AUTH_ROLES, normalizeRole, type AuthRole } from "@/features/auth/constants/roles";
+import type { AuthResponse, UserPrincipal } from "@/features/auth/types/auth.types";
 
-  return localStorage.getItem(AUTH_STORAGE_KEYS.ACCESS_TOKEN);
-}
+const ACCESS_TOKEN_KEY = "owlreka.access_token";
+const CURRENT_USER_KEY = "owlreka.current_user";
+const PASSWORD_RECOVERY_EMAIL_KEY = "owlreka.password_recovery.email";
+const PASSWORD_RECOVERY_GRANT_TOKEN_KEY = "owlreka.password_recovery.grant_token";
 
-export function getCurrentUser(): AuthUser | null {
-  if (!canUseLocalStorage()) return null;
-
-  const rawUser = localStorage.getItem(AUTH_STORAGE_KEYS.USER);
-
-  if (!rawUser) return null;
+function safeParse<T>(raw: string | null): T | null {
+  if (!raw) return null;
 
   try {
-    return JSON.parse(rawUser) as AuthUser;
+    return JSON.parse(raw) as T;
   } catch {
-    localStorage.removeItem(AUTH_STORAGE_KEYS.USER);
     return null;
   }
 }
 
-export function saveAuthToStorage(token: string, user: AuthUser) {
-  if (!canUseLocalStorage()) return;
+function firstArrayValue(value: unknown): unknown {
+  return Array.isArray(value) && value.length > 0 ? value[0] : undefined;
+}
 
-  localStorage.setItem(AUTH_STORAGE_KEYS.ACCESS_TOKEN, token);
-  localStorage.setItem(AUTH_STORAGE_KEYS.USER, JSON.stringify(user));
+function normalizeAuthorities(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+
+  return value
+      .map((item) => {
+        if (typeof item === "string") return item;
+        if (item && typeof item === "object" && "authority" in item) {
+          return String((item as { authority: unknown }).authority);
+        }
+        return "";
+      })
+      .filter(Boolean);
+}
+
+function resolveRole(source: Record<string, unknown>): AuthRole {
+  const authorities = normalizeAuthorities(source.authorities);
+  return (
+      normalizeRole(source.role) ??
+      normalizeRole(firstArrayValue(source.roles)) ??
+      normalizeRole(firstArrayValue(authorities)) ??
+      AUTH_ROLES.USER
+  );
+}
+
+export function normalizeCurrentUser(input: unknown): UserPrincipal {
+  const source = (input ?? {}) as Record<string, unknown>;
+  const firstName = typeof source.firstName === "string" ? source.firstName : "";
+  const lastName = typeof source.lastName === "string" ? source.lastName : "";
+  const fullName =
+      (typeof source.fullName === "string" && source.fullName) ||
+      [firstName, lastName].filter(Boolean).join(" ").trim() ||
+      (typeof source.email === "string" ? source.email : "User");
+
+  return {
+    id: (source.id ?? source.userId ?? "") as string | number,
+    email: typeof source.email === "string" ? source.email : "",
+    firstName,
+    lastName,
+    fullName,
+    avatarUrl: typeof source.avatarUrl === "string" ? source.avatarUrl : null,
+    role: resolveRole(source),
+    authorities: normalizeAuthorities(source.authorities),
+  };
+}
+
+export function setAccessToken(token: string) {
+  localStorage.setItem(ACCESS_TOKEN_KEY, token);
+}
+
+export function getAccessToken() {
+  return localStorage.getItem(ACCESS_TOKEN_KEY);
+}
+
+export function setCurrentUser(user: unknown) {
+  const normalized = normalizeCurrentUser(user);
+  localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(normalized));
+}
+
+export function getCurrentUser(): UserPrincipal | null {
+  return safeParse<UserPrincipal>(localStorage.getItem(CURRENT_USER_KEY));
+}
+
+export function setAuthSession(data: AuthResponse) {
+  if (data.accessToken) setAccessToken(data.accessToken);
+  if (data.user) setCurrentUser(data.user);
 }
 
 export function clearAuthStorage() {
-  if (!canUseLocalStorage()) return;
+  localStorage.removeItem(ACCESS_TOKEN_KEY);
+  localStorage.removeItem(CURRENT_USER_KEY);
+}
 
-  localStorage.removeItem(AUTH_STORAGE_KEYS.ACCESS_TOKEN);
-  localStorage.removeItem(AUTH_STORAGE_KEYS.USER);
+export function isAuthenticated() {
+  return Boolean(getAccessToken() && getCurrentUser());
+}
+
+export function setPasswordRecoveryEmail(email: string) {
+  sessionStorage.setItem(PASSWORD_RECOVERY_EMAIL_KEY, email);
+}
+
+export function getPasswordRecoveryEmail() {
+  return sessionStorage.getItem(PASSWORD_RECOVERY_EMAIL_KEY);
+}
+
+export function setPasswordRecoveryGrantToken(token: string) {
+  sessionStorage.setItem(PASSWORD_RECOVERY_GRANT_TOKEN_KEY, token);
+}
+
+export function getPasswordRecoveryGrantToken() {
+  return sessionStorage.getItem(PASSWORD_RECOVERY_GRANT_TOKEN_KEY);
+}
+
+export function clearPasswordRecoveryState() {
+  sessionStorage.removeItem(PASSWORD_RECOVERY_EMAIL_KEY);
+  sessionStorage.removeItem(PASSWORD_RECOVERY_GRANT_TOKEN_KEY);
 }

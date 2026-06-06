@@ -13,8 +13,8 @@ import {
   AUTHENTICATED_ROLES,
 } from "@/features/auth/constants/roles";
 
-import LoginPage from "@/features/auth/components/LoginPage";
-import RegisterPage from "@/features/auth/components/RegisterPage";
+import LoginPage from "@/features/auth/components/pages/LoginPage.tsx";
+import RegisterPage from "@/features/auth/components/pages/RegisterPage.tsx";
 
 import LandingPage from "@/features/landing/components/LandingPage";
 import GuideHelpPage from "@/features/guide/components/GuideHelpPage";
@@ -26,8 +26,24 @@ import BookmarksPage from "@/features/bookmarks/components/BookmarksPage";
 import FeedPage from "@/features/newfeeds/components/FeedPage";
 import ReportPage from "@/features/reports/components/ReportPage";
 
-import AdminDashboardPage from "@/features/admin/components/AdminDashboardPage";
+//import AdminDashboardPage from "@/pages/admin/AdminDashboardPage";
 import DashboardPage from "@/features/dashboard/DashboardPage.tsx";
+import AdminDashboardPage from "@/features/admin/components/AdminDashboardPage.tsx";
+import ForgotPasswordPage from "@/features/auth/components/pages/ForgotPasswordPage.tsx";
+import VerifyResetCodePage from "@/features/auth/components/pages/VerifyResetCodePage.tsx";
+import ResetPasswordPage from "@/features/auth/components/pages/ResetPasswordPage.tsx";
+// import VerifyEmailSuccessPage from "@/features/auth/components/VerifyEmailResultPage.tsx";
+import ChangePasswordPage from "@/features/profile/components/ChangePasswordPage.tsx";
+import OAuth2SuccessPage from "@/features/auth/components/pages/OAuth2SuccessPage.tsx";
+
+function PlaceholderPage({ title }: { title: string }) {
+  return (
+    <section className="rounded-lg border border-dashed border-slate-300 bg-white p-8">
+      <h1 className="text-2xl font-semibold text-slate-900">{title}</h1>
+      <p className="mt-2 text-sm text-slate-500">This page is being built.</p>
+    </section>
+  );
+}
 
 export const router = createBrowserRouter([
   {
@@ -41,12 +57,29 @@ export const router = createBrowserRouter([
         path: ROUTES.REGISTER,
         element: <RegisterPage />,
       },
+      {
+        path: ROUTES.FORGOT_PASSWORD,
+        element: <ForgotPasswordPage />,
+      },
+      {
+        path: ROUTES.FORGOT_PASSWORD_VERIFY,
+        element: <VerifyResetCodePage />,
+      },
+      {
+        path: ROUTES.FORGOT_PASSWORD_RESET,
+        element: <ResetPasswordPage />,
+      },
     ],
   },
 
   {
     path: ROUTES.HOME,
     element: <LandingPage />,
+  },
+
+  {
+    path: "/oauth2/success",
+    element: <OAuth2SuccessPage />,
   },
 
   {
@@ -89,6 +122,10 @@ export const router = createBrowserRouter([
             path: ROUTE_SEGMENTS.PROFILE,
             element: <ProfilePage />,
           },
+          {
+            path: ROUTE_SEGMENTS.PROFILE_SECURITY,
+            element: <ChangePasswordPage />,
+          },
         ],
       },
     ],
@@ -111,42 +148,15 @@ export const router = createBrowserRouter([
           },
           {
             path: ROUTE_SEGMENTS.ADMIN_USERS,
-            element: (
-              <section className="rounded-lg border border-dashed border-slate-300 bg-white p-8">
-                <h1 className="text-2xl font-semibold text-slate-900">
-                  Admin Users
-                </h1>
-                <p className="mt-2 text-sm text-slate-500">
-                  This page is being built.
-                </p>
-              </section>
-            ),
+            element: <PlaceholderPage title="Admin Users" />,
           },
           {
             path: ROUTE_SEGMENTS.ADMIN_FIELDS,
-            element: (
-              <section className="rounded-lg border border-dashed border-slate-300 bg-white p-8">
-                <h1 className="text-2xl font-semibold text-slate-900">
-                  Admin Fields
-                </h1>
-                <p className="mt-2 text-sm text-slate-500">
-                  This page is being built.
-                </p>
-              </section>
-            ),
+            element: <PlaceholderPage title="Admin Fields" />,
           },
           {
             path: ROUTE_SEGMENTS.ADMIN_SYNC,
-            element: (
-              <section className="rounded-lg border border-dashed border-slate-300 bg-white p-8">
-                <h1 className="text-2xl font-semibold text-slate-900">
-                  Admin Sync
-                </h1>
-                <p className="mt-2 text-sm text-slate-500">
-                  This page is being built.
-                </p>
-              </section>
-            ),
+            element: <PlaceholderPage title="Admin Sync" />,
           },
         ],
       },

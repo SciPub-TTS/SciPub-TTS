@@ -320,6 +320,7 @@ export default function LandingPage() {
             className="relative mt-12 scroll-mt-24 overflow-visible rounded-[28px] border border-slate-300/70 bg-white p-3 shadow-[0_20px_60px_rgba(15,23,42,0.09)] md:p-4"
           >
           
+
             <div className="grid gap-4 lg:grid-cols-[1.35fr_0.95fr]">
               <div className="relative">
                 <img
