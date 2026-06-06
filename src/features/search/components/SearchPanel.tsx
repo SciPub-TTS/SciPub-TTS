@@ -29,9 +29,9 @@ export function SearchPanel({
   matchedPaperCount,
   matchedSavedSearchCount,
   searchQuery,
-  showAllFilters,
   showAllSearchSuggestions,
   totalIndexedPapers,
+  visibleFilterWidgets,
   visibleSearchSuggestions,
   onApplyFilters,
   onFilterOptionSearch,
@@ -45,8 +45,8 @@ export function SearchPanel({
   onSearchQueryChange,
   onSuggestedSearchSelect,
   onToggleFilters,
-  onToggleMoreFilters,
   onToggleSearchSuggestions,
+  onToggleVisibleFilterWidget,
   updateFilter,
 }: SearchPanelProps) {
   // This component composes the top search area and the advanced filters.
@@ -88,24 +88,26 @@ export function SearchPanel({
         isLoadingMoreFilterOptions={isLoadingMoreFilterOptions}
         isLoadingResults={isLoadingResults}
         matchedPaperCount={matchedPaperCount}
-        showAllFilters={showAllFilters}
+        visibleFilterWidgets={visibleFilterWidgets}
         onApplyFilters={onApplyFilters}
         onFilterOptionSearch={onFilterOptionSearch}
         onLoadMoreFilterOptions={onLoadMoreFilterOptions}
         onResetFilters={onResetFilters}
         onToggleFilters={onToggleFilters}
-        onToggleMoreFilters={onToggleMoreFilters}
+        onToggleVisibleFilterWidget={onToggleVisibleFilterWidget}
         updateFilter={updateFilter}
       />
     </div>
   );
 }
 
-function SearchTabsHeader({
-  totalIndexedPapers,
-}: {
+type SearchTabsHeaderProps = {
   totalIndexedPapers: number;
-}) {
+};
+
+function SearchTabsHeader(props: SearchTabsHeaderProps) {
+  const { totalIndexedPapers } = props;
+
   // Format display text before JSX so the markup stays simple.
   const indexedPaperLabel =
     totalIndexedPapers > 0
@@ -174,13 +176,14 @@ function SearchInputRow({
         <input
           type="search"
           value={searchQuery}
+          disabled={isLoadingResults}
           onChange={handleSearchInputChange}
           onKeyDown={handleSearchInputKeyDown}
           onFocus={onSearchFocus}
           onBlur={onSearchBlur}
           aria-label="Search papers"
-          className="min-w-0 flex-1 bg-transparent text-base font-medium text-black outline-none placeholder:text-black"
-          placeholder="Search by title, abstract & full text"
+          className="min-w-0 flex-1 bg-transparent text-base font-medium text-black outline-none placeholder:text-black disabled:cursor-not-allowed disabled:opacity-60"
+          placeholder="Search by title or abstract."
         />
 
         {isSearchFocused && (
@@ -342,4 +345,3 @@ function SuggestedSearchList({ onSelect }: SuggestedSearchListProps) {
     </div>
   );
 }
-

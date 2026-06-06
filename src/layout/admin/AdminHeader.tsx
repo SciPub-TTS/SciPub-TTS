@@ -19,8 +19,8 @@ export default function AdminHeader() {
   const initials = getInitials(displayName) || "AD";
 
   return (
-    <header className="dynamic-divider-bottom sticky top-0 z-40 border-b border-slate-300 bg-white/95 px-8 py-5 shadow-[0_10px_30px_rgba(15,23,42,0.06)] backdrop-blur">
-      <div className="flex items-center justify-between gap-6">
+    <header className="dynamic-divider-bottom sticky top-0 z-40 border-b border-slate-300 bg-white/95 px-8 shadow-[0_10px_30px_rgba(15,23,42,0.06)] backdrop-blur">
+      <div className="flex min-h-[76px] items-center justify-between gap-6">
         <div className="min-w-0 flex-1">
           <h1 className="text-2xl font-bold text-slate-950">
             Admin Control Panel

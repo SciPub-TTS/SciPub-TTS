@@ -1,10 +1,9 @@
 import { LoaderCircle } from "lucide-react";
-import type { MouseEvent, RefObject } from "react";
+import type { MouseEvent, ReactNode, RefObject } from "react";
 import { memo, useEffect, useRef } from "react";
 
 import { mockResultSortOptions } from "@/features/search/services";
 import type {
-  ResultsHeaderProps,
   ResultsListProps,
   SearchResultsProps,
 } from "@/features/search/types";
@@ -27,6 +26,10 @@ function SearchResultsComponent({
   onSelectSort,
 }: SearchResultsProps) {
   const lazyLoadAnchorRef = useRef<HTMLDivElement>(null);
+  const resultTitle = appliedSearchQuery || "all papers";
+  const formattedResultCount = formatFullNumber(totalResultCount);
+  const formattedResponseTime = formatResponseTime(responseTimeSeconds);
+  const resultMetaText = `${formattedResultCount} papers - ${formattedResponseTime} - matched title, abstract.`;
 
   useEffect(() => {
     const anchor = lazyLoadAnchorRef.current;
@@ -62,51 +65,58 @@ function SearchResultsComponent({
     onLoadMoreResults,
   ]);
 
-  if (isLoadingResults) {
-    return (
-      <section>
-        <SearchLoadingState />
-      </section>
-    );
-  }
-
-  if (!hasSearched) {
-    return (
-      <section>
-        <div className="rounded-2xl border border-slate-600 bg-white p-8 text-center">
-          <p className="text-lg font-bold text-black">
-            Enter a keyword or choose filters, then click Search.
-          </p>
-        </div>
-      </section>
-    );
-  }
-
   return (
     <section>
       <div className="space-y-4">
-        <ResultsHeader
-          appliedSearchQuery={appliedSearchQuery}
-          isLoadingResults={isLoadingResults}
-          responseTimeSeconds={responseTimeSeconds}
-          totalResultCount={totalResultCount}
-          selectedSort={selectedSort}
-          onSelectSort={onSelectSort}
-        />
+        {hasSearched && !isLoadingResults ? (
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 className="text-2xl font-semibold text-black">
+                Results for{" "}
+                <span className="italic text-[#14532D]">"{resultTitle}"</span>
+              </h2>
+              <p className="mt-1 text-xs font-extrabold uppercase tracking-[0.24em] text-black">
+                {resultMetaText}
+              </p>
+            </div>
 
-        <ResultsList
-          autoLoadAnchorIndex={autoLoadAnchorIndex}
-          hasSearched={hasSearched}
-          isLoadingResults={isLoadingResults}
-          lazyLoadAnchorRef={lazyLoadAnchorRef}
-          visiblePaperResults={visiblePaperResults}
-        />
+            <div className="flex items-center gap-2">
+              <SortActions
+                isLoadingResults={isLoadingResults}
+                selectedSort={selectedSort}
+                onSelectSort={onSelectSort}
+              />
+            </div>
+          </div>
+        ) : null}
 
-        {isLoadingMoreResults && (
+        {isLoadingResults ? (
+          <SearchLoadingState />
+        ) : !hasSearched ? (
+          <div className="rounded-2xl border border-slate-600 bg-white p-8 text-center">
+            <p className="text-lg font-bold text-black">
+              Enter a keyword or choose filters, then click Search.
+            </p>
+          </div>
+        ) : visiblePaperResults.length === 0 ? (
+          <div className="rounded-2xl border border-slate-600 bg-white p-8 text-center">
+            <p className="text-lg font-bold text-black">
+              No papers matched this search.
+            </p>
+          </div>
+        ) : (
+          <ResultsList
+            autoLoadAnchorIndex={autoLoadAnchorIndex}
+            lazyLoadAnchorRef={lazyLoadAnchorRef}
+            visiblePaperResults={visiblePaperResults}
+          />
+        )}
+
+        {hasSearched && !isLoadingResults && isLoadingMoreResults ? (
           <p className="py-2 text-center text-sm font-semibold text-black">
             Loading more results...
           </p>
-        )}
+        ) : null}
       </div>
     </section>
   );
@@ -125,19 +135,18 @@ function SearchLoadingState() {
   );
 }
 
-function ResultsHeader({
-  appliedSearchQuery,
-  isLoadingResults,
-  responseTimeSeconds,
-  totalResultCount,
-  selectedSort,
-  onSelectSort,
-}: ResultsHeaderProps) {
-  // Empty query means the user is viewing the full result list.
-  const resultTitle = appliedSearchQuery || "all papers";
-  const formattedResultCount = formatFullNumber(totalResultCount);
-  const formattedResponseTime = formatResponseTime(responseTimeSeconds);
-  const resultMetaText = `${formattedResultCount} papers - ${formattedResponseTime} - matched title, abstract, full text`;
+type SortActionsProps = {
+  isLoadingResults: boolean;
+  selectedSort: string;
+  onSelectSort: (sortOption: string) => void;
+};
+
+type ResultsListWithAnchorProps = ResultsListProps & {
+  lazyLoadAnchorRef: RefObject<HTMLDivElement | null>;
+};
+
+function SortActions(props: SortActionsProps) {
+  const { isLoadingResults, selectedSort, onSelectSort } = props;
 
   function handleSortClick(event: MouseEvent<HTMLButtonElement>) {
     // value comes from the clicked sort button.
@@ -147,73 +156,37 @@ function ResultsHeader({
   }
 
   return (
-    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-      <div>
-        <h2 className="text-2xl font-semibold text-black">
-          Results for{" "}
-          <span className="italic text-[#14532D]">"{resultTitle}"</span>
-        </h2>
-        <p className="mt-1 text-xs font-extrabold uppercase tracking-[0.24em] text-black">
-          {resultMetaText}
-        </p>
+    <>
+      <span className="text-[10px] font-extrabold uppercase tracking-[0.24em] text-black">
+        Sort:
+      </span>
+      <div className="flex overflow-hidden rounded-lg border border-slate-400 bg-white divide-x divide-slate-400">
+        {mockResultSortOptions.map((sortOption) => (
+          <button
+            key={sortOption}
+            type="button"
+            value={sortOption}
+            onClick={handleSortClick}
+            disabled={isLoadingResults}
+            className={[
+              "px-4 py-2 text-xs font-bold transition disabled:cursor-not-allowed disabled:opacity-60",
+              selectedSort === sortOption
+                ? "bg-[#14532D] text-white"
+                : "text-black hover:bg-slate-200 hover:text-black",
+            ].join(" ")}
+          >
+            {sortOption}
+          </button>
+        ))}
       </div>
-
-      <div className="flex items-center gap-2">
-        <span className="text-[10px] font-extrabold uppercase tracking-[0.24em] text-black">
-          Sort:
-        </span>
-        <div className="flex overflow-hidden rounded-lg border border-slate-400 bg-white divide-x divide-slate-400">
-          {mockResultSortOptions.map((sortOption) => (
-            <button
-              key={sortOption}
-              type="button"
-              value={sortOption}
-              onClick={handleSortClick}
-              disabled={isLoadingResults}
-              className={[
-                "px-4 py-2 text-xs font-bold transition disabled:cursor-not-allowed disabled:opacity-60",
-                selectedSort === sortOption
-                  ? "bg-[#14532D] text-white"
-                  : "text-black hover:bg-slate-200 hover:text-black",
-              ].join(" ")}
-            >
-              {sortOption}
-            </button>
-          ))}
-        </div>
-      </div>
-    </div>
+    </>
   );
 }
 
-function ResultsList({
-  autoLoadAnchorIndex,
-  hasSearched,
-  isLoadingResults,
-  lazyLoadAnchorRef,
-  visiblePaperResults,
-}: ResultsListProps & {
-  lazyLoadAnchorRef: RefObject<HTMLDivElement | null>;
-}) {
-  if (isLoadingResults) {
-    return (
-      <div className="rounded-2xl border border-slate-600 bg-white p-8 text-center">
-        <p className="text-lg font-bold text-black">Loading results...</p>
-      </div>
-    );
-  }
+function ResultsList(props: ResultsListWithAnchorProps) {
+  const { autoLoadAnchorIndex, lazyLoadAnchorRef, visiblePaperResults } = props;
 
-  if (hasSearched && visiblePaperResults.length === 0) {
-    return (
-      <div className="rounded-2xl border  border-slate-600 bg-white p-8 text-center">
-        <p className="text-lg font-bold text-black">
-          No papers matched this search.
-        </p>
-      </div>
-    );
-  }
-
-  const resultItems = [];
+  const resultItems: ReactNode[] = [];
   for (let index = 0; index < visiblePaperResults.length; index += 1) {
     if (index === autoLoadAnchorIndex) {
       resultItems.push(

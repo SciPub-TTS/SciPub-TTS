@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useNavigationType } from "react-router-dom";
 
 import { routePaths } from "@/app/router";
 import { isAuthenticated } from "@/features/auth/utils/authGuard";
 import {
+  defaultVisibleFilterWidgets,
   initialFilters,
   SEARCH_DEFAULT_PAGE,
   SEARCH_FILTER_OPTION_LIMIT,
@@ -31,6 +32,7 @@ import type {
   SavedSearch,
   SearchFilterOptions,
   SearchFilters,
+  SearchFilterWidgetKey,
 } from "../types";
 import {
   buildAppliedFilterSummary,
@@ -38,7 +40,13 @@ import {
   getVisibleSearchSuggestions,
   hasInvalidCitationRange,
   hasInvalidYearRange,
+  normalizeSearchFilterWidgetKeys,
 } from "../utils";
+import {
+  clearSearchPageRestorePending,
+  readSearchPageRestorePending,
+  searchPageStateStorageKey,
+} from "../utils/navigationState";
 
 const initialSearchQuery = "";
 
@@ -67,50 +75,103 @@ type ResultPage = {
   works: PaperResult[];
 };
 
+type SearchPageSnapshot = {
+  appliedFilters: SearchFilters;
+  appliedSearchQuery: string;
+  filterOptions: SearchFilterOptions;
+  filters: SearchFilters;
+  filtersOpen: boolean;
+  hasMoreResults: boolean;
+  hasSearched: boolean;
+  matchedPaperCount: number;
+  nextQueryTriggerIndex: number;
+  nextResultPage: number;
+  optionValueLookup: SearchOptionValueLookup;
+  responseTimeSeconds: number;
+  searchQuery: string;
+  selectedSort: string;
+  totalIndexedPapers: number;
+  visibleFilterWidgets: SearchFilterWidgetKey[];
+  visiblePaperResults: PaperResult[];
+  scrollY: number;
+};
+
 export function useSearchPageState() {
   const navigate = useNavigate();
-  const [searchQuery, setSearchQuery] = useState(initialSearchQuery);
+  const navigationType = useNavigationType();
+  const shouldRestoreSearchPageState =
+    navigationType === "POP" && readSearchPageRestorePending();
+  const [restoredSnapshot] = useState<SearchPageSnapshot | null>(() =>
+    shouldRestoreSearchPageState ? readPersistedSearchPageSnapshot() : null,
+  );
+  const latestSnapshotRef = useRef<SearchPageSnapshot | null>(restoredSnapshot);
+  const shouldRestoreScrollRef = useRef(Boolean(restoredSnapshot));
+  const [searchQuery, setSearchQuery] = useState(
+    restoredSnapshot?.searchQuery ?? initialSearchQuery,
+  );
   const [appliedSearchQuery, setAppliedSearchQuery] =
-    useState(initialSearchQuery);
+    useState(restoredSnapshot?.appliedSearchQuery ?? initialSearchQuery);
   const [savedSearches, setSavedSearches] = useState<SavedSearch[]>([]);
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [showAllSearchSuggestions, setShowAllSearchSuggestions] =
     useState(false);
-  const [filters, setFilters] = useState<SearchFilters>(initialFilters);
+  const [filters, setFilters] = useState<SearchFilters>(
+    restoredSnapshot?.filters ?? initialFilters,
+  );
   const [appliedFilters, setAppliedFilters] =
-    useState<SearchFilters>(initialFilters);
+    useState<SearchFilters>(restoredSnapshot?.appliedFilters ?? initialFilters);
   const [filterOptions, setFilterOptions] = useState<SearchFilterOptions>(
-    emptySearchFilterOptions,
+    restoredSnapshot?.filterOptions ?? emptySearchFilterOptions,
   );
   const [optionValueLookup, setOptionValueLookup] = useState(
-    emptySearchOptionValueLookup,
+    restoredSnapshot?.optionValueLookup ?? emptySearchOptionValueLookup,
   );
   const [visiblePaperResults, setVisiblePaperResults] = useState<PaperResult[]>(
-    [],
+    restoredSnapshot?.visiblePaperResults ?? [],
   );
   const [responseTimeSeconds, setResponseTimeSeconds] = useState(
-    searchSummaryStats.responseTimeSeconds,
+    restoredSnapshot?.responseTimeSeconds ??
+      searchSummaryStats.responseTimeSeconds,
   );
   const [isLoadingResults, setIsLoadingResults] = useState(false);
   const [isLoadingMoreResults, setIsLoadingMoreResults] = useState(false);
-  const [hasSearched, setHasSearched] = useState(false);
-  const [isLoadingFilterOptions, setIsLoadingFilterOptions] = useState<
-    RemoteOptionStateMap
-  >(emptyRemoteOptionState);
-  const [isLoadingMoreFilterOptions, setIsLoadingMoreFilterOptions] = useState<
-    RemoteOptionStateMap
-  >(emptyRemoteOptionState);
-  const [hasMoreFilterOptions, setHasMoreFilterOptions] = useState<
-    RemoteOptionStateMap
-  >(emptyRemoteOptionState);
-  const [matchedPaperCount, setMatchedPaperCount] = useState(0);
-  const [totalIndexedPapers, setTotalIndexedPapers] = useState(0);
-  const [nextResultPage, setNextResultPage] = useState(1);
-  const [nextQueryTriggerIndex, setNextQueryTriggerIndex] = useState(-1);
-  const [hasMoreResults, setHasMoreResults] = useState(false);
-  const [filtersOpen, setFiltersOpen] = useState(true);
-  const [showAllFilters, setShowAllFilters] = useState(false);
-  const [selectedSort, setSelectedSort] = useState(mockResultSortOptions[0]);
+  const [hasSearched, setHasSearched] = useState(
+    restoredSnapshot?.hasSearched ?? false,
+  );
+  const [isLoadingFilterOptions, setIsLoadingFilterOptions] =
+    useState<RemoteOptionStateMap>(emptyRemoteOptionState);
+  const [isLoadingMoreFilterOptions, setIsLoadingMoreFilterOptions] =
+    useState<RemoteOptionStateMap>(emptyRemoteOptionState);
+  const [hasMoreFilterOptions, setHasMoreFilterOptions] =
+    useState<RemoteOptionStateMap>(emptyRemoteOptionState);
+  const [matchedPaperCount, setMatchedPaperCount] = useState(
+    restoredSnapshot?.matchedPaperCount ?? 0,
+  );
+  const [totalIndexedPapers, setTotalIndexedPapers] = useState(
+    restoredSnapshot?.totalIndexedPapers ?? 0,
+  );
+  const [nextResultPage, setNextResultPage] = useState(
+    restoredSnapshot?.nextResultPage ?? 1,
+  );
+  const [nextQueryTriggerIndex, setNextQueryTriggerIndex] = useState(
+    restoredSnapshot?.nextQueryTriggerIndex ?? -1,
+  );
+  const [hasMoreResults, setHasMoreResults] = useState(
+    restoredSnapshot?.hasMoreResults ?? false,
+  );
+  const [filtersOpen, setFiltersOpen] = useState(
+    restoredSnapshot?.filtersOpen ?? false,
+  );
+  const [visibleFilterWidgets, setVisibleFilterWidgets] = useState<
+    SearchFilterWidgetKey[]
+  >(
+    normalizeSearchFilterWidgetKeys(
+      restoredSnapshot?.visibleFilterWidgets ?? defaultVisibleFilterWidgets,
+    ),
+  );
+  const [selectedSort, setSelectedSort] = useState(
+    restoredSnapshot?.selectedSort ?? mockResultSortOptions[0],
+  );
   const remoteOptionSearchTimeoutRef = useRef<
     Record<RemoteOptionFilterKey, number | null>
   >({
@@ -263,8 +324,15 @@ export function useSearchPageState() {
         }
 
         setSavedSearches(recentSearches);
-        setFilterOptions(optionsState.filterOptions);
-        setOptionValueLookup(optionsState.optionValueLookup);
+        setFilterOptions((currentOptions) =>
+          mergeSearchFilterOptions(currentOptions, optionsState.filterOptions),
+        );
+        setOptionValueLookup((currentLookup) =>
+          mergeSearchOptionValueLookup(
+            currentLookup,
+            optionsState.optionValueLookup,
+          ),
+        );
         setTotalIndexedPapers(optionsState.totalIndexedPapers);
         baseOptionsRef.current = optionsState.filterOptions;
         baseOptionValueLookupRef.current = optionsState.optionValueLookup;
@@ -297,6 +365,84 @@ export function useSearchPageState() {
     };
   }, []);
 
+  useEffect(() => {
+    clearSearchPageRestorePending();
+  }, []);
+
+  useEffect(() => {
+    const snapshot: SearchPageSnapshot = {
+      appliedFilters,
+      appliedSearchQuery,
+      filterOptions,
+      filters,
+      filtersOpen,
+      hasMoreResults,
+      hasSearched,
+      matchedPaperCount,
+      nextQueryTriggerIndex,
+      nextResultPage,
+      optionValueLookup,
+      responseTimeSeconds,
+      searchQuery,
+      selectedSort,
+      totalIndexedPapers,
+      visibleFilterWidgets,
+      visiblePaperResults,
+      scrollY: latestSnapshotRef.current?.scrollY ?? 0,
+    };
+
+    latestSnapshotRef.current = snapshot;
+    persistSearchPageSnapshot(snapshot);
+  }, [
+    appliedFilters,
+    appliedSearchQuery,
+    filterOptions,
+    filters,
+    filtersOpen,
+    hasMoreResults,
+    hasSearched,
+    matchedPaperCount,
+    nextQueryTriggerIndex,
+    nextResultPage,
+    optionValueLookup,
+    responseTimeSeconds,
+    searchQuery,
+    selectedSort,
+    totalIndexedPapers,
+    visibleFilterWidgets,
+    visiblePaperResults,
+  ]);
+
+  useEffect(() => {
+    return () => {
+      const latestSnapshot = latestSnapshotRef.current;
+      if (!latestSnapshot) {
+        return;
+      }
+
+      persistSearchPageSnapshot({
+        ...latestSnapshot,
+        scrollY: window.scrollY,
+      });
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!shouldRestoreScrollRef.current) {
+      return;
+    }
+
+    shouldRestoreScrollRef.current = false;
+    const restoredScrollY = restoredSnapshot?.scrollY ?? 0;
+
+    window.requestAnimationFrame(() => {
+      window.scrollTo({
+        top: restoredScrollY,
+        behavior: "auto",
+      });
+    });
+  }, [restoredSnapshot, visiblePaperResults.length]);
+
   function updateFilter(
     key: keyof SearchFilters,
     value: SearchFilters[keyof SearchFilters],
@@ -320,7 +466,9 @@ export function useSearchPageState() {
     }
 
     try {
-      const recentSearches = await getRecentSearches(SEARCH_RECENT_SEARCH_LIMIT);
+      const recentSearches = await getRecentSearches(
+        SEARCH_RECENT_SEARCH_LIMIT,
+      );
       setSavedSearches(recentSearches);
     } catch (error) {
       console.error("Cannot load recent searches:", error);
@@ -337,6 +485,19 @@ export function useSearchPageState() {
     }
 
     const normalizedQuery = searchQuery.trim();
+
+    if (!normalizedQuery) {
+      setAppliedSearchQuery("");
+      setAppliedFilters(filters);
+      setVisiblePaperResults([]);
+      setHasSearched(false);
+      setMatchedPaperCount(0);
+      setHasMoreResults(false);
+      setNextResultPage(1);
+      setNextQueryTriggerIndex(-1);
+      setResponseTimeSeconds(searchSummaryStats.responseTimeSeconds);
+      return;
+    }
 
     setAppliedFilters(filters);
     setAppliedSearchQuery(normalizedQuery);
@@ -368,7 +529,9 @@ export function useSearchPageState() {
 
     try {
       await saveSearchHistory(normalizedQuery);
-      const recentSearches = await getRecentSearches(SEARCH_RECENT_SEARCH_LIMIT);
+      const recentSearches = await getRecentSearches(
+        SEARCH_RECENT_SEARCH_LIMIT,
+      );
       setSavedSearches(recentSearches);
     } catch (error) {
       console.error("Cannot save search history:", error);
@@ -386,7 +549,14 @@ export function useSearchPageState() {
     setIsSearchFocused(false);
     setNextResultPage(1);
     setNextQueryTriggerIndex(-1);
-    void runSearch(query, appliedFilters, selectedSort, optionValueLookup, 1, false);
+    void runSearch(
+      query,
+      appliedFilters,
+      selectedSort,
+      optionValueLookup,
+      1,
+      false,
+    );
   }
 
   async function handleDeleteSavedSearch(query: string) {
@@ -399,7 +569,9 @@ export function useSearchPageState() {
 
     try {
       await deleteSearchHistory(query);
-      const recentSearches = await getRecentSearches(SEARCH_RECENT_SEARCH_LIMIT);
+      const recentSearches = await getRecentSearches(
+        SEARCH_RECENT_SEARCH_LIMIT,
+      );
       setSavedSearches(recentSearches);
     } catch (error) {
       console.error("Cannot delete search history:", error);
@@ -440,15 +612,28 @@ export function useSearchPageState() {
     setShowAllSearchSuggestions(false);
     setNextResultPage(1);
     setNextQueryTriggerIndex(-1);
-    void runSearch(query, appliedFilters, selectedSort, optionValueLookup, 1, false);
+    void runSearch(
+      query,
+      appliedFilters,
+      selectedSort,
+      optionValueLookup,
+      1,
+      false,
+    );
   }
 
   function handleToggleFilters() {
     setFiltersOpen((isOpen) => !isOpen);
   }
 
-  function handleToggleMoreFilters() {
-    setShowAllFilters((isShown) => !isShown);
+  function handleToggleVisibleFilterWidget(widgetKey: SearchFilterWidgetKey) {
+    setVisibleFilterWidgets((currentWidgets) => {
+      if (currentWidgets.includes(widgetKey)) {
+        return currentWidgets.filter((currentWidget) => currentWidget !== widgetKey);
+      }
+
+      return normalizeSearchFilterWidgetKeys([...currentWidgets, widgetKey]);
+    });
   }
 
   function handleToggleSearchSuggestions() {
@@ -497,40 +682,43 @@ export function useSearchPageState() {
       [filterKey]: true,
     }));
 
-    remoteOptionSearchTimeoutRef.current[filterKey] = window.setTimeout(async () => {
-      try {
-        const optionsPage = await getRemoteFilterOptionsPage(
-          filterKey,
-          normalizedKeyword,
-          SEARCH_DEFAULT_PAGE,
-          SEARCH_FILTER_OPTION_LIMIT,
-        );
+    remoteOptionSearchTimeoutRef.current[filterKey] = window.setTimeout(
+      async () => {
+        try {
+          const optionsPage = await getRemoteFilterOptionsPage(
+            filterKey,
+            normalizedKeyword,
+            SEARCH_DEFAULT_PAGE,
+            SEARCH_FILTER_OPTION_LIMIT,
+          );
 
-        if (remoteOptionKeywordRef.current[filterKey] !== normalizedKeyword) {
-          return;
+          if (remoteOptionKeywordRef.current[filterKey] !== normalizedKeyword) {
+            return;
+          }
+
+          setFilterOptions((currentOptions) => ({
+            ...currentOptions,
+            [filterKey]: optionsPage.options,
+          }));
+          setOptionValueLookup((currentLookup) => ({
+            ...currentLookup,
+            [filterKey]: optionsPage.valueLookup,
+          }));
+          setHasMoreFilterOptions((currentState) => ({
+            ...currentState,
+            [filterKey]: optionsPage.hasMore,
+          }));
+        } catch (error) {
+          console.error("Cannot search filter options:", error);
+        } finally {
+          setIsLoadingFilterOptions((currentState) => ({
+            ...currentState,
+            [filterKey]: false,
+          }));
         }
-
-        setFilterOptions((currentOptions) => ({
-          ...currentOptions,
-          [filterKey]: optionsPage.options,
-        }));
-        setOptionValueLookup((currentLookup) => ({
-          ...currentLookup,
-          [filterKey]: optionsPage.valueLookup,
-        }));
-        setHasMoreFilterOptions((currentState) => ({
-          ...currentState,
-          [filterKey]: optionsPage.hasMore,
-        }));
-      } catch (error) {
-        console.error("Cannot search filter options:", error);
-      } finally {
-        setIsLoadingFilterOptions((currentState) => ({
-          ...currentState,
-          [filterKey]: false,
-        }));
-      }
-    }, 300);
+      },
+      300,
+    );
   }
 
   async function handleLoadMoreFilterOptions(filterKey: RemoteOptionFilterKey) {
@@ -545,7 +733,10 @@ export function useSearchPageState() {
       return;
     }
 
-    if (isLoadingFilterOptions[filterKey] || isLoadingMoreFilterOptions[filterKey]) {
+    if (
+      isLoadingFilterOptions[filterKey] ||
+      isLoadingMoreFilterOptions[filterKey]
+    ) {
       return;
     }
 
@@ -632,6 +823,11 @@ export function useSearchPageState() {
     setAppliedFilters(initialFilters);
     setNextResultPage(1);
     setNextQueryTriggerIndex(-1);
+
+    if (!hasSearched) {
+      return;
+    }
+
     void runSearch(
       appliedSearchQuery,
       initialFilters,
@@ -665,8 +861,8 @@ export function useSearchPageState() {
     handleSelectSort,
     handleSuggestedSearch,
     handleToggleFilters,
-    handleToggleMoreFilters,
     handleToggleSearchSuggestions,
+    handleToggleVisibleFilterWidget,
     hasFormError,
     hasSearched,
     hasMoreFilterOptions,
@@ -681,10 +877,10 @@ export function useSearchPageState() {
     responseTimeSeconds,
     searchQuery,
     selectedSort,
-    showAllFilters,
     showAllSearchSuggestions,
     totalIndexedPapers,
     updateFilter,
+    visibleFilterWidgets,
     visiblePaperResults,
     visibleSearchSuggestions,
   };
@@ -704,6 +900,60 @@ function mergeUniqueStrings(existing: string[], incoming: string[]) {
   }
 
   return merged;
+}
+
+function mergeSearchFilterOptions(
+  existing: SearchFilterOptions,
+  incoming: SearchFilterOptions,
+): SearchFilterOptions {
+  return {
+    type: mergeUniqueStrings(existing.type, incoming.type),
+    subField: mergeUniqueStrings(existing.subField, incoming.subField),
+    author: mergeUniqueStrings(existing.author, incoming.author),
+    institution: mergeUniqueStrings(
+      existing.institution,
+      incoming.institution,
+    ),
+    country: mergeUniqueStrings(existing.country, incoming.country),
+    source: mergeUniqueStrings(existing.source, incoming.source),
+    award: mergeUniqueStrings(existing.award, incoming.award),
+  };
+}
+
+function mergeSearchOptionValueLookup(
+  existing: SearchOptionValueLookup,
+  incoming: SearchOptionValueLookup,
+): SearchOptionValueLookup {
+  return {
+    type: {
+      ...existing.type,
+      ...incoming.type,
+    },
+    subField: {
+      ...existing.subField,
+      ...incoming.subField,
+    },
+    author: {
+      ...existing.author,
+      ...incoming.author,
+    },
+    institution: {
+      ...existing.institution,
+      ...incoming.institution,
+    },
+    country: {
+      ...existing.country,
+      ...incoming.country,
+    },
+    source: {
+      ...existing.source,
+      ...incoming.source,
+    },
+    award: {
+      ...existing.award,
+      ...incoming.award,
+    },
+  };
 }
 
 function mergeUniquePaperResults(
@@ -741,6 +991,50 @@ function getAutoLoadAnchorIndex(
 }
 
 function getNextQueryTriggerIndex(page: number) {
-  return (page - 1) * SEARCH_WORKS_PER_PAGE + SEARCH_NEXT_QUERY_TRIGGER_OFFSET - 1;
+  return (
+    (page - 1) * SEARCH_WORKS_PER_PAGE + SEARCH_NEXT_QUERY_TRIGGER_OFFSET - 1
+  );
 }
 
+function persistSearchPageSnapshot(snapshot: SearchPageSnapshot) {
+  try {
+    window.sessionStorage.setItem(
+      searchPageStateStorageKey,
+      JSON.stringify(snapshot),
+    );
+  } catch {
+    // Ignore storage failures so search still works in restricted browsers.
+  }
+}
+
+function readPersistedSearchPageSnapshot(): SearchPageSnapshot | null {
+  try {
+    const storedSnapshot = window.sessionStorage.getItem(
+      searchPageStateStorageKey,
+    );
+
+    if (!storedSnapshot) {
+      return null;
+    }
+
+    const parsedSnapshot = JSON.parse(storedSnapshot) as SearchPageSnapshot;
+    const normalizedVisibleFilterWidgets = normalizeSearchFilterWidgetKeys(
+      parsedSnapshot.visibleFilterWidgets || [],
+    );
+
+    if (!mockResultSortOptions.includes(parsedSnapshot.selectedSort)) {
+      return {
+        ...parsedSnapshot,
+        selectedSort: mockResultSortOptions[0],
+        visibleFilterWidgets: normalizedVisibleFilterWidgets,
+      };
+    }
+
+    return {
+      ...parsedSnapshot,
+      visibleFilterWidgets: normalizedVisibleFilterWidgets,
+    };
+  } catch {
+    return null;
+  }
+}
