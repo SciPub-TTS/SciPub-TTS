@@ -13,7 +13,7 @@ import {
   AUTHENTICATED_ROLES,
 } from "@/features/auth/constants/roles";
 
-import LoginPage from "@/features/auth/components/LoginPage";
+import LoginPage from "@/features/auth/components/pages/LoginPage.tsx";
 import RegisterPage from "@/features/auth/components/pages/RegisterPage.tsx";
 
 import LandingPage from "@/features/landing/components/LandingPage";
@@ -29,12 +29,12 @@ import ReportPage from "@/features/reports/components/ReportPage";
 //import AdminDashboardPage from "@/pages/admin/AdminDashboardPage";
 import DashboardPage from "@/features/dashboard/DashboardPage.tsx";
 import AdminDashboardPage from "@/features/admin/components/AdminDashboardPage.tsx";
-import ForgotPasswordPage from "@/features/auth/components/ForgotPasswordPage.tsx";
-import VerifyResetCodePage from "@/features/auth/components/VerifyResetCodePage.tsx";
-import ResetPasswordPage from "@/features/auth/components/ResetPasswordPage.tsx";
-import VerifyEmailSuccessPage from "@/features/auth/components/VerifyEmailResultPage.tsx";
+import ForgotPasswordPage from "@/features/auth/components/pages/ForgotPasswordPage.tsx";
+import VerifyResetCodePage from "@/features/auth/components/pages/VerifyResetCodePage.tsx";
+import ResetPasswordPage from "@/features/auth/components/pages/ResetPasswordPage.tsx";
+// import VerifyEmailSuccessPage from "@/features/auth/components/VerifyEmailResultPage.tsx";
 import ChangePasswordPage from "@/features/profile/components/ChangePasswordPage.tsx";
-import OAuth2SuccessPage from "@/features/auth/components/OAuth2SuccessPage.tsx";
+import OAuth2SuccessPage from "@/features/auth/components/pages/OAuth2SuccessPage.tsx";
 
 function PlaceholderPage({ title }: { title: string }) {
   return (
@@ -76,16 +76,6 @@ export const router = createBrowserRouter([
     path: ROUTES.HOME,
     element: <LandingPage />,
   },
-
-  {
-    path: ROUTES.VERIFY_EMAIL_SUCCESS,
-    element: <VerifyEmailSuccessPage />,
-  },
-  // {
-  //   path: ROUTES.VERIFY_EMAIL_ERROR,
-  //   element: <VerifyEmailErrorPage />,
-  // },
-
 
   {
     path: "/oauth2/success",
