@@ -14,9 +14,9 @@ export const registerSchema = z
             .string()
             .min(10, "Password must be at least 10 characters long"),
         confirmPassword: z.string(),
-        acceptTerms: z.boolean().refine(Boolean, {
-            message: "You must accept the Terms and Conditions",
-        }),
+        // acceptTerms: z.boolean().refine(Boolean, {
+        //     message: "You must accept the Terms and Conditions",
+        // }),
     })
     .refine((data) => data.password === data.confirmPassword, {
         path: ["confirmPassword"],
