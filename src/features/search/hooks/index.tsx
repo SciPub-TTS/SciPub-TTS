@@ -59,13 +59,7 @@ const remoteOptionFilterKeys: RemoteOptionFilterKey[] = [
   "source",
 ];
 
-const emptyRemoteOptionState: RemoteOptionStateMap = {
-  author: false,
-  institution: false,
-  country: false,
-  award: false,
-  source: false,
-};
+const emptyRemoteOptionState = createRemoteOptionState(false);
 
 type ResultPage = {
   nextPage: number;
@@ -189,27 +183,13 @@ export function useSearchPageState() {
   );
   const remoteOptionSearchTimeoutRef = useRef<
     Record<RemoteOptionFilterKey, number | null>
-  >({
-    author: null,
-    institution: null,
-    country: null,
-    award: null,
-    source: null,
-  });
-  const remoteOptionKeywordRef = useRef<Record<RemoteOptionFilterKey, string>>({
-    author: "",
-    institution: "",
-    country: "",
-    award: "",
-    source: "",
-  });
-  const remoteOptionPageRef = useRef<Record<RemoteOptionFilterKey, number>>({
-    author: 1,
-    institution: 1,
-    country: 1,
-    award: 1,
-    source: 1,
-  });
+  >(createRemoteOptionState<number | null>(null));
+  const remoteOptionKeywordRef = useRef<Record<RemoteOptionFilterKey, string>>(
+    createRemoteOptionState(""),
+  );
+  const remoteOptionPageRef = useRef<Record<RemoteOptionFilterKey, number>>(
+    createRemoteOptionState(1),
+  );
   const baseOptionsRef = useRef(emptySearchFilterOptions);
   const baseOptionValueLookupRef = useRef(emptySearchOptionValueLookup);
   const runSearchRef = useRef<RunSearch | null>(null);
@@ -342,6 +322,50 @@ export function useSearchPageState() {
   );
   const hasFormError =
     hasInvalidYearRange(filters) || hasInvalidCitationRange(filters);
+
+  async function refreshSavedSearches() {
+    if (!isAuthenticated()) {
+      setSavedSearches([]);
+      return;
+    }
+
+    const recentSearches = await getRecentSearches(SEARCH_RECENT_SEARCH_LIMIT);
+    setSavedSearches(recentSearches);
+  }
+
+  function resetResultPagination() {
+    setNextResultPage(1);
+    setNextQueryTriggerIndex(-1);
+  }
+
+  function clearSearchResults(nextAppliedFilters: SearchFilters) {
+    setAppliedSearchQuery("");
+    setAppliedFilters(nextAppliedFilters);
+    setVisiblePaperResults([]);
+    setHasSearched(false);
+    setMatchedPaperCount(0);
+    setHasMoreResults(false);
+    setNextResultPage(1);
+    setNextQueryTriggerIndex(-1);
+    setResponseTimeSeconds(searchSummaryStats.responseTimeSeconds);
+  }
+
+  function startFreshSearch(
+    nextQuery: string,
+    nextFilters: SearchFilters,
+    nextSorts = selectedSorts,
+    nextOptionValueLookup = optionValueLookup,
+  ) {
+    resetResultPagination();
+    void runSearch(
+      nextQuery,
+      nextFilters,
+      nextSorts,
+      nextOptionValueLookup,
+      1,
+      false,
+    );
+  }
 
   useEffect(() => {
     let mounted = true;
@@ -494,16 +518,8 @@ export function useSearchPageState() {
 
   async function handleSearchFocus() {
     setIsSearchFocused(true);
-    if (!isAuthenticated()) {
-      setSavedSearches([]);
-      return;
-    }
-
     try {
-      const recentSearches = await getRecentSearches(
-        SEARCH_RECENT_SEARCH_LIMIT,
-      );
-      setSavedSearches(recentSearches);
+      await refreshSavedSearches();
     } catch (error) {
       console.error("Cannot load recent searches:", error);
     }
@@ -521,29 +537,17 @@ export function useSearchPageState() {
     const normalizedQuery = searchQuery.trim();
 
     if (!normalizedQuery) {
-      setAppliedSearchQuery("");
-      setAppliedFilters(filters);
-      setVisiblePaperResults([]);
-      setHasSearched(false);
-      setMatchedPaperCount(0);
-      setHasMoreResults(false);
-      setNextResultPage(1);
-      setNextQueryTriggerIndex(-1);
-      setResponseTimeSeconds(searchSummaryStats.responseTimeSeconds);
+      clearSearchResults(filters);
       return;
     }
 
     setAppliedFilters(filters);
     setAppliedSearchQuery(normalizedQuery);
-    setNextResultPage(1);
-    setNextQueryTriggerIndex(-1);
-    void runSearch(
+    startFreshSearch(
       normalizedQuery,
       filters,
       selectedSorts,
       optionValueLookup,
-      1,
-      false,
     );
   }
 
@@ -563,10 +567,7 @@ export function useSearchPageState() {
 
     try {
       await saveSearchHistory(normalizedQuery);
-      const recentSearches = await getRecentSearches(
-        SEARCH_RECENT_SEARCH_LIMIT,
-      );
-      setSavedSearches(recentSearches);
+      await refreshSavedSearches();
     } catch (error) {
       console.error("Cannot save search history:", error);
     }
@@ -581,16 +582,7 @@ export function useSearchPageState() {
     setAppliedSearchQuery(query);
     setShowAllSearchSuggestions(false);
     setIsSearchFocused(false);
-    setNextResultPage(1);
-    setNextQueryTriggerIndex(-1);
-    void runSearch(
-      query,
-      appliedFilters,
-      selectedSorts,
-      optionValueLookup,
-      1,
-      false,
-    );
+    startFreshSearch(query, appliedFilters, selectedSorts, optionValueLookup);
   }
 
   async function handleDeleteSavedSearch(query: string) {
@@ -603,10 +595,7 @@ export function useSearchPageState() {
 
     try {
       await deleteSearchHistory(query);
-      const recentSearches = await getRecentSearches(
-        SEARCH_RECENT_SEARCH_LIMIT,
-      );
-      setSavedSearches(recentSearches);
+      await refreshSavedSearches();
     } catch (error) {
       console.error("Cannot delete search history:", error);
     }
@@ -618,15 +607,11 @@ export function useSearchPageState() {
     setAppliedSearchQuery(normalizedQuery);
     setAppliedFilters(filters);
     setIsSearchFocused(false);
-    setNextResultPage(1);
-    setNextQueryTriggerIndex(-1);
-    void runSearch(
+    startFreshSearch(
       normalizedQuery,
       filters,
       selectedSorts,
       optionValueLookup,
-      1,
-      false,
     );
   }
 
@@ -644,16 +629,7 @@ export function useSearchPageState() {
     setAppliedSearchQuery(query);
     setIsSearchFocused(false);
     setShowAllSearchSuggestions(false);
-    setNextResultPage(1);
-    setNextQueryTriggerIndex(-1);
-    void runSearch(
-      query,
-      appliedFilters,
-      selectedSorts,
-      optionValueLookup,
-      1,
-      false,
-    );
+    startFreshSearch(query, appliedFilters, selectedSorts, optionValueLookup);
   }
 
   function handleToggleFilters() {
@@ -854,8 +830,7 @@ export function useSearchPageState() {
       : normalizedSorts;
 
     setSelectedSorts(nextSelectedSorts);
-    setNextResultPage(1);
-    setNextQueryTriggerIndex(-1);
+    resetResultPagination();
     void runSearchRef.current?.(
       currentAppliedSearchQuery,
       currentAppliedFilters,
@@ -874,8 +849,7 @@ export function useSearchPageState() {
     } = latestSortRequestRef.current;
 
     setSelectedSorts([]);
-    setNextResultPage(1);
-    setNextQueryTriggerIndex(-1);
+    resetResultPagination();
     void runSearchRef.current?.(
       currentAppliedSearchQuery,
       currentAppliedFilters,
@@ -889,8 +863,7 @@ export function useSearchPageState() {
   function resetFilters() {
     setFilters(initialFilters);
     setAppliedFilters(initialFilters);
-    setNextResultPage(1);
-    setNextQueryTriggerIndex(-1);
+    resetResultPagination();
 
     if (!hasSearched) {
       return;
@@ -969,6 +942,16 @@ function mergeUniqueStrings(existing: string[], incoming: string[]) {
   }
 
   return merged;
+}
+
+function createRemoteOptionState<T>(value: T): Record<RemoteOptionFilterKey, T> {
+  return {
+    author: value,
+    institution: value,
+    country: value,
+    award: value,
+    source: value,
+  };
 }
 
 function mergeSearchFilterOptions(

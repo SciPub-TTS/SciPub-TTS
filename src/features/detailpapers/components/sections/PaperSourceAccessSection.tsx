@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 
 import { Globe2, Landmark, Tag } from "lucide-react";
 
-import EntityCanvasLink from "@/features/entity-canvas/components/EntityCanvasLink";
+import OpenAlexEntityLink from "@/features/openalex-entities/components/OpenAlexEntityLink";
 import MetadataBadge from "@/layout/components/MetadataBadge";
 
 import type {
@@ -44,14 +44,14 @@ export default function PaperSourceAccessSection(
     >
       <div className="space-y-2 text-sm font-semibold text-[#9a6700]">
         {section.source ? (
-          <EntityCanvasLink
+          <OpenAlexEntityLink
             entityId={section.source.id}
             entityType={section.source.type}
             label={section.source.name}
             className="text-left text-base font-bold text-black transition hover:text-blue-700 hover:underline hover:decoration-blue-700 hover:underline-offset-4"
           >
             {section.source.name}
-          </EntityCanvasLink>
+          </OpenAlexEntityLink>
         ) : (
           <p className="font-bold text-black">{section.sourceName}</p>
         )}
@@ -154,7 +154,7 @@ function EntityTagCluster(props: EntityTagClusterProps) {
       </div>
       <div className="mt-3 flex flex-wrap gap-2">
         {items.map((item) => (
-          <EntityCanvasLink
+          <OpenAlexEntityLink
             key={`${item.type}-${item.id}`}
             entityId={item.id}
             entityType={item.type}
@@ -162,7 +162,7 @@ function EntityTagCluster(props: EntityTagClusterProps) {
             className="rounded-full transition hover:opacity-90"
           >
             <MetadataBadge tone="topic" label={item.name} />
-          </EntityCanvasLink>
+          </OpenAlexEntityLink>
         ))}
       </div>
     </div>

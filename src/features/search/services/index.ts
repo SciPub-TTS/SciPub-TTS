@@ -1,3 +1,4 @@
+import { createApiUrl, requestJson } from "@/lib/api/fetchJson";
 import type {
   PaperResult,
   RemoteOptionFilterKey,
@@ -7,7 +8,6 @@ import type {
   SearchSummaryStats,
   SearchYearRange,
 } from "../types";
-import { getAccessToken } from "@/features/auth/utils/authStorage";
 import {
   SEARCH_DEFAULT_PAGE,
   SEARCH_FILTER_OPTION_LIMIT,
@@ -15,10 +15,6 @@ import {
   SEARCH_RECENT_SEARCH_LIMIT,
   SEARCH_WORKS_PER_PAGE,
 } from "../constants";
-
-const apiBaseUrl = (
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:8080"
-).replace(/\/$/, "");
 
 type SearchOptionGroupKey =
   | "type"
@@ -79,12 +75,6 @@ type SearchWorksApiResponse = {
     appliedSort: string;
   };
   results: SearchWorksApiItem[];
-};
-
-type ResponseEnvelope<T> = {
-  status: number;
-  message: string;
-  data: T;
 };
 
 type SearchHistoryApiItem = {
@@ -288,36 +278,14 @@ export async function getSearchFilterOptions(
   keyword = "",
   page = SEARCH_DEFAULT_PAGE,
 ): Promise<SearchOptionsState> {
-  const endpoint = new URL(`${apiBaseUrl}/api/search/filters/options`);
+  const endpoint = createApiUrl("/api/search/filters/options");
   endpoint.searchParams.set("limit", String(limit));
   endpoint.searchParams.set("page", String(page));
   appendIfFilled(endpoint, "keyword", keyword);
 
-  const data = await requestData<FilterOptionsApiData>(endpoint.toString());
+  const data = await requestJson<FilterOptionsApiData>(endpoint);
 
-  return {
-    citationRange: data.citation,
-    filterOptions: {
-      type: mapOptionsToLabels(data.type, false),
-      subField: mapOptionsToLabels(data.subField, false),
-      author: mapOptionsToLabels(data.author, true),
-      institution: mapOptionsToLabels(data.institution, true),
-      country: mapOptionsToLabels(data.country, false),
-      source: mapOptionsToLabels(data.source, true),
-      award: mapOptionsToLabels(data.award, true),
-    },
-    optionValueLookup: {
-      type: mapOptionsToValueLookup(data.type, false),
-      subField: mapOptionsToValueLookup(data.subField, false),
-      author: mapOptionsToValueLookup(data.author, true),
-      institution: mapOptionsToValueLookup(data.institution, true),
-      country: mapOptionsToValueLookup(data.country, false),
-      source: mapOptionsToValueLookup(data.source, true),
-      award: mapOptionsToValueLookup(data.award, true),
-    },
-    totalIndexedPapers: data.totalWorks,
-    yearRange: data.year,
-  };
+  return buildSearchOptionsState(data);
 }
 
 export async function getRemoteFilterOptionsPage(
@@ -341,83 +309,9 @@ export async function getRemoteFilterOptionsPage(
 export async function searchWorks(
   request: SearchWorksRequest,
 ): Promise<SearchWorksState> {
-  const endpoint = new URL(`${apiBaseUrl}/api/search/works`);
-  const { filters } = request;
   const normalizedSorts = normalizeSearchResultSortValues(request.selectedSorts);
-  const primarySort = normalizedSorts[0] ?? "";
-
-  appendIfFilled(endpoint, "query", request.appliedSearchQuery.trim());
-
-  appendIfFilled(endpoint, "yearMode", filters.yearMode);
-  appendIfFilled(endpoint, "yearFrom", filters.yearFrom);
-  appendIfFilled(endpoint, "yearTo", filters.yearTo);
-  appendIfFilled(endpoint, "yearExact", filters.yearExact);
-
-  appendMappedValues(
-    endpoint,
-    "type",
-    filters.type,
-    request.optionValueLookup.type,
-  );
-
-  if (filters.openAccess) {
-    endpoint.searchParams.append("openAccess", "true");
-  }
-
-  appendMappedValues(
-    endpoint,
-    "subField",
-    filters.subField,
-    request.optionValueLookup.subField,
-  );
-  appendMappedValues(
-    endpoint,
-    "author",
-    filters.author,
-    request.optionValueLookup.author,
-  );
-  appendMappedValues(
-    endpoint,
-    "institution",
-    filters.institution,
-    request.optionValueLookup.institution,
-  );
-
-  if (filters.pdf) {
-    endpoint.searchParams.append("pdf", "true");
-  }
-
-  appendMappedValues(
-    endpoint,
-    "country",
-    filters.country,
-    request.optionValueLookup.country,
-  );
-
-  appendIfFilled(endpoint, "citationMode", filters.citationMode);
-  appendIfFilled(endpoint, "citationMin", filters.citationMin);
-  appendIfFilled(endpoint, "citationMax", filters.citationMax);
-  appendIfFilled(endpoint, "citationExact", filters.citationExact);
-
-  appendMappedValues(
-    endpoint,
-    "source",
-    filters.source,
-    request.optionValueLookup.source,
-  );
-  appendMappedValues(
-    endpoint,
-    "award",
-    filters.award,
-    request.optionValueLookup.award,
-  );
-
-  appendIfFilled(endpoint, "indexedByOrcid", filters.indexedByOrcid);
-  appendIfFilled(endpoint, "sort", primarySort);
-  endpoint.searchParams.set("page", String(request.page));
-  endpoint.searchParams.set("perPage", String(SEARCH_WORKS_PER_PAGE));
-
-  const data = await requestData<SearchWorksApiResponse>(endpoint.toString());
+  const endpoint = buildSearchWorksUrl(request, normalizedSorts);
+  const data = await requestJson<SearchWorksApiResponse>(endpoint);
   const works: PaperResult[] = [];
 
   for (const item of data.results) {
@@ -472,20 +366,14 @@ export function normalizeSearchResultSortValue(value?: string | null) {
 export async function getRecentSearches(
   limit = SEARCH_RECENT_SEARCH_LIMIT,
 ): Promise<SavedSearch[]> {
-  const endpoint = new URL(`${apiBaseUrl}/api/search/history/recent`);
+  const endpoint = createApiUrl("/api/search/history/recent");
   endpoint.searchParams.set("limit", String(limit));
 
-  const data = await requestData<SearchHistoryApiItem[]>(endpoint.toString());
-  const savedSearches: SavedSearch[] = [];
-
-  for (const item of data) {
-    savedSearches.push({
-      query: item.query,
-      savedAt: item.savedAt,
-    });
-  }
-
-  return savedSearches;
+  const data = await requestJson<SearchHistoryApiItem[]>(endpoint);
+  return data.map((item) => ({
+    query: item.query,
+    savedAt: item.savedAt,
+  }));
 }
 
 export async function saveSearchHistory(query: string): Promise<void> {
@@ -498,7 +386,7 @@ export async function saveSearchHistory(query: string): Promise<void> {
     query: normalizedQuery,
   };
 
-  await requestData<null>(`${apiBaseUrl}/api/search/history`, {
+  await requestJson<null>(createApiUrl("/api/search/history"), {
     method: "POST",
     body: JSON.stringify(payload),
   });
@@ -510,46 +398,111 @@ export async function deleteSearchHistory(query: string): Promise<void> {
     return;
   }
 
-  const endpoint = new URL(`${apiBaseUrl}/api/search/history`);
+  const endpoint = createApiUrl("/api/search/history");
   endpoint.searchParams.set("query", normalizedQuery);
 
-  await requestData<null>(endpoint.toString(), {
+  await requestJson<null>(endpoint, {
     method: "DELETE",
   });
 }
 
-async function requestData<T>(url: string, init?: RequestInit): Promise<T> {
-  const headers = new Headers(init?.headers);
-  headers.set("Accept", "application/json");
+function buildSearchOptionsState(data: FilterOptionsApiData): SearchOptionsState {
+  return {
+    citationRange: data.citation,
+    filterOptions: {
+      type: mapOptionsToLabels(data.type, false),
+      subField: mapOptionsToLabels(data.subField, false),
+      author: mapOptionsToLabels(data.author, true),
+      institution: mapOptionsToLabels(data.institution, true),
+      country: mapOptionsToLabels(data.country, false),
+      source: mapOptionsToLabels(data.source, true),
+      award: mapOptionsToLabels(data.award, true),
+    },
+    optionValueLookup: {
+      type: mapOptionsToValueLookup(data.type, false),
+      subField: mapOptionsToValueLookup(data.subField, false),
+      author: mapOptionsToValueLookup(data.author, true),
+      institution: mapOptionsToValueLookup(data.institution, true),
+      country: mapOptionsToValueLookup(data.country, false),
+      source: mapOptionsToValueLookup(data.source, true),
+      award: mapOptionsToValueLookup(data.award, true),
+    },
+    totalIndexedPapers: data.totalWorks,
+    yearRange: data.year,
+  };
+}
 
-  if (init?.body && !headers.has("Content-Type")) {
-    headers.set("Content-Type", "application/json");
+function buildSearchWorksUrl(
+  request: SearchWorksRequest,
+  normalizedSorts: string[],
+) {
+  const endpoint = createApiUrl("/api/search/works");
+  const { filters, optionValueLookup } = request;
+  const primarySort = normalizedSorts[0] ?? "";
+
+  appendIfFilled(endpoint, "query", request.appliedSearchQuery.trim());
+  appendIfFilled(endpoint, "yearMode", filters.yearMode);
+  appendIfFilled(endpoint, "yearFrom", filters.yearFrom);
+  appendIfFilled(endpoint, "yearTo", filters.yearTo);
+  appendIfFilled(endpoint, "yearExact", filters.yearExact);
+
+  appendMappedValues(endpoint, "type", filters.type, optionValueLookup.type);
+
+  if (filters.openAccess) {
+    endpoint.searchParams.append("openAccess", "true");
   }
 
-  const accessToken = getAccessToken();
-  if (accessToken && !headers.has("Authorization")) {
-    headers.set("Authorization", `Bearer ${accessToken}`);
+  appendMappedValues(
+    endpoint,
+    "subField",
+    filters.subField,
+    optionValueLookup.subField,
+  );
+  appendMappedValues(
+    endpoint,
+    "author",
+    filters.author,
+    optionValueLookup.author,
+  );
+  appendMappedValues(
+    endpoint,
+    "institution",
+    filters.institution,
+    optionValueLookup.institution,
+  );
+
+  if (filters.pdf) {
+    endpoint.searchParams.append("pdf", "true");
   }
 
-  const response = await fetch(url, {
-    ...init,
-    headers,
-  });
+  appendMappedValues(
+    endpoint,
+    "country",
+    filters.country,
+    optionValueLookup.country,
+  );
+  appendIfFilled(endpoint, "citationMode", filters.citationMode);
+  appendIfFilled(endpoint, "citationMin", filters.citationMin);
+  appendIfFilled(endpoint, "citationMax", filters.citationMax);
+  appendIfFilled(endpoint, "citationExact", filters.citationExact);
+  appendMappedValues(
+    endpoint,
+    "source",
+    filters.source,
+    optionValueLookup.source,
+  );
+  appendMappedValues(
+    endpoint,
+    "award",
+    filters.award,
+    optionValueLookup.award,
+  );
+  appendIfFilled(endpoint, "indexedByOrcid", filters.indexedByOrcid);
+  appendIfFilled(endpoint, "sort", primarySort);
+  endpoint.searchParams.set("page", String(request.page));
+  endpoint.searchParams.set("perPage", String(SEARCH_WORKS_PER_PAGE));
 
-  let envelope: ResponseEnvelope<T>;
-
-  try {
-    envelope = (await response.json()) as ResponseEnvelope<T>;
-  } catch {
-    throw new Error(`Request failed (${response.status})`);
-  }
-
-  if (!response.ok) {
-    const message = envelope.message || `Request failed (${response.status})`;
-    throw new Error(message);
-  }
-
-  return envelope.data;
+  return endpoint;
 }
 
 function mapOptionsToLabels(

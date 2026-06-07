@@ -1,6 +1,6 @@
 import { Users } from "lucide-react";
 
-import EntityCanvasLink from "@/features/entity-canvas/components/EntityCanvasLink";
+import OpenAlexEntityLink from "@/features/openalex-entities/components/OpenAlexEntityLink";
 
 import type { PaperDetailAuthor, PaperDetailInstitution } from "../../types";
 import type { PaperContributorsSectionData } from "../../view-models/contributorsSection";
@@ -74,14 +74,14 @@ function AuthorList(props: AuthorListProps) {
           className="flex flex-wrap items-center gap-x-2 gap-y-2 text-base text-black"
         >
           {author.entityId ? (
-            <EntityCanvasLink
+            <OpenAlexEntityLink
               entityId={author.entityId}
               entityType="author"
               label={author.name}
               className="cursor-pointer text-sm font-semibold text-black transition hover:text-blue-700 hover:underline hover:decoration-blue-700 hover:underline-offset-4"
             >
               {author.name}
-            </EntityCanvasLink>
+            </OpenAlexEntityLink>
           ) : (
             <span className="text-sm font-semibold text-black">
               {author.name}
@@ -130,7 +130,7 @@ function InstitutionList(props: InstitutionListProps) {
   return (
     <div className="mt-4 flex flex-wrap gap-3">
       {institutions.map((institution) => (
-        <EntityCanvasLink
+        <OpenAlexEntityLink
           key={institution.id}
           entityId={institution.id}
           entityType="institution"
@@ -139,7 +139,7 @@ function InstitutionList(props: InstitutionListProps) {
         >
           {institution.name}
           {institution.countryCode ? ` (${institution.countryCode})` : ""}
-        </EntityCanvasLink>
+        </OpenAlexEntityLink>
       ))}
     </div>
   );

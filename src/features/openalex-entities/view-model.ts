@@ -27,7 +27,7 @@ export type EntityRef = {
   type: EntityType;
 };
 
-export type EntityCanvasState = {
+export type OpenAlexEntityDetailState = {
   activityItems: SummaryItem[];
   description: string;
   fields: string[];
@@ -43,12 +43,12 @@ export type EntityCanvasState = {
   topics: EntityRef[];
 };
 
-export function buildEntityCanvasState(
+export function buildOpenAlexEntityDetailState(
   entity: OpenAlexEntity,
   entityType: EntityType,
   topWorks: WorkItem[],
   fallbackTitle?: string,
-): EntityCanvasState {
+): OpenAlexEntityDetailState {
   const displayName =
     getString(entity.display_name) ||
     getString(entity.name) ||

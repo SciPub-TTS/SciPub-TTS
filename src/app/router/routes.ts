@@ -17,6 +17,7 @@ export const ROUTES = {
 
   // Paper
   PAPER_DETAIL: "/papers/:paperId",
+  PAPER_ENTITY_DETAIL: "/papers/:paperId/entities",
 
   // User protected
   PROFILE: "/profile",
@@ -43,6 +44,8 @@ export const routePaths = {
 
   paperDetail: (paperId: string | number) =>
     `/papers/${encodeURIComponent(String(paperId))}`,
+  paperEntityDetail: (paperId: string | number) =>
+    `/papers/${encodeURIComponent(String(paperId))}/entities`,
 
   profile: () => ROUTES.PROFILE,
   profileTab: (tab: "profile" | "interests" | "security" = "profile") =>

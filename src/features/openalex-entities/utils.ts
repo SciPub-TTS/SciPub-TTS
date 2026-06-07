@@ -1,4 +1,4 @@
-import type { EntityCanvasEntry, EntityType } from "./types";
+import type { OpenAlexEntityEntry, EntityType } from "./types";
 
 const entityTypeLabels: Record<EntityType, string> = {
   author: "Author",
@@ -41,7 +41,9 @@ export function formatEntityTypeLabel(entityType: EntityType) {
   return entityTypeLabels[entityType];
 }
 
-export function normalizeEntityEntry(entry: EntityCanvasEntry): EntityCanvasEntry | null {
+export function normalizeOpenAlexEntityEntry(
+  entry: OpenAlexEntityEntry,
+): OpenAlexEntityEntry | null {
   if (!entry.id?.trim()) {
     return null;
   }
