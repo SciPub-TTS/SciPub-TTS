@@ -47,7 +47,7 @@ export function normalizeSearchFilterWidgetKey(value: string) {
   const normalizedValue = value
     .trim()
     .toLowerCase()
-    .replace(/[^a-z0-9]/g, "");
+    .replace(/[^a-z0-9]/g, "") as keyof typeof searchFilterWidgetKeyMap;
 
   return searchFilterWidgetKeyMap[normalizedValue] || null;
 }

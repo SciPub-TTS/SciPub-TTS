@@ -110,7 +110,7 @@ export type SearchWorksRequest = {
   filters: SearchFilters;
   optionValueLookup: SearchOptionValueLookup;
   page: number;
-  selectedSort: string;
+  selectedSorts: string[];
 };
 
 export type SearchWorksState = {
@@ -130,8 +130,114 @@ export type RemoteFilterOptionsPage = {
 
 export const searchTabs = ["Works"];
 
-// The first option is the default sort used by the search hook.
-export const mockResultSortOptions = ["Most cited", "Latest", "Trending"];
+export type SearchResultSortOption = {
+  label: string;
+  value: string;
+};
+
+export type SearchResultSortGroup = {
+  key: string;
+  label: string;
+  options: SearchResultSortOption[];
+};
+
+export type SearchResultSortGroupKey =
+  | "citation"
+  | "published"
+  | "trending";
+
+export const searchResultSortGroups: SearchResultSortGroup[] = [
+  {
+    key: "citation",
+    label: "Citation",
+    options: [
+      { value: "citation_most_cited", label: "Most cited" },
+      { value: "citation_least_cited", label: "Least cited" },
+    ],
+  },
+  {
+    key: "published",
+    label: "Published",
+    options: [
+      { value: "published_latest", label: "Latest" },
+      { value: "published_oldest", label: "Oldest" },
+    ],
+  },
+  {
+    key: "trending",
+    label: "Trending",
+    options: [
+      { value: "trending_keyword", label: "By keyword" },
+      { value: "trending_topic", label: "By topic" },
+    ],
+  },
+];
+
+export const searchResultSortValues = searchResultSortGroups.flatMap(
+  (group) => group.options.map((option) => option.value),
+);
+
+export const defaultSearchResultSortValue = searchResultSortValues[0];
+
+export function isSearchResultSortValue(value?: string | null) {
+  if (!value) {
+    return false;
+  }
+
+  return searchResultSortValues.includes(value);
+}
+
+export function normalizeSearchResultSortValues(
+  values?: string[] | string | null,
+) {
+  const rawValues = Array.isArray(values)
+    ? values
+      : values
+      ? [values]
+      : [];
+
+  const normalizedValues: string[] = [];
+  const groupValueIndexMap = new Map<SearchResultSortGroupKey, number>();
+
+  for (const value of rawValues) {
+    const normalizedValue = normalizeSearchResultSortValue(value);
+    const groupKey = getSearchResultSortGroupKey(normalizedValue);
+
+    if (!normalizedValue || !groupKey) {
+      continue;
+    }
+
+    const existingIndex = groupValueIndexMap.get(groupKey);
+
+    if (existingIndex === undefined) {
+      groupValueIndexMap.set(groupKey, normalizedValues.length);
+      normalizedValues.push(normalizedValue);
+      continue;
+    }
+
+    normalizedValues[existingIndex] = normalizedValue;
+  }
+
+  return normalizedValues;
+}
+
+export function getSearchResultSortGroupKey(
+  value?: string | null,
+): SearchResultSortGroupKey | null {
+  const normalizedValue = normalizeSearchResultSortValue(value);
+
+  if (!normalizedValue) {
+    return null;
+  }
+
+  for (const group of searchResultSortGroups) {
+    if (group.options.some((option) => option.value === normalizedValue)) {
+      return group.key as SearchResultSortGroupKey;
+    }
+  }
+
+  return null;
+}
 
 export const mockSuggestedSearches = [
   "Topic 1",
@@ -237,6 +343,8 @@ export async function searchWorks(
 ): Promise<SearchWorksState> {
   const endpoint = new URL(`${apiBaseUrl}/api/search/works`);
   const { filters } = request;
+  const normalizedSorts = normalizeSearchResultSortValues(request.selectedSorts);
+  const primarySort = normalizedSorts[0] ?? "";
 
   appendIfFilled(endpoint, "query", request.appliedSearchQuery.trim());
 
@@ -305,7 +413,7 @@ export async function searchWorks(
   );
 
   appendIfFilled(endpoint, "indexedByOrcid", filters.indexedByOrcid);
-  appendIfFilled(endpoint, "sort", request.selectedSort);
+  appendIfFilled(endpoint, "sort", primarySort);
   endpoint.searchParams.set("page", String(request.page));
   endpoint.searchParams.set("perPage", String(SEARCH_WORKS_PER_PAGE));
 
@@ -321,8 +429,44 @@ export async function searchWorks(
     perPage: data.meta.perPage,
     responseTimeSeconds: data.meta.dbResponseTimeMs / 1000,
     totalCount: data.meta.totalCount,
-    works,
+    works: sortPaperResults(works, normalizedSorts),
   };
+}
+
+export function normalizeSearchResultSortValue(value?: string | null) {
+  if (!value) {
+    return "";
+  }
+
+  const normalizedValue = value.trim().toLowerCase();
+
+  switch (normalizedValue) {
+    case "most cited":
+    case "most_cited":
+    case "cited_by_count:desc":
+    case "citation_most_cited":
+      return "citation_most_cited";
+    case "least cited":
+    case "least_cited":
+    case "cited_by_count:asc":
+    case "citation_least_cited":
+      return "citation_least_cited";
+    case "latest":
+    case "publication_year:desc":
+    case "published_latest":
+      return "published_latest";
+    case "oldest":
+    case "publication_year:asc":
+    case "published_oldest":
+      return "published_oldest";
+    case "trending":
+    case "trending_keyword":
+      return "trending_keyword";
+    case "trending_topic":
+      return "trending_topic";
+    default:
+      return "";
+  }
 }
 
 export async function getRecentSearches(
@@ -564,6 +708,70 @@ function mapApiWorkToPaperResult(work: SearchWorksApiItem): PaperResult {
   };
 }
 
+export function sortPaperResults(
+  works: PaperResult[],
+  selectedSorts: string[],
+): PaperResult[] {
+  const normalizedSorts = normalizeSearchResultSortValues(selectedSorts);
+
+  if (normalizedSorts.length === 0) {
+    return [...works];
+  }
+
+  const sortedWorks = [...works];
+
+  sortedWorks.sort((left, right) => {
+    for (const normalizedSort of normalizedSorts) {
+      let comparison = 0;
+
+      switch (normalizedSort) {
+        case "citation_most_cited":
+          comparison = compareNumbers(right.citations, left.citations)
+            || compareNumbers(right.year, left.year)
+            || compareText(left.title, right.title);
+          break;
+        case "citation_least_cited":
+          comparison = compareNumbers(left.citations, right.citations)
+            || compareNumbers(right.year, left.year)
+            || compareText(left.title, right.title);
+          break;
+        case "published_latest":
+          comparison = compareNumbers(right.year, left.year)
+            || compareNumbers(right.citations, left.citations)
+            || compareText(left.title, right.title);
+          break;
+        case "published_oldest":
+          comparison = compareNumbers(left.year, right.year)
+            || compareNumbers(right.citations, left.citations)
+            || compareText(left.title, right.title);
+          break;
+        case "trending_keyword":
+          comparison = compareText(resolvePrimaryKeyword(left), resolvePrimaryKeyword(right))
+            || compareText(left.topic, right.topic)
+            || compareNumbers(right.citations, left.citations)
+            || compareText(left.title, right.title);
+          break;
+        case "trending_topic":
+          comparison = compareText(left.topic, right.topic)
+            || compareText(resolvePrimaryKeyword(left), resolvePrimaryKeyword(right))
+            || compareNumbers(right.citations, left.citations)
+            || compareText(left.title, right.title);
+          break;
+        default:
+          comparison = 0;
+      }
+
+      if (comparison !== 0) {
+        return comparison;
+      }
+    }
+
+    return 0;
+  });
+
+  return sortedWorks;
+}
+
 function normalizePublicationYear(
   publicationYear: number | null,
   currentYear: number,
@@ -577,6 +785,18 @@ function normalizePublicationYear(
   }
 
   return publicationYear;
+}
+
+function compareNumbers(left: number, right: number) {
+  return left - right;
+}
+
+function compareText(left: string, right: string) {
+  return left.localeCompare(right, undefined, { sensitivity: "base" });
+}
+
+function resolvePrimaryKeyword(paper: PaperResult) {
+  return paper.tags.find((tag) => tag.trim().length > 0) ?? "";
 }
 
 function normalizeTypeLabel(type: string | null) {

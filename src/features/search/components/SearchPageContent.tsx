@@ -22,13 +22,14 @@ export default function SearchPageContent() {
     handleSaveSearch,
     handleSearch,
     handleSearchBlur,
+    handleClearSorts,
     handleDeleteSavedSearch,
     handleSearchFocus,
     handleSearchQueryChange,
     handleSelectSavedSearch,
-    handleSelectSort,
     handleSuggestedSearch,
     handleToggleFilters,
+    handleToggleSort,
     handleToggleSearchSuggestions,
     handleToggleVisibleFilterWidget,
     hasFormError,
@@ -44,7 +45,7 @@ export default function SearchPageContent() {
     resetFilters,
     responseTimeSeconds,
     searchQuery,
-    selectedSort,
+    selectedSorts,
     showAllSearchSuggestions,
     totalIndexedPapers,
     updateFilter,
@@ -107,11 +108,12 @@ export default function SearchPageContent() {
         isLoadingResults={isLoadingResults}
         isLoadingMoreResults={isLoadingMoreResults}
         responseTimeSeconds={responseTimeSeconds}
-        selectedSort={selectedSort}
+        selectedSorts={selectedSorts}
         totalResultCount={matchedPaperCount}
         visiblePaperResults={visiblePaperResults}
         onLoadMoreResults={handleLoadMoreResults}
-        onSelectSort={handleSelectSort}
+        onClearSorts={handleClearSorts}
+        onToggleSort={handleToggleSort}
       />
     </section>
   );

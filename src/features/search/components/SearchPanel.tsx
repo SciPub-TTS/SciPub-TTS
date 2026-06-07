@@ -51,11 +51,11 @@ export function SearchPanel({
 }: SearchPanelProps) {
   // This component composes the top search area and the advanced filters.
   return (
-    <div className="overflow-visible rounded-2xl border border-slate-400 bg-white shadow-[0_18px_50px_rgba(15,23,42,0.06)]">
+    <div className="overflow-visible rounded-2xl border border-black bg-white shadow-[0_18px_50px_rgba(15,23,42,0.06)]">
       <SearchTabsHeader totalIndexedPapers={totalIndexedPapers} />
 
       <div className="p-5">
-        <div className="rounded-2xl border border-slate-400 bg-slate-50/60 p-3 shadow-inner">
+        <div className="rounded-2xl border border-black bg-slate-50/60 p-3 shadow-inner">
           <SearchInputRow
             isLoadingResults={isLoadingResults}
             isSearchFocused={isSearchFocused}
@@ -115,7 +115,7 @@ function SearchTabsHeader(props: SearchTabsHeaderProps) {
       : "Loading total works...";
 
   return (
-    <div className="rounded-t-2xl border-b border-slate-400 px-5 py-0">
+    <div className="rounded-t-2xl border-b border-black px-5 py-0">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-wrap gap-1 py-3">
           {searchTabs.map((tab) => (
@@ -169,9 +169,9 @@ function SearchInputRow({
   }
 
   return (
-    <div className="flex flex-col gap-3 rounded-xl bg-white p-3 shadow-sm ring-1 ring-slate-400 focus-within:ring-[#15803D] md:flex-row md:items-center">
+    <div className="flex flex-col gap-3 rounded-xl bg-white p-3 shadow-sm ring-1 ring-[#2f8551] md:flex-row md:items-center">
       <div className="relative flex min-w-0 flex-1 items-center gap-3">
-        <Search className="h-5 w-5 shrink-0 text-[#14532D]" />
+        <Search className="h-5 w-5 shrink-0  font-extrabold" />
 
         <input
           type="search"
@@ -337,7 +337,7 @@ function SuggestedSearchList({ onSelect }: SuggestedSearchListProps) {
           type="button"
           value={suggestion}
           onClick={handleSuggestionClick}
-          className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-black ring-1 ring-slate-400 transition hover:text-[#15803D] hover:ring-[#16A34A]"
+          className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-black ring-1 ring-black transition hover:text-[#15803D] hover:ring-[#16A34A]"
         >
           {suggestion}
         </button>

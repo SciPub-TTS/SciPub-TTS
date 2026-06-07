@@ -183,10 +183,10 @@ export default function LandingPage() {
                   </button>
                   <button
                     type="button"
-                    onClick={() => handleSectionSelect("dashboard-preview")}
+                    onClick={() => handleSectionSelect("trending-topic-preview")}
                     className="block w-full rounded-md px-3 py-2 text-left text-sm font-medium text-slate-600 hover:bg-emerald-50 hover:text-emerald-700"
                   >
-                    Dashboard Preview
+                    Trending Topic Preview
                   </button>
                 </div>
               )}
@@ -199,10 +199,10 @@ export default function LandingPage() {
               Search
             </Link>
             <Link
-              to={ROUTES.DASHBOARD}
+              to={ROUTES.TRENDING_TOPIC}
               className="hover:text-emerald-700 text-black"
             >
-              Dashboard
+              Trending Topic
             </Link>
             <Link
               to={ROUTES.GUIDE}
@@ -305,18 +305,18 @@ export default function LandingPage() {
                   <ArrowRight className="h-4 w-4" />
                 </Link>
                 <Link
-                  to={ROUTES.DASHBOARD}
+                  to={ROUTES.TRENDING_TOPIC}
                   className="inline-flex items-center gap-2 rounded-2xl border border-slate-300 bg-white px-8 py-3.5 text-base font-semibold text-slate-900 transition hover:bg-slate-100"
                 >
                   <ChartColumnIncreasing className="h-4 w-4" />
-                  View Demo
+                  View Trending Topic
                 </Link>
               </div>
             </div>
           </div>
 
           <div
-            id="dashboard-preview"
+            id="trending-topic-preview"
             className="relative mt-12 scroll-mt-24 overflow-visible rounded-[28px] border border-slate-300/70 bg-white p-3 shadow-[0_20px_60px_rgba(15,23,42,0.09)] md:p-4"
           >
 
@@ -324,7 +324,7 @@ export default function LandingPage() {
               <div className="relative">
                 <img
                   src="/LandingPage-Img/DashboardPreview.png"
-                  alt="Research trend dashboard preview"
+                  alt="Trending topic preview"
                   className="h-[420px] w-full rounded-3xl object-cover object-left-top md:h-[460px]"
                 />
 
@@ -939,12 +939,12 @@ export default function LandingPage() {
                 <h2 className="max-w-[580px] text-[44px] font-semibold leading-[0.95] tracking-[-0.02em] text-[#0b0f0e] md:text-[64px]">
                   A{" "}
                   <span className="font-serif italic text-emerald-600">
-                    trend dashboard
+                    Trending Topic
                   </span>{" "}
                   designed for research decisions.
                 </h2>
                 <p className="mt-4 max-w-[520px] text-[16px] leading-[1.75] text-slate-600">
-                  The dashboard helps users see which topics are growing, which
+                  The Trending Topic page helps users see which topics are growing, which
                   keywords are rising, and which research areas have strong
                   citation impact at a glance.
                 </p>
@@ -980,7 +980,7 @@ export default function LandingPage() {
               <div className="overflow-hidden rounded-[24px] ">
                 <img
                   src="/LandingPage-Img/05-trenddashboard.png"
-                  alt="Trend dashboard preview"
+                  alt="Trending topic preview"
                   className="h-auto w-full"
                 />
               </div>
@@ -1392,7 +1392,7 @@ export default function LandingPage() {
                     <li>✓ Track research topics</li>
                     <li>✓ Recommend reading materials</li>
                     <li>✓ Follow authors and journals</li>
-                    <li>✓ View trend dashboard</li>
+                    <li>✓ View trending topics</li>
                   </ul>
                 </article>
 
@@ -1437,7 +1437,7 @@ export default function LandingPage() {
               </h2>
               <p className="mx-auto mt-5 max-w-[760px] text-[16px] leading-[1.75] text-emerald-100/90">
                 Search papers, follow topics, monitor authors, and discover
-                emerging research directions all from one intelligent dashboard.
+                emerging research directions all from one intelligent trending topic page.
               </p>
 
               <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
@@ -1449,10 +1449,10 @@ export default function LandingPage() {
                   <ArrowRight className="h-4 w-4" />
                 </Link>
                 <Link
-                  to={ROUTES.DASHBOARD}
+                  to={ROUTES.TRENDING_TOPIC}
                   className="inline-flex items-center gap-2 rounded-xl border border-emerald-700/70 bg-transparent px-6 py-3 text-[16px] font-semibold text-white hover:bg-emerald-900/30"
                 >
-                  View Demo Dashboard
+                  View Trending Topic
                 </Link>
               </div>
 
