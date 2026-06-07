@@ -1,4 +1,5 @@
 import type {
+  OpenAlexWorkReferenceApi,
   OpenAlexWorkDetailApi,
   PaperDetailData,
 } from "../types";
@@ -57,8 +58,14 @@ export function mapWorkDetailToPaperDetail(
   const items = buildMetrics(work, authors.length, institutions.length);
   const quickLinks = buildQuickLinks(work);
   const pdfUrl = resolveWorkPdfUrl(work);
-  const referencedWorks = mapWorkLinks(work.referenced_works);
-  const relatedWorks = mapWorkLinks(work.related_works);
+  const referencedWorks = mapWorkLinks(
+    work.referenced_work_details,
+    work.referenced_works,
+  );
+  const relatedWorks = mapWorkLinks(
+    work.related_work_details,
+    work.related_works,
+  );
   const source = mapNamedEntityToDetailRef(
     work.primary_location?.source || work.best_oa_location?.source,
     "source",
@@ -98,8 +105,31 @@ export function mapWorkDetailToPaperDetail(
   };
 }
 
-function mapWorkLinks(workIds: string[]) {
-  return workIds
+function mapWorkLinks(
+  workReferences: OpenAlexWorkReferenceApi[] | undefined,
+  fallbackWorkIds: string[],
+) {
+  if (workReferences && workReferences.length > 0) {
+    return workReferences
+      .map((workReference) => {
+        const workId = extractLastSegment(workReference.id);
+        if (!workId) {
+          return null;
+        }
+
+        const workTitle = workReference.title?.trim();
+
+        return {
+          id: workId,
+          label: workTitle || normalizeOpenAlexWorkId(workId),
+        };
+      })
+      .filter((workReference): workReference is { id: string; label: string } =>
+        Boolean(workReference),
+      );
+  }
+
+  return fallbackWorkIds
     .map((workId) => extractLastSegment(workId))
     .filter(Boolean)
     .map((workId) => ({

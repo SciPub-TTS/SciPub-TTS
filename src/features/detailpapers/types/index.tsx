@@ -128,12 +128,19 @@ export type OpenAlexWorkDetailApi = {
   primary_topic: OpenAlexTopic | null;
   publication_date: string | null;
   publication_year: number | null;
+  referenced_work_details?: OpenAlexWorkReferenceApi[];
   referenced_works: string[];
   referenced_works_count: number | null;
+  related_work_details?: OpenAlexWorkReferenceApi[];
   related_works: string[];
   title: string | null;
   topics: OpenAlexTopic[];
   type: string | null;
+};
+
+export type OpenAlexWorkReferenceApi = {
+  id: string;
+  title: string | null;
 };
 
 export type PaperDetailSummaryItem = {
