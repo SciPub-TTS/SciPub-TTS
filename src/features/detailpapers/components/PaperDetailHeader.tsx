@@ -7,7 +7,7 @@ import {
   FileText,
   Globe2,
 } from "lucide-react";
-import EntityCanvasLink from "@/features/entity-canvas/components/EntityCanvasLink";
+import OpenAlexEntityLink from "@/features/openalex-entities/components/OpenAlexEntityLink";
 import MetadataBadge from "@/layout/components/MetadataBadge";
 
 import type { PaperDetailData } from "../types";
@@ -26,7 +26,7 @@ export default function PaperDetailHeader(props: PaperDetailHeaderProps) {
       <div className="flex flex-wrap gap-2">
         {paperDetail.headerBadges.map((badge) =>
           badge.entityId?.trim() && badge.entityType ? (
-            <EntityCanvasLink
+            <OpenAlexEntityLink
               key={`${badge.entityType}-${badge.entityId}`}
               entityId={badge.entityId}
               entityType={badge.entityType}
@@ -34,7 +34,7 @@ export default function PaperDetailHeader(props: PaperDetailHeaderProps) {
               className="rounded-full transition hover:opacity-90"
             >
               <MetadataBadge label={badge.label} tone={badge.tone} />
-            </EntityCanvasLink>
+            </OpenAlexEntityLink>
           ) : (
             <MetadataBadge
               key={badge.label}

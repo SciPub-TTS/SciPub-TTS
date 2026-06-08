@@ -90,7 +90,7 @@ function ListWorkLayoutComponent({
   }
 
   return (
-    <article className="rounded-2xl border border-slate-400 bg-white p-5 shadow-sm">
+    <article className="rounded-2xl border border-black bg-white p-5 shadow-sm">
       <div className="mb-3 flex items-start justify-between gap-3">
         <div className="flex flex-wrap gap-2">
           <MetadataBadge tone="accent" label={subField} />

@@ -289,11 +289,12 @@ export type SearchResultsProps = {
   isLoadingResults: boolean;
   isLoadingMoreResults: boolean;
   responseTimeSeconds: number;
-  selectedSort: string;
+  selectedSorts: string[];
   totalResultCount: number;
   visiblePaperResults: PaperResult[];
   onLoadMoreResults: () => void;
-  onSelectSort: (sortOption: string) => void;
+  onClearSorts: () => void;
+  onToggleSort: (sortOption: string) => void;
 };
 
 export type ResultsListProps = {

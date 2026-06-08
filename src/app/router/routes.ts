@@ -5,7 +5,7 @@ export const ROUTES = {
   REGISTER: "/register",
   GUIDE: "/guide",
   SEARCH: "/search",
-  DASHBOARD: "/dashboard",
+  TRENDING_TOPIC: "/trending-topic",
 
   //Auth
   FORGOT_PASSWORD: "/forgot-password",
@@ -17,6 +17,7 @@ export const ROUTES = {
 
   // Paper
   PAPER_DETAIL: "/papers/:paperId",
+  PAPER_ENTITY_DETAIL: "/papers/:paperId/entities",
 
   // User protected
   PROFILE: "/profile",
@@ -39,10 +40,12 @@ export const routePaths = {
   register: () => ROUTES.REGISTER,
   guide: () => ROUTES.GUIDE,
   search: () => ROUTES.SEARCH,
-  dashboard: () => ROUTES.DASHBOARD,
+  trendingTopic: () => ROUTES.TRENDING_TOPIC,
 
   paperDetail: (paperId: string | number) =>
     `/papers/${encodeURIComponent(String(paperId))}`,
+  paperEntityDetail: (paperId: string | number) =>
+    `/papers/${encodeURIComponent(String(paperId))}/entities`,
 
   profile: () => ROUTES.PROFILE,
   profileTab: (tab: "profile" | "interests" | "security" = "profile") =>
