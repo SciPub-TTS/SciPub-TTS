@@ -23,6 +23,7 @@ import { Link } from "react-router-dom";
 
 import { ROUTES } from "@/app/router";
 import logoImage from "@/assets/images/logo.png";
+import { AUTH_ROLES } from "@/features/auth/constants/roles";
 import { getCurrentUser } from "@/features/auth/utils/authStorage";
 import { isAuthenticated } from "@/features/auth/utils/authGuard";
 import MainFooter from "@/layout/main/Footer";
@@ -62,6 +63,12 @@ export default function LandingPage() {
   const [isSectionMenuOpen, setIsSectionMenuOpen] = useState(false);
   const currentUser = getCurrentUser();
   const loggedIn = isAuthenticated();
+  const dashboardPath =
+    currentUser?.role === AUTH_ROLES.ADMIN
+      ? ROUTES.ADMIN_DASHBOARD
+      : ROUTES.TRENDING_TOPIC;
+  const profilePath =
+    currentUser?.role === AUTH_ROLES.ADMIN ? ROUTES.ADMIN_DASHBOARD : ROUTES.PROFILE;
   const displayName = currentUser?.fullName ?? "User";
   const initials = displayName
     .split(" ")
@@ -214,7 +221,7 @@ export default function LandingPage() {
 
           {loggedIn ? (
             <Link
-              to={ROUTES.PROFILE}
+              to={profilePath}
               aria-label="Open user profile"
               className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-emerald-600 text-sm font-bold text-white"
             >
@@ -296,17 +303,17 @@ export default function LandingPage() {
                 so you can track topic growth, citation momentum, and rising
                 keywords before they become mainstream.
               </p>
-              <div className="mt-10 flex flex-wrap items-center gap-3">
+              <div className="mt-10 flex flex-nowrap items-center gap-3">
                 <Link
                   to={ROUTES.SEARCH}
-                  className="inline-flex items-center gap-2 rounded-2xl bg-emerald-600 px-8 py-3.5 text-base font-semibold text-white transition hover:bg-emerald-700"
+                  className="inline-flex whitespace-nowrap items-center gap-2 rounded-2xl bg-emerald-600 px-8 py-3.5 text-base font-semibold text-white transition hover:bg-emerald-700"
                 >
                   Enter Observatory
                   <ArrowRight className="h-4 w-4" />
                 </Link>
                 <Link
-                  to={ROUTES.TRENDING_TOPIC}
-                  className="inline-flex items-center gap-2 rounded-2xl border border-slate-300 bg-white px-8 py-3.5 text-base font-semibold text-slate-900 transition hover:bg-slate-100"
+                  to={dashboardPath}
+                  className="inline-flex whitespace-nowrap items-center gap-2 rounded-2xl border border-slate-300 bg-white px-8 py-3.5 text-base font-semibold text-slate-900 transition hover:bg-slate-100"
                 >
                   <ChartColumnIncreasing className="h-4 w-4" />
                   View Trending Topic
@@ -814,10 +821,10 @@ export default function LandingPage() {
             <div className="relative px-6 pb-8 pt-8 md:px-10 md:pt-10">
               <div
                 aria-hidden="true"
-                className="pointer-events-none absolute inset-0 opacity-45"
+                className="pointer-events-none absolute inset-0 opacity-100"
                 style={{
                   backgroundImage:
-                    "linear-gradient(to right, rgba(148,163,184,0.16) 1px, transparent 1px), linear-gradient(to bottom, rgba(148,163,184,0.14) 1px, transparent 1px)",
+                    "linear-gradient(to right, rgba(100,116,139,0.3) 1px, transparent 1px), linear-gradient(to bottom, rgba(100,116,139,0.26) 1px, transparent 1px)",
                   backgroundSize: "36px 36px, 36px 36px",
                 }}
               />

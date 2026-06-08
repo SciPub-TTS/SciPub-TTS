@@ -31,13 +31,10 @@ export default function LoginFormPanel({
     const [showPassword, setShowPassword] = useState(false);
 
     return (
-        <div className="flex-1 flex items-center justify-center px-8 py-12 lg:max-w-[520px]">
-            <div className="w-full max-w-[360px]">
+        <div className="flex-1 flex items-center justify-center px-8 py-12 lg:max-w-[680px]">
+            <div className="w-full max-w-[430px]">
                 <div className="mb-8">
-                    <p className="text-[11px] tracking-[0.18em] text-slate-400 uppercase mb-3 flex items-center gap-1.5">
-                        <span className="inline-block w-1 h-1 rounded-full bg-emerald-500" />
-                        Welcome back
-                    </p>
+                  
                     <h1 className="font-serif text-[2.6rem] leading-[1.12] text-slate-950 mb-0">
                         Log in to your
                     </h1>
@@ -163,8 +160,8 @@ export default function LoginFormPanel({
                 </form>
 
                 <p className="mt-6 text-sm text-slate-500 text-center">
-                    New to Research Trend Tracker?{" "}
-                    <Link to={ROUTES.REGISTER} className="text-emerald-700 font-medium hover:underline">
+                    <span className="block">New to Research Trend Tracker?</span>
+                    <Link to={ROUTES.REGISTER} className="mt-1 inline-block text-emerald-700 font-medium hover:underline">
                         Create a free academic account →
                     </Link>
                 </p>
