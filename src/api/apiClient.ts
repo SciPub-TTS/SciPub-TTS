@@ -7,8 +7,11 @@ import {
 import type { AuthResponse } from "@/features/auth/types/auth.types";
 import type {ApiResponse} from "@/types/common.types.ts";
 
+const API_URL = import.meta.env.VITE_API_URL;
+const API_BASE_URL = `${API_URL.replace(/\/$/, "")}/api`;
+
 export const apiClient = axios.create({
-    baseURL: import.meta.env.VITE_BACKEND_URL,
+    baseURL: API_BASE_URL,
     withCredentials: true,
     headers: {
         "Content-Type": "application/json",
@@ -16,7 +19,7 @@ export const apiClient = axios.create({
 });
 
 const refreshClient = axios.create({
-    baseURL: import.meta.env.VITE_BACKEND_URL,
+    baseURL: API_BASE_URL,
     withCredentials: true,
     headers: {
         "Content-Type": "application/json",

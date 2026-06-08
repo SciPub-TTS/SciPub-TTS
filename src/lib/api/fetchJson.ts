@@ -1,8 +1,7 @@
 import { getAccessToken } from "@/features/auth/utils/authStorage";
 
-const apiBaseUrl = (
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:8080"
-).replace(/\/$/, "");
+const API_URL = import.meta.env.VITE_API_URL;
+const apiBaseUrl = API_URL.replace(/\/$/, "");
 
 type ResponseEnvelope<T> = {
   status: number;

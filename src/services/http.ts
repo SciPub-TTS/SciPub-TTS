@@ -8,8 +8,8 @@ import {
 import type {AuthResponse } from "@/features/auth/types/auth.types";
 import type {ApiResponse} from "@/types/common.types.ts";
 
-const API_BASE_URL =
-    import.meta.env.VITE_BACKEND_URL;
+const API_URL = import.meta.env.VITE_API_URL;
+const API_BASE_URL = `${API_URL.replace(/\/$/, "")}/api`;
 
 export const http = axios.create({
     baseURL: API_BASE_URL,
