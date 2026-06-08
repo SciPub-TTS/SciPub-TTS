@@ -77,12 +77,12 @@ export const authApi = {
     },
 
     startGoogleLogin() {
-        const googleAuthUrl = import.meta.env.VITE_GOOGLE_AUTH_URL;
+        const googleAuthUrl = (import.meta.env.VITE_GOOGLE_AUTH_URL ?? "").trim();
 
         if (!googleAuthUrl) {
             throw new Error("Thiếu VITE_GOOGLE_AUTH_URL cho Google login.");
         }
 
-        window.location.assign(googleAuthUrl);
+        window.location.href = googleAuthUrl;
     },
 };

@@ -7,10 +7,13 @@ import { getApiErrorMessage } from "@/features/auth/utils/getApiErrorMessage.ts"
 
 type Status = "loading" | "error";
 const ERROR_MESSAGES: Record<string, string> = {
+  access_denied: "Google sign-in was cancelled.",
+  cancelled: "Google sign-in was cancelled.",
   account_banned: "Your account has been banned. Please contact support.",
   invalid_user_info: "Unable to retrieve information from Google. Please try again.",
   oauth2_user_not_found: "Account not found. Please register first.",
   google_email_not_verified: "Your Google email has not been verified.",
+  oauth2_failed: "Google login failed. Please try again.",
 };
 
 export default function OAuth2SuccessPage() {
