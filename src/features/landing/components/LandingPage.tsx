@@ -66,7 +66,7 @@ export default function LandingPage() {
   const dashboardPath =
     currentUser?.role === AUTH_ROLES.ADMIN
       ? ROUTES.ADMIN_DASHBOARD
-      : ROUTES.DASHBOARD;
+      : ROUTES.TRENDING_TOPIC;
   const profilePath =
     currentUser?.role === AUTH_ROLES.ADMIN ? ROUTES.ADMIN_DASHBOARD : ROUTES.PROFILE;
   const displayName = currentUser?.fullName ?? "User";
