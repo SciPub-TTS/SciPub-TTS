@@ -45,9 +45,18 @@ export type OpenAlexKeyword = OpenAlexNamedEntity & {
   score: number | null;
 };
 
+export type OpenAlexAward = {
+  display_name?: string | null;
+  funder_award_id?: string | null;
+  funder_display_name?: string | null;
+  name?: string | null;
+  title?: string | null;
+};
+
 export type OpenAlexAuthorship = {
   author_position: string | null;
   author: (OpenAlexNamedEntity & { orcid: string | null }) | null;
+  countries?: string[];
   institutions: OpenAlexInstitution[];
   is_corresponding: boolean | null;
   raw_author_name?: string | null;
@@ -101,6 +110,7 @@ export type OpenAlexWorkDetailApi = {
   apc_list: OpenAlexApc | null;
   apc_paid: OpenAlexApc | null;
   authorships: OpenAlexAuthorship[];
+  awards?: OpenAlexAward[];
   best_oa_location: OpenAlexLocation | null;
   biblio: OpenAlexBiblio | null;
   citation_normalized_percentile: OpenAlexCitationPercentile | null;
@@ -128,12 +138,19 @@ export type OpenAlexWorkDetailApi = {
   primary_topic: OpenAlexTopic | null;
   publication_date: string | null;
   publication_year: number | null;
+  referenced_work_details?: OpenAlexWorkReferenceApi[];
   referenced_works: string[];
   referenced_works_count: number | null;
+  related_work_details?: OpenAlexWorkReferenceApi[];
   related_works: string[];
   title: string | null;
   topics: OpenAlexTopic[];
   type: string | null;
+};
+
+export type OpenAlexWorkReferenceApi = {
+  id: string;
+  title: string | null;
 };
 
 export type PaperDetailSummaryItem = {
@@ -195,16 +212,23 @@ export type PaperDetailAuthor = {
 };
 
 export type PaperDetailInstitution = {
+  countryName: string | null;
   countryCode: string | null;
   id: string;
   name: string;
   type: string | null;
 };
 
+export type PaperDetailCountry = {
+  code: string;
+  name: string;
+};
+
 export type PaperDetailData = {
   abstractText: string;
   accessItems: PaperDetailSummaryItem[];
   authors: PaperDetailAuthor[];
+  awards: string[];
   doiHref: string | null;
   doiLabel: string;
   headerBadges: PaperDetailBadge[];
@@ -212,6 +236,7 @@ export type PaperDetailData = {
   impactPieChartItems: PaperDetailImpactPieChartItem[];
   indexedIn: string[];
   institutions: PaperDetailInstitution[];
+  countries: PaperDetailCountry[];
   items: PaperDetailMetric[];
   keywords: string[];
   languageLabel: string;

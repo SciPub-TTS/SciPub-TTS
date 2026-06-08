@@ -22,7 +22,7 @@ export default function ProtectedRoute({ allowedRoles }: ProtectedRouteProps) {
         const fallback =
             currentUser.role === AUTH_ROLES.ADMIN
                 ? ROUTES.ADMIN_DASHBOARD
-                : ROUTES.DASHBOARD;
+                : ROUTES.TRENDING_TOPIC;
 
         return <Navigate to={fallback} replace />;
     }

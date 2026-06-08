@@ -19,17 +19,12 @@ export default function SearchPageContent() {
     handleFilterOptionSearch,
     handleLoadMoreFilterOptions,
     handleLoadMoreResults,
-    handleSaveSearch,
     handleSearch,
-    handleSearchBlur,
-    handleDeleteSavedSearch,
-    handleSearchFocus,
+    handleClearSorts,
     handleSearchQueryChange,
-    handleSelectSavedSearch,
-    handleSelectSort,
     handleSuggestedSearch,
     handleToggleFilters,
-    handleToggleSearchSuggestions,
+    handleToggleSort,
     handleToggleVisibleFilterWidget,
     hasFormError,
     hasSearched,
@@ -37,31 +32,21 @@ export default function SearchPageContent() {
     isLoadingFilterOptions,
     isLoadingMoreFilterOptions,
     isLoadingResults,
-    isSearchFocused,
     isLoadingMoreResults,
     matchedPaperCount,
-    matchedSavedSearchCount,
     resetFilters,
     responseTimeSeconds,
     searchQuery,
-    selectedSort,
-    showAllSearchSuggestions,
+    selectedSorts,
     totalIndexedPapers,
     updateFilter,
     visibleFilterWidgets,
     visiblePaperResults,
-    visibleSearchSuggestions,
   } = useSearchPageState();
-
-  // Disable saving until the user types a non-empty query.
-  const canSaveSearch = searchQuery.trim().length > 0;
 
   return (
     <section className="space-y-7">
-      <SearchPageHeader
-        canSaveSearch={canSaveSearch}
-        onSaveSearch={handleSaveSearch}
-      />
+      <SearchPageHeader />
 
       <SearchPanel
         activeFilterCount={activeFilterCount}
@@ -74,27 +59,18 @@ export default function SearchPageContent() {
         isLoadingFilterOptions={isLoadingFilterOptions}
         isLoadingMoreFilterOptions={isLoadingMoreFilterOptions}
         isLoadingResults={isLoadingResults}
-        isSearchFocused={isSearchFocused}
         matchedPaperCount={matchedPaperCount}
-        matchedSavedSearchCount={matchedSavedSearchCount}
         searchQuery={searchQuery}
-        showAllSearchSuggestions={showAllSearchSuggestions}
         totalIndexedPapers={totalIndexedPapers}
         visibleFilterWidgets={visibleFilterWidgets}
-        visibleSearchSuggestions={visibleSearchSuggestions}
         onApplyFilters={handleApplyFilters}
         onFilterOptionSearch={handleFilterOptionSearch}
         onLoadMoreFilterOptions={handleLoadMoreFilterOptions}
         onResetFilters={resetFilters}
-        onSavedSearchDelete={handleDeleteSavedSearch}
-        onSavedSearchSelect={handleSelectSavedSearch}
         onSearch={handleSearch}
-        onSearchBlur={handleSearchBlur}
-        onSearchFocus={handleSearchFocus}
         onSearchQueryChange={handleSearchQueryChange}
         onSuggestedSearchSelect={handleSuggestedSearch}
         onToggleFilters={handleToggleFilters}
-        onToggleSearchSuggestions={handleToggleSearchSuggestions}
         onToggleVisibleFilterWidget={handleToggleVisibleFilterWidget}
         updateFilter={updateFilter}
       />
@@ -107,11 +83,12 @@ export default function SearchPageContent() {
         isLoadingResults={isLoadingResults}
         isLoadingMoreResults={isLoadingMoreResults}
         responseTimeSeconds={responseTimeSeconds}
-        selectedSort={selectedSort}
+        selectedSorts={selectedSorts}
         totalResultCount={matchedPaperCount}
         visiblePaperResults={visiblePaperResults}
         onLoadMoreResults={handleLoadMoreResults}
-        onSelectSort={handleSelectSort}
+        onClearSorts={handleClearSorts}
+        onToggleSort={handleToggleSort}
       />
     </section>
   );

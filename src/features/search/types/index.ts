@@ -101,11 +101,6 @@ export type SearchSummaryStats = {
 };
 
 // Component prop types live here so JSX files stay focused on rendering.
-export type SearchPageHeaderProps = {
-  canSaveSearch: boolean;
-  onSaveSearch: () => void;
-};
-
 export type PaperResultCardProps = {
   paper: PaperResult;
 };
@@ -121,61 +116,27 @@ export type SearchPanelProps = {
   isLoadingFilterOptions: RemoteOptionStateMap;
   isLoadingMoreFilterOptions: RemoteOptionStateMap;
   hasMoreFilterOptions: RemoteOptionStateMap;
-  isSearchFocused: boolean;
   matchedPaperCount: number;
-  matchedSavedSearchCount: number;
   searchQuery: string;
-  showAllSearchSuggestions: boolean;
   totalIndexedPapers: number;
   visibleFilterWidgets: SearchFilterWidgetKey[];
-  visibleSearchSuggestions: SavedSearch[];
   onApplyFilters: () => void;
   onFilterOptionSearch: (filterKey: RemoteOptionFilterKey, keyword: string) => void;
   onLoadMoreFilterOptions: (filterKey: RemoteOptionFilterKey) => void;
   onResetFilters: () => void;
-  onSavedSearchDelete: (query: string) => void;
-  onSavedSearchSelect: (query: string) => void;
   onSearch: () => void;
-  onSearchBlur: () => void;
-  onSearchFocus: () => void;
   onSearchQueryChange: (query: string) => void;
   onSuggestedSearchSelect: (query: string) => void;
   onToggleFilters: () => void;
-  onToggleSearchSuggestions: () => void;
   onToggleVisibleFilterWidget: (widgetKey: SearchFilterWidgetKey) => void;
   updateFilter: UpdateSearchFilter;
 };
 
 export type SearchInputRowProps = {
   isLoadingResults: boolean;
-  isSearchFocused: boolean;
-  matchedSavedSearchCount: number;
   searchQuery: string;
-  showAllSearchSuggestions: boolean;
-  visibleSearchSuggestions: SavedSearch[];
-  onSavedSearchDelete: (query: string) => void;
-  onSavedSearchSelect: (query: string) => void;
   onSearch: () => void;
-  onSearchBlur: () => void;
-  onSearchFocus: () => void;
   onSearchQueryChange: (query: string) => void;
-  onToggleSearchSuggestions: () => void;
-};
-
-export type SavedSearchDropdownProps = {
-  matchedSavedSearchCount: number;
-  searchQuery: string;
-  showAllSearchSuggestions: boolean;
-  visibleSearchSuggestions: SavedSearch[];
-  onSavedSearchDelete: (query: string) => void;
-  onSavedSearchSelect: (query: string) => void;
-  onToggleSearchSuggestions: () => void;
-};
-
-export type SavedSearchButtonProps = {
-  query: string;
-  onDelete: (query: string) => void;
-  onSelect: (query: string) => void;
 };
 
 export type SuggestedSearchListProps = {
@@ -289,11 +250,12 @@ export type SearchResultsProps = {
   isLoadingResults: boolean;
   isLoadingMoreResults: boolean;
   responseTimeSeconds: number;
-  selectedSort: string;
+  selectedSorts: string[];
   totalResultCount: number;
   visiblePaperResults: PaperResult[];
   onLoadMoreResults: () => void;
-  onSelectSort: (sortOption: string) => void;
+  onClearSorts: () => void;
+  onToggleSort: (sortOption: string) => void;
 };
 
 export type ResultsListProps = {

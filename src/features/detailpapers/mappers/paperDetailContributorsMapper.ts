@@ -1,12 +1,16 @@
 import type {
   OpenAlexAuthorship,
   OpenAlexNamedEntity,
+  PaperDetailCountry,
   OpenAlexWorkDetailApi,
   PaperDetailAuthor,
   PaperDetailEntityRef,
   PaperDetailInstitution,
 } from "../types";
-import { extractLastSegment } from "./paperDetailShared";
+import {
+  extractLastSegment,
+  formatCountryLabel,
+} from "./paperDetailShared";
 
 export function mapAuthors(authorships: OpenAlexAuthorship[]) {
   const authors: PaperDetailAuthor[] = [];
@@ -52,6 +56,7 @@ export function mapInstitutions(authorships: OpenAlexAuthorship[]) {
 
       if (!uniqueInstitutionMap.has(institution.id)) {
         uniqueInstitutionMap.set(institution.id, {
+          countryName: formatCountryLabel(institution.country_code) || null,
           countryCode: institution.country_code,
           id: extractLastSegment(institution.id),
           name: institution.display_name.trim(),
@@ -62,6 +67,22 @@ export function mapInstitutions(authorships: OpenAlexAuthorship[]) {
   }
 
   return [...uniqueInstitutionMap.values()];
+}
+
+export function mapCountries(authorships: OpenAlexAuthorship[]) {
+  const uniqueCountryMap = new Map<string, PaperDetailCountry>();
+
+  for (const authorship of authorships) {
+    for (const countryCode of authorship.countries || []) {
+      addCountry(uniqueCountryMap, countryCode);
+    }
+
+    for (const institution of authorship.institutions || []) {
+      addCountry(uniqueCountryMap, institution.country_code);
+    }
+  }
+
+  return [...uniqueCountryMap.values()];
 }
 
 export function mapTopics(work: OpenAlexWorkDetailApi) {
@@ -98,4 +119,25 @@ export function mapNamedEntityToDetailRef(
     name: entity.display_name.trim(),
     type,
   } satisfies PaperDetailEntityRef;
+}
+
+function addCountry(
+  uniqueCountryMap: Map<string, PaperDetailCountry>,
+  countryCode: string | null | undefined,
+) {
+  const normalizedCountryCode = countryCode?.trim().toUpperCase();
+
+  if (!normalizedCountryCode || uniqueCountryMap.has(normalizedCountryCode)) {
+    return;
+  }
+
+  const countryName = formatCountryLabel(normalizedCountryCode);
+  if (!countryName) {
+    return;
+  }
+
+  uniqueCountryMap.set(normalizedCountryCode, {
+    code: normalizedCountryCode,
+    name: countryName,
+  });
 }

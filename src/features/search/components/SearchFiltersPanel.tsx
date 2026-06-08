@@ -48,7 +48,7 @@ export function SearchFiltersPanel({
   updateFilter,
 }: SearchFiltersPanelProps) {
   return (
-    <div className="rounded-b-2xl border-t border-slate-400 bg-slate-50/80">
+    <div className="rounded-b-2xl border-t border-black bg-slate-50/80">
       <SearchFiltersHeader
         activeFilterCount={activeFilterCount}
         filtersOpen={filtersOpen}
@@ -99,7 +99,7 @@ function SearchFiltersHeader({
   const toggleLabel = filtersOpen ? "Collapse filters" : "Expand filters";
   const headerClassName = [
     "flex flex-col gap-3 px-5 py-4 md:flex-row md:items-center md:justify-between",
-    filtersOpen ? "border-b border-slate-400" : "rounded-b-2xl",
+    filtersOpen ? "border-b border-black" : "rounded-b-2xl",
   ].join(" ");
 
   return (

@@ -1,8 +1,10 @@
 import { Users } from "lucide-react";
 
-import EntityCanvasLink from "@/features/entity-canvas/components/EntityCanvasLink";
-
-import type { PaperDetailAuthor, PaperDetailInstitution } from "../../types";
+import type {
+  PaperDetailAuthor,
+  PaperDetailCountry,
+  PaperDetailInstitution,
+} from "../../types";
 import type { PaperContributorsSectionData } from "../../view-models/contributorsSection";
 import DetailSectionCard from "./DetailSectionCard";
 
@@ -18,6 +20,10 @@ type InstitutionListProps = {
   institutions: PaperDetailInstitution[];
 };
 
+type CountryListProps = {
+  countries: PaperDetailCountry[];
+};
+
 export default function PaperContributorsSection(
   props: PaperContributorsSectionProps,
 ) {
@@ -29,7 +35,7 @@ export default function PaperContributorsSection(
   return (
     <DetailSectionCard
       icon={<Users className="h-5 w-5" />}
-      title="Authors & Institutions"
+      title="Authors, Institutions & Countries"
     >
       <div>
         <h3 className="text-base font-semibold uppercase tracking-[0.18em] text-black">
@@ -52,6 +58,13 @@ export default function PaperContributorsSection(
           Institutions
         </h3>
         <InstitutionList institutions={section.institutions} />
+
+        <div className="mt-5 border-t border-black pt-4">
+          <h3 className="text-base font-semibold uppercase tracking-[0.18em] text-black">
+            Countries
+          </h3>
+          <CountryList countries={section.countries} />
+        </div>
       </div>
     </DetailSectionCard>
   );
@@ -73,20 +86,7 @@ function AuthorList(props: AuthorListProps) {
           key={author.id}
           className="flex flex-wrap items-center gap-x-2 gap-y-2 text-base text-black"
         >
-          {author.entityId ? (
-            <EntityCanvasLink
-              entityId={author.entityId}
-              entityType="author"
-              label={author.name}
-              className="cursor-pointer text-sm font-semibold text-black transition hover:text-blue-700 hover:underline hover:decoration-blue-700 hover:underline-offset-4"
-            >
-              {author.name}
-            </EntityCanvasLink>
-          ) : (
-            <span className="text-sm font-semibold text-black">
-              {author.name}
-            </span>
-          )}
+          <span className="text-sm font-semibold text-black">{author.name}</span>
 
           {author.position || author.isCorresponding || author.isFollowed ? (
             <span className="text-black">-</span>
@@ -130,16 +130,36 @@ function InstitutionList(props: InstitutionListProps) {
   return (
     <div className="mt-4 flex flex-wrap gap-3">
       {institutions.map((institution) => (
-        <EntityCanvasLink
+        <span
           key={institution.id}
-          entityId={institution.id}
-          entityType="institution"
-          label={institution.name}
-          className="cursor-pointer rounded-full border border-black bg-gradient-to-r from-[#EEF6FF] via-[#F6FAFF] to-[#DCEEFF] px-4 py-2 text-sm font-semibold text-black transition hover:text-blue-700 hover:underline hover:decoration-blue-700 hover:underline-offset-4"
+          className="rounded-full border border-black bg-gradient-to-r from-[#EEF6FF] via-[#F6FAFF] to-[#DCEEFF] px-4 py-2 text-sm font-semibold text-black"
         >
           {institution.name}
-          {institution.countryCode ? ` (${institution.countryCode})` : ""}
-        </EntityCanvasLink>
+          {institution.countryName ? ` (${institution.countryName})` : ""}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+function CountryList(props: CountryListProps) {
+  const { countries } = props;
+
+  if (countries.length === 0) {
+    return (
+      <p className="mt-4 text-lg text-black">Country information is not available.</p>
+    );
+  }
+
+  return (
+    <div className="mt-4 flex flex-wrap gap-3">
+      {countries.map((country) => (
+        <span
+          key={country.code}
+          className="rounded-full border border-black bg-gradient-to-r from-[#EEF6FF] via-[#F6FAFF] to-[#DCEEFF] px-4 py-2 text-sm font-semibold text-black"
+        >
+          {country.name}
+        </span>
       ))}
     </div>
   );

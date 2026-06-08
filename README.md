@@ -33,14 +33,14 @@ Không nên viết:
 
 ```tsx
 <button>Login</button>
-<h1>Dashboard</h1>
+<h1>Trending Topic</h1>
 ```
 
 Nên viết:
 
 ```tsx
 <button>{t("common.login")}</button>
-<h1>{t("navigation.dashboard")}</h1>
+<h1>{t("navigation.trendingTopic")}</h1>
 ```
 
 ## 2. Mọi text hiển thị trên UI phải được khai báo trong file i18n
@@ -98,7 +98,7 @@ common.logout
 common.save
 common.cancel
 
-navigation.dashboard
+navigation.trendingTopic
 navigation.searchPapers
 navigation.bookmarks
 

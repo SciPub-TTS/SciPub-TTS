@@ -1,22 +1,25 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 
+import { setPaperTitle } from "../paperTitleStore";
 import { getPaperDetail } from "../services";
 import type { PaperDetailData } from "../types";
 
 export function usePaperDetailPageState() {
   const { paperId = "" } = useParams();
+  const normalizedPaperId = paperId.trim();
   const [paperDetail, setPaperDetail] = useState<PaperDetailData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
-    let mounted = true;
+    let isActive = true;
 
-    async function loadPaperDetail() {
-      if (!paperId.trim()) {
-        if (mounted) {
+    async function loadPageState() {
+      if (!normalizedPaperId) {
+        if (isActive) {
           setErrorMessage("Paper ID is missing.");
+          setPaperDetail(null);
           setIsLoading(false);
         }
         return;
@@ -24,17 +27,19 @@ export function usePaperDetailPageState() {
 
       setIsLoading(true);
       setErrorMessage("");
+      setPaperDetail(null);
 
       try {
-        const detail = await getPaperDetail(paperId);
+        const detail = await getPaperDetail(normalizedPaperId);
 
-        if (!mounted) {
+        if (!isActive) {
           return;
         }
 
         setPaperDetail(detail);
+        setPaperTitle(normalizedPaperId, detail.title);
       } catch (error) {
-        if (!mounted) {
+        if (!isActive) {
           return;
         }
 
@@ -45,18 +50,18 @@ export function usePaperDetailPageState() {
             : "Cannot load paper detail right now.",
         );
       } finally {
-        if (mounted) {
+        if (isActive) {
           setIsLoading(false);
         }
       }
     }
 
-    void loadPaperDetail();
+    void loadPageState();
 
     return () => {
-      mounted = false;
+      isActive = false;
     };
-  }, [paperId]);
+  }, [normalizedPaperId]);
 
   return {
     errorMessage,

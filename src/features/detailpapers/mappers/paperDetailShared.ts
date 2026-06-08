@@ -3,6 +3,9 @@ import type { OpenAlexAbstractInvertedIndex } from "../types";
 const languageDisplayNames = new Intl.DisplayNames(["en"], {
   type: "language",
 });
+const countryDisplayNames = new Intl.DisplayNames(["en"], {
+  type: "region",
+});
 
 export function reconstructAbstractText(
   abstractInvertedIndex: OpenAlexAbstractInvertedIndex | null,
@@ -40,6 +43,18 @@ export function formatLanguageLabel(languageCode: string | null) {
   }
 
   return languageDisplayNames.of(languageCode) || languageCode.toUpperCase();
+}
+
+export function formatCountryLabel(countryCode: string | null | undefined) {
+  const normalizedCountryCode = countryCode?.trim().toUpperCase();
+
+  if (!normalizedCountryCode) {
+    return "";
+  }
+
+  return (
+    countryDisplayNames.of(normalizedCountryCode) || normalizedCountryCode
+  );
 }
 
 export function formatPublishedLabel(

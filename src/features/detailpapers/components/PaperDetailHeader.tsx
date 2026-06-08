@@ -7,7 +7,6 @@ import {
   FileText,
   Globe2,
 } from "lucide-react";
-import EntityCanvasLink from "@/features/entity-canvas/components/EntityCanvasLink";
 import MetadataBadge from "@/layout/components/MetadataBadge";
 
 import type { PaperDetailData } from "../types";
@@ -24,25 +23,13 @@ export default function PaperDetailHeader(props: PaperDetailHeaderProps) {
   return (
     <article className="rounded-3xl border border-black bg-white p-6 shadow-sm">
       <div className="flex flex-wrap gap-2">
-        {paperDetail.headerBadges.map((badge) =>
-          badge.entityId?.trim() && badge.entityType ? (
-            <EntityCanvasLink
-              key={`${badge.entityType}-${badge.entityId}`}
-              entityId={badge.entityId}
-              entityType={badge.entityType}
-              label={badge.label}
-              className="rounded-full transition hover:opacity-90"
-            >
-              <MetadataBadge label={badge.label} tone={badge.tone} />
-            </EntityCanvasLink>
-          ) : (
-            <MetadataBadge
-              key={badge.label}
-              label={badge.label}
-              tone={badge.tone}
-            />
-          ),
-        )}
+        {paperDetail.headerBadges.map((badge) => (
+          <MetadataBadge
+            key={badge.entityId ? `${badge.entityType}-${badge.entityId}` : badge.label}
+            label={badge.label}
+            tone={badge.tone}
+          />
+        ))}
       </div>
 
       <h1 className="mt-4 text-3xl font-semibold leading-tight text-slate-950">
