@@ -23,6 +23,7 @@ import { Link } from "react-router-dom";
 
 import { ROUTES } from "@/app/router";
 import logoImage from "@/assets/images/logo.png";
+import { AUTH_ROLES } from "@/features/auth/constants/roles";
 import { getCurrentUser } from "@/features/auth/utils/authStorage";
 import { isAuthenticated } from "@/features/auth/utils/authGuard";
 import MainFooter from "@/layout/main/Footer";
@@ -62,6 +63,12 @@ export default function LandingPage() {
   const [isSectionMenuOpen, setIsSectionMenuOpen] = useState(false);
   const currentUser = getCurrentUser();
   const loggedIn = isAuthenticated();
+  const dashboardPath =
+    currentUser?.role === AUTH_ROLES.ADMIN
+      ? ROUTES.ADMIN_DASHBOARD
+      : ROUTES.DASHBOARD;
+  const profilePath =
+    currentUser?.role === AUTH_ROLES.ADMIN ? ROUTES.ADMIN_DASHBOARD : ROUTES.PROFILE;
   const displayName = currentUser?.fullName ?? "User";
   const initials = displayName
     .split(" ")
@@ -214,7 +221,7 @@ export default function LandingPage() {
 
           {loggedIn ? (
             <Link
-              to={ROUTES.PROFILE}
+              to={profilePath}
               aria-label="Open user profile"
               className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-emerald-600 text-sm font-bold text-white"
             >
@@ -305,7 +312,7 @@ export default function LandingPage() {
                   <ArrowRight className="h-4 w-4" />
                 </Link>
                 <Link
-                  to={ROUTES.DASHBOARD}
+                  to={dashboardPath}
                   className="inline-flex whitespace-nowrap items-center gap-2 rounded-2xl border border-slate-300 bg-white px-8 py-3.5 text-base font-semibold text-slate-900 transition hover:bg-slate-100"
                 >
                   <ChartColumnIncreasing className="h-4 w-4" />
