@@ -1,7 +1,7 @@
 import { createBrowserRouter, Navigate, type Location } from "react-router-dom";
 
 import type { AppRouteHandle } from "./breadcrumbs";
-import { ROUTES, routePaths } from "./routes";
+import { ROUTES } from "./routes";
 import { ROUTE_SEGMENTS } from "./routeSegments";
 
 import MainLayout from "@/layout/main/MainLayout";
@@ -21,7 +21,6 @@ import LandingPage from "@/features/landing/components/LandingPage";
 import GuideHelpPage from "@/features/guide/components/GuideHelpPage";
 import SearchPage from "@/features/search/components/SearchPage";
 import PaperDetailPage from "@/features/detailpapers/components/PaperDetailPage";
-import OpenAlexEntityDetailPage from "@/features/openalex-entities/components/OpenAlexEntityDetailPage";
 
 import ProfilePage from "@/features/profile/components/ProfilePage";
 import BookmarksPage from "@/features/bookmarks/components/BookmarksPage";
@@ -37,12 +36,37 @@ import ResetPasswordPage from "@/features/auth/components/pages/ResetPasswordPag
 // import VerifyEmailSuccessPage from "@/features/auth/components/VerifyEmailResultPage.tsx";
 import ChangePasswordPage from "@/features/profile/components/ChangePasswordPage.tsx";
 import OAuth2SuccessPage from "@/features/auth/components/pages/OAuth2SuccessPage.tsx";
+import { getPaperTitle } from "@/features/detailpapers/paperTitleStore";
 import {
-  buildPaperEntityTrailUrl,
-  getEntityLabel,
-  parseEntityTrailFromSearch,
-} from "@/features/openalex-entities/navigation";
+  buildPaperDetailTrailUrl,
+  parseWorkTrail,
+} from "@/features/detailpapers/workTrail";
 import { markSearchPageRestorePending } from "@/features/search/utils/navigationState";
+
+function getPaperBreadcrumbLabel(paperId: string) {
+  return getPaperTitle(paperId) || "Paper Detail";
+}
+
+function getPaperBreadcrumb(location: Location, paperId: string) {
+  const workTrail = parseWorkTrail(location.search);
+  const trailItems = workTrail.map((trailPaperId, index) => ({
+    label: getPaperBreadcrumbLabel(trailPaperId),
+    to:
+      index === 0
+        ? buildPaperDetailTrailUrl(trailPaperId, [])
+        : buildPaperDetailTrailUrl(trailPaperId, workTrail.slice(0, index)),
+  }));
+
+  return [
+    {
+      label: "Search",
+      to: ROUTES.SEARCH,
+      onClick: markSearchPageRestorePending,
+    },
+    ...trailItems,
+    { label: getPaperBreadcrumbLabel(paperId) },
+  ];
+}
 
 function getProfileBreadcrumb(search: string): AppRouteHandle["breadcrumb"] {
   const params = new URLSearchParams(search);
@@ -63,41 +87,6 @@ function getProfileBreadcrumb(search: string): AppRouteHandle["breadcrumb"] {
   }
 
   return "Profile";
-}
-
-function getPaperEntityBreadcrumb(
-  location: Location,
-  paperId: string,
-): NonNullable<AppRouteHandle["breadcrumb"]> {
-  const entityTrail = parseEntityTrailFromSearch(location.search);
-  const paperDetailPath = routePaths.paperDetail(paperId);
-
-  const items = [
-    {
-      label: "Search",
-      to: ROUTES.SEARCH,
-      onClick: markSearchPageRestorePending,
-    },
-    {
-      label: "Paper Detail",
-      to: paperDetailPath,
-    },
-  ];
-
-  if (entityTrail.length === 0) {
-    return [...items, { label: "Entity" }];
-  }
-
-  return [
-    ...items,
-    ...entityTrail.map((entry, index) => ({
-      label: getEntityLabel(entry),
-      to:
-        index < entityTrail.length - 1
-          ? buildPaperEntityTrailUrl(paperId, entityTrail.slice(0, index + 1))
-          : undefined,
-    })),
-  ];
 }
 
 function PlaceholderPage({ title }: { title: string }) {
@@ -175,20 +164,6 @@ export const router = createBrowserRouter([
         path: ROUTE_SEGMENTS.PAPER_DETAIL,
         element: <PaperDetailPage />,
         handle: {
-          breadcrumb: () => [
-            {
-              label: "Search",
-              to: ROUTES.SEARCH,
-              onClick: markSearchPageRestorePending,
-            },
-            { label: "Paper Detail" },
-          ],
-        },
-      },
-      {
-        path: ROUTE_SEGMENTS.PAPER_ENTITY_DETAIL,
-        element: <OpenAlexEntityDetailPage />,
-        handle: {
           breadcrumb: ({
             location,
             match,
@@ -199,7 +174,7 @@ export const router = createBrowserRouter([
                 paperId?: string;
               };
             };
-          }) => getPaperEntityBreadcrumb(location, match.params.paperId || ""),
+          }) => getPaperBreadcrumb(location, match.params.paperId || ""),
         },
       },
 

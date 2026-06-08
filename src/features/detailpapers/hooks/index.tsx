@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 
+import { setPaperTitle } from "../paperTitleStore";
 import { getPaperDetail } from "../services";
 import type { PaperDetailData } from "../types";
 
@@ -36,6 +37,7 @@ export function usePaperDetailPageState() {
         }
 
         setPaperDetail(detail);
+        setPaperTitle(normalizedPaperId, detail.title);
       } catch (error) {
         if (!isActive) {
           return;

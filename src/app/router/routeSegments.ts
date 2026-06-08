@@ -4,7 +4,6 @@ export const ROUTE_SEGMENTS = {
   SEARCH: "search",
   TRENDING_TOPIC: "trending-topic",
   PAPER_DETAIL: "papers/:paperId",
-  PAPER_ENTITY_DETAIL: "papers/:paperId/entities",
 
   PROFILE: "profile",
   PROFILE_SECURITY: "profile/security",

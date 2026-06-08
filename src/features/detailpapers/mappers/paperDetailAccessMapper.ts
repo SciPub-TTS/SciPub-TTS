@@ -1,4 +1,5 @@
 import type {
+  OpenAlexAward,
   OpenAlexWorkDetailApi,
   PaperDetailSummaryItem,
 } from "../types";
@@ -54,16 +55,46 @@ export function buildAccessItems(
   addSummaryItem(
     items,
     "APC list",
-    formatCurrency(work.apc_list?.value, work.apc_list?.currency),
+    formatCurrency(work.apc_list?.value, work.apc_list?.currency) || "Unavailable",
   );
   addSummaryItem(
     items,
     "APC paid",
-    formatCurrency(work.apc_paid?.value, work.apc_paid?.currency),
+    formatCurrency(work.apc_paid?.value, work.apc_paid?.currency) || "Unavailable",
   );
   addSummaryItem(items, "Retracted", work.is_retracted ? "Yes" : "No");
 
   return items;
+}
+
+export function buildAwardLabels(awards: OpenAlexAward[] | undefined) {
+  const uniqueAwards = new Set<string>();
+
+  for (const award of awards || []) {
+    const label =
+      award.display_name?.trim() ||
+      buildAwardFallbackLabel(award) ||
+      award.name?.trim() ||
+      award.title?.trim() ||
+      "";
+
+    if (label) {
+      uniqueAwards.add(label);
+    }
+  }
+
+  return [...uniqueAwards];
+}
+
+function buildAwardFallbackLabel(award: OpenAlexAward) {
+  const funderName = award.funder_display_name?.trim() || "";
+  const awardId = award.funder_award_id?.trim() || "";
+
+  if (funderName && awardId) {
+    return `${funderName} (${awardId})`;
+  }
+
+  return funderName || awardId;
 }
 
 export function resolveWorkPdfUrl(work: OpenAlexWorkDetailApi) {
