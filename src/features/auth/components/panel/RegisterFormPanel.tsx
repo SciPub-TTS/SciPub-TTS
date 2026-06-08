@@ -35,10 +35,7 @@ export default function RegisterFormPanel({
         <section className="flex min-h-full items-center justify-center bg-white px-8 py-10">
             <div className="w-full max-w-140">
                 <div className="mb-7">
-                    <p className="mb-3 flex items-center gap-1.5 text-[11px] uppercase tracking-[0.18em] text-slate-400">
-                        <span className="inline-block h-1 w-1 rounded-full bg-emerald-500" />
-                        Step 01 / 01 · Create account
-                    </p>
+                    
 
                     <h1 className="font-serif text-[2.4rem] leading-[1.12] text-slate-950">
                         Start tracking the field
@@ -48,10 +45,7 @@ export default function RegisterFormPanel({
                         before it moves.
                     </h1>
 
-                    <p className="text-sm leading-relaxed text-slate-500">
-                        Free for accredited academics. We'll personalize your trend feed
-                        from the moment you sign up — no empty dashboard.
-                    </p>
+                    
                 </div>
 
                 <AuthMessage type="error" message={error} />

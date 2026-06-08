@@ -296,17 +296,17 @@ export default function LandingPage() {
                 so you can track topic growth, citation momentum, and rising
                 keywords before they become mainstream.
               </p>
-              <div className="mt-10 flex flex-wrap items-center gap-3">
+              <div className="mt-10 flex flex-nowrap items-center gap-3">
                 <Link
                   to={ROUTES.SEARCH}
-                  className="inline-flex items-center gap-2 rounded-2xl bg-emerald-600 px-8 py-3.5 text-base font-semibold text-white transition hover:bg-emerald-700"
+                  className="inline-flex whitespace-nowrap items-center gap-2 rounded-2xl bg-emerald-600 px-8 py-3.5 text-base font-semibold text-white transition hover:bg-emerald-700"
                 >
                   Enter Observatory
                   <ArrowRight className="h-4 w-4" />
                 </Link>
                 <Link
                   to={ROUTES.DASHBOARD}
-                  className="inline-flex items-center gap-2 rounded-2xl border border-slate-300 bg-white px-8 py-3.5 text-base font-semibold text-slate-900 transition hover:bg-slate-100"
+                  className="inline-flex whitespace-nowrap items-center gap-2 rounded-2xl border border-slate-300 bg-white px-8 py-3.5 text-base font-semibold text-slate-900 transition hover:bg-slate-100"
                 >
                   <ChartColumnIncreasing className="h-4 w-4" />
                   View Demo
@@ -814,10 +814,10 @@ export default function LandingPage() {
             <div className="relative px-6 pb-8 pt-8 md:px-10 md:pt-10">
               <div
                 aria-hidden="true"
-                className="pointer-events-none absolute inset-0 opacity-45"
+                className="pointer-events-none absolute inset-0 opacity-100"
                 style={{
                   backgroundImage:
-                    "linear-gradient(to right, rgba(148,163,184,0.16) 1px, transparent 1px), linear-gradient(to bottom, rgba(148,163,184,0.14) 1px, transparent 1px)",
+                    "linear-gradient(to right, rgba(100,116,139,0.3) 1px, transparent 1px), linear-gradient(to bottom, rgba(100,116,139,0.26) 1px, transparent 1px)",
                   backgroundSize: "36px 36px, 36px 36px",
                 }}
               />

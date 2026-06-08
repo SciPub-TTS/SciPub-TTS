@@ -28,21 +28,12 @@ export default function RegisterPreviewPanel() {
                 </div>
 
                 <div className="p-5">
-                    <p className="mb-1 text-[10px] uppercase tracking-widest text-slate-400">
-                        <span className="mb-0.5 mr-1 inline-block h-1 w-1 rounded-full bg-emerald-500" />
-                        Welcome, Researcher
-                    </p>
-
-                    <h3 className="mb-1 font-serif text-xl leading-snug text-slate-900">
-                        Build your personalized
-                        <br />
-                        research trend feed.
+                    
+                    <h3 className="mb-2 whitespace-nowrap font-serif text-3xl leading-tight text-slate-900">
+                        Explore research trends.
                     </h3>
 
-                    <p className="mb-4 text-xs text-slate-500">
-                        No empty dashboard. We seed your feed from your field and keywords
-                        the moment you sign up.
-                    </p>
+                    
 
                     <p className="mb-2 text-[10px] uppercase tracking-widest text-slate-400">
                         Tracking signals
@@ -176,10 +167,7 @@ export default function RegisterPreviewPanel() {
                 </div>
             </div>
 
-                <p className="mt-6 text-center text-[10px] uppercase tracking-widest text-slate-400">
-                    <span className="mb-0.5 mr-1.5 inline-block h-1 w-1 rounded-full bg-slate-300" />
-                    Different from a search engine — trends, not paper lists.
-                </p>
+                
             </div>
         </section>
     );
