@@ -1,5 +1,8 @@
 import {
     CartesianGrid,
+    Legend,
+    Line,
+    LineChart,
     ResponsiveContainer,
     Scatter,
     ScatterChart,
@@ -18,6 +21,7 @@ import type {
 } from "recharts/types/cartesian/Scatter";
 
 import { useGeneralsMetric } from "@/features/dashboard/keyword/hooks/useMetric.ts";
+import { useTrend } from "@/features/dashboard/keyword/hooks/useTrend.ts";
 
 import type {
     KeywordBubble,
@@ -25,16 +29,20 @@ import type {
 
 export function KeywordGeneralChartPart() {
     return (
-        <div className="flex flex-col items-center gap-6">
+        <div className="flex flex-col gap-8">
+
             <ScatterHotKeywords />
+
+            <KeywordTrendChart />
+
         </div>
     );
 }
 
-function CustomTooltip({
-                           active,
-                           payload,
-                       }: TooltipContentProps) {
+function ScatterTooltip({
+                            active,
+                            payload,
+                        }: TooltipContentProps) {
 
     if (!active || !payload?.length) {
         return null;
@@ -93,14 +101,16 @@ const Bubble: ScatterCustomizedShape = ({
 };
 
 function ScatterHotKeywords() {
-    const { metricList } =
-        useGeneralsMetric();
+    const {
+        metricList,
+    } = useGeneralsMetric();
 
     return (
         <ResponsiveContainer
             width="100%"
             height={420}
         >
+
             <ScatterChart>
 
                 <CartesianGrid />
@@ -121,7 +131,7 @@ function ScatterHotKeywords() {
                 />
 
                 <Tooltip
-                    content={CustomTooltip}
+                    content={ScatterTooltip}
                 />
 
                 <Scatter
@@ -130,6 +140,118 @@ function ScatterHotKeywords() {
                 />
 
             </ScatterChart>
+
+        </ResponsiveContainer>
+    );
+}
+
+function TrendTooltip({
+                          active,
+                          payload,
+                          label,
+                      }: TooltipContentProps) {
+
+    if (!active || !payload?.length) {
+        return null;
+    }
+
+    return (
+        <div className="rounded-md border bg-white p-4 shadow">
+
+            <div className="mb-2 font-semibold">
+                Year {label}
+            </div>
+
+            {
+                payload.map((item) => (
+                    <div key={String(item.name)}>
+
+                        {item.name}
+                        :
+                        {" "}
+                        {item.value}
+
+                    </div>
+                ))
+            }
+
+        </div>
+    );
+}
+
+function KeywordTrendChart() {
+
+    const {
+        trendList,
+    } = useTrend();
+
+    const data =
+        trendList[0]?.yearly.map(
+            (_, index) => {
+
+                const row:
+                    Record<
+                        string,
+                        number | string
+                    > = {
+                    year:
+                    trendList[0]
+                        .yearly[index]
+                        .year,
+                };
+
+                trendList.forEach(
+                    (item) => {
+                        row[item.keyword] =
+                            item.yearly[index]
+                                ?.count ?? 0;
+                    }
+                );
+
+                return row;
+            }
+        ) ?? [];
+
+    return (
+        <ResponsiveContainer
+            width="100%"
+            height={520}
+        >
+
+            <LineChart
+                data={data}
+            >
+
+                <CartesianGrid />
+
+                <XAxis
+                    dataKey="year"
+                />
+
+                <YAxis />
+
+                <Tooltip
+                    content={TrendTooltip}
+                />
+
+                <Legend />
+
+                {
+                    trendList.map(
+                        (item) => (
+                            <Line
+                                key={item.keyword}
+                                dataKey={item.keyword}
+                                stroke={item.color}
+                                strokeWidth={3}
+                                dot={false}
+                            />
+                        )
+                    )
+                }
+
+            </LineChart>
+
         </ResponsiveContainer>
     );
 }

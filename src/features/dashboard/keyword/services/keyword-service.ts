@@ -2,8 +2,30 @@ import type {KeywordMetric} from "@/features/dashboard/keyword/types/metric.ts";
 
 const USE_MOCK = true;
 
+const generateYearly = (recentPapers: number) => [
+    {
+        year: 2021,
+        count: Math.floor(recentPapers * 0.08),
+    },
+    {
+        year: 2022,
+        count: Math.floor(recentPapers * 0.18),
+    },
+    {
+        year: 2023,
+        count: Math.floor(recentPapers * 0.35),
+    },
+    {
+        year: 2024,
+        count: Math.floor(recentPapers * 0.62),
+    },
+    {
+        year: 2025,
+        count: recentPapers,
+    },
+];
 
-const MOCK_KEYWORDS: KeywordMetric[] = [
+export const MOCK_KEYWORDS: KeywordMetric[] = [
     {
         keyword: "LLM",
         pgr: 180,
@@ -12,8 +34,9 @@ const MOCK_KEYWORDS: KeywordMetric[] = [
         pastPapers: 3400,
         publicationShare: 12.8,
         hotScore: 91,
-        yearly: [],
+        yearly: generateYearly(9600),
     },
+
     {
         keyword: "RAG",
         pgr: 220,
@@ -22,8 +45,9 @@ const MOCK_KEYWORDS: KeywordMetric[] = [
         pastPapers: 1300,
         publicationShare: 6.2,
         hotScore: 95,
-        yearly: [],
+        yearly: generateYearly(4400),
     },
+
     {
         keyword: "AI Agents",
         pgr: 145,
@@ -32,8 +56,9 @@ const MOCK_KEYWORDS: KeywordMetric[] = [
         pastPapers: 2600,
         publicationShare: 8.4,
         hotScore: 84,
-        yearly: [],
+        yearly: generateYearly(6200),
     },
+
     {
         keyword: "GraphRAG",
         pgr: 165,
@@ -42,8 +67,9 @@ const MOCK_KEYWORDS: KeywordMetric[] = [
         pastPapers: 1400,
         publicationShare: 5.3,
         hotScore: 88,
-        yearly: [],
+        yearly: generateYearly(3800),
     },
+
     {
         keyword: "Multimodal AI",
         pgr: 135,
@@ -52,8 +78,9 @@ const MOCK_KEYWORDS: KeywordMetric[] = [
         pastPapers: 3900,
         publicationShare: 11.2,
         hotScore: 86,
-        yearly: [],
+        yearly: generateYearly(8400),
     },
+
     {
         keyword: "Prompt Engineering",
         pgr: 90,
@@ -62,8 +89,9 @@ const MOCK_KEYWORDS: KeywordMetric[] = [
         pastPapers: 2700,
         publicationShare: 7.5,
         hotScore: 72,
-        yearly: [],
+        yearly: generateYearly(5100),
     },
+
     {
         keyword: "MoE",
         pgr: 210,
@@ -72,8 +100,9 @@ const MOCK_KEYWORDS: KeywordMetric[] = [
         pastPapers: 700,
         publicationShare: 3.9,
         hotScore: 93,
-        yearly: [],
+        yearly: generateYearly(2700),
     },
+
     {
         keyword: "AI Safety",
         pgr: 125,
@@ -82,8 +111,9 @@ const MOCK_KEYWORDS: KeywordMetric[] = [
         pastPapers: 3400,
         publicationShare: 9.7,
         hotScore: 80,
-        yearly: [],
+        yearly: generateYearly(7100),
     },
+
     {
         keyword: "TinyML",
         pgr: 82,
@@ -92,8 +122,9 @@ const MOCK_KEYWORDS: KeywordMetric[] = [
         pastPapers: 2200,
         publicationShare: 4.5,
         hotScore: 66,
-        yearly: [],
+        yearly: generateYearly(3300),
     },
+
     {
         keyword: "Agentic Workflow",
         pgr: 195,
@@ -102,7 +133,7 @@ const MOCK_KEYWORDS: KeywordMetric[] = [
         pastPapers: 650,
         publicationShare: 2.7,
         hotScore: 90,
-        yearly: [],
+        yearly: generateYearly(2400),
     },
 ];
 
@@ -122,5 +153,15 @@ export const keywordService = {
             return MOCK_KEYWORDS;
         }
         return await requestData<KeywordMetric[]>(`${apiBaseUrl}/api/statistic/keywords`);
-    }
+    },
+
+    getTrendList: async (): Promise<KeywordMetric[]> => {
+        if (USE_MOCK) {
+            return MOCK_KEYWORDS;
+        }
+
+        return requestData<KeywordMetric[]>(
+            `${apiBaseUrl}/api/statistic/keyword-trends`
+        );
+    },
 }
