@@ -1,4 +1,4 @@
-import {topicMetrics} from "@/features/dashboard/constants/topic-data.ts";
+import {topicMetrics} from "@/features/dashboard/topic/constants/topic-data.ts";
 
 export const metricKeys = [
     "Velocity",

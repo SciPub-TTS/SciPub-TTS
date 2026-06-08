@@ -1,6 +1,6 @@
 import {useEffect, useState} from "react";
-import type {PublicationTrend} from "@/features/dashboard/types/publication.ts";
-import {statisticService} from "@/features/dashboard/services/statistic-service.ts";
+import type {PublicationTrend} from "@/features/dashboard/topic/types/publication.ts";
+import {topicService} from "@/features/dashboard/topic/services/topic-service.ts";
 
 export function usePublicationTrend() {
     const [loading, setLoading] = useState<boolean>(false);
@@ -13,7 +13,7 @@ export function usePublicationTrend() {
             setError(null);
 
             try {
-                const data:PublicationTrend[] = await statisticService.getPublicationTrend();
+                const data:PublicationTrend[] = await topicService.getPublicationTrend();
                 setPublicationTrend(data);
             }catch (err) {
                 setError(

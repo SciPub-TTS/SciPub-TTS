@@ -1,5 +1,5 @@
-import type {MetricResponse} from "@/features/dashboard/types/metric.ts";
-import type {PublicationTrend} from "@/features/dashboard/types/publication.ts";
+import type {MetricResponse} from "@/features/dashboard/topic/types/metric.ts";
+import type {PublicationTrend} from "@/features/dashboard/topic/types/publication.ts";
 
 const USE_MOCK = true;
 
@@ -145,7 +145,7 @@ async function requestData<T>(url: string): Promise<T> {
     return response.json() as Promise<T>;
 }
 
-export const statisticService = {
+export const topicService = {
 
     getMetricList: async(period?: string):Promise<MetricResponse[]> => {
         if(USE_MOCK) {
@@ -154,7 +154,7 @@ export const statisticService = {
 
         if(!period) return [];
 
-        const endpoint = new URL(`${apiBaseUrl}/api/metrics`);
+        const endpoint = new URL(`${apiBaseUrl}/api/statistic/metrics`);
         const startOfDay = new Date(period);
         startOfDay.setHours(0, 0, 0, 0);
         endpoint.searchParams.append("period", startOfDay.toISOString());
@@ -171,7 +171,7 @@ export const statisticService = {
             return [];
         }
 
-        const endpoint = new URL(`${apiBaseUrl}/api/publication-trends`);
+        const endpoint = new URL(`${apiBaseUrl}/api/statistic/publication-trends`);
         endpoint.searchParams.append("yearFrom", String(yearFrom));
         endpoint.searchParams.append("yearTo", String(yearTo));
 

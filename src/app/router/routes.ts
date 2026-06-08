@@ -6,6 +6,7 @@ export const ROUTES = {
   GUIDE: "/guide",
   SEARCH: "/search",
   DASHBOARD: "/dashboard",
+  TOPIC_DASHBOARD: "/topic_dashboard",
 
   // Paper
   PAPER_DETAIL: "/papers/:paperId",

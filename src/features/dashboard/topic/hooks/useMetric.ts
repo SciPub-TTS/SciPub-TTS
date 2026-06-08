@@ -1,7 +1,7 @@
 import {useEffect, useState} from "react";
-import type {MetricData, MetricResponse} from "@/features/dashboard/types/metric.ts";
-import {statisticService} from "@/features/dashboard/services/statistic-service.ts";
-import {MENU_METRICS} from "@/features/dashboard/constants/metric-data.ts";
+import type {MetricData, MetricResponse} from "@/features/dashboard/topic/types/metric.ts";
+import {topicService} from "@/features/dashboard/topic/services/topic-service.ts";
+import {MENU_METRICS} from "@/features/dashboard/topic/constants/metric-data.ts";
 
 export function useGeneralMetrics(){
     const [loading, setLoading] = useState<boolean>(false);
@@ -15,7 +15,7 @@ export function useGeneralMetrics(){
 
             try {
                 const data: MetricResponse[] =
-                    await statisticService.getMetricList();
+                    await topicService.getMetricList();
 
                 const mergedMetrics: MetricData[] = MENU_METRICS.map(
                     (metric) => {
@@ -44,7 +44,7 @@ export function useGeneralMetrics(){
         };
 
         fetchMetricList();
-    })
+    },[])
 
     return { loading, metricList, error };
 }

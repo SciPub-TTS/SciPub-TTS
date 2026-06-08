@@ -1,7 +1,7 @@
-import {LIST_TOPICS} from "@/features/dashboard/constants/topic-data.ts";
+import {LIST_TOPICS} from "@/features/dashboard/topic/constants/topic-data.ts";
 import {Link} from "react-router-dom";
 import {Check} from "lucide-react";
-import type {TopicData} from "@/features/dashboard/types/topic.ts";
+import type {TopicData} from "@/features/dashboard/topic/types/topic.ts";
 
 export default function TrendingPart (){
     return (

@@ -18,7 +18,7 @@ import {
 } from "@/features/auth/utils/authStorage";
 
 const workspaceMenuItems = [
-  { label: "Dashboard", path: ROUTES.DASHBOARD, icon: LayoutDashboard },
+  { label: "Dashboard", path: ROUTES.TOPIC_DASHBOARD, icon: LayoutDashboard },
   { label: "New Feed", path: ROUTES.FEED, icon: Rss },
   { label: "Search Papers", path: ROUTES.SEARCH, icon: Search },
   { label: "Bookmarks", path: ROUTES.BOOKMARKS, icon: Bookmark },

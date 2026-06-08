@@ -1,4 +1,4 @@
-import type {FilterData} from "@/features/dashboard/types/filter.ts";
+import type {FilterData} from "@/features/dashboard/topic/types/filter.ts";
 
 export const MENU_FILTER: FilterData[] = [
     { title: "Velocity", className: "w-[8vw]" },

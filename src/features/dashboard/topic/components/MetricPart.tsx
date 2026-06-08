@@ -1,5 +1,5 @@
-import type {MetricData} from "@/features/dashboard/types/metric.ts";
-import {useGeneralMetrics} from "@/features/dashboard/hooks/useMetric.ts";
+import type {MetricData} from "@/features/dashboard/topic/types/metric.ts";
+import {useGeneralMetrics} from "@/features/dashboard/topic/hooks/useMetric.ts";
 
 export default function MetricPart() {
     const {metricList} = useGeneralMetrics();

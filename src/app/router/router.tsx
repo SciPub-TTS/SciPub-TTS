@@ -27,7 +27,8 @@ import FeedPage from "@/features/newfeeds/components/FeedPage";
 import ReportPage from "@/features/reports/components/ReportPage";
 
 import AdminDashboardPage from "@/features/admin/components/AdminDashboardPage";
-import DashboardPage from "@/features/dashboard/DashboardPage.tsx";
+import TopicDashboardPage from "@/features/dashboard/topic/TopicDashboardPage.tsx";
+import {KeywordDashboardPage} from "@/features/dashboard/keyword/KeywordDashboard.tsx";
 
 export const router = createBrowserRouter([
   {
@@ -62,8 +63,12 @@ export const router = createBrowserRouter([
         element: <SearchPage />,
       },
       {
-        path: ROUTE_SEGMENTS.DASHBOARD,
-        element: <DashboardPage />,
+        path: ROUTE_SEGMENTS.TOPIC_DASHBOARD,
+        element: <TopicDashboardPage />,
+      },
+      {
+        path: ROUTE_SEGMENTS.KEYWORD_DASHBOARD,
+        element: <KeywordDashboardPage/>,
       },
       {
         path: ROUTE_SEGMENTS.PAPER_DETAIL,

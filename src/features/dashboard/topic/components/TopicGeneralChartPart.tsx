@@ -16,8 +16,8 @@ import {useState} from "react";
 import {
     topicGrowthMetrics,
     topicTrend
-} from "@/features/dashboard/constants/topic-data.ts";
-import {usePublicationTrend} from "@/features/dashboard/hooks/usePublicationTrend.ts";
+} from "@/features/dashboard/topic/constants/topic-data.ts";
+import {usePublicationTrend} from "@/features/dashboard/topic/hooks/usePublicationTrend.ts";
 
 export default function TopicGeneralChartPart(){
     return(

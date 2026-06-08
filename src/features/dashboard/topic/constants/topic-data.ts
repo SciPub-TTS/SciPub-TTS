@@ -1,4 +1,4 @@
-import type {TopicData} from "@/features/dashboard/types/topic.ts";
+import type {TopicData} from "@/features/dashboard/topic/types/topic.ts";
 
 export const LIST_TOPICS: TopicData[] = [
     {
