@@ -10,11 +10,22 @@ import {
 import type { AppRouteHandle } from "@/app/router/breadcrumbs";
 import { resolveBreadcrumbItems } from "@/app/router/breadcrumbs";
 import { ROUTES } from "@/app/router";
+import { usePaperTitleStoreVersion } from "@/features/detailpapers/paperTitleStore";
 
 type BreadcrumbBarProps = {
   homePath?: string;
   variant?: "light" | "dark";
 };
+
+function formatBreadcrumbLabel(label: string) {
+  const normalizedLabel = label.trim();
+
+  if (normalizedLabel.length <= 12) {
+    return normalizedLabel;
+  }
+
+  return `${normalizedLabel.slice(0, 18)}...`;
+}
 
 export default function BreadcrumbBar({
   homePath = ROUTES.HOME,
@@ -23,6 +34,7 @@ export default function BreadcrumbBar({
   const location = useLocation();
   const matches = useMatches() as UIMatch<unknown, AppRouteHandle>[];
   const navigate = useNavigate();
+  usePaperTitleStoreVersion();
 
   const breadcrumbItems = resolveBreadcrumbItems(matches, location);
 
@@ -85,13 +97,17 @@ export default function BreadcrumbBar({
                     <Link
                       to={item.to ?? homePath}
                       onClick={item.onClick}
+                      title={item.label}
                       className={`truncate text-sm font-bold ${homeLinkClass}`}
                     >
-                      {item.label}
+                      {formatBreadcrumbLabel(item.label)}
                     </Link>
                   ) : (
-                    <span className={`truncate text-sm font-bold ${textClass}`}>
-                      {item.label}
+                    <span
+                      title={item.label}
+                      className={`truncate text-sm font-bold ${textClass}`}
+                    >
+                      {formatBreadcrumbLabel(item.label)}
                     </span>
                   )}
                   {!isLast && (
@@ -104,8 +120,11 @@ export default function BreadcrumbBar({
             })}
           </div>
         ) : (
-          <span className={`truncate text-sm font-bold ${textClass}`}>
-            {currentLabel}
+          <span
+            title={currentLabel}
+            className={`truncate text-sm font-bold ${textClass}`}
+          >
+            {formatBreadcrumbLabel(currentLabel)}
           </span>
         )}
       </nav>

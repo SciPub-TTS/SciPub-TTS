@@ -4,7 +4,6 @@ import {
   PaperDetailErrorState,
   PaperDetailLoadingState,
 } from "./sections/PaperDetailFeedbackState";
-import PaperImpactChartsSection from "./sections/PaperImpactChartsSection";
 import PaperImpactSection from "./sections/PaperImpactSection";
 import PaperOverviewSection from "./sections/PaperOverviewSection";
 import PaperQuickLinksSection from "./sections/PaperQuickLinksSection";
@@ -13,10 +12,7 @@ import PaperSourceAccessSection from "./sections/PaperSourceAccessSection";
 
 import { usePaperDetailPageState } from "../hooks";
 import { buildPaperContributorsSection } from "../view-models/contributorsSection";
-import {
-  buildPaperImpactChartsSection,
-  buildPaperImpactSection,
-} from "../view-models/impactSection";
+import { buildPaperImpactSection } from "../view-models/impactSection";
 import { buildPaperOverviewSection } from "../view-models/overviewSection";
 import { buildPaperQuickLinksSection } from "../view-models/quickLinksSection";
 import { buildPaperReferencesSection } from "../view-models/referencesSection";
@@ -37,7 +33,6 @@ export default function PaperDetailPage() {
   const contributorsSection = buildPaperContributorsSection(paperDetail);
   const sourceAccessSection = buildPaperSourceAccessSection(paperDetail);
   const impactSection = buildPaperImpactSection(paperDetail);
-  const impactChartsSection = buildPaperImpactChartsSection(paperDetail);
   const quickLinksSection = buildPaperQuickLinksSection(paperDetail);
   const referencesSection = buildPaperReferencesSection(paperDetail);
 
@@ -50,12 +45,11 @@ export default function PaperDetailPage() {
           <PaperOverviewSection section={overviewSection} />
           <PaperContributorsSection section={contributorsSection} />
           <PaperSourceAccessSection section={sourceAccessSection} />
-          <PaperReferencesSection section={referencesSection} />
         </div>
 
         <div className="space-y-6 xl:col-span-1">
+          <PaperReferencesSection section={referencesSection} />
           <PaperImpactSection section={impactSection} />
-          <PaperImpactChartsSection section={impactChartsSection} />
           <PaperQuickLinksSection section={quickLinksSection} />
         </div>
       </div>

@@ -2,7 +2,6 @@ import { createApiUrl, requestJson } from "@/lib/api/fetchJson";
 import type {
   PaperResult,
   RemoteOptionFilterKey,
-  SavedSearch,
   SearchFilterOptions,
   SearchFilters,
   SearchSummaryStats,
@@ -12,7 +11,6 @@ import {
   SEARCH_DEFAULT_PAGE,
   SEARCH_FILTER_OPTION_LIMIT,
   SEARCH_MIN_YEAR,
-  SEARCH_RECENT_SEARCH_LIMIT,
   SEARCH_WORKS_PER_PAGE,
 } from "../constants";
 
@@ -75,11 +73,6 @@ type SearchWorksApiResponse = {
     appliedSort: string;
   };
   results: SearchWorksApiItem[];
-};
-
-type SearchHistoryApiItem = {
-  query: string;
-  savedAt: string;
 };
 
 export type SearchOptionsState = {
@@ -363,48 +356,53 @@ export function normalizeSearchResultSortValue(value?: string | null) {
   }
 }
 
-export async function getRecentSearches(
-  limit = SEARCH_RECENT_SEARCH_LIMIT,
-): Promise<SavedSearch[]> {
-  const endpoint = createApiUrl("/api/search/history/recent");
-  endpoint.searchParams.set("limit", String(limit));
-
-  const data = await requestJson<SearchHistoryApiItem[]>(endpoint);
-  return data.map((item) => ({
-    query: item.query,
-    savedAt: item.savedAt,
-  }));
-}
-
-export async function saveSearchHistory(query: string): Promise<void> {
-  const normalizedQuery = query.trim();
-  if (!normalizedQuery) {
-    return;
-  }
-
-  const payload = {
-    query: normalizedQuery,
-  };
-
-  await requestJson<null>(createApiUrl("/api/search/history"), {
-    method: "POST",
-    body: JSON.stringify(payload),
-  });
-}
-
-export async function deleteSearchHistory(query: string): Promise<void> {
-  const normalizedQuery = query.trim();
-  if (!normalizedQuery) {
-    return;
-  }
-
-  const endpoint = createApiUrl("/api/search/history");
-  endpoint.searchParams.set("query", normalizedQuery);
-
-  await requestJson<null>(endpoint, {
-    method: "DELETE",
-  });
-}
+/*
+ * Search history calls are disabled for production because the history API can
+ * return 401 for unauthenticated users. Re-enable this block together with the
+ * search history UI after the backend flow is ready for production traffic.
+ */
+// export async function getRecentSearches(
+//   limit = SEARCH_RECENT_SEARCH_LIMIT,
+// ): Promise<SavedSearch[]> {
+//   const endpoint = createApiUrl("/api/search/history/recent");
+//   endpoint.searchParams.set("limit", String(limit));
+//
+//   const data = await requestJson<SearchHistoryApiItem[]>(endpoint);
+//   return data.map((item) => ({
+//     query: item.query,
+//     savedAt: item.savedAt,
+//   }));
+// }
+//
+// export async function saveSearchHistory(query: string): Promise<void> {
+//   const normalizedQuery = query.trim();
+//   if (!normalizedQuery) {
+//     return;
+//   }
+//
+//   const payload = {
+//     query: normalizedQuery,
+//   };
+//
+//   await requestJson<null>(createApiUrl("/api/search/history"), {
+//     method: "POST",
+//     body: JSON.stringify(payload),
+//   });
+// }
+//
+// export async function deleteSearchHistory(query: string): Promise<void> {
+//   const normalizedQuery = query.trim();
+//   if (!normalizedQuery) {
+//     return;
+//   }
+//
+//   const endpoint = createApiUrl("/api/search/history");
+//   endpoint.searchParams.set("query", normalizedQuery);
+//
+//   await requestJson<null>(endpoint, {
+//     method: "DELETE",
+//   });
+// }
 
 function buildSearchOptionsState(data: FilterOptionsApiData): SearchOptionsState {
   return {
@@ -634,9 +632,12 @@ function mapApiWorkToPaperResult(work: SearchWorksApiItem): PaperResult {
     currentYear,
   );
   const citedByCount = work.citedByCount || 0;
+  const normalizedAbstract =
+    work.abstractText === null
+      ? "Null"
+      : sanitizePlainText(work.abstractText).trim();
   const summary =
-    sanitizePlainText(work.abstractText).trim() ||
-    `OpenAlex result from ${normalizedSource}.`;
+    normalizedAbstract || `OpenAlex result from ${normalizedSource}.`;
   const authors = mapAuthorNames(work.authors);
 
   return {

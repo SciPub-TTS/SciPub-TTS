@@ -2,7 +2,6 @@ import type { ReactNode } from "react";
 
 import { Globe2, Landmark, Tag } from "lucide-react";
 
-import OpenAlexEntityLink from "@/features/openalex-entities/components/OpenAlexEntityLink";
 import MetadataBadge from "@/layout/components/MetadataBadge";
 
 import type {
@@ -21,6 +20,7 @@ type SummaryGridProps = {
 };
 
 type TagClusterProps = {
+  emptyLabel?: string;
   icon: ReactNode;
   items: string[];
   title: string;
@@ -40,22 +40,16 @@ export default function PaperSourceAccessSection(
   return (
     <DetailSectionCard
       icon={<Landmark className="h-5 w-5" />}
-      title="Source & Access"
+      title="Source, Awards & Access"
     >
       <div className="space-y-2 text-sm font-semibold text-[#9a6700]">
-        {section.source ? (
-          <OpenAlexEntityLink
-            entityId={section.source.id}
-            entityType={section.source.type}
-            label={section.source.name}
-            className="text-left text-base font-bold text-black transition hover:text-blue-700 hover:underline hover:decoration-blue-700 hover:underline-offset-4"
-          >
-            {section.source.name}
-          </OpenAlexEntityLink>
-        ) : (
-          <p className="font-bold text-black">{section.sourceName}</p>
-        )}
-        <p>{section.sourceType}</p>
+        <p className="font-bold text-black">
+          {section.source?.name || section.sourceName}
+        </p>
+        <p>
+          <span className="font-bold text-black">Source type:</span>{" "}
+          {section.sourceType}
+        </p>
         {section.sourceHostOrganization ? (
           <p>{section.sourceHostOrganization}</p>
         ) : null}
@@ -68,6 +62,13 @@ export default function PaperSourceAccessSection(
       />
 
       <SummaryGrid items={section.accessItems} />
+
+      <TagCluster
+        title="Awards"
+        items={section.awards}
+        icon={<Tag className="h-4 w-4" />}
+        emptyLabel="Award information is not available."
+      />
 
       <TagCluster
         title="Indexed in"
@@ -118,11 +119,7 @@ function SummaryGrid(props: SummaryGridProps) {
 }
 
 function TagCluster(props: TagClusterProps) {
-  const { icon, items, title } = props;
-
-  if (items.length === 0) {
-    return null;
-  }
+  const { emptyLabel, icon, items, title } = props;
 
   return (
     <div className="border-t border-black pt-4">
@@ -130,11 +127,19 @@ function TagCluster(props: TagClusterProps) {
         {icon}
         {title}
       </div>
-      <div className="mt-3 flex flex-wrap gap-2">
-        {items.map((item) => (
-          <MetadataBadge key={item} tone="default" label={item} />
-        ))}
-      </div>
+      {items.length === 0 ? (
+        emptyLabel ? (
+          <p className="mt-3 text-sm font-semibold text-slate-500">
+            {emptyLabel}
+          </p>
+        ) : null
+      ) : (
+        <div className="mt-3 flex flex-wrap gap-2">
+          {items.map((item) => (
+            <MetadataBadge key={item} tone="default" label={item} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -147,24 +152,20 @@ function EntityTagCluster(props: EntityTagClusterProps) {
   }
 
   return (
-    <div className="border-t border-black pt-4">
-      <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.22em] text-black">
-        {icon}
-        {title}
+      <div className="border-t border-black pt-4">
+        <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.22em] text-black">
+          {icon}
+          {title}
+        </div>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {items.map((item) => (
+            <MetadataBadge
+              key={`${item.type}-${item.id}`}
+              tone="topic"
+              label={item.name}
+            />
+          ))}
+        </div>
       </div>
-      <div className="mt-3 flex flex-wrap gap-2">
-        {items.map((item) => (
-          <OpenAlexEntityLink
-            key={`${item.type}-${item.id}`}
-            entityId={item.id}
-            entityType={item.type}
-            label={item.name}
-            className="rounded-full transition hover:opacity-90"
-          >
-            <MetadataBadge tone="topic" label={item.name} />
-          </OpenAlexEntityLink>
-        ))}
-      </div>
-    </div>
   );
 }

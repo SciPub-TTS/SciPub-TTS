@@ -1,7 +1,11 @@
 import { Link2 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useParams } from "react-router-dom";
 
-import { routePaths } from "@/app/router";
+import {
+  appendWorkTrailEntry,
+  buildPaperDetailTrailUrl,
+  parseWorkTrail,
+} from "../../workTrail";
 
 import type { PaperDetailWorkLink } from "../../types";
 import type { PaperReferencesSectionData } from "../../view-models/referencesSection";
@@ -31,7 +35,7 @@ export default function PaperReferencesSection(
       icon={<Link2 className="h-5 w-5" />}
       title="References & Related Works"
     >
-      <div className="grid gap-4 xl:grid-cols-2">
+      <div className="space-y-4">
         <WorkReferenceList
           title="References"
           items={section.references}
@@ -49,9 +53,14 @@ export default function PaperReferencesSection(
 
 function WorkReferenceList(props: WorkReferenceListProps) {
   const { emptyLabel, items, title } = props;
+  const location = useLocation();
+  const { paperId = "" } = useParams();
+  const currentTrail = parseWorkTrail(location.search);
+  const nextTrail = appendWorkTrailEntry(currentTrail, paperId);
+  const showScrollHint = items.length > 6;
 
   return (
-    <div className="rounded-2xl border border-black bg-white p-4">
+    <div className="rounded-2xl border border-black bg-white p-4 shadow-[0_10px_24px_rgba(15,23,42,0.05)]">
       <div className="flex items-center justify-between gap-3">
         <h3 className="text-sm font-bold uppercase tracking-[0.18em] text-black">
           {title}
@@ -65,15 +74,28 @@ function WorkReferenceList(props: WorkReferenceListProps) {
         <p className="mt-4 text-sm font-semibold text-slate-500">{emptyLabel}</p>
       ) : (
         <div className="mt-4 space-y-3">
-          {items.map((item) => (
-            <Link
-              key={`${title}-${item.id}`}
-              to={routePaths.paperDetail(item.id)}
-              className="block text-sm font-semibold text-black transition hover:text-blue-700 hover:underline hover:decoration-blue-700 hover:underline-offset-4"
-            >
-              {item.label}
-            </Link>
-          ))}
+          {showScrollHint ? (
+            <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400">
+              Scroll to explore
+            </p>
+          ) : null}
+
+          <div className="relative">
+            <div className="pointer-events-none absolute inset-x-0 top-0 h-5 bg-gradient-to-b from-white to-transparent" />
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-7 bg-gradient-to-t from-white via-white/80 to-transparent" />
+
+            <div className="max-h-[26rem] space-y-2 overflow-y-auto pr-2">
+              {items.map((item) => (
+                <Link
+                  key={`${title}-${item.id}`}
+                  to={buildPaperDetailTrailUrl(item.id, nextTrail)}
+                  className="block rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm font-semibold text-black transition hover:border-blue-300 hover:bg-white hover:text-blue-700 hover:shadow-sm"
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </div>
+          </div>
         </div>
       )}
     </div>

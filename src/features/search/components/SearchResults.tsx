@@ -109,7 +109,7 @@ function SearchResultsComponent({
         ) : !hasSearched ? (
           <div className="rounded-2xl border border-slate-600 bg-white p-8 text-center">
             <p className="text-lg font-bold text-black">
-              Enter a keyword or choose filters, then click Search.
+              Enter a keyword or choose filters, then click Search or Apply filters.
             </p>
           </div>
         ) : visiblePaperResults.length === 0 ? (

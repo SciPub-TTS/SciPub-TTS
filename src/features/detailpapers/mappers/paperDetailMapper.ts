@@ -3,9 +3,14 @@ import type {
   OpenAlexWorkDetailApi,
   PaperDetailData,
 } from "../types";
-import { buildAccessItems, resolveWorkPdfUrl } from "./paperDetailAccessMapper";
+import {
+  buildAccessItems,
+  buildAwardLabels,
+  resolveWorkPdfUrl,
+} from "./paperDetailAccessMapper";
 import {
   mapAuthors,
+  mapCountries,
   mapInstitutions,
   mapNamedEntityToDetailRef,
   mapTopics,
@@ -44,6 +49,7 @@ export function mapWorkDetailToPaperDetail(
     "No abstract available.";
   const authors = mapAuthors(work.authorships);
   const institutions = mapInstitutions(work.authorships);
+  const countries = mapCountries(work.authorships);
   const publishedLabel = formatPublishedLabel(
     work.publication_year,
     work.publication_date,
@@ -53,6 +59,7 @@ export function mapWorkDetailToPaperDetail(
   const doiHref = work.doi?.trim() || null;
   const headerBadges = buildHeaderBadges(work, normalizedType);
   const accessItems = buildAccessItems(work, normalizedSourceName);
+  const awards = buildAwardLabels(work.awards);
   const impactChartItems = buildImpactChartItems(work.counts_by_year);
   const impactPieChartItems = buildImpactPieChartItems(work.locations);
   const items = buildMetrics(work, authors.length, institutions.length);
@@ -80,6 +87,7 @@ export function mapWorkDetailToPaperDetail(
     abstractText,
     accessItems,
     authors,
+    awards,
     doiHref,
     doiLabel,
     headerBadges,
@@ -87,6 +95,7 @@ export function mapWorkDetailToPaperDetail(
     impactPieChartItems,
     indexedIn: work.indexed_in,
     institutions,
+    countries,
     keywords,
     languageLabel,
     items,
@@ -110,7 +119,8 @@ function mapWorkLinks(
   fallbackWorkIds: string[],
 ) {
   if (workReferences && workReferences.length > 0) {
-    return workReferences
+    return dedupeWorkLinks(
+      workReferences
       .map((workReference) => {
         const workId = extractLastSegment(workReference.id);
         if (!workId) {
@@ -126,14 +136,45 @@ function mapWorkLinks(
       })
       .filter((workReference): workReference is { id: string; label: string } =>
         Boolean(workReference),
-      );
+      ),
+    );
   }
 
-  return fallbackWorkIds
+  return dedupeWorkLinks(
+    fallbackWorkIds
     .map((workId) => extractLastSegment(workId))
     .filter(Boolean)
     .map((workId) => ({
       id: workId,
       label: normalizeOpenAlexWorkId(workId),
-    }));
+    })),
+  );
+}
+
+function dedupeWorkLinks(workLinks: Array<{ id: string; label: string }>) {
+  const uniqueLinks = new Map<string, { id: string; label: string }>();
+
+  for (const workLink of workLinks) {
+    const normalizedKey = normalizeWorkLinkLabel(workLink.label);
+
+    if (normalizedKey && !uniqueLinks.has(normalizedKey)) {
+      uniqueLinks.set(normalizedKey, workLink);
+      continue;
+    }
+
+    if (!normalizedKey && !uniqueLinks.has(workLink.id)) {
+      uniqueLinks.set(workLink.id, workLink);
+    }
+  }
+
+  return [...uniqueLinks.values()];
+}
+
+function normalizeWorkLinkLabel(label: string) {
+  return label
+    .trim()
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}]+/gu, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }

@@ -6,6 +6,7 @@ import type {
 
 export type PaperSourceAccessSectionData = {
   accessItems: PaperDetailSummaryItem[];
+  awards: string[];
   indexedIn: string[];
   keywords: string[];
   source: PaperDetailEntityRef | null;
@@ -20,6 +21,7 @@ export function buildPaperSourceAccessSection(
 ): PaperSourceAccessSectionData {
   return {
     accessItems: paperDetail.accessItems,
+    awards: paperDetail.awards,
     indexedIn: paperDetail.indexedIn,
     keywords: paperDetail.keywords,
     source: paperDetail.source,

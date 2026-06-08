@@ -1,26 +1,19 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useNavigate, useNavigationType } from "react-router-dom";
-
-import { routePaths } from "@/app/router";
-import { isAuthenticated } from "@/features/auth/utils/authGuard";
+import { useNavigationType } from "react-router-dom";
 import {
   defaultVisibleFilterWidgets,
   initialFilters,
   SEARCH_DEFAULT_PAGE,
   SEARCH_FILTER_OPTION_LIMIT,
   SEARCH_NEXT_QUERY_TRIGGER_OFFSET,
-  SEARCH_RECENT_SEARCH_LIMIT,
   SEARCH_WORKS_PER_PAGE,
 } from "../constants";
 import {
-  deleteSearchHistory,
   emptySearchFilterOptions,
   emptySearchOptionValueLookup,
   getRemoteFilterOptionsPage,
   getSearchFilterOptions,
-  getRecentSearches,
   normalizeSearchResultSortValues,
-  saveSearchHistory,
   searchSummaryStats,
   sortPaperResults,
   searchWorks,
@@ -30,7 +23,6 @@ import type {
   PaperResult,
   RemoteOptionFilterKey,
   RemoteOptionStateMap,
-  SavedSearch,
   SearchFilterOptions,
   SearchFilters,
   SearchFilterWidgetKey,
@@ -38,7 +30,6 @@ import type {
 import {
   buildAppliedFilterSummary,
   countActiveFilters,
-  getVisibleSearchSuggestions,
   hasInvalidCitationRange,
   hasInvalidYearRange,
   normalizeSearchFilterWidgetKeys,
@@ -102,7 +93,6 @@ type RunSearch = (
 ) => Promise<void>;
 
 export function useSearchPageState() {
-  const navigate = useNavigate();
   const navigationType = useNavigationType();
   const shouldRestoreSearchPageState =
     navigationType === "POP" &&
@@ -118,10 +108,6 @@ export function useSearchPageState() {
   );
   const [appliedSearchQuery, setAppliedSearchQuery] =
     useState(restoredSnapshot?.appliedSearchQuery ?? initialSearchQuery);
-  const [savedSearches, setSavedSearches] = useState<SavedSearch[]>([]);
-  const [isSearchFocused, setIsSearchFocused] = useState(false);
-  const [showAllSearchSuggestions, setShowAllSearchSuggestions] =
-    useState(false);
   const [filters, setFilters] = useState<SearchFilters>(
     restoredSnapshot?.filters ?? initialFilters,
   );
@@ -304,16 +290,6 @@ export function useSearchPageState() {
 
   const activeFilterCount = countActiveFilters(filters);
   const appliedFilterSummary = buildAppliedFilterSummary(appliedFilters);
-  const visibleSearchSuggestions = getVisibleSearchSuggestions(
-    savedSearches,
-    searchQuery,
-    showAllSearchSuggestions,
-  );
-  const matchedSavedSearchCount = getVisibleSearchSuggestions(
-    savedSearches,
-    searchQuery,
-    true,
-  ).length;
   const canLoadMoreResults = hasMoreResults && visiblePaperResults.length > 0;
   const autoLoadAnchorIndex = getAutoLoadAnchorIndex(
     hasSearched,
@@ -322,16 +298,6 @@ export function useSearchPageState() {
   );
   const hasFormError =
     hasInvalidYearRange(filters) || hasInvalidCitationRange(filters);
-
-  async function refreshSavedSearches() {
-    if (!isAuthenticated()) {
-      setSavedSearches([]);
-      return;
-    }
-
-    const recentSearches = await getRecentSearches(SEARCH_RECENT_SEARCH_LIMIT);
-    setSavedSearches(recentSearches);
-  }
 
   function resetResultPagination() {
     setNextResultPage(1);
@@ -373,15 +339,11 @@ export function useSearchPageState() {
     async function loadInitialData() {
       try {
         const optionsState = await getSearchFilterOptions();
-        const recentSearches = isAuthenticated()
-          ? await getRecentSearches(SEARCH_RECENT_SEARCH_LIMIT)
-          : [];
 
         if (!mounted) {
           return;
         }
 
-        setSavedSearches(recentSearches);
         setFilterOptions((currentOptions) =>
           mergeSearchFilterOptions(currentOptions, optionsState.filterOptions),
         );
@@ -513,20 +475,6 @@ export function useSearchPageState() {
 
   function handleSearchQueryChange(nextQuery: string) {
     setSearchQuery(nextQuery);
-    setShowAllSearchSuggestions(false);
-  }
-
-  async function handleSearchFocus() {
-    setIsSearchFocused(true);
-    try {
-      await refreshSavedSearches();
-    } catch (error) {
-      console.error("Cannot load recent searches:", error);
-    }
-  }
-
-  function handleSearchBlur() {
-    setIsSearchFocused(false);
   }
 
   function handleApplyFilters() {
@@ -535,8 +483,9 @@ export function useSearchPageState() {
     }
 
     const normalizedQuery = searchQuery.trim();
+    const nextActiveFilterCount = countActiveFilters(filters);
 
-    if (!normalizedQuery) {
+    if (!normalizedQuery && nextActiveFilterCount === 0) {
       clearSearchResults(filters);
       return;
     }
@@ -551,62 +500,11 @@ export function useSearchPageState() {
     );
   }
 
-  async function handleSaveSearch() {
-    const normalizedQuery = searchQuery.trim();
-
-    if (!normalizedQuery) {
-      return;
-    }
-
-    if (!ensureAuthenticatedForSearchHistory()) {
-      return;
-    }
-
-    setShowAllSearchSuggestions(false);
-    setIsSearchFocused(true);
-
-    try {
-      await saveSearchHistory(normalizedQuery);
-      await refreshSavedSearches();
-    } catch (error) {
-      console.error("Cannot save search history:", error);
-    }
-  }
-
-  function handleSelectSavedSearch(query: string) {
-    if (!ensureAuthenticatedForSearchHistory()) {
-      return;
-    }
-
-    setSearchQuery(query);
-    setAppliedSearchQuery(query);
-    setShowAllSearchSuggestions(false);
-    setIsSearchFocused(false);
-    startFreshSearch(query, appliedFilters, selectedSorts, optionValueLookup);
-  }
-
-  async function handleDeleteSavedSearch(query: string) {
-    if (!ensureAuthenticatedForSearchHistory()) {
-      return;
-    }
-
-    setShowAllSearchSuggestions(false);
-    setIsSearchFocused(true);
-
-    try {
-      await deleteSearchHistory(query);
-      await refreshSavedSearches();
-    } catch (error) {
-      console.error("Cannot delete search history:", error);
-    }
-  }
-
   function handleSearch() {
     const normalizedQuery = searchQuery.trim();
 
     setAppliedSearchQuery(normalizedQuery);
     setAppliedFilters(filters);
-    setIsSearchFocused(false);
     startFreshSearch(
       normalizedQuery,
       filters,
@@ -615,21 +513,10 @@ export function useSearchPageState() {
     );
   }
 
-  function ensureAuthenticatedForSearchHistory() {
-    if (isAuthenticated()) {
-      return true;
-    }
-
-    navigate(routePaths.login());
-    return false;
-  }
-
   function handleSuggestedSearch(query: string) {
     setSearchQuery(query);
     setAppliedSearchQuery(query);
-    setIsSearchFocused(false);
-    setShowAllSearchSuggestions(false);
-    startFreshSearch(query, appliedFilters, selectedSorts, optionValueLookup);
+    startFreshSearch(query, filters, selectedSorts, optionValueLookup);
   }
 
   function handleToggleFilters() {
@@ -644,10 +531,6 @@ export function useSearchPageState() {
 
       return normalizeSearchFilterWidgetKeys([...currentWidgets, widgetKey]);
     });
-  }
-
-  function handleToggleSearchSuggestions() {
-    setShowAllSearchSuggestions((isShown) => !isShown);
   }
 
   function handleFilterOptionSearch(
@@ -892,18 +775,12 @@ export function useSearchPageState() {
     handleFilterOptionSearch,
     handleLoadMoreFilterOptions,
     handleLoadMoreResults,
-    handleSaveSearch,
     handleSearch,
-    handleSearchBlur,
-    handleDeleteSavedSearch,
-    handleSearchFocus,
     handleSearchQueryChange,
-    handleSelectSavedSearch,
     handleClearSorts,
     handleToggleSort,
     handleSuggestedSearch,
     handleToggleFilters,
-    handleToggleSearchSuggestions,
     handleToggleVisibleFilterWidget,
     hasFormError,
     hasSearched,
@@ -911,20 +788,16 @@ export function useSearchPageState() {
     isLoadingFilterOptions,
     isLoadingMoreFilterOptions,
     isLoadingResults,
-    isSearchFocused,
     isLoadingMoreResults,
     matchedPaperCount,
-    matchedSavedSearchCount,
     resetFilters,
     responseTimeSeconds,
     searchQuery,
     selectedSorts,
-    showAllSearchSuggestions,
     totalIndexedPapers,
     updateFilter,
     visibleFilterWidgets,
     visiblePaperResults,
-    visibleSearchSuggestions,
   };
 }
 
