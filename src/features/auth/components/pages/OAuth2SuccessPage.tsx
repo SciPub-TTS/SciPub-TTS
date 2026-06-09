@@ -4,6 +4,7 @@ import { authApi } from "@/features/auth/services/auth.api.ts";
 import { setAuthSession, setCurrentUser } from "@/features/auth/utils/authStorage.ts";
 import { AUTH_ROLES } from "@/features/auth/constants/roles.ts";
 import { getApiErrorMessage } from "@/features/auth/utils/getApiErrorMessage.ts";
+import { useReloadOnHistoryRestore } from "@/features/auth/hooks/useReloadOnHistoryRestore";
 
 type Status = "loading" | "error";
 const ERROR_MESSAGES: Record<string, string> = {
@@ -18,6 +19,7 @@ const ERROR_MESSAGES: Record<string, string> = {
 
 export default function OAuth2SuccessPage() {
   const navigate = useNavigate();
+  useReloadOnHistoryRestore();
   const [status, setStatus] = useState<Status>("loading");
   const [errorMessage, setErrorMessage] = useState("");
 

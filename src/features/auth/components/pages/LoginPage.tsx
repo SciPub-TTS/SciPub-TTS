@@ -4,6 +4,7 @@ import { ROUTES } from "@/app/router";
 import { submitLogin } from "@/features/auth/services/authFlows";
 import { getApiErrorMessage } from "@/features/auth/utils/getApiErrorMessage";
 import { authApi } from "@/features/auth/services/auth.api";
+import { useReloadOnHistoryRestore } from "@/features/auth/hooks/useReloadOnHistoryRestore";
 
 import LoginFormPanel from "@/features/auth/components/panel/LoginFormPanel";
 import LoginPreviewPanel from "@/features/auth/components/panel/LoginPreviewPanel";
@@ -12,6 +13,7 @@ import AuthHeader from "@/features/auth/components/common/AuthHeader.tsx";
 export default function LoginPage() {
     const navigate = useNavigate();
     const location = useLocation();
+    useReloadOnHistoryRestore();
 
     const [form, setForm] = useState({
         email: "",
