@@ -4,17 +4,22 @@ import { authApi } from "@/features/auth/services/auth.api.ts";
 import { setAuthSession, setCurrentUser } from "@/features/auth/utils/authStorage.ts";
 import { AUTH_ROLES } from "@/features/auth/constants/roles.ts";
 import { getApiErrorMessage } from "@/features/auth/utils/getApiErrorMessage.ts";
+import { useReloadOnHistoryRestore } from "@/features/auth/hooks/useReloadOnHistoryRestore";
 
 type Status = "loading" | "error";
 const ERROR_MESSAGES: Record<string, string> = {
+  access_denied: "Google sign-in was cancelled.",
+  cancelled: "Google sign-in was cancelled.",
   account_banned: "Your account has been banned. Please contact support.",
   invalid_user_info: "Unable to retrieve information from Google. Please try again.",
   oauth2_user_not_found: "Account not found. Please register first.",
   google_email_not_verified: "Your Google email has not been verified.",
+  oauth2_failed: "Google login failed. Please try again.",
 };
 
 export default function OAuth2SuccessPage() {
   const navigate = useNavigate();
+  useReloadOnHistoryRestore();
   const [status, setStatus] = useState<Status>("loading");
   const [errorMessage, setErrorMessage] = useState("");
 

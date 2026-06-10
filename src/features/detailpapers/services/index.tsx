@@ -1,4 +1,4 @@
-import { buildApiPath, requestJson } from "@/lib/api/fetchJson";
+import { buildApiPath, requestPublicJson } from "@/lib/api/fetchJson";
 
 import type {
   OpenAlexWorkDetailApi,
@@ -15,7 +15,7 @@ export async function getPaperDetail(paperId: string): Promise<PaperDetailData> 
   const endpoint = buildApiPath(
     `/api/papers/${encodeURIComponent(normalizedPaperId)}`,
   );
-  const data = await requestJson<OpenAlexWorkDetailApi>(endpoint);
+  const data = await requestPublicJson<OpenAlexWorkDetailApi>(endpoint);
 
   return mapWorkDetailToPaperDetail(data);
 }
