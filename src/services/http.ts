@@ -19,6 +19,11 @@ const refreshClient = axios.create({
     withCredentials: true,
 });
 
+export const publicHttp = axios.create({
+    baseURL: API_BASE_URL,
+    withCredentials: true,
+});
+
 function shouldSkipRefresh(url?: string) {
     if (!url) return true;
 

@@ -1,4 +1,4 @@
-import { createApiUrl, requestJson } from "@/lib/api/fetchJson";
+import { createApiUrl, requestPublicJson } from "@/lib/api/fetchJson";
 import type {
   PaperResult,
   RemoteOptionFilterKey,
@@ -276,7 +276,7 @@ export async function getSearchFilterOptions(
   endpoint.searchParams.set("page", String(page));
   appendIfFilled(endpoint, "keyword", keyword);
 
-  const data = await requestJson<FilterOptionsApiData>(endpoint);
+  const data = await requestPublicJson<FilterOptionsApiData>(endpoint);
 
   return buildSearchOptionsState(data);
 }
@@ -304,7 +304,7 @@ export async function searchWorks(
 ): Promise<SearchWorksState> {
   const normalizedSorts = normalizeSearchResultSortValues(request.selectedSorts);
   const endpoint = buildSearchWorksUrl(request, normalizedSorts);
-  const data = await requestJson<SearchWorksApiResponse>(endpoint);
+  const data = await requestPublicJson<SearchWorksApiResponse>(endpoint);
   const works: PaperResult[] = [];
 
   for (const item of data.results) {

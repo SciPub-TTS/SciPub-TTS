@@ -19,9 +19,13 @@ export function createApiUrl(path: string) {
   return new URL(buildApiPath(path));
 }
 
+type RequestJsonInit = RequestInit & {
+  includeAuth?: boolean;
+};
+
 export async function requestJson<T>(
   url: string | URL,
-  init?: RequestInit,
+  init?: RequestJsonInit,
 ): Promise<T> {
   const headers = new Headers(init?.headers);
   headers.set("Accept", "application/json");
@@ -30,7 +34,8 @@ export async function requestJson<T>(
     headers.set("Content-Type", "application/json");
   }
 
-  const accessToken = getAccessToken();
+  const shouldIncludeAuth = init?.includeAuth !== false;
+  const accessToken = shouldIncludeAuth ? getAccessToken() : null;
   if (accessToken && !headers.has("Authorization")) {
     headers.set("Authorization", `Bearer ${accessToken}`);
   }
@@ -54,4 +59,14 @@ export async function requestJson<T>(
   }
 
   return envelope.data;
+}
+
+export function requestPublicJson<T>(
+  url: string | URL,
+  init?: RequestInit,
+): Promise<T> {
+  return requestJson<T>(url, {
+    ...init,
+    includeAuth: false,
+  });
 }

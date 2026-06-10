@@ -82,6 +82,6 @@ export const authApi = {
             throw new Error("Thiếu VITE_GOOGLE_AUTH_URL cho Google login.");
         }
 
-        window.location.assign(googleAuthUrl);
+        window.location.href = googleAuthUrl;
     },
 };
