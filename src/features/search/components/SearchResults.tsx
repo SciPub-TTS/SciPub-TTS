@@ -36,15 +36,26 @@ export function SearchResults({
   useEffect(() => {
     const anchor = lazyLoadAnchorRef.current;
 
-    if (!anchor || !canLoadMoreResults || isLoadingMoreResults) {
+    if (
+      !anchor ||
+      autoLoadAnchorIndex < 0 ||
+      !canLoadMoreResults ||
+      isLoadingMoreResults
+    ) {
       return;
     }
+
+    anchor.dataset.autoLoadTriggered = "0";
 
     const observer = new IntersectionObserver(
       (entries) => {
         const anchorIsVisible = entries.some((entry) => entry.isIntersecting);
 
-        if (anchorIsVisible) {
+        if (
+          anchorIsVisible &&
+          anchor.dataset.autoLoadTriggered !== "1"
+        ) {
+          anchor.dataset.autoLoadTriggered = "1";
           onLoadMoreResults();
         }
       },
@@ -105,7 +116,8 @@ export function SearchResults({
         ) : !hasSearched ? (
           <div className="rounded-2xl border border-slate-600 bg-white p-8 text-center">
             <p className="text-lg font-bold text-black">
-              Enter a keyword or choose filters, then click Search or Apply filters.
+              Enter a keyword or choose filters, then click Search or Apply
+              filters.
             </p>
           </div>
         ) : visiblePaperResults.length === 0 ? (
@@ -200,7 +212,7 @@ function SortDropdown(props: SortDropdownProps) {
   const selectedOption =
     group.options.find((option) => option.value === selectedSort) || null;
   const isActive = selectedOption !== null;
-  const summaryLabel = selectedOption ? selectedOption.label : "Any";
+  const summaryLabel = selectedOption ? selectedOption.label : "None";
 
   function handleDetailsToggle() {
     const currentDropdown = detailsRef.current;
@@ -253,12 +265,7 @@ function SortDropdown(props: SortDropdownProps) {
           ].join(" ")}
         >
           <span className="truncate">{summaryLabel}</span>
-          <ChevronDown
-            className={[
-              "h-4 w-4 transition group-open:rotate-180",
-              canSortResults ? "text-black" : "text-slate-400",
-            ].join(" ")}
-          />
+          <ChevronDown className="h-4 w-4 transition group-open:rotate-180 text-black" />
         </summary>
 
         <div className="absolute left-0 top-full z-20 mt-2 w-full min-w-[9.5rem] divide-y divide-black overflow-hidden rounded-sm border border-black bg-white shadow-xl">

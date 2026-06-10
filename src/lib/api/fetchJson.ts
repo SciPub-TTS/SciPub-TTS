@@ -1,8 +1,5 @@
 import { getAccessToken } from "@/features/auth/utils/authStorage";
-
-const apiBaseUrl = (
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:8080"
-).replace(/\/$/, "");
+import { apiOrigin } from "@/lib/api/environment";
 
 type ResponseEnvelope<T> = {
   status: number;
@@ -12,10 +9,10 @@ type ResponseEnvelope<T> = {
 
 export function buildApiPath(path: string) {
   if (!path.startsWith("/")) {
-    return `${apiBaseUrl}/${path}`;
+    return `${apiOrigin}/${path}`;
   }
 
-  return `${apiBaseUrl}${path}`;
+  return `${apiOrigin}${path}`;
 }
 
 export function createApiUrl(path: string) {
@@ -40,6 +37,7 @@ export async function requestJson<T>(
 
   const response = await fetch(url.toString(), {
     ...init,
+    credentials: init?.credentials ?? "include",
     headers,
   });
 

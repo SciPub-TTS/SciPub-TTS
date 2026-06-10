@@ -5,10 +5,11 @@ import {
     getAccessToken
 } from "@/features/auth/utils/authStorage";
 import type { AuthResponse } from "@/features/auth/types/auth.types";
+import { apiBaseUrl } from "@/lib/api/environment";
 import type {ApiResponse} from "@/types/common.types.ts";
 
 export const apiClient = axios.create({
-    baseURL: import.meta.env.VITE_BACKEND_URL,
+    baseURL: apiBaseUrl,
     withCredentials: true,
     headers: {
         "Content-Type": "application/json",
@@ -16,7 +17,7 @@ export const apiClient = axios.create({
 });
 
 const refreshClient = axios.create({
-    baseURL: import.meta.env.VITE_BACKEND_URL,
+    baseURL: apiBaseUrl,
     withCredentials: true,
     headers: {
         "Content-Type": "application/json",
