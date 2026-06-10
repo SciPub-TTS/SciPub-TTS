@@ -33,7 +33,7 @@ export function MultiSelectFilter({
 }: MultiSelectFilterProps) {
   const [optionKeyword, setOptionKeyword] = useState("");
   const detailsRef = useRef<HTMLDetailsElement>(null);
-  let selectedOptionLabel = "Any";
+  let selectedOptionLabel = "---";
   if (selected.length > 0) {
     selectedOptionLabel = `${selected.length} selected`;
   }
