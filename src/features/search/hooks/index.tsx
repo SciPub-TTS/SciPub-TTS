@@ -643,7 +643,7 @@ export function useSearchPageState() {
     hasMoreFilterOptions,
     isLoadingFilterOptions,
     isLoadingMoreFilterOptions,
-    isLoadingResults: searchResultsQuery.isPending,
+    isLoadingResults: submittedSearch !== null && searchResultsQuery.isPending,
     isLoadingMoreResults: searchResultsQuery.isFetchingNextPage,
     matchedPaperCount,
     resetFilters,
