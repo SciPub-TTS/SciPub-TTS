@@ -20,7 +20,7 @@ const refreshClient = axios.create({
 });
 
 export const publicHttp = axios.create({
-    baseURL: API_BASE_URL,
+    baseURL: apiBaseUrl,
     withCredentials: true,
 });
 
