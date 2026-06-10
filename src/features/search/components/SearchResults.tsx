@@ -1,20 +1,16 @@
 import { Check, ChevronDown, LoaderCircle } from "lucide-react";
-import type { ReactNode, RefObject } from "react";
-import { memo, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 
 import {
   searchResultSortGroups,
   type SearchResultSortGroup,
 } from "@/features/search/services";
-import type {
-  ResultsListProps,
-  SearchResultsProps,
-} from "@/features/search/types";
+import type { SearchResultsProps } from "@/features/search/types";
 import { formatFullNumber, formatResponseTime } from "@/features/search/utils";
 
 import { PaperResultCard } from "./PaperResultCard";
 
-function SearchResultsComponent({
+export function SearchResults({
   appliedSearchQuery,
   autoLoadAnchorIndex,
   canLoadMoreResults,
@@ -95,7 +91,7 @@ function SearchResultsComponent({
           ) : null}
 
           <div className="flex shrink-0 justify-end lg:justify-start">
-            <MemoizedSortActions
+            <SortActions
               canSortResults={canSortResults}
               selectedSorts={selectedSorts}
               onClearSorts={onClearSorts}
@@ -136,8 +132,6 @@ function SearchResultsComponent({
   );
 }
 
-export const SearchResults = memo(SearchResultsComponent);
-
 function SearchLoadingState() {
   return (
     <div className="rounded-2xl border border-[#059669] bg-white p-8 text-center shadow-sm">
@@ -156,24 +150,23 @@ type SortActionsProps = {
   onToggleSort: (sortOption: string) => void;
 };
 
-type ResultsListWithAnchorProps = ResultsListProps & {
-  lazyLoadAnchorRef: RefObject<HTMLDivElement | null>;
+type ResultsListProps = {
+  autoLoadAnchorIndex: number;
+  lazyLoadAnchorRef: { current: HTMLDivElement | null };
+  visiblePaperResults: SearchResultsProps["visiblePaperResults"];
 };
 
-function SortActionsComponent(props: SortActionsProps) {
+function SortActions(props: SortActionsProps) {
   const { canSortResults, selectedSorts, onClearSorts, onToggleSort } = props;
 
   return (
     <div className="flex flex-wrap items-end gap-3 rounded-2xl border border-black bg-slate-50/80 p-3 shadow-sm">
       {searchResultSortGroups.map((group) => (
-        <MemoizedSortDropdown
+        <SortDropdown
           key={group.key}
           group={group}
           canSortResults={canSortResults}
-          selectedSort={
-            group.options.find((option) => selectedSorts.includes(option.value))
-              ?.value ?? ""
-          }
+          selectedSort={getSelectedSortValue(group, selectedSorts)}
           onToggleSort={onToggleSort}
         />
       ))}
@@ -194,8 +187,6 @@ function SortActionsComponent(props: SortActionsProps) {
   );
 }
 
-const MemoizedSortActions = memo(SortActionsComponent);
-
 type SortDropdownProps = {
   canSortResults: boolean;
   group: SearchResultSortGroup;
@@ -203,18 +194,18 @@ type SortDropdownProps = {
   onToggleSort: (sortOption: string) => void;
 };
 
-function SortDropdownComponent(props: SortDropdownProps) {
+function SortDropdown(props: SortDropdownProps) {
   const { canSortResults, group, selectedSort, onToggleSort } = props;
   const detailsRef = useRef<HTMLDetailsElement>(null);
   const selectedOption =
-    group.options.find((option) => option.value === selectedSort) ?? null;
+    group.options.find((option) => option.value === selectedSort) || null;
   const isActive = selectedOption !== null;
-  const summaryLabel = selectedOption?.label ?? "Any";
+  const summaryLabel = selectedOption ? selectedOption.label : "Any";
 
   function handleDetailsToggle() {
     const currentDropdown = detailsRef.current;
 
-    if (!currentDropdown?.open) {
+    if (!currentDropdown || !currentDropdown.open) {
       return;
     }
 
@@ -304,13 +295,13 @@ function SortDropdownComponent(props: SortDropdownProps) {
   );
 }
 
-const MemoizedSortDropdown = memo(SortDropdownComponent);
-
-function ResultsList(props: ResultsListWithAnchorProps) {
+function ResultsList(props: ResultsListProps) {
   const { autoLoadAnchorIndex, lazyLoadAnchorRef, visiblePaperResults } = props;
+  const resultItems = [];
 
-  const resultItems: ReactNode[] = [];
   for (let index = 0; index < visiblePaperResults.length; index += 1) {
+    const paper = visiblePaperResults[index];
+
     if (index === autoLoadAnchorIndex) {
       resultItems.push(
         <div
@@ -321,9 +312,23 @@ function ResultsList(props: ResultsListWithAnchorProps) {
       );
     }
 
-    const paper = visiblePaperResults[index];
     resultItems.push(<PaperResultCard key={paper.id} paper={paper} />);
   }
 
   return <div className="space-y-4">{resultItems}</div>;
+}
+
+function getSelectedSortValue(
+  group: SearchResultSortGroup,
+  selectedSorts: string[],
+) {
+  const selectedOption = group.options.find((option) =>
+    selectedSorts.includes(option.value),
+  );
+
+  if (!selectedOption) {
+    return "";
+  }
+
+  return selectedOption.value;
 }
