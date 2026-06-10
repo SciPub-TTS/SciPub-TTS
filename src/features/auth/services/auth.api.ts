@@ -10,6 +10,7 @@ import type {
     VerifyResetCodeRequest,
     VerifyResetCodeResponse,
 } from "@/features/auth/types/auth.types";
+import { googleAuthUrl } from "@/lib/api/environment";
 import type {ApiResponse} from "@/types/common.types.ts";
 
 const AUTH_BASE = "/auth";
@@ -77,8 +78,6 @@ export const authApi = {
     },
 
     startGoogleLogin() {
-        const googleAuthUrl = (import.meta.env.VITE_GOOGLE_AUTH_URL ?? "").trim();
-
         if (!googleAuthUrl) {
             throw new Error("Thiếu VITE_GOOGLE_AUTH_URL cho Google login.");
         }

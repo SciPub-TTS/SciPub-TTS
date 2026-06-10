@@ -52,7 +52,7 @@ function MultiSelectFilterControl({
 }: MultiSelectFilterProps) {
   const [optionKeyword, setOptionKeyword] = useState("");
   const detailsRef = useRef<HTMLDetailsElement>(null);
-  let selectedOptionLabel = "Any";
+  let selectedOptionLabel = "---";
   if (selected.length > 0) {
     selectedOptionLabel = `${selected.length} selected`;
   }
@@ -224,7 +224,10 @@ function YearFilterControl({ filters, updateFilter }: YearFilterProps) {
   ].join(" ");
 
   function handleYearModeClick(event: MouseEvent<HTMLButtonElement>) {
-    updateFilter("yearMode", event.currentTarget.value as SearchFilters["yearMode"]);
+    updateFilter(
+      "yearMode",
+      event.currentTarget.value as SearchFilters["yearMode"],
+    );
   }
 
   function handleYearFromChange(event: ChangeEvent<HTMLInputElement>) {

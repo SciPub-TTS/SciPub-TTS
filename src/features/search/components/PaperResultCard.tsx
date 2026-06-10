@@ -1,10 +1,8 @@
-import { memo } from "react";
-
 import { routePaths } from "@/app/router";
 import type { PaperResultCardProps } from "@/features/search/types";
 import ListWorkLayout from "@/layout/components/ListWorkLayout";
 
-function PaperResultCardComponent({ paper }: PaperResultCardProps) {
+export function PaperResultCard({ paper }: PaperResultCardProps) {
   return (
     <ListWorkLayout
       abstractText={paper.abstract}
@@ -25,6 +23,4 @@ function PaperResultCardComponent({ paper }: PaperResultCardProps) {
     />
   );
 }
-
-export const PaperResultCard = memo(PaperResultCardComponent);
 

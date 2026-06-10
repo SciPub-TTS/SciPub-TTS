@@ -9,7 +9,7 @@ import {
   Tags,
   Users,
 } from "lucide-react";
-import { memo, useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 
 import { markSearchPageRestorePending } from "@/features/search/utils/navigationState";
@@ -39,7 +39,15 @@ function formatDisplayNumber(value: number) {
   return new Intl.NumberFormat("en-US").format(value);
 }
 
-function ListWorkLayoutComponent({
+function getPreviewText(text: string, limit: number) {
+  if (text.length <= limit) {
+    return text;
+  }
+
+  return `${text.slice(0, limit).trim()}...`;
+}
+
+export default function ListWorkLayout({
   abstractText,
   authors,
   citations,
@@ -71,14 +79,9 @@ function ListWorkLayoutComponent({
   const hasDoi = normalizedDoi.length > 0;
   const hasPdfUrl = Boolean(pdfUrl && pdfUrl.trim().length > 0);
   const canExpandAbstract = abstractText.length > 520;
-  const collapsedAbstractStyle = showFullAbstract
-    ? undefined
-    : {
-        display: "-webkit-box",
-        WebkitBoxOrient: "vertical" as const,
-        WebkitLineClamp: 5,
-        overflow: "hidden",
-      };
+  const visibleAbstract = showFullAbstract
+    ? abstractText
+    : getPreviewText(abstractText, 520);
   const normalizedFollowedAuthors = followedAuthors.map((author) =>
     author.trim().toLocaleLowerCase(),
   );
@@ -135,7 +138,7 @@ function ListWorkLayoutComponent({
         {hasMoreAuthors && (
           <button
             type="button"
-            onClick={() => setShowAllAuthors((currentState) => !currentState)}
+            onClick={() => setShowAllAuthors(!showAllAuthors)}
             className="inline-flex h-5 items-center text-xs font-bold text-[#14532D] underline-offset-2 hover:underline"
           >
             {showAllAuthors ? "Show less" : "Show more"}
@@ -158,13 +161,13 @@ function ListWorkLayoutComponent({
           <FileText className="h-4 w-4" />
           Abstract:
         </div>
-        <p style={collapsedAbstractStyle}>{abstractText}</p>
+        <p>{visibleAbstract}</p>
       </div>
 
       {canExpandAbstract && (
         <button
           type="button"
-          onClick={() => setShowFullAbstract((currentState) => !currentState)}
+          onClick={() => setShowFullAbstract(!showFullAbstract)}
           className="mt-2 text-xs font-bold text-[#14532D] underline-offset-2 hover:text-[#15803D] hover:underline"
         >
           {showFullAbstract ? "Show less" : "Show more"}
@@ -251,5 +254,3 @@ function ListWorkLayoutComponent({
     </article>
   );
 }
-
-export default memo(ListWorkLayoutComponent);

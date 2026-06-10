@@ -1,7 +1,5 @@
 import { getAccessToken } from "@/features/auth/utils/authStorage";
-
-const API_URL = (import.meta.env.VITE_API_URL ?? "").trim();
-const apiBaseUrl = API_URL.replace(/\/$/, "");
+import { apiOrigin } from "@/lib/api/environment";
 
 type ResponseEnvelope<T> = {
   status: number;
@@ -11,10 +9,10 @@ type ResponseEnvelope<T> = {
 
 export function buildApiPath(path: string) {
   if (!path.startsWith("/")) {
-    return `${apiBaseUrl}/${path}`;
+    return `${apiOrigin}/${path}`;
   }
 
-  return `${apiBaseUrl}${path}`;
+  return `${apiOrigin}${path}`;
 }
 
 export function createApiUrl(path: string) {
@@ -44,6 +42,7 @@ export async function requestJson<T>(
 
   const response = await fetch(url.toString(), {
     ...init,
+    credentials: init?.credentials ?? "include",
     headers,
   });
 
