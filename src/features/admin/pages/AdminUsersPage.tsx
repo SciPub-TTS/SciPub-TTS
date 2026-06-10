@@ -1,14 +1,15 @@
 import { Ban, Search, X } from "lucide-react";
 import type { ReactNode } from "react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+
+import Pagination from "@/layout/components/Pagination";
 
 type AdminUser = {
-  apiCalls: number;
   authors: number;
+  createdAt: string;
   email: string;
   fullName: string;
   id: string;
-  lastLogin: string;
   role: "Admin" | "Lecturer" | "Researcher" | "Student";
   status: "Active" | "Banned";
   topics: number;
@@ -21,10 +22,9 @@ const adminUsers: AdminUser[] = [
     email: "student01@email.com",
     role: "Student",
     status: "Active",
-    apiCalls: 320,
     topics: 6,
     authors: 3,
-    lastLogin: "Today, 10:12 AM",
+    createdAt: "Today, 10:12 AM",
   },
   {
     id: "U-002",
@@ -32,10 +32,9 @@ const adminUsers: AdminUser[] = [
     email: "researcher02@email.com",
     role: "Researcher",
     status: "Active",
-    apiCalls: 280,
     topics: 12,
     authors: 9,
-    lastLogin: "Today, 08:45 AM",
+    createdAt: "Today, 08:45 AM",
   },
   {
     id: "U-003",
@@ -43,10 +42,9 @@ const adminUsers: AdminUser[] = [
     email: "lecturer03@email.com",
     role: "Lecturer",
     status: "Active",
-    apiCalls: 190,
     topics: 8,
     authors: 5,
-    lastLogin: "Yesterday, 06:20 PM",
+    createdAt: "Yesterday, 06:20 PM",
   },
   {
     id: "U-004",
@@ -54,10 +52,9 @@ const adminUsers: AdminUser[] = [
     email: "student04@email.com",
     role: "Student",
     status: "Banned",
-    apiCalls: 142,
     topics: 2,
     authors: 1,
-    lastLogin: "Apr 14, 2026",
+    createdAt: "Apr 14, 2026",
   },
   {
     id: "U-005",
@@ -65,10 +62,9 @@ const adminUsers: AdminUser[] = [
     email: "researcher05@email.com",
     role: "Researcher",
     status: "Active",
-    apiCalls: 96,
     topics: 5,
     authors: 3,
-    lastLogin: "May 22, 2026",
+    createdAt: "May 22, 2026",
   },
   {
     id: "U-006",
@@ -76,12 +72,13 @@ const adminUsers: AdminUser[] = [
     email: "admin@scholartrack.io",
     role: "Admin",
     status: "Active",
-    apiCalls: 38,
     topics: 0,
     authors: 0,
-    lastLogin: "Today, 11:00 AM",
+    createdAt: "Today, 11:00 AM",
   },
 ];
+
+const USERS_PAGE_SIZE = 4;
 
 const roleClassMap: Record<AdminUser["role"], string> = {
   Admin: "bg-emerald-50 text-emerald-700 ring-emerald-100",
@@ -98,6 +95,7 @@ const statusClassMap: Record<AdminUser["status"], string> = {
 export default function AdminUsersPage() {
   const [users, setUsers] = useState(adminUsers);
   const [query, setQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
 
   const filteredUsers = useMemo(() => {
@@ -106,7 +104,7 @@ export default function AdminUsersPage() {
     if (!normalizedQuery) return users;
 
     return users.filter((user) =>
-      [user.id, user.fullName, user.email, user.role, user.status]
+      [user.id, user.fullName, user.email, user.status]
         .join(" ")
         .toLowerCase()
         .includes(normalizedQuery),
@@ -115,6 +113,16 @@ export default function AdminUsersPage() {
 
   const selectedUser =
     users.find((user) => user.id === selectedUserId) ?? null;
+  const totalFilteredUsers = filteredUsers.length;
+  const paginatedUsers = useMemo(() => {
+    const startIndex = (currentPage - 1) * USERS_PAGE_SIZE;
+
+    return filteredUsers.slice(startIndex, startIndex + USERS_PAGE_SIZE);
+  }, [currentPage, filteredUsers]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [query]);
 
   function toggleUserBan(userId: string) {
     setUsers((currentUsers) =>
@@ -146,7 +154,7 @@ export default function AdminUsersPage() {
             <input
               className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-11 pr-4 text-sm font-medium text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-blue-300 focus:ring-4 focus:ring-blue-50"
               onChange={(event) => setQuery(event.target.value)}
-              placeholder="Search users by name, email, or role..."
+              placeholder="Search users by name, email, or status..."
               type="search"
               value={query}
             />
@@ -154,22 +162,20 @@ export default function AdminUsersPage() {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[920px] border-collapse text-left">
+          <table className="w-full min-w-[720px] border-collapse text-left">
             <thead>
               <tr className="bg-slate-50 text-xs font-bold text-slate-500">
-                <th className="px-5 py-4">User ID</th>
+                <th className="px-5 py-4">STT</th>
                 <th className="px-5 py-4">Full Name</th>
                 <th className="px-5 py-4">Email</th>
-                <th className="px-5 py-4">Role</th>
                 <th className="px-5 py-4">Status</th>
-                <th className="px-5 py-4">API Calls</th>
                 <th className="px-5 py-4">Topics</th>
                 <th className="px-5 py-4">Authors</th>
-                <th className="px-5 py-4">Last Login</th>
+                <th className="px-5 py-4">Created At</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {filteredUsers.map((user) => (
+              {paginatedUsers.map((user, index) => (
                 <tr
                   key={user.id}
                   className="cursor-pointer text-sm font-medium text-slate-700 transition hover:bg-blue-50/60 focus-within:bg-blue-50/60"
@@ -183,7 +189,7 @@ export default function AdminUsersPage() {
                   tabIndex={0}
                 >
                   <td className="whitespace-nowrap px-5 py-4 text-slate-500">
-                    {user.id}
+                    {(currentPage - 1) * USERS_PAGE_SIZE + index + 1}
                   </td>
                   <td className="whitespace-nowrap px-5 py-4 font-semibold text-slate-700">
                     {user.fullName}
@@ -194,24 +200,16 @@ export default function AdminUsersPage() {
                     </span>
                   </td>
                   <td className="whitespace-nowrap px-5 py-4">
-                    <Badge className={roleClassMap[user.role]}>
-                      {user.role}
-                    </Badge>
-                  </td>
-                  <td className="whitespace-nowrap px-5 py-4">
                     <Badge className={statusClassMap[user.status]}>
                       {user.status}
                     </Badge>
-                  </td>
-                  <td className="whitespace-nowrap px-5 py-4">
-                    {user.apiCalls}
                   </td>
                   <td className="whitespace-nowrap px-5 py-4">{user.topics}</td>
                   <td className="whitespace-nowrap px-5 py-4">
                     {user.authors}
                   </td>
                   <td className="whitespace-nowrap px-5 py-4 text-slate-500">
-                    {user.lastLogin}
+                    {user.createdAt}
                   </td>
                 </tr>
               ))}
@@ -224,6 +222,15 @@ export default function AdminUsersPage() {
             </div>
           )}
         </div>
+
+        {filteredUsers.length > 0 && (
+          <Pagination
+            currentPage={currentPage}
+            pageSize={USERS_PAGE_SIZE}
+            totalItems={totalFilteredUsers}
+            onPageChange={setCurrentPage}
+          />
+        )}
       </section>
 
       {selectedUser && (
@@ -295,8 +302,7 @@ function UserDetailDialog({
               </Badge>
             }
           />
-          <DetailItem label="Last Login" value={user.lastLogin} />
-          <DetailItem label="API Calls" value={user.apiCalls.toString()} />
+          <DetailItem label="Created At" value={user.createdAt} />
           <DetailItem label="Followed Topics" value={user.topics.toString()} />
           <DetailItem label="Followed Authors" value={user.authors.toString()} />
         </div>
