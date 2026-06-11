@@ -437,9 +437,19 @@ function buildSearchWorksUrl(
   const endpoint = createApiUrl("/api/search/works");
   const { filters, optionValueLookup } = request;
   const primarySort = normalizedSorts[0] ?? "";
+  const hasYearFilter = Boolean(
+    filters.yearMode === "exact" ? filters.yearExact : filters.yearFrom || filters.yearTo,
+  );
+  const hasCitationFilter = Boolean(
+    filters.citationMode === "exact"
+      ? filters.citationExact
+      : filters.citationMin || filters.citationMax,
+  );
 
   appendIfFilled(endpoint, "query", request.appliedSearchQuery.trim());
-  appendIfFilled(endpoint, "yearMode", filters.yearMode);
+  if (hasYearFilter) {
+    appendIfFilled(endpoint, "yearMode", filters.yearMode);
+  }
   appendIfFilled(endpoint, "yearFrom", filters.yearFrom);
   appendIfFilled(endpoint, "yearTo", filters.yearTo);
   appendIfFilled(endpoint, "yearExact", filters.yearExact);
@@ -479,7 +489,9 @@ function buildSearchWorksUrl(
     filters.country,
     optionValueLookup.country,
   );
-  appendIfFilled(endpoint, "citationMode", filters.citationMode);
+  if (hasCitationFilter) {
+    appendIfFilled(endpoint, "citationMode", filters.citationMode);
+  }
   appendIfFilled(endpoint, "citationMin", filters.citationMin);
   appendIfFilled(endpoint, "citationMax", filters.citationMax);
   appendIfFilled(endpoint, "citationExact", filters.citationExact);
