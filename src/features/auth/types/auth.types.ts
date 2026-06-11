@@ -12,6 +12,7 @@ export interface RegisterLocalRequest {
   email: string;
   password: string;
   confirmPassword: string;
+  appBaseUrl?: string;
 }
 
 export interface ChangePasswordRequest {

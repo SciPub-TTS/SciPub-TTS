@@ -10,7 +10,7 @@ import type {
     VerifyResetCodeRequest,
     VerifyResetCodeResponse,
 } from "@/features/auth/types/auth.types";
-import { googleAuthUrl } from "@/lib/api/environment";
+import { googleAuthUrl } from "@/config/appConfig";
 import type {ApiResponse} from "@/types/common.types.ts";
 
 const AUTH_BASE = "/auth";
