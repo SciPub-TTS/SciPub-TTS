@@ -94,7 +94,7 @@ export default function RegisterPage() {
 
     function handleGoogleLogin() {
         try {
-            authApi.startGoogleLogin();
+            authApi.startGoogleLogin("register");
         } catch (err) {
             setError(getApiErrorMessage(err, "Google login is not configured yet."));
         }

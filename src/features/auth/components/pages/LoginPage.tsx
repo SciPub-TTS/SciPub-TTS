@@ -53,7 +53,7 @@ export default function LoginPage() {
 
     function handleGoogleLogin() {
         try {
-            authApi.startGoogleLogin();
+            authApi.startGoogleLogin("login");
         } catch (err) {
             setError(getApiErrorMessage(err, "Google login is not configured."));
         }

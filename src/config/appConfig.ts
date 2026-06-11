@@ -22,4 +22,4 @@ export const apiBaseUrl = normalizedBackendUrl.toLowerCase().endsWith("/api")
 export const apiOrigin = apiBaseUrl.replace(/\/api$/i, "");
 export const googleAuthUrl =
   import.meta.env.VITE_GOOGLE_AUTH_URL?.trim() ||
-  `${apiOrigin}/oauth2/authorization/google`;
+  `${apiBaseUrl}/auth/oauth2/google`;
