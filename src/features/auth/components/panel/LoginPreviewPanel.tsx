@@ -1,7 +1,7 @@
 // src/features/auth/components/panel/LoginPreviewPanel.tsx
 export default function LoginPreviewPanel() {
     return (
-        <div className="hidden lg:flex flex-1 bg-[#0d2018] flex-col justify-between p-10 relative overflow-hidden">
+        <div className="hidden lg:flex flex-[0.62] bg-[#0d2018] flex-col justify-between p-7 relative overflow-hidden">
             {/* Decorative grid dots */}
             <div className="absolute inset-0 opacity-[0.06]"
                  style={{
@@ -19,20 +19,13 @@ export default function LoginPreviewPanel() {
             </svg>
 
             <div className="relative z-10">
-                <p className="text-[11px] tracking-[0.18em] text-emerald-400/70 uppercase mb-4 flex items-center gap-1.5">
-                    <span className="inline-block w-1 h-1 rounded-full bg-emerald-400" />
-                    Your feed · Since last login
-                    <span className="ml-auto text-emerald-400/50">● LIVE</span>
-                </p>
+                
 
                 <h2 className="font-serif text-[2.2rem] leading-[1.15] text-white mb-2">
-                    Continue tracking<br />
-                    your{" "}
+                    Continue tracking your{" "}
                     <span className="italic text-emerald-400">research trends.</span>
                 </h2>
-                <p className="text-sm text-slate-400 max-w-[380px] mt-3">
-                    While you were away, 12 watchlist topics moved. Three crossed your acceleration threshold and one venue cooled.
-                </p>
+                
 
                 {/* Stats row */}
                 <div className="grid grid-cols-3 gap-3 mt-8">
@@ -50,7 +43,7 @@ export default function LoginPreviewPanel() {
                 </div>
 
                 {/* Trend chart area */}
-                <div className="mt-5 rounded-xl bg-white/5 border border-white/8 p-5">
+                <div className="mt-4 rounded-xl bg-white/5 border border-white/8 p-4">
                     <div className="flex items-center justify-between mb-1">
                         <p className="text-[10px] tracking-widest text-slate-500 uppercase">Aggregate Trend Index</p>
                         <div className="flex gap-2 text-[10px] text-slate-600">
@@ -59,11 +52,11 @@ export default function LoginPreviewPanel() {
                             ))}
                         </div>
                     </div>
-                    <p className="text-lg font-semibold text-emerald-400 mt-1">
+                    <p className="text-base font-semibold text-emerald-400 mt-0.5">
                         +52.7% <span className="text-sm font-normal text-emerald-600">▲ vs last week</span>
                     </p>
                     {/* Fake sparkline */}
-                    <svg className="w-full mt-3" height="56" viewBox="0 0 400 56" preserveAspectRatio="none">
+                    <svg className="w-full mt-2" height="42" viewBox="0 0 400 56" preserveAspectRatio="none">
                         <defs>
                             <linearGradient id="lg" x1="0" y1="0" x2="0" y2="1">
                                 <stop offset="0%" stopColor="#34d399" stopOpacity="0.3" />
@@ -103,20 +96,7 @@ export default function LoginPreviewPanel() {
                 </div>
             </div>
 
-            {/* Signal alert bar */}
-            <div className="relative z-10 mt-5 rounded-xl bg-emerald-900/40 border border-emerald-800/50 p-4 flex gap-3">
-                <div className="w-8 h-8 rounded-full bg-emerald-700 flex items-center justify-center shrink-0">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-                        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                </div>
-                <div>
-                    <p className="text-[10px] tracking-widest text-slate-500 uppercase">Signal · Acceleration breached</p>
-                    <p className="text-xs text-slate-300 mt-0.5">
-                        <span className="text-emerald-400 font-medium">Mechanistic Interpretability</span> just crossed your 200% threshold — first time since you started tracking it.
-                    </p>
-                </div>
-            </div>
+          
         </div>
     );
 }
