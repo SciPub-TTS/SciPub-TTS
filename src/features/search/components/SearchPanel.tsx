@@ -50,19 +50,21 @@ export function SearchPanel({
   // This component composes the top search area and the advanced filters.
   return (
     <div className="overflow-visible rounded-2xl border border-black bg-white shadow-[0_18px_50px_rgba(15,23,42,0.06)]">
-      <SearchTabsHeader totalIndexedPapers={totalIndexedPapers} />
+      <SearchTabsHeader
+        canSaveSearch={canSaveSearch}
+        isSavingSearch={isSavingSearch}
+        totalIndexedPapers={totalIndexedPapers}
+        onSaveSearch={onSaveSearch}
+      />
 
       <div className="p-5">
-        <div className="rounded-2xl border border-black bg-slate-50/60 p-3 shadow-inner">
+        <div className="rounded-2xl border border-black bg-slate-50/60 px-3 py-4 shadow-inner">
           <SearchInputRow
-            canSaveSearch={canSaveSearch}
             isLoadingResults={isLoadingResults}
-            isSavingSearch={isSavingSearch}
             recentSearches={recentSearches}
             searchQuery={searchQuery}
             onSearch={onSearch}
             onSearchQueryChange={onSearchQueryChange}
-            onSaveSearch={onSaveSearch}
             onSelectSuggestion={onSuggestedSearchSelect}
           />
         </div>
@@ -94,11 +96,19 @@ export function SearchPanel({
 }
 
 type SearchTabsHeaderProps = {
+  canSaveSearch: boolean;
+  isSavingSearch: boolean;
   totalIndexedPapers: number;
+  onSaveSearch: () => void;
 };
 
 function SearchTabsHeader(props: SearchTabsHeaderProps) {
-  const { totalIndexedPapers } = props;
+  const {
+    canSaveSearch,
+    isSavingSearch,
+    totalIndexedPapers,
+    onSaveSearch,
+  } = props;
 
   // Format display text before JSX so the markup stays simple.
   const indexedPaperLabel =
@@ -107,9 +117,9 @@ function SearchTabsHeader(props: SearchTabsHeaderProps) {
       : "Loading total works...";
 
   return (
-    <div className="rounded-t-2xl border-b border-black px-5 py-0">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex flex-wrap gap-1 py-3">
+    <div className="rounded-t-2xl border-b border-black px-5 py-4">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex flex-wrap gap-1">
           {searchTabs.map((tab) => (
             <button
               key={tab}
@@ -121,23 +131,37 @@ function SearchTabsHeader(props: SearchTabsHeaderProps) {
           ))}
         </div>
 
-        <p className="pb-4 text-[11px] font-extrabold uppercase tracking-[0.32em] text-black sm:pb-0">
-          {indexedPaperLabel}
-        </p>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
+          <p className="text-[11px] font-extrabold uppercase tracking-[0.32em] text-black">
+            {indexedPaperLabel}
+          </p>
+
+          <button
+            type="button"
+            onClick={onSaveSearch}
+            disabled={!canSaveSearch || isSavingSearch}
+            className={[
+              "inline-flex items-center justify-center gap-2 rounded-lg border px-4 py-3 text-sm font-semibold transition",
+              canSaveSearch
+                ? "border-black bg-white text-black hover:bg-[#FEF3C7]"
+                : "border-slate-300 bg-slate-100 text-slate-400",
+            ].join(" ")}
+          >
+            <Save className="h-4 w-4" />
+            {isSavingSearch ? "Saving..." : "Save your search"}
+          </button>
+        </div>
       </div>
     </div>
   );
 }
 
 function SearchInputRow({
-  canSaveSearch,
   isLoadingResults,
-  isSavingSearch,
   recentSearches,
   searchQuery,
   onSearch,
   onSearchQueryChange,
-  onSaveSearch,
   onSelectSuggestion,
 }: SearchInputRowProps) {
   const [isSuggestionOpen, setIsSuggestionOpen] = useState(false);
@@ -194,10 +218,6 @@ function SearchInputRow({
     onSearch();
   }
 
-  function handleSaveClick() {
-    onSaveSearch();
-  }
-
   function handleSuggestionClick(event: MouseEvent<HTMLButtonElement>) {
     const suggestion = event.currentTarget.value;
 
@@ -214,7 +234,7 @@ function SearchInputRow({
   return (
     <div
       ref={containerRef}
-      className="flex flex-col gap-3 rounded-xl bg-white p-3 shadow-sm ring-1 ring-[#2f8551] md:flex-row md:items-start"
+      className="mx-auto flex w-full max-w-5xl flex-col gap-3 rounded-xl bg-white px-4 py-5 shadow-sm ring-1 ring-[#2f8551] md:flex-row md:items-center"
     >
       <div className="relative flex min-w-0 flex-1 items-center gap-3">
         <Search className="h-5 w-5 shrink-0 font-extrabold" />
@@ -261,32 +281,15 @@ function SearchInputRow({
         </div>
       </div>
 
-      <div className="flex gap-2 md:shrink-0">
-        <button
-          type="button"
-          onClick={handleSaveClick}
-          disabled={!canSaveSearch || isSavingSearch}
-          className={[
-            "inline-flex items-center justify-center gap-2 rounded-lg border px-4 py-3 text-sm font-semibold transition",
-            canSaveSearch
-              ? "border-black bg-white text-black hover:bg-[#FEF3C7]"
-              : "border-slate-300 bg-slate-100 text-slate-400",
-          ].join(" ")}
-        >
-          <Save className="h-4 w-4" />
-          {isSavingSearch ? "Saving..." : "Save your search"}
-        </button>
-
-        <button
-          type="button"
-          onClick={handleSearchClick}
-          disabled={isLoadingResults}
-          className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#14532D] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#15803D] disabled:cursor-not-allowed disabled:bg-slate-400"
-        >
-          {isLoadingResults ? "Searching..." : "Search"}
-          <ArrowRight className="h-4 w-4" />
-        </button>
-      </div>
+      <button
+        type="button"
+        onClick={handleSearchClick}
+        disabled={isLoadingResults}
+        className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[#14532D] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#15803D] disabled:cursor-not-allowed disabled:bg-slate-400 md:w-auto md:shrink-0"
+      >
+        {isLoadingResults ? "Searching..." : "Search"}
+        <ArrowRight className="h-4 w-4" />
+      </button>
     </div>
   );
 }

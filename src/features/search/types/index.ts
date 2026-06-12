@@ -146,14 +146,11 @@ export type SearchPanelProps = {
 };
 
 export type SearchInputRowProps = {
-  canSaveSearch: boolean;
   isLoadingResults: boolean;
-  isSavingSearch: boolean;
   recentSearches: SavedSearch[];
   searchQuery: string;
   onSearch: () => void;
   onSearchQueryChange: (query: string) => void;
-  onSaveSearch: () => void;
   onSelectSuggestion: (query: string) => void;
 };
 
