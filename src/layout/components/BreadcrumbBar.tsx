@@ -1,37 +1,30 @@
 import { ArrowLeft, ChevronRight, Home } from "lucide-react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import {
+  Link,
+  useLocation,
+  useMatches,
+  useNavigate,
+  type UIMatch,
+} from "react-router-dom";
 
+import type { AppRouteHandle } from "@/app/router/breadcrumbs";
+import { resolveBreadcrumbItems } from "@/app/router/breadcrumbs";
 import { ROUTES } from "@/app/router";
+import { usePaperTitleStoreVersion } from "@/features/detailpapers/paperTitleStore";
 
 type BreadcrumbBarProps = {
   homePath?: string;
   variant?: "light" | "dark";
 };
 
-function formatSegment(segment: string) {
-  return segment
-    .replaceAll("-", " ")
-    .replaceAll("_", " ")
-    .replace(/\b\w/g, (char) => char.toUpperCase());
-}
+function formatBreadcrumbLabel(label: string) {
+  const normalizedLabel = label.trim();
 
-function getBreadcrumbItems(pathname: string) {
-  const segments = pathname.split("/").filter(Boolean);
-
-  if (segments[0] === "papers" && segments[1]) {
-    return [
-      { label: "Search", path: ROUTES.SEARCH },
-      { label: "Detail-Paper" },
-    ];
+  if (normalizedLabel.length <= 12) {
+    return normalizedLabel;
   }
 
-  return segments.map((segment, index) => ({
-    label: formatSegment(segment),
-    path:
-      index === segments.length - 1
-        ? undefined
-        : `/${segments.slice(0, index + 1).join("/")}`,
-  }));
+  return `${normalizedLabel.slice(0, 18)}...`;
 }
 
 export default function BreadcrumbBar({
@@ -39,22 +32,24 @@ export default function BreadcrumbBar({
   variant = "light",
 }: BreadcrumbBarProps) {
   const location = useLocation();
+  const matches = useMatches() as UIMatch<unknown, AppRouteHandle>[];
   const navigate = useNavigate();
+  usePaperTitleStoreVersion();
 
-  const breadcrumbItems = getBreadcrumbItems(location.pathname);
+  const breadcrumbItems = resolveBreadcrumbItems(matches, location);
 
   const isDark = variant === "dark";
   const textClass = isDark ? "text-slate-100" : "text-slate-950";
-  const mutedClass = isDark ? "text-slate-700" : "text-slate-500";
+  const mutedClass = isDark ? "text-black" : "text-black";
   const homeLinkClass = isDark
-    ? "<text-emerald-4></text-emerald-4>00 hover:text-[#059669]"
-    : "text-emerald-900 hover:text-[#059669]";
+    ? "text-emerald-500 hover:text-[#059669]"
+    : "text-black hover:text-[#059669]";
   const boxClass = isDark
     ? "border-black bg-slate-900"
     : "border-black bg-white";
   const controlClass = isDark
-    ? "border-black bg-slate-900 text-slate-300 hover:border-[#059669] hover:text-[#059669]"
-    : "border-black bg-white text-slate-600 hover:border-[#059669] hover:text-[#059669]";
+    ? "border-black bg-slate-900 text-black hover:border-[#059669] hover:text-[#059669]"
+    : "border-black bg-white text-black hover:border-[#059669] hover:text-[#059669]";
 
   const currentLabel =
     breadcrumbItems.length > 0
@@ -98,16 +93,21 @@ export default function BreadcrumbBar({
                   key={`${item.label}-${index}`}
                   className="flex items-center gap-3"
                 >
-                  {item.path && !isLast ? (
+                  {item.to && !isLast ? (
                     <Link
-                      to={item.path}
+                      to={item.to ?? homePath}
+                      onClick={item.onClick}
+                      title={item.label}
                       className={`truncate text-sm font-bold ${homeLinkClass}`}
                     >
-                      {item.label}
+                      {formatBreadcrumbLabel(item.label)}
                     </Link>
                   ) : (
-                    <span className={`truncate text-sm font-bold ${textClass}`}>
-                      {item.label}
+                    <span
+                      title={item.label}
+                      className={`truncate text-sm font-bold ${textClass}`}
+                    >
+                      {formatBreadcrumbLabel(item.label)}
                     </span>
                   )}
                   {!isLast && (
@@ -120,8 +120,11 @@ export default function BreadcrumbBar({
             })}
           </div>
         ) : (
-          <span className={`truncate text-sm font-bold ${textClass}`}>
-            {currentLabel}
+          <span
+            title={currentLabel}
+            className={`truncate text-sm font-bold ${textClass}`}
+          >
+            {formatBreadcrumbLabel(currentLabel)}
           </span>
         )}
       </nav>

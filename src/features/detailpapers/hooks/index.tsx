@@ -1,6 +1,43 @@
-﻿// Barrel export -- src/features/papers/hooks
-// Export cac members ra ngoai, vi du:
-//   export { default as MyComponent } from './MyComponent'
-//   export * from './types'
+import { useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useParams } from "react-router-dom";
 
-export {};
+import { setPaperTitle } from "../paperTitleStore";
+import { getPaperDetail } from "../services";
+
+export function usePaperDetailPageState() {
+  const { paperId = "" } = useParams();
+  const normalizedPaperId = paperId.trim();
+  const paperDetailQuery = useQuery({
+    enabled: Boolean(normalizedPaperId),
+    queryFn: () => getPaperDetail(normalizedPaperId),
+    queryKey: ["paperDetail", normalizedPaperId],
+  });
+
+  useEffect(() => {
+    if (!normalizedPaperId) {
+      return;
+    }
+
+    if (!paperDetailQuery.data) {
+      return;
+    }
+
+    setPaperTitle(normalizedPaperId, paperDetailQuery.data.title);
+  }, [normalizedPaperId, paperDetailQuery.data]);
+
+  let errorMessage = "";
+  if (!normalizedPaperId) {
+    errorMessage = "Paper ID is missing.";
+  } else if (paperDetailQuery.error instanceof Error) {
+    errorMessage = paperDetailQuery.error.message;
+  } else if (paperDetailQuery.error) {
+    errorMessage = "Cannot load paper detail right now.";
+  }
+
+  return {
+    errorMessage,
+    isLoading: Boolean(normalizedPaperId) && paperDetailQuery.isPending,
+    paperDetail: paperDetailQuery.data || null,
+  };
+}

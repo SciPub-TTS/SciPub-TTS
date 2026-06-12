@@ -4,12 +4,12 @@ import TopicGeneralChartPart from "@/features/dashboard/components/TopicGeneralC
 import TrendingPart from "@/features/dashboard/components/TrendingPart.tsx";
 import TopicSpecificChartPart from "@/features/dashboard/components/TopicSpecificChartPart.tsx";
 
-export default function DashboardPage() {
+export default function TrendingTopicPage() {
   return (
     <div className="flex flex-col gap-[3vh]">
         <div>
             <h1 className="text-3xl font-bold text-slate-900">
-                Research Trend Dashboard
+                Trending Topic
             </h1>
             <h2 className="text-base opacity-75">
                 Track publication growth, citation impact, trending topics, and rising keywords.

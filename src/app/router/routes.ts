@@ -5,7 +5,7 @@ export const ROUTES = {
   REGISTER: "/register",
   GUIDE: "/guide",
   SEARCH: "/search",
-  DASHBOARD: "/dashboard",
+  TRENDING_TOPIC: "/trending-topic",
 
   GOOGLE_REGISTER_COMPLETE: "/register/complete",
 
@@ -41,7 +41,7 @@ export const routePaths = {
   register: () => ROUTES.REGISTER,
   guide: () => ROUTES.GUIDE,
   search: () => ROUTES.SEARCH,
-  dashboard: () => ROUTES.DASHBOARD,
+  trendingTopic: () => ROUTES.TRENDING_TOPIC,
 
   googleRegisterComplete: (token: string) =>
       `${ROUTES.GOOGLE_REGISTER_COMPLETE}?token=${encodeURIComponent(token)}`,

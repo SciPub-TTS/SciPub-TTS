@@ -1,0 +1,127 @@
+import type {
+  OpenAlexAward,
+  OpenAlexWorkDetailApi,
+  PaperDetailSummaryItem,
+} from "../types";
+import {
+  formatAvailabilityLabel,
+  formatCurrency,
+  formatLicenseLabel,
+  formatOpenAccessStatus,
+  formatTypeLabel,
+} from "./paperDetailShared";
+
+export function buildAccessItems(
+  work: OpenAlexWorkDetailApi,
+  normalizedSourceName: string,
+) {
+  const items: PaperDetailSummaryItem[] = [];
+
+  addSummaryItem(
+    items,
+    "OA status",
+    formatOpenAccessStatus(work.open_access?.oa_status || null),
+  );
+  addSummaryItem(items, "Best OA source", normalizedSourceName);
+  addSummaryItem(
+    items,
+    "License",
+    formatLicenseLabel(work.best_oa_location?.license || null),
+  );
+  addSummaryItem(
+    items,
+    "Version",
+    formatTypeLabel(work.best_oa_location?.version || ""),
+  );
+  addSummaryItem(
+    items,
+    "Full text",
+    formatAvailabilityLabel(
+      Boolean(work.open_access?.any_repository_has_fulltext),
+    ),
+  );
+  addSummaryItem(
+    items,
+    "PDF",
+    formatAvailabilityLabel(
+      Boolean(work.has_content?.pdf || work.best_oa_location?.pdf_url),
+    ),
+  );
+  addSummaryItem(
+    items,
+    "TEI XML",
+    formatAvailabilityLabel(Boolean(work.has_content?.grobid_xml)),
+  );
+  addSummaryItem(
+    items,
+    "APC list",
+    formatCurrency(work.apc_list?.value, work.apc_list?.currency) || "Unavailable",
+  );
+  addSummaryItem(
+    items,
+    "APC paid",
+    formatCurrency(work.apc_paid?.value, work.apc_paid?.currency) || "Unavailable",
+  );
+  addSummaryItem(items, "Retracted", work.is_retracted ? "Yes" : "No");
+
+  return items;
+}
+
+export function buildAwardLabels(awards: OpenAlexAward[] | undefined) {
+  const uniqueAwards = new Set<string>();
+
+  for (const award of awards || []) {
+    const label =
+      award.display_name?.trim() ||
+      buildAwardFallbackLabel(award) ||
+      award.name?.trim() ||
+      award.title?.trim() ||
+      "";
+
+    if (label) {
+      uniqueAwards.add(label);
+    }
+  }
+
+  return [...uniqueAwards];
+}
+
+function buildAwardFallbackLabel(award: OpenAlexAward) {
+  const funderName = award.funder_display_name?.trim() || "";
+  const awardId = award.funder_award_id?.trim() || "";
+
+  if (funderName && awardId) {
+    return `${funderName} (${awardId})`;
+  }
+
+  return funderName || awardId;
+}
+
+export function resolveWorkPdfUrl(work: OpenAlexWorkDetailApi) {
+  const candidateUrls = [
+    work.best_oa_location?.pdf_url,
+    work.primary_location?.pdf_url,
+    work.content_urls?.pdf,
+  ];
+
+  for (const candidateUrl of candidateUrls) {
+    if (candidateUrl?.trim()) {
+      return candidateUrl.trim();
+    }
+  }
+
+  return null;
+}
+
+function addSummaryItem(
+  items: PaperDetailSummaryItem[],
+  label: string,
+  value: string,
+  href?: string,
+) {
+  if (!value.trim()) {
+    return;
+  }
+
+  items.push({ href, label, value });
+}

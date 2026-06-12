@@ -1,4 +1,4 @@
-﻿import type { AuthRole } from "@/features/auth/constants/roles.ts";
+﻿import type {AuthRole} from "@/features/auth/constants/roles.ts";
 
 export interface LoginRequest {
   email: string;
@@ -26,10 +26,11 @@ export interface GoogleSignupPreviewResponse {
   email: string;
   firstName: string;
   lastName: string;
+  appBaseUrl?: string;
 }
 
 export interface ChangePasswordRequest {
-  currentPassword: string;
+  currentPassword?: string;
   newPassword: string;
   confirmNewPassword: string;
 }

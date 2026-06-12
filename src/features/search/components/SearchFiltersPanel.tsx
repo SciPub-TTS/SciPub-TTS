@@ -7,16 +7,24 @@ import type {
   SearchFilterGridProps,
   SearchFiltersHeaderProps,
   SearchFiltersPanelProps,
+  SearchFilterWidgetKey,
 } from "@/features/search/types";
-import { formatFullNumber } from "@/features/search/utils";
-
+import { normalizeSearchFilterWidgetKey } from "@/features/search/utils";
 import {
-  CheckboxFilter,
-  CitationFilter,
-  MultiSelectFilter,
-  OrcidFilter,
-  YearFilter,
-} from "./FilterControls";
+  AuthorFilterWidget,
+  AwardFilterWidget,
+  CitationFilterWidget,
+  CountryFilterWidget,
+  InstitutionFilterWidget,
+  OpenAccessFilterWidget,
+  OrcidFilterWidget,
+  PdfFilterWidget,
+  SearchFilterAddMenu,
+  SourceFilterWidget,
+  SubFieldFilterWidget,
+  TypeFilterWidget,
+  YearFilterWidget,
+} from "@/layout/components/Filters";
 
 export function SearchFiltersPanel({
   activeFilterCount,
@@ -30,18 +38,17 @@ export function SearchFiltersPanel({
   isLoadingMoreFilterOptions,
   isLoadingResults,
   matchedPaperCount,
-  showAllFilters,
+  visibleFilterWidgets,
   onApplyFilters,
   onFilterOptionSearch,
   onLoadMoreFilterOptions,
   onResetFilters,
   onToggleFilters,
-  onToggleMoreFilters,
+  onToggleVisibleFilterWidget,
   updateFilter,
 }: SearchFiltersPanelProps) {
-  // The filter panel is split into header, grid, summary, and actions.
   return (
-    <div className="rounded-b-2xl border-t border-slate-400 bg-slate-50/80">
+    <div className="rounded-b-2xl border-t border-black bg-slate-50/80">
       <SearchFiltersHeader
         activeFilterCount={activeFilterCount}
         filtersOpen={filtersOpen}
@@ -49,11 +56,11 @@ export function SearchFiltersPanel({
         onToggleFilters={onToggleFilters}
       />
 
-      {filtersOpen && (
+      {filtersOpen ? (
         <>
           <FilterVisibilityToggle
-            showAllFilters={showAllFilters}
-            onToggleMoreFilters={onToggleMoreFilters}
+            visibleFilterWidgets={visibleFilterWidgets}
+            onToggleVisibleFilterWidget={onToggleVisibleFilterWidget}
           />
 
           <SearchFilterGrid
@@ -62,7 +69,7 @@ export function SearchFiltersPanel({
             hasMoreFilterOptions={hasMoreFilterOptions}
             isLoadingFilterOptions={isLoadingFilterOptions}
             isLoadingMoreFilterOptions={isLoadingMoreFilterOptions}
-            showAllFilters={showAllFilters}
+            visibleFilterWidgets={visibleFilterWidgets}
             onFilterOptionSearch={onFilterOptionSearch}
             onLoadMoreFilterOptions={onLoadMoreFilterOptions}
             updateFilter={updateFilter}
@@ -78,7 +85,7 @@ export function SearchFiltersPanel({
             onResetFilters={onResetFilters}
           />
         </>
-      )}
+      ) : null}
     </div>
   );
 }
@@ -86,28 +93,20 @@ export function SearchFiltersPanel({
 function SearchFiltersHeader({
   activeFilterCount,
   filtersOpen,
-  matchedPaperCount,
   onToggleFilters,
 }: SearchFiltersHeaderProps) {
-  // These class names are separated so the open/closed state is readable.
-  const expandedChevronClassName = "rotate-180";
-  const collapsedChevronClassName = "";
-  const chevronClassName = filtersOpen
-    ? expandedChevronClassName
-    : collapsedChevronClassName;
+  const chevronClassName = filtersOpen ? "rotate-180" : "";
   const toggleLabel = filtersOpen ? "Collapse filters" : "Expand filters";
   const headerClassName = [
     "flex flex-col gap-3 px-5 py-4 md:flex-row md:items-center md:justify-between",
-    filtersOpen ? "border-b border-slate-400" : "rounded-b-2xl",
+    filtersOpen ? "border-b border-black" : "rounded-b-2xl",
   ].join(" ");
 
   return (
     <div className={headerClassName}>
       <div className="flex items-center gap-2">
         <SlidersHorizontal className="h-4 w-4 text-black" />
-        <span className="text-sm font-bold text-black">
-          Advanced filters
-        </span>
+        <span className="text-sm font-bold text-black">Advanced filters</span>
         <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-[#14532D] px-1.5 text-[10px] font-bold text-white">
           {activeFilterCount}
         </span>
@@ -122,36 +121,20 @@ function SearchFiltersHeader({
           <ChevronDown className={`h-4 w-4 transition ${chevronClassName}`} />
         </button>
       </div>
-
-      <p className="text-[11px] font-extrabold uppercase tracking-[0.28em] text-black">
-        Match:{" "}
-        <span className="text-black">
-          {formatFullNumber(matchedPaperCount)} papers
-        </span>
-      </p>
     </div>
   );
 }
 
 function FilterVisibilityToggle({
-  showAllFilters,
-  onToggleMoreFilters,
+  visibleFilterWidgets,
+  onToggleVisibleFilterWidget,
 }: FilterVisibilityToggleProps) {
-  const visibleFilterCount = showAllFilters ? 12 : 8;
-  const toggleButtonLabel = showAllFilters ? "Show less" : "Show more";
-
   return (
-    <div className="flex items-center justify-between px-5 pt-5">
-      <p className="text-xs font-bold text-black">
-        Showing {visibleFilterCount} of 12 filters
-      </p>
-      <button
-        type="button"
-        onClick={onToggleMoreFilters}
-        className="rounded-full border border-slate-400 bg-white px-3 py-1.5 text-xs font-bold text-[#14532D] transition hover:border-[#15803D] hover:bg-[#A3E635]/20"
-      >
-        {toggleButtonLabel}
-      </button>
+    <div className="flex justify-end border-b border-slate-200 px-5 py-4">
+      <SearchFilterAddMenu
+        onToggleWidget={onToggleVisibleFilterWidget}
+        visibleFilterWidgets={visibleFilterWidgets}
+      />
     </div>
   );
 }
@@ -162,174 +145,213 @@ function SearchFilterGrid({
   hasMoreFilterOptions,
   isLoadingFilterOptions,
   isLoadingMoreFilterOptions,
-  showAllFilters,
+  visibleFilterWidgets,
   onFilterOptionSearch,
   onLoadMoreFilterOptions,
   updateFilter,
 }: SearchFilterGridProps) {
-  // Each handler updates one specific field in SearchFilters.
-  function handleTypeChange(nextSelected: string[]) {
-    updateFilter("type", nextSelected);
-  }
+  const resultItems = visibleFilterWidgets.map((widgetKey) =>
+    renderFilterWidget(widgetKey, {
+      filterOptions,
+      filters,
+      hasMoreFilterOptions,
+      isLoadingFilterOptions,
+      isLoadingMoreFilterOptions,
+      onFilterOptionSearch,
+      onLoadMoreFilterOptions,
+      updateFilter,
+    }),
+  );
 
-  function handleOpenAccessChange(checked: boolean) {
-    updateFilter("openAccess", checked);
-  }
-
-  function handleSubFieldChange(nextSelected: string[]) {
-    updateFilter("subField", nextSelected);
-  }
-
-  function handleAuthorChange(nextSelected: string[]) {
-    updateFilter("author", nextSelected);
-  }
-
-  function handleInstitutionChange(nextSelected: string[]) {
-    updateFilter("institution", nextSelected);
-  }
-
-  function handlePdfChange(checked: boolean) {
-    updateFilter("pdf", checked);
-  }
-
-  function handleCountryChange(nextSelected: string[]) {
-    updateFilter("country", nextSelected);
-  }
-
-  function handleSourceChange(nextSelected: string[]) {
-    updateFilter("source", nextSelected);
-  }
-
-  function handleAwardChange(nextSelected: string[]) {
-    updateFilter("award", nextSelected);
+  if (resultItems.length === 0) {
+    return (
+      <div className="px-5 py-8">
+        <div className="rounded-3xl border border-dashed border-slate-300 bg-white px-6 py-10 text-center">
+          <p className="text-sm font-extrabold uppercase tracking-[0.24em] text-[#14532D]">
+            No Filter Widgets Yet
+          </p>
+          <p className="mt-2 text-sm font-medium text-slate-600">
+            Use `Add filter` to choose which filters should appear in this panel.
+          </p>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="grid gap-5 px-5 py-5 lg:grid-cols-4">
-      <YearFilter filters={filters} updateFilter={updateFilter} />
-
-      <MultiSelectFilter
-        filterKey="type"
-        label="Type"
-        options={filterOptions.type}
-        selected={filters.type}
-        onChange={handleTypeChange}
-      />
-
-      <CheckboxFilter
-        label="Open Access"
-        checked={filters.openAccess}
-        onChange={handleOpenAccessChange}
-      />
-
-      <MultiSelectFilter
-        filterKey="subField"
-        label="SubField"
-        options={filterOptions.subField}
-        selected={filters.subField}
-        onChange={handleSubFieldChange}
-      />
-
-      <MultiSelectFilter
-        filterKey="author"
-        label="Author"
-        hasMoreOptions={hasMoreFilterOptions.author}
-        isLoadingOptions={isLoadingFilterOptions.author}
-        isLoadingMoreOptions={isLoadingMoreFilterOptions.author}
-        options={filterOptions.author}
-        selected={filters.author}
-        onChange={handleAuthorChange}
-        onLoadMoreOptions={() => onLoadMoreFilterOptions("author")}
-        onSearchKeywordChange={(keyword) =>
-          onFilterOptionSearch("author", keyword)
-        }
-      />
-
-      <MultiSelectFilter
-        filterKey="institution"
-        label="Institution"
-        hasMoreOptions={hasMoreFilterOptions.institution}
-        isLoadingOptions={isLoadingFilterOptions.institution}
-        isLoadingMoreOptions={isLoadingMoreFilterOptions.institution}
-        options={filterOptions.institution}
-        selected={filters.institution}
-        onChange={handleInstitutionChange}
-        onLoadMoreOptions={() => onLoadMoreFilterOptions("institution")}
-        onSearchKeywordChange={(keyword) =>
-          onFilterOptionSearch("institution", keyword)
-        }
-      />
-
-      <CheckboxFilter
-        label="PDF"
-        checked={filters.pdf}
-        onChange={handlePdfChange}
-      />
-
-      <MultiSelectFilter
-        filterKey="country"
-        label="Country"
-        hasMoreOptions={hasMoreFilterOptions.country}
-        isLoadingOptions={isLoadingFilterOptions.country}
-        isLoadingMoreOptions={isLoadingMoreFilterOptions.country}
-        options={filterOptions.country}
-        selected={filters.country}
-        onChange={handleCountryChange}
-        onLoadMoreOptions={() => onLoadMoreFilterOptions("country")}
-        onSearchKeywordChange={(keyword) =>
-          onFilterOptionSearch("country", keyword)
-        }
-      />
-
-      {showAllFilters && (
-        <>
-          <CitationFilter filters={filters} updateFilter={updateFilter} />
-
-          <MultiSelectFilter
-            filterKey="source"
-            label="Source"
-            hasMoreOptions={hasMoreFilterOptions.source}
-            isLoadingOptions={isLoadingFilterOptions.source}
-            isLoadingMoreOptions={isLoadingMoreFilterOptions.source}
-            options={filterOptions.source}
-            selected={filters.source}
-            onChange={handleSourceChange}
-            onLoadMoreOptions={() => onLoadMoreFilterOptions("source")}
-            onSearchKeywordChange={(keyword) =>
-              onFilterOptionSearch("source", keyword)
-            }
-          />
-
-          <MultiSelectFilter
-            filterKey="award"
-            label="Award"
-            hasMoreOptions={hasMoreFilterOptions.award}
-            isLoadingOptions={isLoadingFilterOptions.award}
-            isLoadingMoreOptions={isLoadingMoreFilterOptions.award}
-            options={filterOptions.award}
-            selected={filters.award}
-            onChange={handleAwardChange}
-            onLoadMoreOptions={() => onLoadMoreFilterOptions("award")}
-            onSearchKeywordChange={(keyword) =>
-              onFilterOptionSearch("award", keyword)
-            }
-          />
-
-          <OrcidFilter
-            value={filters.indexedByOrcid}
-            updateFilter={updateFilter}
-          />
-        </>
-      )}
+    <div className="grid gap-5 px-5 py-5 lg:grid-cols-2 2xl:grid-cols-3">
+      {resultItems}
     </div>
   );
 }
 
-function AppliedFilterSummary({ summary }: AppliedFilterSummaryProps) {
-  const hasAppliedFilters = summary.length > 0;
+type RenderFilterWidgetParams = Omit<
+  SearchFilterGridProps,
+  "visibleFilterWidgets"
+>;
 
-  // Returning null means React renders nothing for this component.
-  if (!hasAppliedFilters) {
+function renderFilterWidget(
+  widgetKey: SearchFilterWidgetKey,
+  {
+    filterOptions,
+    filters,
+    hasMoreFilterOptions,
+    isLoadingFilterOptions,
+    isLoadingMoreFilterOptions,
+    onFilterOptionSearch,
+    onLoadMoreFilterOptions,
+    updateFilter,
+  }: RenderFilterWidgetParams,
+) {
+  const normalizedWidgetKey = normalizeSearchFilterWidgetKey(widgetKey);
+
+  switch (normalizedWidgetKey) {
+    case "year":
+      return (
+        <YearFilterWidget
+          key={widgetKey}
+          filters={filters}
+          updateFilter={updateFilter}
+        />
+      );
+    case "type":
+      return (
+        <TypeFilterWidget
+          key={widgetKey}
+          filterKey="type"
+          options={filterOptions.type}
+          selected={filters.type}
+          onChange={(nextSelected) => updateFilter("type", nextSelected)}
+        />
+      );
+    case "openAccess":
+      return (
+        <OpenAccessFilterWidget
+          key={widgetKey}
+          checked={filters.openAccess}
+          onChange={(checked) => updateFilter("openAccess", checked)}
+        />
+      );
+    case "subField":
+      return (
+        <SubFieldFilterWidget
+          key={widgetKey}
+          filterKey="subField"
+          options={filterOptions.subField}
+          selected={filters.subField}
+          onChange={(nextSelected) => updateFilter("subField", nextSelected)}
+        />
+      );
+    case "author":
+      return (
+        <AuthorFilterWidget
+          key={widgetKey}
+          filterKey="author"
+          hasMoreOptions={hasMoreFilterOptions.author}
+          isLoadingOptions={isLoadingFilterOptions.author}
+          isLoadingMoreOptions={isLoadingMoreFilterOptions.author}
+          options={filterOptions.author}
+          selected={filters.author}
+          onChange={(nextSelected) => updateFilter("author", nextSelected)}
+          onLoadMoreOptions={() => onLoadMoreFilterOptions("author")}
+          onSearchKeywordChange={(keyword) => onFilterOptionSearch("author", keyword)}
+        />
+      );
+    case "institution":
+      return (
+        <InstitutionFilterWidget
+          key={widgetKey}
+          filterKey="institution"
+          hasMoreOptions={hasMoreFilterOptions.institution}
+          isLoadingOptions={isLoadingFilterOptions.institution}
+          isLoadingMoreOptions={isLoadingMoreFilterOptions.institution}
+          options={filterOptions.institution}
+          selected={filters.institution}
+          onChange={(nextSelected) =>
+            updateFilter("institution", nextSelected)
+          }
+          onLoadMoreOptions={() => onLoadMoreFilterOptions("institution")}
+          onSearchKeywordChange={(keyword) =>
+            onFilterOptionSearch("institution", keyword)
+          }
+        />
+      );
+    case "pdf":
+      return (
+        <PdfFilterWidget
+          key={widgetKey}
+          checked={filters.pdf}
+          onChange={(checked) => updateFilter("pdf", checked)}
+        />
+      );
+    case "country":
+      return (
+        <CountryFilterWidget
+          key={widgetKey}
+          filterKey="country"
+          hasMoreOptions={hasMoreFilterOptions.country}
+          isLoadingOptions={isLoadingFilterOptions.country}
+          isLoadingMoreOptions={isLoadingMoreFilterOptions.country}
+          options={filterOptions.country}
+          selected={filters.country}
+          onChange={(nextSelected) => updateFilter("country", nextSelected)}
+          onLoadMoreOptions={() => onLoadMoreFilterOptions("country")}
+          onSearchKeywordChange={(keyword) => onFilterOptionSearch("country", keyword)}
+        />
+      );
+    case "citation":
+      return (
+        <CitationFilterWidget
+          key={widgetKey}
+          filters={filters}
+          updateFilter={updateFilter}
+        />
+      );
+    case "source":
+      return (
+        <SourceFilterWidget
+          key={widgetKey}
+          filterKey="source"
+          hasMoreOptions={hasMoreFilterOptions.source}
+          isLoadingOptions={isLoadingFilterOptions.source}
+          isLoadingMoreOptions={isLoadingMoreFilterOptions.source}
+          options={filterOptions.source}
+          selected={filters.source}
+          onChange={(nextSelected) => updateFilter("source", nextSelected)}
+          onLoadMoreOptions={() => onLoadMoreFilterOptions("source")}
+          onSearchKeywordChange={(keyword) => onFilterOptionSearch("source", keyword)}
+        />
+      );
+    case "award":
+      return (
+        <AwardFilterWidget
+          key={widgetKey}
+          filterKey="award"
+          hasMoreOptions={hasMoreFilterOptions.award}
+          isLoadingOptions={isLoadingFilterOptions.award}
+          isLoadingMoreOptions={isLoadingMoreFilterOptions.award}
+          options={filterOptions.award}
+          selected={filters.award}
+          onChange={(nextSelected) => updateFilter("award", nextSelected)}
+          onLoadMoreOptions={() => onLoadMoreFilterOptions("award")}
+          onSearchKeywordChange={(keyword) => onFilterOptionSearch("award", keyword)}
+        />
+      );
+    case "indexedByOrcid":
+      return (
+        <OrcidFilterWidget
+          key={widgetKey}
+          value={filters.indexedByOrcid}
+          updateFilter={updateFilter}
+        />
+      );
+    default:
+      return null;
+  }
+}
+
+function AppliedFilterSummary({ summary }: AppliedFilterSummaryProps) {
+  if (summary.length === 0) {
     return null;
   }
 
@@ -360,7 +382,6 @@ function FilterActions({
   onApplyFilters,
   onResetFilters,
 }: FilterActionsProps) {
-  // Build the label before JSX to avoid inline plural logic.
   const selectedFilterLabel =
     activeFilterCount === 1 ? "selected filter" : "selected filters";
 
@@ -392,4 +413,3 @@ function FilterActions({
     </div>
   );
 }
-

@@ -8,7 +8,7 @@ import {
   Search,
   User,
 } from "lucide-react";
-import { Link, NavLink, useNavigate } from "react-router-dom";
+import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 
 import { ROUTES } from "@/app/router";
 import logoImage from "@/assets/images/logo.png";
@@ -18,7 +18,7 @@ import {
 } from "@/features/auth/utils/authStorage";
 
 const workspaceMenuItems = [
-  { label: "Dashboard", path: ROUTES.DASHBOARD, icon: LayoutDashboard },
+  { label: "Trending Topic", path: ROUTES.TRENDING_TOPIC, icon: LayoutDashboard },
   { label: "New Feed", path: ROUTES.FEED, icon: Rss },
   { label: "Search Papers", path: ROUTES.SEARCH, icon: Search },
   { label: "Bookmarks", path: ROUTES.BOOKMARKS, icon: Bookmark },
@@ -41,6 +41,7 @@ function getInitials(name: string) {
 }
 
 export default function MainSidebar() {
+  const location = useLocation();
   const navigate = useNavigate();
   const currentUser = getCurrentUser();
   const loggedIn = Boolean(currentUser);
@@ -54,10 +55,10 @@ export default function MainSidebar() {
   }
 
   return (
-    <aside className="sticky top-0 flex h-screen w-56 shrink-0 flex-col bg-[#000000] text-slate-200">
+    <div className="fixed inset-y-0 left-0 z-50 flex h-screen w-56 flex-col bg-[#000000] text-slate-200">
       <Link
         to={ROUTES.HOME}
-        className="flex items-center gap-3 border-b border-emerald-400/20 px-4 py-5 transition hover:bg-emerald-500/10"
+        className="flex min-h-[76px] items-center gap-3 border-b-2 border-[#3c8534] px-4"
       >
         <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-lg bg-white shadow-sm">
           <img
@@ -81,6 +82,10 @@ export default function MainSidebar() {
         <nav className="space-y-1">
           {workspaceMenuItems.map((item) => {
             const Icon = item.icon;
+            const isSearchSectionActive =
+              item.path === ROUTES.SEARCH &&
+              (location.pathname === ROUTES.SEARCH ||
+                location.pathname.startsWith("/papers/"));
 
             return (
               <NavLink
@@ -89,9 +94,9 @@ export default function MainSidebar() {
                 className={({ isActive }) =>
                   [
                     "flex items-center gap-3 rounded-lg px-2.5 py-2 text-xs font-medium transition",
-                    isActive
+                    isActive || isSearchSectionActive
                       ? "bg-emerald-600 text-white shadow-sm ring-1 ring-emerald-300/40"
-                      : "text-slate-300 hover:bg-emerald-500/15 hover:text-emerald-100",
+                      : "text-slate-300 ",
                   ].join(" ")
                 }
               >
@@ -103,7 +108,7 @@ export default function MainSidebar() {
         </nav>
       </div>
 
-      <div className="border-t border-emerald-400/20 px-2.5 py-4">
+      <div className="border-t-2 border-[#3c8534] px-2.5 py-4">
         <div className="mb-4 flex items-center gap-3 rounded-lg border border-white/10 bg-white/[0.08] px-2.5 py-2.5">
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-xs font-bold text-white">
             {initials}
@@ -158,6 +163,6 @@ export default function MainSidebar() {
           )}
         </nav>
       </div>
-    </aside>
+    </div>
   );
 }

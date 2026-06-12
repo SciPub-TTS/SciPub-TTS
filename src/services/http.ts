@@ -6,18 +6,21 @@ import {
     setAccessToken,
 } from "@/features/auth/utils/authStorage";
 import type {AuthResponse } from "@/features/auth/types/auth.types";
+import { apiBaseUrl } from "@/config/appConfig";
 import type {ApiResponse} from "@/types/common.types.ts";
 
-const API_BASE_URL =
-    import.meta.env.VITE_BACKEND_URL;
-
 export const http = axios.create({
-    baseURL: API_BASE_URL,
+    baseURL: apiBaseUrl,
     withCredentials: true,
 });
 
 const refreshClient = axios.create({
-    baseURL: API_BASE_URL,
+    baseURL: apiBaseUrl,
+    withCredentials: true,
+});
+
+export const publicHttp = axios.create({
+    baseURL: apiBaseUrl,
     withCredentials: true,
 });
 

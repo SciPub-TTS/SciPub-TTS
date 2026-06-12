@@ -11,7 +11,7 @@ const en = {
   },
 
   navigation: {
-    dashboard: "Dashboard",
+    trendingTopic: "Trending Topic",
     newFeed: "New Feed",
     searchPapers: "Search Papers",
     bookmarks: "Bookmarks",

@@ -22,7 +22,7 @@ const systemStatusItems = [
   },
   {
     icon: CalendarClock,
-    label: "Update Mode:",
+    label: "Update Trends:",
     value: "Weekly",
   },
 ];

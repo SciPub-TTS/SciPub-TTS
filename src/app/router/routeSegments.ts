@@ -2,7 +2,7 @@ export const ROUTE_SEGMENTS = {
   // Children of "/"
   GUIDE: "guide",
   SEARCH: "search",
-  DASHBOARD: "dashboard",
+  TRENDING_TOPIC: "trending-topic",
   PAPER_DETAIL: "papers/:paperId",
 
   PROFILE: "profile",

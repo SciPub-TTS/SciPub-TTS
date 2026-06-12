@@ -9,6 +9,7 @@ import { getApiErrorMessage } from "@/features/auth/utils/getApiErrorMessage";
 import { registerSchema } from "@/features/auth/validators/auth.schema";
 import RegisterFormPanel from "@/features/auth/components/panel/RegisterFormPanel.tsx";
 import RegisterPreviewPanel from "@/features/auth/components/panel/RegisterReviewPanel.tsx";
+import { useReloadOnHistoryRestore } from "@/features/auth/hooks/useReloadOnHistoryRestore";
 
 type RegisterFormState = {
     firstName: string;
@@ -28,6 +29,7 @@ const initialForm: RegisterFormState = {
 
 export default function RegisterPage() {
     const navigate = useNavigate();
+    useReloadOnHistoryRestore();
 
     const [form, setForm] = useState<RegisterFormState>(initialForm);
     const [submitting, setSubmitting] = useState(false);
@@ -68,6 +70,7 @@ export default function RegisterPage() {
                 email: validation.data.email,
                 password: validation.data.password,
                 confirmPassword: validation.data.confirmPassword,
+                appBaseUrl: window.location.origin,
             };
 
             const response = await submitRegister(payload);
