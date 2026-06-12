@@ -1,6 +1,5 @@
-import { createBrowserRouter, Navigate, type Location } from "react-router-dom";
+import { createBrowserRouter, Navigate } from "react-router-dom";
 
-import type { AppRouteHandle } from "./breadcrumbs";
 import { ROUTES } from "./routes";
 import { ROUTE_SEGMENTS } from "./routeSegments";
 
@@ -23,7 +22,6 @@ import SearchPage from "@/features/search/components/SearchPage";
 import PaperDetailPage from "@/features/detailpapers/components/PaperDetailPage";
 
 import ProfilePage from "@/features/profile/components/ProfilePage";
-import BookmarksPage from "@/features/bookmarks/components/BookmarksPage";
 import FeedPage from "@/features/newfeeds/components/FeedPage";
 import ReportPage from "@/features/reports/components/ReportPage";
 
@@ -89,6 +87,9 @@ function getProfileBreadcrumb(search: string): AppRouteHandle["breadcrumb"] {
 
   return "Profile";
 }
+import BookmarkLibraryPage from "@/features/bookmarks/components/BookmarkLibraryPage.tsx";
+import GoogleRegisterCompletePage from "@/features/auth/components/pages/GoogleRegisterCompletePage.tsx";
+import type {AppRouteHandle} from "@/app/router/breadcrumbs.ts";
 
 function PlaceholderPage({ title }: { title: string }) {
   return (
@@ -123,6 +124,10 @@ export const router = createBrowserRouter([
         path: ROUTES.FORGOT_PASSWORD_RESET,
         element: <ResetPasswordPage />,
       },
+      {
+        path: ROUTES.GOOGLE_REGISTER_COMPLETE,
+        element: <GoogleRegisterCompletePage/>
+      }
     ],
   },
 
@@ -190,13 +195,6 @@ export const router = createBrowserRouter([
             },
           },
           {
-            path: ROUTE_SEGMENTS.BOOKMARKS,
-            element: <BookmarksPage />,
-            handle: {
-              breadcrumb: "Bookmarks",
-            },
-          },
-          {
             path: ROUTE_SEGMENTS.REPORT,
             element: <ReportPage />,
             handle: {
@@ -219,6 +217,13 @@ export const router = createBrowserRouter([
                 { label: "Profile", to: ROUTES.PROFILE },
                 { label: "Security" },
               ],
+            },
+          },
+          {
+            path: ROUTES.BOOKMARKS,
+            element: <BookmarkLibraryPage />,
+            handle: {
+              breadcrumb: "Bookmarks",
             },
           },
         ],

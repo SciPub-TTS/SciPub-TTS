@@ -5,7 +5,6 @@ import { ROUTES } from "@/app/router";
 import AuthHeader from "@/features/auth/components/common/AuthHeader";
 import { authApi } from "@/features/auth/services/auth.api";
 import { submitRegister } from "@/features/auth/services/authFlows";
-import type { RegisterLocalRequest } from "@/features/auth/types/auth.types";
 import { getApiErrorMessage } from "@/features/auth/utils/getApiErrorMessage";
 import { registerSchema } from "@/features/auth/validators/auth.schema";
 import RegisterFormPanel from "@/features/auth/components/panel/RegisterFormPanel.tsx";
@@ -65,7 +64,7 @@ export default function RegisterPage() {
         try {
             setSubmitting(true);
 
-            const payload: RegisterLocalRequest = {
+            const payload = {
                 firstName: validation.data.firstName,
                 lastName: validation.data.lastName,
                 email: validation.data.email,
