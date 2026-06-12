@@ -1,38 +1,31 @@
-﻿import { Navigate, Outlet, useLocation } from "react-router-dom";
+// src/features/auth/components/ProtectedRoute.tsx
+import { Navigate, Outlet, useLocation } from "react-router-dom";
 
 import { ROUTES } from "@/app/router";
-import {
-  getRedirectPathByRole,
-  hasAllowedRole,
-  isAuthenticated,
-} from "../utils/authGuard";
+import type { AuthRole } from "@/features/auth/constants/roles";
+import { AUTH_ROLES } from "@/features/auth/constants/roles";
+import { getCurrentUser, isAuthenticated } from "@/features/auth/utils/authStorage";
 
 type ProtectedRouteProps = {
-  allowedRoles?: ReadonlyArray<string>;
-  redirectTo?: string;
+    allowedRoles: AuthRole[];
 };
 
-export default function ProtectedRoute({
-  allowedRoles,
-  redirectTo = ROUTES.LOGIN,
-}: ProtectedRouteProps) {
-  const location = useLocation();
+export default function ProtectedRoute({ allowedRoles }: ProtectedRouteProps) {
+    const location = useLocation();
+    const currentUser = getCurrentUser();
 
-  if (!isAuthenticated()) {
-    return (
-      <Navigate
-        to={redirectTo}
-        replace
-        state={{
-          from: location,
-        }}
-      />
-    );
-  }
+    if (!isAuthenticated() || !currentUser) {
+        return <Navigate to={ROUTES.LOGIN} replace state={{ from: location }} />;
+    }
 
-  if (!hasAllowedRole(allowedRoles)) {
-    return <Navigate to={getRedirectPathByRole()} replace />;
-  }
+    if (!allowedRoles.includes(currentUser.role)) {
+        const fallback =
+            currentUser.role === AUTH_ROLES.ADMIN
+                ? ROUTES.ADMIN_DASHBOARD
+                : ROUTES.TRENDING_TOPIC;
 
-  return <Outlet />;
+        return <Navigate to={fallback} replace />;
+    }
+
+    return <Outlet />;
 }

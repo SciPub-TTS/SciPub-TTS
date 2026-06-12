@@ -1,10 +1,12 @@
-import { LoaderCircle } from "lucide-react";
-import type { MouseEvent, RefObject } from "react";
+import { Check, ChevronDown, LoaderCircle } from "lucide-react";
+import type { ReactNode, RefObject } from "react";
 import { memo, useEffect, useRef } from "react";
 
-import { mockResultSortOptions } from "@/features/search/services";
+import {
+  searchResultSortGroups,
+  type SearchResultSortGroup,
+} from "@/features/search/services";
 import type {
-  ResultsHeaderProps,
   ResultsListProps,
   SearchResultsProps,
 } from "@/features/search/types";
@@ -20,13 +22,20 @@ function SearchResultsComponent({
   isLoadingResults,
   isLoadingMoreResults,
   responseTimeSeconds,
-  selectedSort,
+  selectedSorts,
   totalResultCount,
   visiblePaperResults,
   onLoadMoreResults,
-  onSelectSort,
+  onClearSorts,
+  onToggleSort,
 }: SearchResultsProps) {
   const lazyLoadAnchorRef = useRef<HTMLDivElement>(null);
+  const resultTitle = appliedSearchQuery || "all papers";
+  const formattedResultCount = formatFullNumber(totalResultCount);
+  const formattedResponseTime = formatResponseTime(responseTimeSeconds);
+  const resultMetaText = `${formattedResultCount} papers - ${formattedResponseTime}.`;
+  const canSortResults =
+    hasSearched && visiblePaperResults.length > 0 && !isLoadingResults;
 
   useEffect(() => {
     const anchor = lazyLoadAnchorRef.current;
@@ -62,51 +71,66 @@ function SearchResultsComponent({
     onLoadMoreResults,
   ]);
 
-  if (isLoadingResults) {
-    return (
-      <section>
-        <SearchLoadingState />
-      </section>
-    );
-  }
-
-  if (!hasSearched) {
-    return (
-      <section>
-        <div className="rounded-2xl border border-slate-600 bg-white p-8 text-center">
-          <p className="text-lg font-bold text-black">
-            Enter a keyword or choose filters, then click Search.
-          </p>
-        </div>
-      </section>
-    );
-  }
-
   return (
     <section>
       <div className="space-y-4">
-        <ResultsHeader
-          appliedSearchQuery={appliedSearchQuery}
-          isLoadingResults={isLoadingResults}
-          responseTimeSeconds={responseTimeSeconds}
-          totalResultCount={totalResultCount}
-          selectedSort={selectedSort}
-          onSelectSort={onSelectSort}
-        />
+        <div
+          className={[
+            "flex gap-4",
+            hasSearched && !isLoadingResults
+              ? "flex-col lg:flex-row lg:items-start lg:justify-between"
+              : "justify-end",
+          ].join(" ")}
+        >
+          {hasSearched && !isLoadingResults ? (
+            <div className="min-w-0 flex-1">
+              <h2 className="text-2xl font-semibold text-black">
+                Results for{" "}
+                <span className="italic text-[#14532D]">"{resultTitle}"</span>
+              </h2>
+              <p className="mt-1 text-xs font-extrabold uppercase tracking-[0.24em] text-black">
+                {resultMetaText}
+              </p>
+            </div>
+          ) : null}
 
-        <ResultsList
-          autoLoadAnchorIndex={autoLoadAnchorIndex}
-          hasSearched={hasSearched}
-          isLoadingResults={isLoadingResults}
-          lazyLoadAnchorRef={lazyLoadAnchorRef}
-          visiblePaperResults={visiblePaperResults}
-        />
+          <div className="flex shrink-0 justify-end lg:justify-start">
+            <MemoizedSortActions
+              canSortResults={canSortResults}
+              selectedSorts={selectedSorts}
+              onClearSorts={onClearSorts}
+              onToggleSort={onToggleSort}
+            />
+          </div>
+        </div>
 
-        {isLoadingMoreResults && (
+        {isLoadingResults ? (
+          <SearchLoadingState />
+        ) : !hasSearched ? (
+          <div className="rounded-2xl border border-slate-600 bg-white p-8 text-center">
+            <p className="text-lg font-bold text-black">
+              Enter a keyword or choose filters, then click Search or Apply filters.
+            </p>
+          </div>
+        ) : visiblePaperResults.length === 0 ? (
+          <div className="rounded-2xl border border-slate-600 bg-white p-8 text-center">
+            <p className="text-lg font-bold text-black">
+              No papers matched this search.
+            </p>
+          </div>
+        ) : (
+          <ResultsList
+            autoLoadAnchorIndex={autoLoadAnchorIndex}
+            lazyLoadAnchorRef={lazyLoadAnchorRef}
+            visiblePaperResults={visiblePaperResults}
+          />
+        )}
+
+        {hasSearched && !isLoadingResults && isLoadingMoreResults ? (
           <p className="py-2 text-center text-sm font-semibold text-black">
             Loading more results...
           </p>
-        )}
+        ) : null}
       </div>
     </section>
   );
@@ -125,95 +149,167 @@ function SearchLoadingState() {
   );
 }
 
-function ResultsHeader({
-  appliedSearchQuery,
-  isLoadingResults,
-  responseTimeSeconds,
-  totalResultCount,
-  selectedSort,
-  onSelectSort,
-}: ResultsHeaderProps) {
-  // Empty query means the user is viewing the full result list.
-  const resultTitle = appliedSearchQuery || "all papers";
-  const formattedResultCount = formatFullNumber(totalResultCount);
-  const formattedResponseTime = formatResponseTime(responseTimeSeconds);
-  const resultMetaText = `${formattedResultCount} papers - ${formattedResponseTime} - matched title, abstract, full text`;
+type SortActionsProps = {
+  canSortResults: boolean;
+  selectedSorts: string[];
+  onClearSorts: () => void;
+  onToggleSort: (sortOption: string) => void;
+};
 
-  function handleSortClick(event: MouseEvent<HTMLButtonElement>) {
-    // value comes from the clicked sort button.
-    const sortOption = event.currentTarget.value;
+type ResultsListWithAnchorProps = ResultsListProps & {
+  lazyLoadAnchorRef: RefObject<HTMLDivElement | null>;
+};
 
-    onSelectSort(sortOption);
-  }
+function SortActionsComponent(props: SortActionsProps) {
+  const { canSortResults, selectedSorts, onClearSorts, onToggleSort } = props;
 
   return (
-    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-      <div>
-        <h2 className="text-2xl font-semibold text-black">
-          Results for{" "}
-          <span className="italic text-[#14532D]">"{resultTitle}"</span>
-        </h2>
-        <p className="mt-1 text-xs font-extrabold uppercase tracking-[0.24em] text-black">
-          {resultMetaText}
-        </p>
-      </div>
-
-      <div className="flex items-center gap-2">
-        <span className="text-[10px] font-extrabold uppercase tracking-[0.24em] text-black">
-          Sort:
-        </span>
-        <div className="flex overflow-hidden rounded-lg border border-slate-400 bg-white divide-x divide-slate-400">
-          {mockResultSortOptions.map((sortOption) => (
-            <button
-              key={sortOption}
-              type="button"
-              value={sortOption}
-              onClick={handleSortClick}
-              disabled={isLoadingResults}
-              className={[
-                "px-4 py-2 text-xs font-bold transition disabled:cursor-not-allowed disabled:opacity-60",
-                selectedSort === sortOption
-                  ? "bg-[#14532D] text-white"
-                  : "text-black hover:bg-slate-200 hover:text-black",
-              ].join(" ")}
-            >
-              {sortOption}
-            </button>
-          ))}
-        </div>
-      </div>
+    <div className="flex flex-wrap items-end gap-3 rounded-2xl border border-black bg-slate-50/80 p-3 shadow-sm">
+      {searchResultSortGroups.map((group) => (
+        <MemoizedSortDropdown
+          key={group.key}
+          group={group}
+          canSortResults={canSortResults}
+          selectedSort={
+            group.options.find((option) => selectedSorts.includes(option.value))
+              ?.value ?? ""
+          }
+          onToggleSort={onToggleSort}
+        />
+      ))}
+      <button
+        type="button"
+        onClick={onClearSorts}
+        disabled={!canSortResults || selectedSorts.length === 0}
+        className={[
+          "h-10 rounded-lg border px-4 text-sm font-bold transition disabled:cursor-not-allowed disabled:opacity-50",
+          canSortResults && selectedSorts.length > 0
+            ? "border-black bg-white text-black hover:bg-red-600 hover:text-white"
+            : "border-black bg-slate-200 text-slate-500",
+        ].join(" ")}
+      >
+        Clear
+      </button>
     </div>
   );
 }
 
-function ResultsList({
-  autoLoadAnchorIndex,
-  hasSearched,
-  isLoadingResults,
-  lazyLoadAnchorRef,
-  visiblePaperResults,
-}: ResultsListProps & {
-  lazyLoadAnchorRef: RefObject<HTMLDivElement | null>;
-}) {
-  if (isLoadingResults) {
-    return (
-      <div className="rounded-2xl border border-slate-600 bg-white p-8 text-center">
-        <p className="text-lg font-bold text-black">Loading results...</p>
-      </div>
+const MemoizedSortActions = memo(SortActionsComponent);
+
+type SortDropdownProps = {
+  canSortResults: boolean;
+  group: SearchResultSortGroup;
+  selectedSort: string;
+  onToggleSort: (sortOption: string) => void;
+};
+
+function SortDropdownComponent(props: SortDropdownProps) {
+  const { canSortResults, group, selectedSort, onToggleSort } = props;
+  const detailsRef = useRef<HTMLDetailsElement>(null);
+  const selectedOption =
+    group.options.find((option) => option.value === selectedSort) ?? null;
+  const isActive = selectedOption !== null;
+  const summaryLabel = selectedOption?.label ?? "Any";
+
+  function handleDetailsToggle() {
+    const currentDropdown = detailsRef.current;
+
+    if (!currentDropdown?.open) {
+      return;
+    }
+
+    const allDropdowns = document.querySelectorAll<HTMLDetailsElement>(
+      'details[data-search-sort-dropdown="true"]',
     );
+
+    allDropdowns.forEach((dropdown) => {
+      if (dropdown !== currentDropdown) {
+        dropdown.open = false;
+      }
+    });
   }
 
-  if (hasSearched && visiblePaperResults.length === 0) {
-    return (
-      <div className="rounded-2xl border  border-slate-600 bg-white p-8 text-center">
-        <p className="text-lg font-bold text-black">
-          No papers matched this search.
-        </p>
-      </div>
-    );
+  function handleSelectSort(sortValue: string) {
+    onToggleSort(sortValue);
+
+    if (detailsRef.current) {
+      detailsRef.current.open = false;
+    }
   }
 
-  const resultItems = [];
+  return (
+    <div className="space-y-2">
+      <span className="block text-[10px] font-extrabold uppercase tracking-[0.28em] text-black">
+        {group.label}
+      </span>
+
+      <details
+        ref={detailsRef}
+        className="group relative min-w-[8.75rem]"
+        data-search-sort-dropdown="true"
+        onToggle={handleDetailsToggle}
+      >
+        <summary
+          className={[
+            "flex h-10 cursor-pointer list-none items-center justify-between rounded-sm border border-black bg-white px-2.5 text-sm font-semibold text-black outline-none transition",
+            "marker:content-none [&::-webkit-details-marker]:hidden",
+            isActive
+              ? "border-[#15803D] bg-[#A3E635]/15"
+              : "hover:border-[#15803D]",
+            canSortResults
+              ? ""
+              : "pointer-events-none border-black bg-slate-100 text-slate-500",
+          ].join(" ")}
+        >
+          <span className="truncate">{summaryLabel}</span>
+          <ChevronDown
+            className={[
+              "h-4 w-4 transition group-open:rotate-180",
+              canSortResults ? "text-black" : "text-slate-400",
+            ].join(" ")}
+          />
+        </summary>
+
+        <div className="absolute left-0 top-full z-20 mt-2 w-full min-w-[9.5rem] divide-y divide-black overflow-hidden rounded-sm border border-black bg-white shadow-xl">
+          {group.options.map((option) => {
+            const isSelected = selectedSort === option.value;
+
+            return (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => handleSelectSort(option.value)}
+                className={[
+                  "flex w-full items-center gap-2 px-2.5 py-2 text-left text-sm font-semibold transition",
+                  isSelected
+                    ? "bg-[#A3E635]/20 text-[#15803D]"
+                    : "text-black hover:bg-[#A3E635]/20 hover:text-[#15803D]",
+                ].join(" ")}
+              >
+                <span
+                  className={[
+                    "flex h-4 w-4 items-center justify-center",
+                    isSelected ? "text-[#14532D]" : "text-transparent",
+                  ].join(" ")}
+                >
+                  <Check className="h-4 w-4" />
+                </span>
+                <span>{option.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      </details>
+    </div>
+  );
+}
+
+const MemoizedSortDropdown = memo(SortDropdownComponent);
+
+function ResultsList(props: ResultsListWithAnchorProps) {
+  const { autoLoadAnchorIndex, lazyLoadAnchorRef, visiblePaperResults } = props;
+
+  const resultItems: ReactNode[] = [];
   for (let index = 0; index < visiblePaperResults.length; index += 1) {
     if (index === autoLoadAnchorIndex) {
       resultItems.push(

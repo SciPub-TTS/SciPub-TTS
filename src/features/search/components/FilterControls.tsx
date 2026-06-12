@@ -63,7 +63,12 @@ export function MultiSelectFilter({
   }
 
   function handleOptionListScroll(event: UIEvent<HTMLDivElement>) {
-    if (!hasMoreOptions || isLoadingOptions || isLoadingMoreOptions || !onLoadMoreOptions) {
+    if (
+      !hasMoreOptions ||
+      isLoadingOptions ||
+      isLoadingMoreOptions ||
+      !onLoadMoreOptions
+    ) {
       return;
     }
 
@@ -116,9 +121,6 @@ export function MultiSelectFilter({
 
         <div className="absolute left-0 top-full z-50 mt-2 w-full min-w-0 max-w-full overflow-hidden rounded-xl border border-slate-300 bg-white shadow-xl">
           <div className="border-b border-slate-300 bg-slate-50/80 p-2">
-            <p className="mb-1 px-1 text-[10px] font-extrabold uppercase tracking-[0.2em] text-black">
-              Search
-            </p>
             <div className="flex h-9 items-center gap-2 rounded-lg border border-slate-400 bg-white px-2">
               <Search className="h-4 w-4 text-black" />
               <input
@@ -491,4 +493,3 @@ function removeSelectedOption(selected: string[], optionToRemove: string) {
 
   return nextSelected;
 }
-

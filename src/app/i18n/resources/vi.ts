@@ -11,7 +11,7 @@ const vi = {
   },
 
   navigation: {
-    dashboard: "Bảng điều khiển",
+    trendingTopic: "Chủ đề xu hướng",
     newFeed: "Bảng tin",
     searchPapers: "Tìm bài báo",
     bookmarks: "Đã lưu",

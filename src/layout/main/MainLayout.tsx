@@ -1,24 +1,36 @@
-import { Outlet } from "react-router-dom";
+import { Navigate, Outlet, useLocation } from "react-router-dom";
+
+import { ROUTES } from "@/app/router";
+import { AUTH_ROLES } from "@/features/auth/constants/roles";
+import { getCurrentUser } from "@/features/auth/utils/authStorage";
 
 import MainFooter from "./Footer";
 import MainHeader from "./Header";
 import MainSidebar from "./Sidebar";
 
 export default function MainLayout() {
+  const location = useLocation();
+  const currentUser = getCurrentUser();
+
+  if (
+    currentUser?.role === AUTH_ROLES.ADMIN &&
+    location.pathname === ROUTES.TRENDING_TOPIC
+  ) {
+    return <Navigate to={ROUTES.ADMIN_DASHBOARD} replace />;
+  }
+
   return (
     <div className="min-h-screen bg-slate-50">
-      <div className="flex min-h-screen">
-        <MainSidebar />
+      <MainSidebar />
 
-        <div className="flex min-h-screen flex-1 flex-col">
-          <MainHeader />
+      <div className="ml-56 flex min-h-screen flex-col">
+        <MainHeader />
 
-          <main className="flex-1 p-6">
-            <Outlet />
-          </main>
+        <main className="flex-1 p-6">
+          <Outlet />
+        </main>
 
-          <MainFooter />
-        </div>
+        <MainFooter />
       </div>
     </div>
   );

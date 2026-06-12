@@ -3,7 +3,11 @@ import {
   SEARCH_VISIBLE_SAVED_SEARCH_LIMIT,
 } from "../constants";
 import { mockSearchYearRange } from "../services";
-import type { SavedSearch, SearchFilters } from "../types";
+import type {
+  SavedSearch,
+  SearchFilters,
+  SearchFilterWidgetKey,
+} from "../types";
 
 const { currentYear, minimumYear } = mockSearchYearRange;
 
@@ -15,12 +19,55 @@ const compactNumberFormatter = new Intl.NumberFormat("en", {
 
 const fullNumberFormatter = new Intl.NumberFormat("en");
 
+const searchFilterWidgetKeyMap = {
+  year: "year",
+  type: "type",
+  openaccess: "openAccess",
+  subfield: "subField",
+  author: "author",
+  institution: "institution",
+  pdf: "pdf",
+  country: "country",
+  citation: "citation",
+  citationcount: "citation",
+  source: "source",
+  award: "award",
+  indexedbyorcid: "indexedByOrcid",
+} satisfies Record<string, SearchFilterWidgetKey>;
+
 export function formatCompactNumber(value: number) {
   return compactNumberFormatter.format(value);
 }
 
 export function formatFullNumber(value: number) {
   return fullNumberFormatter.format(value);
+}
+
+export function normalizeSearchFilterWidgetKey(value: string) {
+  const normalizedValue = value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "") as keyof typeof searchFilterWidgetKeyMap;
+
+  return searchFilterWidgetKeyMap[normalizedValue] || null;
+}
+
+export function normalizeSearchFilterWidgetKeys(values: string[]) {
+  const seen = new Set<SearchFilterWidgetKey>();
+  const normalizedValues: SearchFilterWidgetKey[] = [];
+
+  for (const value of values) {
+    const normalizedValue = normalizeSearchFilterWidgetKey(value);
+
+    if (!normalizedValue || seen.has(normalizedValue)) {
+      continue;
+    }
+
+    seen.add(normalizedValue);
+    normalizedValues.push(normalizedValue);
+  }
+
+  return normalizedValues;
 }
 
 export function formatLatestUpdate(minutesAgo: number) {

@@ -1,6 +1,21 @@
-﻿// Barrel export -- src/features/papers/services
-// Export cac members ra ngoai, vi du:
-//   export { default as MyComponent } from './MyComponent'
-//   export * from './types'
+import { buildApiPath, requestJson } from "@/lib/api/fetchJson";
 
-export {};
+import type {
+  OpenAlexWorkDetailApi,
+  PaperDetailData,
+} from "../types";
+import { mapWorkDetailToPaperDetail } from "../mappers/paperDetailMapper";
+
+export async function getPaperDetail(paperId: string): Promise<PaperDetailData> {
+  const normalizedPaperId = paperId.trim();
+  if (!normalizedPaperId) {
+    throw new Error("Paper ID is missing.");
+  }
+
+  const endpoint = buildApiPath(
+    `/api/papers/${encodeURIComponent(normalizedPaperId)}`,
+  );
+  const data = await requestJson<OpenAlexWorkDetailApi>(endpoint);
+
+  return mapWorkDetailToPaperDetail(data);
+}

@@ -5,14 +5,27 @@ export const ROUTES = {
   REGISTER: "/register",
   GUIDE: "/guide",
   SEARCH: "/search",
+<<<<<<< HEAD
   DASHBOARD: "/dashboard",
   TOPIC_DASHBOARD: "/topic_dashboard",
+=======
+  TRENDING_TOPIC: "/trending-topic",
+
+  //Auth
+  FORGOT_PASSWORD: "/forgot-password",
+  FORGOT_PASSWORD_VERIFY: "/forgot-password/verify-code",
+  FORGOT_PASSWORD_RESET: "/forgot-password/reset",
+
+  VERIFY_EMAIL_SUCCESS: "/verify-email/success",
+  VERIFY_EMAIL_ERROR: "/verify-email/error",
+>>>>>>> 6fc401dc9c3adeff05289fef3ddb40d9b65567c8
 
   // Paper
   PAPER_DETAIL: "/papers/:paperId",
 
   // User protected
   PROFILE: "/profile",
+  PROFILE_SECURITY: "/profile/security",
   BOOKMARKS: "/bookmarks",
   FEED: "/feed",
   REPORT: "/report",
@@ -31,12 +44,16 @@ export const routePaths = {
   register: () => ROUTES.REGISTER,
   guide: () => ROUTES.GUIDE,
   search: () => ROUTES.SEARCH,
-  dashboard: () => ROUTES.DASHBOARD,
+  trendingTopic: () => ROUTES.TRENDING_TOPIC,
 
   paperDetail: (paperId: string | number) =>
     `/papers/${encodeURIComponent(String(paperId))}`,
 
   profile: () => ROUTES.PROFILE,
+  profileTab: (tab: "profile" | "interests" | "security" = "profile") =>
+      `${ROUTES.PROFILE}?tab=${encodeURIComponent(tab)}`,
+  profileSecurity: () => ROUTES.PROFILE_SECURITY,
+
   bookmarks: () => ROUTES.BOOKMARKS,
   feed: () => ROUTES.FEED,
   report: () => ROUTES.REPORT,

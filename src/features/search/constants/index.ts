@@ -1,4 +1,4 @@
-import type { SearchFilters } from "../types";
+import type { SearchFilters, SearchFilterWidgetKey } from "../types";
 
 // Maximum number of filter options requested from the backend at one time.
 export const SEARCH_FILTER_OPTION_LIMIT = 100;
@@ -47,4 +47,7 @@ export const initialFilters: SearchFilters = {
   award: [],
   indexedByOrcid: "",
 };
+
+export const defaultVisibleFilterWidgets: SearchFilterWidgetKey[] = [
+];
 
