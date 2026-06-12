@@ -19,7 +19,7 @@ const compactNumberFormatter = new Intl.NumberFormat("en", {
 
 const fullNumberFormatter = new Intl.NumberFormat("en");
 
-const searchFilterWidgetKeyMap = {
+const searchFilterWidgetKeyMap: Record<string, SearchFilterWidgetKey> = {
   year: "year",
   type: "type",
   openaccess: "openAccess",
@@ -33,7 +33,7 @@ const searchFilterWidgetKeyMap = {
   source: "source",
   award: "award",
   indexedbyorcid: "indexedByOrcid",
-} satisfies Record<string, SearchFilterWidgetKey>;
+};
 
 export function formatCompactNumber(value: number) {
   return compactNumberFormatter.format(value);

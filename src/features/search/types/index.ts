@@ -15,14 +15,29 @@ export type PaperResult = {
   fullText: string;
   doi: string;
   pdfUrl: string | null;
-  tags: string[];
+  keywords: string[];
   field: string;
   topic: string;
   subField: string;
+  matchesTrendingKeyword: boolean;
+  matchesTrendingTopic: boolean;
+  trendingScore: number;
   growthPercent: number;
   isTrendTopic?: boolean;
   saved?: boolean;
   trend?: boolean;
+};
+
+export type SearchTrendingMode = "none" | "keyword" | "topic" | "both";
+
+export type SearchSortBy = "relevance" | "citation" | "published";
+
+export type SearchSortDirection = "asc" | "desc";
+
+export type SearchSortState = {
+  sortBy: SearchSortBy;
+  sortDirection: SearchSortDirection;
+  trendingMode: SearchTrendingMode;
 };
 
 export type SearchFilters = {
@@ -61,6 +76,8 @@ export type SearchFilterWidgetKey =
   | "indexedByOrcid";
 
 export type RemoteOptionFilterKey =
+  | "type"
+  | "subField"
   | "author"
   | "institution"
   | "country"
@@ -91,14 +108,6 @@ export type UpdateSearchFilter = (
   key: keyof SearchFilters,
   value: SearchFilters[keyof SearchFilters],
 ) => void;
-
-export type SearchSummaryStats = {
-  totalIndexedPapers: number;
-  matchedPapers: number;
-  latestUpdatedMinutesAgo: number;
-  resultCount: number;
-  responseTimeSeconds: number;
-};
 
 // Component prop types live here so JSX files stay focused on rendering.
 export type PaperResultCardProps = {
@@ -250,12 +259,12 @@ export type SearchResultsProps = {
   isLoadingResults: boolean;
   isLoadingMoreResults: boolean;
   responseTimeSeconds: number;
-  selectedSorts: string[];
+  sortState: SearchSortState;
   totalResultCount: number;
   visiblePaperResults: PaperResult[];
   onLoadMoreResults: () => void;
   onClearSorts: () => void;
-  onToggleSort: (sortOption: string) => void;
+  onSelectSort: (sortOption: string) => void;
 };
 
 export type ResultsListProps = {

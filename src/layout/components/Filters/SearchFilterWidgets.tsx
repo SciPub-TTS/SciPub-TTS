@@ -563,7 +563,7 @@ function getVisibleOptions(options: string[], keyword: string) {
   const visibleOptions: string[] = [];
 
   for (const option of options) {
-    if (option.toLowerCase().startsWith(normalizedKeyword)) {
+    if (option.toLowerCase().includes(normalizedKeyword)) {
       visibleOptions.push(option);
     }
   }

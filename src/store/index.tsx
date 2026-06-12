@@ -1,6 +1,3 @@
-﻿// Barrel export -- src/store
-// Export cac members ra ngoai, vi du:
-//   export { default as MyComponent } from './MyComponent'
-//   export * from './types'
-
-export {};
+export { store } from "./appStore";
+export type { AppDispatch, RootState } from "./appStore";
+export { useAppDispatch, useAppSelector } from "./hooks";

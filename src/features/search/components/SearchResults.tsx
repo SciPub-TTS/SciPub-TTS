@@ -2,6 +2,8 @@ import { Check, ChevronDown, LoaderCircle } from "lucide-react";
 import { useEffect, useRef } from "react";
 
 import {
+  getSearchSortOptionValue,
+  hasActiveSearchSort,
   searchResultSortGroups,
   type SearchResultSortGroup,
 } from "@/features/search/services";
@@ -18,12 +20,12 @@ export function SearchResults({
   isLoadingResults,
   isLoadingMoreResults,
   responseTimeSeconds,
-  selectedSorts,
+  sortState,
   totalResultCount,
   visiblePaperResults,
   onLoadMoreResults,
   onClearSorts,
-  onToggleSort,
+  onSelectSort,
 }: SearchResultsProps) {
   const lazyLoadAnchorRef = useRef<HTMLDivElement>(null);
   const resultTitle = appliedSearchQuery || "all papers";
@@ -104,9 +106,9 @@ export function SearchResults({
           <div className="flex shrink-0 justify-end lg:justify-start">
             <SortActions
               canSortResults={canSortResults}
-              selectedSorts={selectedSorts}
+              sortState={sortState}
               onClearSorts={onClearSorts}
-              onToggleSort={onToggleSort}
+              onSelectSort={onSelectSort}
             />
           </div>
         </div>
@@ -157,9 +159,9 @@ function SearchLoadingState() {
 
 type SortActionsProps = {
   canSortResults: boolean;
-  selectedSorts: string[];
+  sortState: SearchResultsProps["sortState"];
   onClearSorts: () => void;
-  onToggleSort: (sortOption: string) => void;
+  onSelectSort: (sortOption: string) => void;
 };
 
 type ResultsListProps = {
@@ -169,7 +171,8 @@ type ResultsListProps = {
 };
 
 function SortActions(props: SortActionsProps) {
-  const { canSortResults, selectedSorts, onClearSorts, onToggleSort } = props;
+  const { canSortResults, sortState, onClearSorts, onSelectSort } = props;
+  const hasActiveSort = hasActiveSearchSort(sortState);
 
   return (
     <div className="flex flex-wrap items-end gap-3 rounded-2xl border border-black bg-slate-50/80 p-3 shadow-sm">
@@ -178,17 +181,17 @@ function SortActions(props: SortActionsProps) {
           key={group.key}
           group={group}
           canSortResults={canSortResults}
-          selectedSort={getSelectedSortValue(group, selectedSorts)}
-          onToggleSort={onToggleSort}
+          selectedSort={getSearchSortOptionValue(sortState, group.key)}
+          onSelectSort={onSelectSort}
         />
       ))}
       <button
         type="button"
         onClick={onClearSorts}
-        disabled={!canSortResults || selectedSorts.length === 0}
+        disabled={!canSortResults || !hasActiveSort}
         className={[
           "h-10 rounded-lg border px-4 text-sm font-bold transition disabled:cursor-not-allowed disabled:opacity-50",
-          canSortResults && selectedSorts.length > 0
+          canSortResults && hasActiveSort
             ? "border-black bg-white text-black hover:bg-red-600 hover:text-white"
             : "border-black bg-slate-200 text-slate-500",
         ].join(" ")}
@@ -203,16 +206,21 @@ type SortDropdownProps = {
   canSortResults: boolean;
   group: SearchResultSortGroup;
   selectedSort: string;
-  onToggleSort: (sortOption: string) => void;
+  onSelectSort: (sortOption: string) => void;
 };
 
 function SortDropdown(props: SortDropdownProps) {
-  const { canSortResults, group, selectedSort, onToggleSort } = props;
+  const { canSortResults, group, selectedSort, onSelectSort } = props;
   const detailsRef = useRef<HTMLDetailsElement>(null);
   const selectedOption =
     group.options.find((option) => option.value === selectedSort) || null;
   const isActive = selectedOption !== null;
-  const summaryLabel = selectedOption ? selectedOption.label : "None";
+  const isDisabledGroup = Boolean(group.disabled);
+  const summaryLabel = isDisabledGroup
+    ? "Coming soon"
+    : selectedOption
+      ? selectedOption.label
+      : "None";
 
   function handleDetailsToggle() {
     const currentDropdown = detailsRef.current;
@@ -233,7 +241,7 @@ function SortDropdown(props: SortDropdownProps) {
   }
 
   function handleSelectSort(sortValue: string) {
-    onToggleSort(sortValue);
+    onSelectSort(sortValue);
 
     if (detailsRef.current) {
       detailsRef.current.open = false;
@@ -259,7 +267,7 @@ function SortDropdown(props: SortDropdownProps) {
             isActive
               ? "border-[#15803D] bg-[#A3E635]/15"
               : "hover:border-[#15803D]",
-            canSortResults
+            canSortResults && !isDisabledGroup
               ? ""
               : "pointer-events-none border-black bg-slate-100 text-slate-500",
           ].join(" ")}
@@ -277,9 +285,12 @@ function SortDropdown(props: SortDropdownProps) {
                 key={option.value}
                 type="button"
                 onClick={() => handleSelectSort(option.value)}
+                disabled={isDisabledGroup}
                 className={[
                   "flex w-full items-center gap-2 px-2.5 py-2 text-left text-sm font-semibold transition",
-                  isSelected
+                  isDisabledGroup
+                    ? "cursor-not-allowed bg-slate-100 text-slate-400"
+                    : isSelected
                     ? "bg-[#A3E635]/20 text-[#15803D]"
                     : "text-black hover:bg-[#A3E635]/20 hover:text-[#15803D]",
                 ].join(" ")}
@@ -323,19 +334,4 @@ function ResultsList(props: ResultsListProps) {
   }
 
   return <div className="space-y-4">{resultItems}</div>;
-}
-
-function getSelectedSortValue(
-  group: SearchResultSortGroup,
-  selectedSorts: string[],
-) {
-  const selectedOption = group.options.find((option) =>
-    selectedSorts.includes(option.value),
-  );
-
-  if (!selectedOption) {
-    return "";
-  }
-
-  return selectedOption.value;
 }

@@ -109,7 +109,7 @@ export function mapTopics(work: OpenAlexWorkDetailApi) {
 export function mapNamedEntityToDetailRef(
   entity: OpenAlexNamedEntity | null | undefined,
   type: PaperDetailEntityRef["type"],
-) {
+): PaperDetailEntityRef | null {
   if (!entity?.id?.trim() || !entity.display_name?.trim()) {
     return null;
   }
@@ -118,7 +118,7 @@ export function mapNamedEntityToDetailRef(
     id: extractLastSegment(entity.id),
     name: entity.display_name.trim(),
     type,
-  } satisfies PaperDetailEntityRef;
+  };
 }
 
 function addCountry(
