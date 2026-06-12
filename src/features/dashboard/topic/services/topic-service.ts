@@ -1,5 +1,5 @@
 import type {MetricResponse} from "@/features/dashboard/topic/types/metric.ts";
-import type {PublicationTrend} from "@/features/dashboard/topic/types/publication.ts";
+import type {PublicationTrend, PublicationTrendApiResponse} from "@/features/dashboard/topic/types/publication.ts";
 
 const USE_MOCK = true;
 
@@ -54,83 +54,83 @@ export const MOCK_METRICS_RESPONSE: MetricResponse[] = [
 
 export const MOCK_PUBLICATION_TRENDING: PublicationTrend[] = [
     {
-        year: "2005",
+        year: 2005,
         publications: Math.floor(Math.random() * 5000 + 1000)
     },
     {
-        year: "2006",
+        year: 2006,
         publications: Math.floor(Math.random() * 5000 + 1000)
     },
     {
-        year: "2007",
+        year: 2007,
         publications: Math.floor(Math.random() * 5000 + 1000)
     },
     {
-        year: "2008",
+        year: 2008,
         publications: Math.floor(Math.random() * 5000 + 1000)
     },
     {
-        year: "2009",
+        year: 2009,
         publications: Math.floor(Math.random() * 5000 + 1000)
     },
     {
-        year: "2010",
+        year: 2010,
         publications: Math.floor(Math.random() * 7000 + 2000)
     },
     {
-        year: "2011",
+        year: 2011,
         publications: Math.floor(Math.random() * 7000 + 3000)
     },
     {
-        year: "2012",
+        year: 2012,
         publications: Math.floor(Math.random() * 8000 + 4000)
     },
     {
-        year: "2013",
+        year: 2013,
         publications: Math.floor(Math.random() * 9000 + 5000)
     },
     {
-        year: "2014",
+        year: 2014,
         publications: Math.floor(Math.random() * 10000 + 6000)
     },
     {
-        year: "2015",
+        year: 2015,
         publications: Math.floor(Math.random() * 11000 + 7000)
     },
     {
-        year: "2016",
+        year: 2016,
         publications: Math.floor(Math.random() * 12000 + 8000)
     },
     {
-        year: "2017",
+        year: 2017,
         publications: Math.floor(Math.random() * 13000 + 9000)
     },
     {
-        year: "2018",
+        year: 2018,
         publications: Math.floor(Math.random() * 14000 + 10000)
     },
     {
-        year: "2019",
+        year: 2019,
         publications: Math.floor(Math.random() * 15000 + 11000)
     },
     {
-        year: "2020",
+        year: 2020,
         publications: Math.floor(Math.random() * 16000 + 12000)
     },
     {
-        year: "2021",
+        year: 2021,
         publications: Math.floor(Math.random() * 17000 + 13000)
     },
     {
-        year: "2022",
+        year: 2022,
         publications: Math.floor(Math.random() * 18000 + 14000)
     },
     {
-        year: "2023",
+        year: 2023,
         publications: Math.floor(Math.random() * 19000 + 15000)
     },
     {
-        year: "2024",
+        year: 2024,
         publications: Math.floor(Math.random() * 20000 + 16000)
     }
 ];
@@ -162,19 +162,23 @@ export const topicService = {
         return await requestData<MetricResponse[]>(endpoint.toString());
     },
 
-    getPublicationTrend: async(yearFrom?: number, yearTo?: number):Promise<PublicationTrend[]> => {
-        if(USE_MOCK) {
+    getPublicationTrend: async(startYear?: number, endYear?: number):Promise<PublicationTrend[]> => {
+        if(!USE_MOCK) {
             return MOCK_PUBLICATION_TRENDING;
         }
 
-        if(!yearFrom || !yearTo) {
+        if(!startYear || !endYear) {
             return [];
         }
 
-        const endpoint = new URL(`${apiBaseUrl}/api/statistic/publication-trends`);
-        endpoint.searchParams.append("yearFrom", String(yearFrom));
-        endpoint.searchParams.append("yearTo", String(yearTo));
+        const endpoint = new URL(`${apiBaseUrl}/api/data/publication-trends/filter`);
+        endpoint.searchParams.append("startYear", String(startYear));
+        endpoint.searchParams.append("endYear", String(endYear));
 
-        return await requestData<PublicationTrend[]>(endpoint.toString());
+        const response = await requestData<PublicationTrendApiResponse>(
+                endpoint.toString()
+            );
+
+        return response.data.publicationTrends;
     }
 }

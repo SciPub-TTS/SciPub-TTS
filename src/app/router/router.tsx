@@ -28,7 +28,6 @@ import FeedPage from "@/features/newfeeds/components/FeedPage";
 import ReportPage from "@/features/reports/components/ReportPage";
 
 //import AdminDashboardPage from "@/pages/admin/AdminDashboardPage";
-import TrendingTopicPage from "@/features/dashboard/TrendingTopicPage.tsx";
 import AdminDashboardPage from "@/features/admin/components/AdminDashboardPage.tsx";
 import AdminUsersPage from "@/features/admin/pages/AdminUsersPage.tsx";
 import ForgotPasswordPage from "@/features/auth/components/pages/ForgotPasswordPage.tsx";
@@ -157,11 +156,11 @@ export const router = createBrowserRouter([
         },
       },
       {
-        path: ROUTE_SEGMENTS.TOPIC_DASHBOARD,
+        path: ROUTE_SEGMENTS.TRENDING_TOPIC,
         element: <TopicDashboardPage />,
       },
       {
-        path: ROUTE_SEGMENTS.KEYWORD_DASHBOARD,
+        path: ROUTE_SEGMENTS.TRENDING_KEYWORD,
         element: <KeywordDashboardPage/>,
       },
       {

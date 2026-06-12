@@ -1,4 +1,6 @@
 import {
+    Bar,
+    BarChart,
     CartesianGrid,
     Legend,
     Line,
@@ -34,6 +36,8 @@ export function KeywordGeneralChartPart() {
             <ScatterHotKeywords />
 
             <KeywordTrendChart />
+
+            <KeywordHotScoreChart />
 
         </div>
     );
@@ -101,16 +105,13 @@ const Bubble: ScatterCustomizedShape = ({
 };
 
 function ScatterHotKeywords() {
-    const {
-        metricList,
-    } = useGeneralsMetric();
+    const { metricList } = useGeneralsMetric();
 
     return (
         <ResponsiveContainer
             width="100%"
             height={420}
         >
-
             <ScatterChart>
 
                 <CartesianGrid />
@@ -118,11 +119,13 @@ function ScatterHotKeywords() {
                 <XAxis
                     dataKey="publicationShare"
                     name="Publication Share"
+                    label={{ value: "Publication Share (%)", position: "insideBottom", offset: -5 }}
                 />
 
                 <YAxis
                     dataKey="cagr"
                     name="CAGR"
+                    label={{ value: "CAGR (%)", angle: -90, position: "insideLeft", offset: 10 }}
                 />
 
                 <ZAxis
@@ -180,78 +183,103 @@ function TrendTooltip({
 }
 
 function KeywordTrendChart() {
+    const { trendList } = useTrend();
 
-    const {
-        trendList,
-    } = useTrend();
+    const data = trendList[0]?.yearly.map((_, index) => {
+        const row: Record<string, number | string> = {
+            year: trendList[0].yearly[index].year,
+        };
 
-    const data =
-        trendList[0]?.yearly.map(
-            (_, index) => {
+        trendList.forEach((item) => {
+            row[item.keyword] =
+                item.yearly[index]?.count ?? 0;
+        });
 
-                const row:
-                    Record<
-                        string,
-                        number | string
-                    > = {
-                    year:
-                    trendList[0]
-                        .yearly[index]
-                        .year,
-                };
+        return row;
 
-                trendList.forEach(
-                    (item) => {
-                        row[item.keyword] =
-                            item.yearly[index]
-                                ?.count ?? 0;
-                    }
-                );
-
-                return row;
-            }
-        ) ?? [];
+    }) ?? [];
 
     return (
         <ResponsiveContainer
             width="100%"
             height={520}
         >
+            <LineChart data={data}>
 
-            <LineChart
+                <CartesianGrid />
+
+                <XAxis dataKey="year" />
+
+                <YAxis />
+
+                <Tooltip content={TrendTooltip} />
+
+                <Legend />
+
+                {
+                    trendList.map((item) => (
+                        <Line
+                            key={item.keyword}
+                            dataKey={item.keyword}
+                            stroke={item.color}
+                            strokeWidth={3}
+                            dot={false}
+                        />
+                    ))
+                }
+
+            </LineChart>
+
+        </ResponsiveContainer>
+    );
+}
+
+function KeywordHotScoreChart() {
+    const { metricList } = useGeneralsMetric();
+
+    const data = [...metricList].sort(
+        (a, b) => b.hotScore - a.hotScore
+    );
+
+    return (
+        <ResponsiveContainer width="100%" height={420}>
+            <BarChart
                 data={data}
+                layout="vertical"
+                barSize={18}
             >
 
                 <CartesianGrid />
 
                 <XAxis
-                    dataKey="year"
+                    type="number"
+                    domain={[0, 100]}
                 />
 
-                <YAxis />
-
-                <Tooltip
-                    content={TrendTooltip}
+                <YAxis
+                    type="category"
+                    dataKey="keyword"
+                    width={150}
                 />
 
-                <Legend />
+                <Tooltip />
 
-                {
-                    trendList.map(
-                        (item) => (
-                            <Line
-                                key={item.keyword}
-                                dataKey={item.keyword}
-                                stroke={item.color}
-                                strokeWidth={3}
-                                dot={false}
-                            />
-                        )
-                    )
-                }
+                <Bar
+                    dataKey="hotScore"
+                    radius={[0, 0, 0, 0]}
+                    shape={(props) => (
+                        <rect
+                            x={props.x}
+                            y={props.y}
+                            width={props.width}
+                            height={props.height}
+                            rx={8}
+                            fill={props.payload.color}
+                        />
+                    )}
+                />
 
-            </LineChart>
-
+            </BarChart>
         </ResponsiveContainer>
     );
 }

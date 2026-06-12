@@ -2,7 +2,7 @@ import {useEffect, useState} from "react";
 import type {PublicationTrend} from "@/features/dashboard/topic/types/publication.ts";
 import {topicService} from "@/features/dashboard/topic/services/topic-service.ts";
 
-export function usePublicationTrend() {
+export function usePublicationTrend(startYear?: number, endYear?: number) {
     const [loading, setLoading] = useState<boolean>(false);
     const [publicationTrend, setPublicationTrend] = useState<PublicationTrend[]>([]);
     const [error, setError] = useState<string | null>(null);
@@ -13,7 +13,7 @@ export function usePublicationTrend() {
             setError(null);
 
             try {
-                const data:PublicationTrend[] = await topicService.getPublicationTrend();
+                const data:PublicationTrend[] = await topicService.getPublicationTrend(startYear, endYear);
                 setPublicationTrend(data);
             }catch (err) {
                 setError(
@@ -27,7 +27,7 @@ export function usePublicationTrend() {
         };
 
         fetchPublicationTrend();
-    })
+    },[startYear, endYear])
 
     return {loading, publicationTrend, error};
 }

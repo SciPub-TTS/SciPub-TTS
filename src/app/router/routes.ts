@@ -5,10 +5,8 @@ export const ROUTES = {
   REGISTER: "/register",
   GUIDE: "/guide",
   SEARCH: "/search",
-<<<<<<< HEAD
   DASHBOARD: "/dashboard",
   TOPIC_DASHBOARD: "/topic_dashboard",
-=======
   TRENDING_TOPIC: "/trending-topic",
 
   //Auth
@@ -18,7 +16,6 @@ export const ROUTES = {
 
   VERIFY_EMAIL_SUCCESS: "/verify-email/success",
   VERIFY_EMAIL_ERROR: "/verify-email/error",
->>>>>>> 6fc401dc9c3adeff05289fef3ddb40d9b65567c8
 
   // Paper
   PAPER_DETAIL: "/papers/:paperId",

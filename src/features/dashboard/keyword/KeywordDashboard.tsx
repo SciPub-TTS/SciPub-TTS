@@ -1,12 +1,13 @@
 import {useNavigate} from "react-router-dom";
 import {ROUTE_SEGMENTS} from "@/app/router";
 import {KeywordGeneralChartPart} from "@/features/dashboard/keyword/components/KeywordGeneralChartPart.tsx";
+import MetricPart from "@/features/dashboard/topic/components/MetricPart.tsx";
 
 export function KeywordDashboardPage() {
     const navigate = useNavigate();
 
     const handleClick = () => {
-        navigate(ROUTE_SEGMENTS.TOPIC_DASHBOARD);
+        navigate(ROUTE_SEGMENTS.TRENDING_TOPIC);
     }
 
     return(
@@ -26,6 +27,8 @@ export function KeywordDashboardPage() {
                     Track publication growth, citation impact, trending topics, and rising keywords.
                 </h2>
             </div>
+
+            <MetricPart/>
 
             <KeywordGeneralChartPart/>
         </div>

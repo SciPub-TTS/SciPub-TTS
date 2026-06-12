@@ -9,7 +9,7 @@ export default function TopicDashboardPage() {
     const navigate = useNavigate();
 
     const handleClick = () => {
-        navigate(ROUTE_SEGMENTS.KEYWORD_DASHBOARD);
+        navigate(ROUTE_SEGMENTS.TRENDING_KEYWORD);
     }
 
   return (
