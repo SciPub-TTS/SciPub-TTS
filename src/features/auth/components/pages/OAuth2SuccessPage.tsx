@@ -4,6 +4,7 @@ import { authApi } from "@/features/auth/services/auth.api.ts";
 import { setAuthSession, setCurrentUser } from "@/features/auth/utils/authStorage.ts";
 import { AUTH_ROLES } from "@/features/auth/constants/roles.ts";
 import { getApiErrorMessage } from "@/features/auth/utils/getApiErrorMessage.ts";
+import {ROUTES} from "@/app/router";
 
 type Status = "loading" | "error";
 const ERROR_MESSAGES: Record<string, string> = {
@@ -25,7 +26,18 @@ export default function OAuth2SuccessPage() {
   // useRef prevents the effect from running twice because of React StrictMode
   const hasCalled = useRef(false);
 
+  const googleSignupToken = searchParams.get("googleSignupToken");
+
   useEffect(() => {
+    if (googleSignupToken) {
+      navigate(
+          `${ROUTES.GOOGLE_REGISTER_COMPLETE}?token=${encodeURIComponent(
+              googleSignupToken,
+          )}`,
+          { replace: true },
+      );
+      return;
+    }
     // If the backend redirects back with ?error=, show the error immediately
     // and do not call the API
     if (urlError) {
@@ -64,7 +76,7 @@ export default function OAuth2SuccessPage() {
     }
 
     handleOAuth2Callback();
-  }, [navigate, urlError]);
+  }, [navigate, urlError, googleSignupToken]);
   // ── Error state ──────────────────────────────────────────────────────────
   if (status === "error") {
     return (

@@ -2,7 +2,9 @@ import { http } from "@/services/http";
 import type {
     AuthResponse,
     ChangePasswordRequest,
+    CompleteGoogleRegisterRequest,
     ForgotPasswordRequest,
+    GoogleSignupPreviewResponse,
     LoginRequest,
     RegisterLocalRequest,
     ResetPasswordRequest,
@@ -46,6 +48,26 @@ export const authApi = {
     me() {
         return http
             .get<ApiResponse<UserPrincipal>>(`${AUTH_BASE}/me`)
+            .then((res) => res.data);
+    },
+
+    previewGoogleRegister(token: string) {
+        return http
+            .get<ApiResponse<GoogleSignupPreviewResponse>>(
+                `${AUTH_BASE}/register/google/preview`,
+                {
+                    params: { token },
+                },
+            )
+            .then((res) => res.data);
+    },
+
+    completeGoogleRegister(payload: CompleteGoogleRegisterRequest) {
+        return http
+            .post<ApiResponse<AuthResponse>>(
+                `${AUTH_BASE}/register/google/complete`,
+                payload,
+            )
             .then((res) => res.data);
     },
 

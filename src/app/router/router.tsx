@@ -22,7 +22,6 @@ import SearchPage from "@/features/search/components/SearchPage";
 import PaperDetailPage from "@/features/detailpapers/components/PaperDetailPage";
 
 import ProfilePage from "@/features/profile/components/ProfilePage";
-import BookmarksPage from "@/features/bookmarks/components/BookmarksPage";
 import FeedPage from "@/features/newfeeds/components/FeedPage";
 import ReportPage from "@/features/reports/components/ReportPage";
 
@@ -35,6 +34,8 @@ import ResetPasswordPage from "@/features/auth/components/pages/ResetPasswordPag
 // import VerifyEmailSuccessPage from "@/features/auth/components/VerifyEmailResultPage.tsx";
 import ChangePasswordPage from "@/features/profile/components/ChangePasswordPage.tsx";
 import OAuth2SuccessPage from "@/features/auth/components/pages/OAuth2SuccessPage.tsx";
+import BookmarkLibraryPage from "@/features/bookmarks/components/BookmarkLibraryPage.tsx";
+import GoogleRegisterCompletePage from "@/features/auth/components/pages/GoogleRegisterCompletePage.tsx";
 
 function PlaceholderPage({ title }: { title: string }) {
   return (
@@ -69,6 +70,10 @@ export const router = createBrowserRouter([
         path: ROUTES.FORGOT_PASSWORD_RESET,
         element: <ResetPasswordPage />,
       },
+      {
+        path: ROUTES.GOOGLE_REGISTER_COMPLETE,
+        element: <GoogleRegisterCompletePage/>
+      }
     ],
   },
 
@@ -111,10 +116,6 @@ export const router = createBrowserRouter([
             element: <FeedPage />,
           },
           {
-            path: ROUTE_SEGMENTS.BOOKMARKS,
-            element: <BookmarksPage />,
-          },
-          {
             path: ROUTE_SEGMENTS.REPORT,
             element: <ReportPage />,
           },
@@ -125,6 +126,10 @@ export const router = createBrowserRouter([
           {
             path: ROUTE_SEGMENTS.PROFILE_SECURITY,
             element: <ChangePasswordPage />,
+          },
+          {
+            path: ROUTES.BOOKMARKS,
+            element: <BookmarkLibraryPage />
           },
         ],
       },

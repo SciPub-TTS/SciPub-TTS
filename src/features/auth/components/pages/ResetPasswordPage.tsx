@@ -3,7 +3,6 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { ROUTES } from "@/app/router";
 import { submitResetPassword } from "@/features/auth/services/authFlows.ts";
 import { getApiErrorMessage } from "@/features/auth/utils/getApiErrorMessage.ts";
-import PasswordStrength from "@/features/auth/components/form/PasswordStrength.tsx";
 import AuthResetLayout from "@/features/auth/components/common/AuthResetLayout.tsx";
 import AuthMessage from "@/features/auth/components/common/AuthMessage.tsx";
 
@@ -117,7 +116,6 @@ export default function ResetPasswordPage() {
                             )}
                         </button>
                     </div>
-                    <PasswordStrength password={newPassword} />
                 </div>
 
                 <div>
