@@ -1,11 +1,17 @@
-import { ArrowRight, Search } from "lucide-react";
-import type { ChangeEvent, KeyboardEvent, MouseEvent } from "react";
+import { ArrowRight, History, Save, Search } from "lucide-react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type ChangeEvent,
+  type KeyboardEvent,
+  type MouseEvent,
+} from "react";
 
-import { searchTabs, mockSuggestedSearches } from "@/features/search/services";
+import { searchTabs } from "@/features/search/services";
 import type {
   SearchInputRowProps,
   SearchPanelProps,
-  SuggestedSearchListProps,
 } from "@/features/search/types";
 import { formatCompactNumber } from "@/features/search/utils";
 
@@ -14,6 +20,7 @@ import { SearchFiltersPanel } from "./SearchFiltersPanel";
 export function SearchPanel({
   activeFilterCount,
   appliedFilterSummary,
+  canSaveSearch,
   filterOptions,
   filters,
   filtersOpen,
@@ -22,7 +29,9 @@ export function SearchPanel({
   isLoadingFilterOptions,
   isLoadingMoreFilterOptions,
   isLoadingResults,
+  isSavingSearch,
   matchedPaperCount,
+  recentSearches,
   searchQuery,
   totalIndexedPapers,
   visibleFilterWidgets,
@@ -32,6 +41,7 @@ export function SearchPanel({
   onResetFilters,
   onSearch,
   onSearchQueryChange,
+  onSaveSearch,
   onSuggestedSearchSelect,
   onToggleFilters,
   onToggleVisibleFilterWidget,
@@ -45,13 +55,16 @@ export function SearchPanel({
       <div className="p-5">
         <div className="rounded-2xl border border-black bg-slate-50/60 p-3 shadow-inner">
           <SearchInputRow
+            canSaveSearch={canSaveSearch}
             isLoadingResults={isLoadingResults}
+            isSavingSearch={isSavingSearch}
+            recentSearches={recentSearches}
             searchQuery={searchQuery}
             onSearch={onSearch}
             onSearchQueryChange={onSearchQueryChange}
+            onSaveSearch={onSaveSearch}
+            onSelectSuggestion={onSuggestedSearchSelect}
           />
-
-          <SuggestedSearchList onSelect={onSuggestedSearchSelect} />
         </div>
       </div>
 
@@ -117,16 +130,49 @@ function SearchTabsHeader(props: SearchTabsHeaderProps) {
 }
 
 function SearchInputRow({
+  canSaveSearch,
   isLoadingResults,
+  isSavingSearch,
+  recentSearches,
   searchQuery,
   onSearch,
   onSearchQueryChange,
+  onSaveSearch,
+  onSelectSuggestion,
 }: SearchInputRowProps) {
+  const [isSuggestionOpen, setIsSuggestionOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!isSuggestionOpen) {
+      return;
+    }
+
+    function handleDocumentMouseDown(event: MouseEvent | globalThis.MouseEvent) {
+      if (!containerRef.current) {
+        return;
+      }
+
+      if (containerRef.current.contains(event.target as Node)) {
+        return;
+      }
+
+      setIsSuggestionOpen(false);
+    }
+
+    document.addEventListener("mousedown", handleDocumentMouseDown);
+
+    return () => {
+      document.removeEventListener("mousedown", handleDocumentMouseDown);
+    };
+  }, [isSuggestionOpen]);
+
   // Controlled input: React state is the source of truth for the search value.
   function handleSearchInputChange(event: ChangeEvent<HTMLInputElement>) {
     const nextSearchQuery = event.target.value;
 
     onSearchQueryChange(nextSearchQuery);
+    setIsSuggestionOpen(true);
   }
 
   function handleSearchInputKeyDown(event: KeyboardEvent<HTMLInputElement>) {
@@ -134,65 +180,113 @@ function SearchInputRow({
 
     // Pressing Enter triggers the same search action as the button.
     if (enterKeyWasPressed) {
+      setIsSuggestionOpen(false);
       onSearch();
     }
   }
 
-  return (
-    <div className="flex flex-col gap-3 rounded-xl bg-white p-3 shadow-sm ring-1 ring-[#2f8551] md:flex-row md:items-center">
-      <div className="relative flex min-w-0 flex-1 items-center gap-3">
-        <Search className="h-5 w-5 shrink-0  font-extrabold" />
-
-        <input
-          type="search"
-          value={searchQuery}
-          disabled={isLoadingResults}
-          onChange={handleSearchInputChange}
-          onKeyDown={handleSearchInputKeyDown}
-          aria-label="Search papers"
-          className="min-w-0 flex-1 bg-transparent text-base font-medium text-black outline-none placeholder:text-black disabled:cursor-not-allowed disabled:opacity-60"
-          placeholder="Search by title or abstract."
-        />
-      </div>
-
-      <button
-        type="button"
-        onClick={onSearch}
-        disabled={isLoadingResults}
-        className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#14532D] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#15803D] disabled:cursor-not-allowed disabled:bg-slate-400"
-      >
-        {isLoadingResults ? "Searching..." : "Search"}
-        <ArrowRight className="h-4 w-4" />
-      </button>
-    </div>
-  );
-}
-
-function SuggestedSearchList({ onSelect }: SuggestedSearchListProps) {
-  function handleSuggestionClick(event: MouseEvent<HTMLButtonElement>) {
-    // The button value carries the suggestion text without creating closures.
-    const suggestion = event.currentTarget.value;
-
-    onSelect(suggestion);
+  function handleInputFocus() {
+    setIsSuggestionOpen(true);
   }
 
-  return (
-    <div className="mt-3 flex flex-wrap items-center gap-2 px-1">
-      <span className="text-[10px] font-extrabold uppercase tracking-[0.24em] text-black">
-        Try:
-      </span>
+  function handleSearchClick() {
+    setIsSuggestionOpen(false);
+    onSearch();
+  }
 
-      {mockSuggestedSearches.map((suggestion) => (
+  function handleSaveClick() {
+    onSaveSearch();
+  }
+
+  function handleSuggestionClick(event: MouseEvent<HTMLButtonElement>) {
+    const suggestion = event.currentTarget.value;
+
+    setIsSuggestionOpen(false);
+    onSelectSuggestion(suggestion);
+  }
+
+  function handleSuggestionMouseDown(event: MouseEvent<HTMLButtonElement>) {
+    event.preventDefault();
+  }
+
+  const shouldShowSuggestions = isSuggestionOpen && recentSearches.length > 0;
+
+  return (
+    <div
+      ref={containerRef}
+      className="flex flex-col gap-3 rounded-xl bg-white p-3 shadow-sm ring-1 ring-[#2f8551] md:flex-row md:items-start"
+    >
+      <div className="relative flex min-w-0 flex-1 items-center gap-3">
+        <Search className="h-5 w-5 shrink-0 font-extrabold" />
+
+        <div className="min-w-0 flex-1">
+          <input
+            type="search"
+            value={searchQuery}
+            disabled={isLoadingResults}
+            onChange={handleSearchInputChange}
+            onFocus={handleInputFocus}
+            onKeyDown={handleSearchInputKeyDown}
+            aria-label="Search papers"
+            className="min-w-0 w-full bg-transparent text-base font-medium text-black outline-none placeholder:text-black disabled:cursor-not-allowed disabled:opacity-60"
+            placeholder="Search by title or abstract."
+          />
+
+          {shouldShowSuggestions ? (
+            <div className="absolute left-0 right-0 top-full z-30 mt-3 overflow-hidden rounded-2xl border border-black bg-white shadow-[0_18px_40px_rgba(15,23,42,0.12)]">
+              <div className="flex items-center gap-2 border-b border-slate-200 bg-slate-50 px-4 py-3">
+                <History className="h-4 w-4 text-[#14532D]" />
+                <span className="text-[11px] font-extrabold uppercase tracking-[0.24em] text-black">
+                  Recent searches
+                </span>
+              </div>
+
+              <div className="max-h-72 overflow-y-auto p-2">
+                {recentSearches.map((savedSearch) => (
+                  <button
+                    key={`${savedSearch.query}-${savedSearch.savedAt}`}
+                    type="button"
+                    value={savedSearch.query}
+                    onMouseDown={handleSuggestionMouseDown}
+                    onClick={handleSuggestionClick}
+                    className="flex w-full items-center rounded-xl px-3 py-3 text-left text-sm font-semibold text-black transition hover:bg-[#A3E635]/20 hover:text-[#15803D]"
+                  >
+                    <Search className="mr-3 h-4 w-4 shrink-0" />
+                    <span className="truncate">{savedSearch.query}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : null}
+        </div>
+      </div>
+
+      <div className="flex gap-2 md:shrink-0">
         <button
-          key={suggestion}
           type="button"
-          value={suggestion}
-          onClick={handleSuggestionClick}
-          className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-black ring-1 ring-black transition hover:text-[#15803D] hover:ring-[#16A34A]"
+          onClick={handleSaveClick}
+          disabled={!canSaveSearch || isSavingSearch}
+          className={[
+            "inline-flex items-center justify-center gap-2 rounded-lg border px-4 py-3 text-sm font-semibold transition",
+            canSaveSearch
+              ? "border-black bg-white text-black hover:bg-[#FEF3C7]"
+              : "border-slate-300 bg-slate-100 text-slate-400",
+          ].join(" ")}
         >
-          {suggestion}
+          <Save className="h-4 w-4" />
+          {isSavingSearch ? "Saving..." : "Save your search"}
         </button>
-      ))}
+
+        <button
+          type="button"
+          onClick={handleSearchClick}
+          disabled={isLoadingResults}
+          className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#14532D] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#15803D] disabled:cursor-not-allowed disabled:bg-slate-400"
+        >
+          {isLoadingResults ? "Searching..." : "Search"}
+          <ArrowRight className="h-4 w-4" />
+        </button>
+      </div>
     </div>
   );
 }

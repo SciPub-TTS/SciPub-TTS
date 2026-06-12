@@ -1,6 +1,12 @@
 import { useEffect, useRef, useState } from "react";
-import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { useNavigationType } from "react-router-dom";
+import { isAuthenticated } from "@/features/auth/utils/authStorage";
 import { useAppDispatch, useAppSelector } from "@/store";
 import {
   clearSearchResults,
@@ -15,12 +21,18 @@ import {
   toggleVisibleFilterWidget,
   updateSearchFilter,
 } from "@/store/slices/searchPageSlice";
-import { initialFilters, SEARCH_DEFAULT_PAGE } from "../constants";
+import {
+  initialFilters,
+  SEARCH_DEFAULT_PAGE,
+  SEARCH_RECENT_SEARCH_LIMIT,
+} from "../constants";
 import {
   defaultSearchSortState,
   emptySearchOptionValueLookup,
+  getRecentSearches,
   getSearchSummary,
   normalizeSearchSortState,
+  saveSearchHistory,
   searchWorks,
 } from "../services";
 import type { SearchFilters, SearchFilterWidgetKey } from "../types";
@@ -52,7 +64,9 @@ import { useRemoteFilterOptions } from "./useRemoteFilterOptions";
 
 export function useSearchPageState() {
   const dispatch = useAppDispatch();
+  const queryClient = useQueryClient();
   const navigationType = useNavigationType();
+  const isSearchHistoryEnabled = isAuthenticated();
   const shouldRestoreSearchPageState =
     navigationType === "POP"
     && readSearchPageRestorePending()
@@ -90,6 +104,29 @@ export function useSearchPageState() {
     queryFn: () => getSearchSummary(),
     queryKey: ["searchSummary"],
     staleTime: 10 * 60 * 1000,
+  });
+  const normalizedSearchHistoryKeyword = searchQuery.trim();
+  const recentSearchesQuery = useQuery({
+    enabled: isSearchHistoryEnabled,
+    queryFn: () =>
+      getRecentSearches(
+        normalizedSearchHistoryKeyword,
+        SEARCH_RECENT_SEARCH_LIMIT,
+      ),
+    queryKey: [
+      "searchHistoryRecent",
+      normalizedSearchHistoryKeyword,
+      SEARCH_RECENT_SEARCH_LIMIT,
+    ],
+    staleTime: 60 * 1000,
+  });
+  const saveSearchMutation = useMutation({
+    mutationFn: saveSearchHistory,
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: ["searchHistoryRecent"],
+      });
+    },
   });
   const searchResultsQuery = useInfiniteQuery({
     enabled: submittedSearch !== null,
@@ -138,10 +175,25 @@ export function useSearchPageState() {
   }, [searchSummaryQuery.error]);
 
   useEffect(() => {
+    if (recentSearchesQuery.error) {
+      console.error(
+        "Cannot load recent search history:",
+        recentSearchesQuery.error,
+      );
+    }
+  }, [recentSearchesQuery.error]);
+
+  useEffect(() => {
     if (searchResultsQuery.error) {
       console.error("Search API failed:", searchResultsQuery.error);
     }
   }, [searchResultsQuery.error]);
+
+  useEffect(() => {
+    if (saveSearchMutation.error) {
+      console.error("Cannot save search history:", saveSearchMutation.error);
+    }
+  }, [saveSearchMutation.error]);
 
   useEffect(() => {
     if (!hasInitializedRef.current) {
@@ -183,6 +235,8 @@ export function useSearchPageState() {
   const appliedFilterSummary = buildAppliedFilterSummary(appliedFilters);
   const hasFormError =
     hasInvalidYearRange(filters) || hasInvalidCitationRange(filters);
+  const recentSearches = recentSearchesQuery.data || [];
+  const canSaveSearch = isSearchHistoryEnabled && Boolean(searchQuery.trim());
   const totalIndexedPapers = searchSummaryQuery.data?.totalIndexedPapers || 0;
 
   useEffect(() => {
@@ -247,6 +301,16 @@ export function useSearchPageState() {
   function handleSuggestedSearch(query: string) {
     dispatch(setSearchQuery(query));
     submitSearchRequest(query, filters, sortState, optionValueLookup);
+  }
+
+  function handleSaveSearch() {
+    const normalizedQuery = searchQuery.trim();
+
+    if (!normalizedQuery || saveSearchMutation.isPending) {
+      return;
+    }
+
+    void saveSearchMutation.mutateAsync(normalizedQuery);
   }
 
   function handleToggleFilters() {
@@ -326,6 +390,7 @@ export function useSearchPageState() {
     appliedFilterSummary,
     appliedSearchQuery,
     autoLoadAnchorIndex,
+    canSaveSearch,
     canLoadMoreResults,
     filterOptions,
     filters,
@@ -337,6 +402,7 @@ export function useSearchPageState() {
     handleSearch,
     handleSearchQueryChange,
     handleClearSorts,
+    handleSaveSearch,
     handleSelectSort,
     handleSuggestedSearch,
     handleToggleFilters,
@@ -348,7 +414,9 @@ export function useSearchPageState() {
     isLoadingMoreFilterOptions,
     isLoadingResults: submittedSearch !== null && searchResultsQuery.isPending,
     isLoadingMoreResults: searchResultsQuery.isFetchingNextPage,
+    isSavingSearch: saveSearchMutation.isPending,
     matchedPaperCount,
+    recentSearches,
     resetFilters,
     responseTimeSeconds,
     searchQuery,

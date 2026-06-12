@@ -11,11 +11,13 @@ export default function SearchPageContent() {
     appliedFilterSummary,
     appliedSearchQuery,
     autoLoadAnchorIndex,
+    canSaveSearch,
     canLoadMoreResults,
     filterOptions,
     filters,
     filtersOpen,
     handleApplyFilters,
+    handleSaveSearch,
     handleFilterOptionSearch,
     handleLoadMoreFilterOptions,
     handleLoadMoreResults,
@@ -33,7 +35,9 @@ export default function SearchPageContent() {
     isLoadingMoreFilterOptions,
     isLoadingResults,
     isLoadingMoreResults,
+    isSavingSearch,
     matchedPaperCount,
+    recentSearches,
     resetFilters,
     responseTimeSeconds,
     searchQuery,
@@ -51,6 +55,7 @@ export default function SearchPageContent() {
       <SearchPanel
         activeFilterCount={activeFilterCount}
         appliedFilterSummary={appliedFilterSummary}
+        canSaveSearch={canSaveSearch}
         filterOptions={filterOptions}
         filters={filters}
         filtersOpen={filtersOpen}
@@ -59,7 +64,9 @@ export default function SearchPageContent() {
         isLoadingFilterOptions={isLoadingFilterOptions}
         isLoadingMoreFilterOptions={isLoadingMoreFilterOptions}
         isLoadingResults={isLoadingResults}
+        isSavingSearch={isSavingSearch}
         matchedPaperCount={matchedPaperCount}
+        recentSearches={recentSearches}
         searchQuery={searchQuery}
         totalIndexedPapers={totalIndexedPapers}
         visibleFilterWidgets={visibleFilterWidgets}
@@ -69,6 +76,7 @@ export default function SearchPageContent() {
         onResetFilters={resetFilters}
         onSearch={handleSearch}
         onSearchQueryChange={handleSearchQueryChange}
+        onSaveSearch={handleSaveSearch}
         onSuggestedSearchSelect={handleSuggestedSearch}
         onToggleFilters={handleToggleFilters}
         onToggleVisibleFilterWidget={handleToggleVisibleFilterWidget}

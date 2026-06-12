@@ -6,7 +6,6 @@ export {
   getSearchSortOptionValue,
   hasActiveSearchSort,
   mockSearchYearRange,
-  mockSuggestedSearches,
   normalizeSearchSortState,
   searchResultSortGroups,
   searchTabs,
@@ -21,12 +20,17 @@ export {
   getFilterOptionPage,
   getSearchSummary,
 } from "./filterOptionsApi";
+export {
+  getRecentSearches,
+  saveSearchHistory,
+} from "./searchHistoryApi";
 export { mapApiWorkToPaperResult } from "./searchWorksMapper";
 export { sortPaperResults } from "./searchWorksSorting";
 export { searchWorks } from "./searchWorksApi";
 export type {
   FilterOptionPageApiData,
   OptionItem,
+  SearchHistoryApiItem,
   SearchOptionGroupKey,
   SearchOptionValueLookup,
   SearchResultSortGroup,

@@ -117,15 +117,18 @@ export type PaperResultCardProps = {
 export type SearchPanelProps = {
   activeFilterCount: number;
   appliedFilterSummary: string[];
+  canSaveSearch: boolean;
   filterOptions: SearchFilterOptions;
   filters: SearchFilters;
   filtersOpen: boolean;
   hasFormError: boolean;
   isLoadingResults: boolean;
+  isSavingSearch: boolean;
   isLoadingFilterOptions: RemoteOptionStateMap;
   isLoadingMoreFilterOptions: RemoteOptionStateMap;
   hasMoreFilterOptions: RemoteOptionStateMap;
   matchedPaperCount: number;
+  recentSearches: SavedSearch[];
   searchQuery: string;
   totalIndexedPapers: number;
   visibleFilterWidgets: SearchFilterWidgetKey[];
@@ -135,6 +138,7 @@ export type SearchPanelProps = {
   onResetFilters: () => void;
   onSearch: () => void;
   onSearchQueryChange: (query: string) => void;
+  onSaveSearch: () => void;
   onSuggestedSearchSelect: (query: string) => void;
   onToggleFilters: () => void;
   onToggleVisibleFilterWidget: (widgetKey: SearchFilterWidgetKey) => void;
@@ -142,14 +146,15 @@ export type SearchPanelProps = {
 };
 
 export type SearchInputRowProps = {
+  canSaveSearch: boolean;
   isLoadingResults: boolean;
+  isSavingSearch: boolean;
+  recentSearches: SavedSearch[];
   searchQuery: string;
   onSearch: () => void;
   onSearchQueryChange: (query: string) => void;
-};
-
-export type SuggestedSearchListProps = {
-  onSelect: (query: string) => void;
+  onSaveSearch: () => void;
+  onSelectSuggestion: (query: string) => void;
 };
 
 export type SearchFiltersPanelProps = {

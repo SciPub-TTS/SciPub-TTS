@@ -25,6 +25,12 @@ export type SearchSummaryApiData = {
   totalWorks: number;
 };
 
+export type SearchHistoryApiItem = {
+  id: string;
+  query: string;
+  savedAt: string | null;
+};
+
 export type FilterOptionPageApiData = {
   filterKey: RemoteOptionFilterKey;
   options: OptionItem[];
