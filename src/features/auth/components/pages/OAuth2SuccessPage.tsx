@@ -2,8 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { AUTH_ROLES } from "@/features/auth/constants/roles.ts";
-import { authApi } from "@/features/auth/services/auth.api.ts";
 import { useReloadOnHistoryRestore } from "@/features/auth/hooks/useReloadOnHistoryRestore";
+import { authApi } from "@/features/auth/services/auth.api.ts";
 import { setAuthSession, setCurrentUser } from "@/features/auth/utils/authStorage.ts";
 import { getApiErrorMessage } from "@/features/auth/utils/getApiErrorMessage.ts";
 
@@ -18,6 +18,33 @@ const ERROR_MESSAGES: Record<string, string> = {
   google_email_not_verified: "Your Google email has not been verified.",
   oauth2_failed: "Google authentication failed. Please try again.",
 };
+
+function BrandLockup() {
+  return (
+    <div className="flex items-center gap-2.5">
+      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-800 shadow-[0_8px_20px_rgba(5,150,105,0.22)]">
+        <svg width="16" height="16" viewBox="0 0 14 14" fill="none">
+          <path
+            d="M2 10 Q7 2 12 10"
+            stroke="#fff"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            fill="none"
+          />
+          <circle cx="7" cy="5.5" r="1.2" fill="#6ee7b7" />
+        </svg>
+      </div>
+      <div>
+        <div className="font-title text-sm font-semibold leading-none text-slate-900">
+          Research Trend Tracker
+        </div>
+        <div className="font-subtext mt-0.5 text-[10px] leading-none tracking-widest text-slate-400">
+          RTT · V2.4
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function OAuth2SuccessPage() {
   const navigate = useNavigate();
@@ -69,34 +96,18 @@ export default function OAuth2SuccessPage() {
 
   if (status === "error") {
     return (
-      <div className="flex min-h-screen flex-col bg-white">
-        <header className="flex h-14 items-center border-b border-slate-100 px-8">
-          <div className="flex items-center gap-2.5">
-            <div className="flex h-7 w-7 items-center justify-center rounded-md bg-emerald-800">
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                <path
-                  d="M2 10 Q7 2 12 10"
-                  stroke="#fff"
-                  strokeWidth="1.8"
-                  strokeLinecap="round"
-                  fill="none"
-                />
-                <circle cx="7" cy="5.5" r="1.2" fill="#6ee7b7" />
-              </svg>
-            </div>
-            <div>
-              <div className="text-sm font-semibold leading-none text-slate-900">
-                Research Trend Tracker
-              </div>
-              <div className="mt-0.5 text-[10px] leading-none tracking-widest text-slate-400">
-                RTT · V2.4
-              </div>
-            </div>
-          </div>
+      <div className="flex min-h-screen flex-col bg-slate-50">
+        <header className="flex h-14 items-center border-b border-slate-200/70 bg-white px-8">
+          <BrandLockup />
         </header>
 
         <div className="flex flex-1 items-center justify-center px-6 py-16">
-          <div className="w-full max-w-[380px] text-center">
+          <div className="w-full max-w-[420px] rounded-[28px] border border-slate-200/80 bg-white p-8 text-center shadow-[0_22px_56px_rgba(15,23,42,0.08)]">
+            <p className="font-subtext mb-3 flex items-center justify-center gap-2 text-[11px] uppercase tracking-[0.18em] text-red-500">
+              <span className="inline-block h-1.5 w-1.5 rounded-full bg-red-500" />
+              OAuth Callback
+            </p>
+
             <div className="mx-auto mb-6 flex h-14 w-14 items-center justify-center rounded-2xl border border-red-100 bg-red-50">
               <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
                 <circle cx="12" cy="12" r="10" stroke="#ef4444" strokeWidth="1.5" />
@@ -105,21 +116,21 @@ export default function OAuth2SuccessPage() {
               </svg>
             </div>
 
-            <h1 className="mb-1 font-serif text-[1.8rem] leading-tight text-slate-950">
+            <h1 className="font-title mb-1 text-[1.95rem] leading-tight text-slate-950">
               Authentication
             </h1>
-            <h1 className="mb-4 font-serif text-[1.8rem] leading-tight italic text-red-600">
+            <h1 className="font-title mb-4 text-[1.95rem] leading-tight italic text-red-600">
               Failed.
             </h1>
 
-            <p className="mx-auto mb-8 max-w-xs text-sm leading-relaxed text-slate-500">
+            <p className="font-subtext mx-auto mb-8 max-w-xs text-sm leading-relaxed text-slate-500">
               {errorMessage}
             </p>
 
             <div className="flex flex-col gap-3">
               <a
                 href="/login"
-                className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-emerald-800 px-6 text-sm font-semibold text-white transition-all hover:bg-emerald-900"
+                className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-emerald-800 px-6 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(5,150,105,0.16)] transition-all hover:bg-emerald-900"
               >
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
                   <path
@@ -135,7 +146,7 @@ export default function OAuth2SuccessPage() {
 
               <a
                 href="/register"
-                className="inline-flex h-11 items-center justify-center rounded-lg border border-slate-200 px-6 text-sm font-medium text-slate-600 transition-all hover:bg-slate-50"
+                className="inline-flex h-11 items-center justify-center rounded-xl border border-slate-200 px-6 text-sm font-medium text-slate-600 transition-all hover:bg-slate-50"
               >
                 Go to Register
               </a>
@@ -144,7 +155,7 @@ export default function OAuth2SuccessPage() {
                 onClick={() => {
                   window.location.href = "/login";
                 }}
-                className="inline-flex h-11 items-center justify-center rounded-lg border border-slate-200 px-6 text-sm font-medium text-slate-600 transition-all hover:bg-slate-50"
+                className="inline-flex h-11 items-center justify-center rounded-xl border border-slate-200 px-6 text-sm font-medium text-slate-600 transition-all hover:bg-slate-50"
               >
                 Retry with Google
               </button>
@@ -156,59 +167,44 @@ export default function OAuth2SuccessPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-5 bg-white">
-      <div className="mb-4 flex items-center gap-2.5">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-800">
-          <svg width="16" height="16" viewBox="0 0 14 14" fill="none">
+    <div className="flex min-h-screen flex-col items-center justify-center gap-5 bg-slate-50 px-6">
+      <BrandLockup />
+
+      <div className="rounded-[28px] border border-slate-200/80 bg-white px-10 py-10 text-center shadow-[0_22px_56px_rgba(15,23,42,0.08)]">
+        <div className="relative mx-auto h-12 w-12">
+          <svg className="h-12 w-12 animate-spin text-emerald-600" viewBox="0 0 24 24" fill="none">
+            <circle className="opacity-20" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
             <path
-              d="M2 10 Q7 2 12 10"
-              stroke="#fff"
-              strokeWidth="1.8"
-              strokeLinecap="round"
-              fill="none"
+              className="opacity-90"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
             />
-            <circle cx="7" cy="5.5" r="1.2" fill="#6ee7b7" />
           </svg>
         </div>
-        <div>
-          <div className="text-sm font-semibold leading-none text-slate-900">
-            Research Trend Tracker
-          </div>
-          <div className="mt-0.5 text-[10px] leading-none tracking-widest text-slate-400">
-            RTT · V2.4
-          </div>
+
+        <div className="mt-4 flex flex-col items-center gap-2">
+          <p className="font-title text-sm font-semibold text-slate-800">
+            Processing Google authentication...
+          </p>
+          <p className="font-subtext text-xs text-slate-400">
+            Please do not close this page
+          </p>
         </div>
-      </div>
 
-      <div className="relative h-12 w-12">
-        <svg className="h-12 w-12 animate-spin text-emerald-600" viewBox="0 0 24 24" fill="none">
-          <circle className="opacity-20" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
-          <path
-            className="opacity-90"
-            fill="currentColor"
-            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-          />
-        </svg>
-      </div>
-
-      <div className="mt-2 flex flex-col items-center gap-2">
-        <p className="text-sm font-medium text-slate-700">Processing Google authentication...</p>
-        <p className="text-xs text-slate-400">Please do not close this page</p>
-      </div>
-
-      <div className="mt-4 flex items-center gap-3">
-        {["Google authentication", "Create session", "Load profile"].map((step, index) => (
-          <div key={step} className="flex items-center gap-2">
-            <div className="flex items-center gap-1.5">
-              <div
-                className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500"
-                style={{ animationDelay: `${index * 0.3}s` }}
-              />
-              <span className="text-xs text-slate-400">{step}</span>
+        <div className="mt-4 flex items-center gap-3">
+          {["Google authentication", "Create session", "Load profile"].map((step, index) => (
+            <div key={step} className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5">
+                <div
+                  className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500"
+                  style={{ animationDelay: `${index * 0.3}s` }}
+                />
+                <span className="font-subtext text-xs text-slate-400">{step}</span>
+              </div>
+              {index < 2 ? <div className="h-px w-4 bg-slate-200" /> : null}
             </div>
-            {index < 2 ? <div className="h-px w-4 bg-slate-200" /> : null}
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </div>
   );

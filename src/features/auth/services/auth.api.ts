@@ -77,9 +77,8 @@ export const authApi = {
       .then((res) => res.data);
   },
 
-  startGoogleLogin(mode: "login" | "register") {
+  startGoogleLogin() {
     const targetUrl = new URL(googleAuthUrl, window.location.origin);
-    targetUrl.searchParams.set("mode", mode);
     window.location.href = targetUrl.toString();
   },
 };
