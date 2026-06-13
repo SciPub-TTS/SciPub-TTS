@@ -25,9 +25,7 @@ export default function AdminHeader() {
           <h1 className="text-2xl font-bold text-slate-950">
             Admin Control Panel
           </h1>
-          <p className="mt-2 text-sm font-medium text-slate-500">
-            Manage users, research subfields, API usage.
-          </p>
+          
           <div className="mt-4 max-w-2xl">
             <BreadcrumbBar homePath={ROUTES.ADMIN_DASHBOARD} />
           </div>

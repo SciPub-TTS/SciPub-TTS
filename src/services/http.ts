@@ -6,7 +6,7 @@ import {
     setAccessToken,
 } from "@/features/auth/utils/authStorage";
 import type {AuthResponse } from "@/features/auth/types/auth.types";
-import { apiBaseUrl } from "@/lib/api/environment";
+import { apiBaseUrl } from "@/config/appConfig";
 import type {ApiResponse} from "@/types/common.types.ts";
 
 export const http = axios.create({

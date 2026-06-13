@@ -1,5 +1,5 @@
 import { getAccessToken } from "@/features/auth/utils/authStorage";
-import { apiOrigin } from "@/lib/api/environment";
+import { apiOrigin } from "@/config/appConfig";
 
 type ResponseEnvelope<T> = {
   status: number;

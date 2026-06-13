@@ -12,10 +12,11 @@ export interface RegisterLocalRequest {
   email: string;
   password: string;
   confirmPassword: string;
+  appBaseUrl?: string;
 }
 
 export interface ChangePasswordRequest {
-  currentPassword: string;
+  currentPassword?: string;
   newPassword: string;
   confirmNewPassword: string;
 }
@@ -46,6 +47,8 @@ export interface UserPrincipal {
   lastName?: string;
   fullName?: string;
   avatarUrl?: string | null;
+  googleLinked?: boolean;
+  hasPassword?: boolean;
   role: AuthRole;
   authorities?: string[] | Array<{ authority: string }>;
 }
@@ -62,5 +65,7 @@ export interface AuthUser {
   email: string;
   firstName?: string;
   lastName?: string;
+  googleLinked?: boolean;
+  hasPassword?: boolean;
   role: AuthRole;
 }

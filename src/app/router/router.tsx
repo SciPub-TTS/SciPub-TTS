@@ -30,6 +30,7 @@ import ReportPage from "@/features/reports/components/ReportPage";
 //import AdminDashboardPage from "@/pages/admin/AdminDashboardPage";
 import TrendingTopicPage from "@/features/dashboard/TrendingTopicPage.tsx";
 import AdminDashboardPage from "@/features/admin/components/AdminDashboardPage.tsx";
+import AdminUsersPage from "@/features/admin/pages/AdminUsersPage.tsx";
 import ForgotPasswordPage from "@/features/auth/components/pages/ForgotPasswordPage.tsx";
 import VerifyResetCodePage from "@/features/auth/components/pages/VerifyResetCodePage.tsx";
 import ResetPasswordPage from "@/features/auth/components/pages/ResetPasswordPage.tsx";
@@ -248,7 +249,7 @@ export const router = createBrowserRouter([
           },
           {
             path: ROUTE_SEGMENTS.ADMIN_USERS,
-            element: <PlaceholderPage title="Admin Users" />,
+            element: <AdminUsersPage />,
             handle: {
               breadcrumb: "User Management",
             },

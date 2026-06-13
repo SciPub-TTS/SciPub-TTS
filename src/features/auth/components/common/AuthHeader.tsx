@@ -1,3 +1,4 @@
+import { Home } from "lucide-react";
 import {Link} from "react-router-dom";
 
 import {ROUTES} from "@/app/router";
@@ -28,18 +29,13 @@ export default function AuthHeader({
             {showBackLink && (
                 <Link
                     to={backTo}
-                    className="flex items-center gap-1.5 text-sm text-slate-500 transition-colors hover:text-slate-800"
+                    aria-label={backLabel}
+                    className="group flex h-10 items-center justify-center gap-1.5 rounded-lg px-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800"
                 >
-                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                        <path
-                            d="M9 2L4 7l5 5"
-                            stroke="currentColor"
-                            strokeWidth="1.5"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                        />
-                    </svg>
-                    {backLabel}
+                    <Home className="h-5 w-5" />
+                    <span className="max-w-0 overflow-hidden text-sm font-medium opacity-0 transition-all group-hover:max-w-12 group-hover:opacity-100">
+                        Home
+                    </span>
                 </Link>
             )}
         </header>
