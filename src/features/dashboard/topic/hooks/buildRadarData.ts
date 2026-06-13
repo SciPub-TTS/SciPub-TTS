@@ -1,5 +1,5 @@
-import {topicMetrics} from "@/features/dashboard/constants/topic-data.ts";
-import {averageMetrics, metricKeys} from "@/features/dashboard/hooks/averageMetrics.ts";
+import {topicMetrics} from "@/features/dashboard/topic/constants/topic-data.ts";
+import {averageMetrics, metricKeys} from "@/features/dashboard/topic/hooks/averageMetrics.ts";
 
 export const buildRadarData = (topicName: string) => {
     const topic = topicMetrics.find(t => t.topic === topicName);

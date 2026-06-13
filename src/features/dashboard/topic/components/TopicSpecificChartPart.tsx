@@ -1,9 +1,9 @@
 import {Legend, PolarAngleAxis, PolarGrid, Radar, RadarChart, ResponsiveContainer} from "recharts";
-import {topicMetrics} from "@/features/dashboard/constants/topic-data.ts";
+import {topicMetrics} from "@/features/dashboard/topic/constants/topic-data.ts";
 import {useMemo, useState} from "react";
-import {buildRadarData} from "@/features/dashboard/hooks/buildRadarData.ts";
+import {buildRadarData} from "@/features/dashboard/topic/hooks/buildRadarData.ts";
 import {ResponsiveHeatMap} from "@nivo/heatmap";
-import {topicHeatmaps} from "@/features/dashboard/constants/topic-heatmap.ts";
+import {topicHeatmaps} from "@/features/dashboard/topic/constants/topic-heatmap.ts";
 
 export default function TopicSpecificChartPart(){
     const [selectedTopic, setSelectedTopic] = useState(
@@ -140,6 +140,7 @@ function HeatMapPart({selectedTopic}:{selectedTopic:string}) {
             <div className="h-[450px]">
                 <ResponsiveHeatMap
                     data={data}
+
                     margin={{
                         top: 40,
                         right: 60,

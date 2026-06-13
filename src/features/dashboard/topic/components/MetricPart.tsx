@@ -1,10 +1,12 @@
-import {MENU_METRICS} from "@/features/dashboard/constants/metric-data.ts";
-import type {MetricData} from "@/features/dashboard/types/metric.ts";
+import type {MetricData} from "@/features/dashboard/topic/types/metric.ts";
+import {useGeneralMetrics} from "@/features/dashboard/topic/hooks/useMetric.ts";
 
 export default function MetricPart() {
+    const {metricList} = useGeneralMetrics();
+
     return (
         <div className="grid grid-cols-4 gap-6">
-            {MENU_METRICS.map((metric) => (
+            {metricList.map((metric) => (
                 <MetricField
                     key={metric.title}
                     metrics={metric}

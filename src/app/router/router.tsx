@@ -26,7 +26,6 @@ import FeedPage from "@/features/newfeeds/components/FeedPage";
 import ReportPage from "@/features/reports/components/ReportPage";
 
 //import AdminDashboardPage from "@/pages/admin/AdminDashboardPage";
-import TrendingTopicPage from "@/features/dashboard/TrendingTopicPage.tsx";
 import AdminDashboardPage from "@/features/admin/components/AdminDashboardPage.tsx";
 import AdminUsersPage from "@/features/admin/pages/AdminUsersPage.tsx";
 import ForgotPasswordPage from "@/features/auth/components/pages/ForgotPasswordPage.tsx";
@@ -41,6 +40,8 @@ import {
   parseWorkTrail,
 } from "@/features/detailpapers/workTrail";
 import { markSearchPageRestorePending } from "@/features/search/utils/navigationState";
+import TopicDashboardPage from "@/features/dashboard/topic/TopicDashboardPage.tsx";
+import {KeywordDashboardPage} from "@/features/dashboard/keyword/KeywordDashboard.tsx";
 
 function getPaperBreadcrumbLabel(paperId: string) {
   return getPaperTitle(paperId) || "Paper Detail";
@@ -161,10 +162,11 @@ export const router = createBrowserRouter([
       },
       {
         path: ROUTE_SEGMENTS.TRENDING_TOPIC,
-        element: <TrendingTopicPage />,
-        handle: {
-          breadcrumb: "Trending Topic",
-        },
+        element: <TopicDashboardPage />,
+      },
+      {
+        path: ROUTE_SEGMENTS.TRENDING_KEYWORD,
+        element: <KeywordDashboardPage/>,
       },
       {
         path: ROUTE_SEGMENTS.PAPER_DETAIL,

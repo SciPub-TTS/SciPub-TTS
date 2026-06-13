@@ -5,6 +5,8 @@ export const ROUTES = {
   REGISTER: "/register",
   GUIDE: "/guide",
   SEARCH: "/search",
+  DASHBOARD: "/dashboard",
+  TOPIC_DASHBOARD: "/topic_dashboard",
   TRENDING_TOPIC: "/trending-topic",
 
   GOOGLE_REGISTER_COMPLETE: "/register/complete",

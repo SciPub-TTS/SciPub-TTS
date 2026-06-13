@@ -2,7 +2,8 @@ export const ROUTE_SEGMENTS = {
   // Children of "/"
   GUIDE: "guide",
   SEARCH: "search",
-  TRENDING_TOPIC: "trending-topic",
+  TRENDING_TOPIC: "/trending-topic",
+  TRENDING_KEYWORD: "/trending-keyword",
   PAPER_DETAIL: "papers/:paperId",
 
   PROFILE: "profile",
@@ -16,4 +17,8 @@ export const ROUTE_SEGMENTS = {
   ADMIN_USERS: "users",
   ADMIN_FIELDS: "fields",
   ADMIN_SYNC: "sync",
+
+  // Children of dashboard
+    TOPIC_DASHBOARD: "/topic_dashboard",
+    KEYWORD_DASHBOARD: "/keyword_dashboard",
 } as const;

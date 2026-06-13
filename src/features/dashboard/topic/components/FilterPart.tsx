@@ -1,6 +1,6 @@
 import {CircleQuestionMark, Cloud, Filter} from "lucide-react";
-import {MENU_FILTER} from "@/features/dashboard/constants/filter-data.ts";
-import type {FilterData} from "@/features/dashboard/types/filter.ts";
+import {MENU_FILTER} from "@/features/dashboard/topic/constants/filter-data.ts";
+import type {FilterData} from "@/features/dashboard/topic/types/filter.ts";
 
 export default function FilterPart(){
     return(
