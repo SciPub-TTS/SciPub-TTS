@@ -22,7 +22,7 @@ const en = {
   },
 
   admin: {
-    appName: "ScholarTrack",
+    appName: "Owlreka",
     console: "Admin Console",
     dashboard: "Admin Dashboard",
     users: "Users",

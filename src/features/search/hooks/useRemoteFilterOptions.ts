@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { SEARCH_DEFAULT_PAGE, SEARCH_FILTER_OPTION_LIMIT } from "../constants";
 import { mergeUniqueStrings } from "../services";
@@ -43,6 +43,85 @@ export function useRemoteFilterOptions(
     remoteFilterOptionsStateRef.current = remoteFilterOptionsState;
   }, [remoteFilterOptionsState]);
 
+  const readFilterOptionPage = useCallback(
+    async (
+      filterKey: RemoteOptionFilterKey,
+      keyword: string,
+      page: number,
+    ) =>
+      queryClient.fetchQuery({
+        queryKey: [
+          "searchFilterOptions",
+          filterKey,
+          keyword,
+          page,
+          SEARCH_FILTER_OPTION_LIMIT,
+        ],
+        queryFn: () =>
+          getFilterOptionPage(
+            filterKey,
+            keyword,
+            page,
+            SEARCH_FILTER_OPTION_LIMIT,
+          ),
+        staleTime: 5 * 60 * 1000,
+      }),
+    [queryClient],
+  );
+
+  const loadFirstFilterOptionPage = useCallback(
+    async (filterKey: RemoteOptionFilterKey, keyword: string) => {
+      try {
+        const optionsPage = await readFilterOptionPage(filterKey, keyword, 1);
+        const currentKeyword =
+          remoteFilterOptionsStateRef.current.remoteOptionKeywords[filterKey];
+
+        if (currentKeyword !== keyword) {
+          return;
+        }
+
+        updateRemoteFilterOptionsState((state) => ({
+          ...state,
+          filterOptions: {
+            ...state.filterOptions,
+            [filterKey]: optionsPage.options,
+          },
+          hasMoreFilterOptions: {
+            ...state.hasMoreFilterOptions,
+            [filterKey]: optionsPage.hasMore,
+          },
+          optionValueLookup: {
+            ...state.optionValueLookup,
+            [filterKey]: optionsPage.valueLookup,
+          },
+          remoteOptionPages: {
+            ...state.remoteOptionPages,
+            [filterKey]: SEARCH_DEFAULT_PAGE,
+          },
+        }));
+      } catch (error) {
+        const errorMessage = keyword
+          ? "Cannot search filter options:"
+          : "Cannot load base filter options:";
+        console.error(errorMessage, error);
+      } finally {
+        const currentKeyword =
+          remoteFilterOptionsStateRef.current.remoteOptionKeywords[filterKey];
+
+        if (currentKeyword === keyword) {
+          updateRemoteFilterOptionsState((state) => ({
+            ...state,
+            isLoadingFilterOptions: {
+              ...state.isLoadingFilterOptions,
+              [filterKey]: false,
+            },
+          }));
+        }
+      }
+    },
+    [readFilterOptionPage],
+  );
+
   useEffect(() => {
     const timeoutLookup = searchTimeoutRef.current;
 
@@ -82,62 +161,7 @@ export function useRemoteFilterOptions(
       }));
       void loadFirstFilterOptionPage(filterKey, "");
     }
-  }, [filtersOpen]);
-
-  async function loadFirstFilterOptionPage(
-    filterKey: RemoteOptionFilterKey,
-    keyword: string,
-  ) {
-    try {
-      const optionsPage = await readFilterOptionPage(filterKey, keyword, 1);
-      const currentKeyword =
-        remoteFilterOptionsStateRef.current.remoteOptionKeywords[filterKey];
-
-      if (currentKeyword !== keyword) {
-        return;
-      }
-
-      updateRemoteFilterOptionsState((state) => ({
-        ...state,
-        filterOptions: {
-          ...state.filterOptions,
-          [filterKey]: optionsPage.options,
-        },
-        hasMoreFilterOptions: {
-          ...state.hasMoreFilterOptions,
-          [filterKey]: optionsPage.hasMore,
-        },
-        optionValueLookup: {
-          ...state.optionValueLookup,
-          [filterKey]: optionsPage.valueLookup,
-        },
-        remoteOptionPages: {
-          ...state.remoteOptionPages,
-          [filterKey]: SEARCH_DEFAULT_PAGE,
-        },
-      }));
-    } catch (error) {
-      const errorMessage = keyword
-        ? "Cannot search filter options:"
-        : "Cannot load base filter options:";
-      console.error(errorMessage, error);
-    } finally {
-      const currentKeyword =
-        remoteFilterOptionsStateRef.current.remoteOptionKeywords[filterKey];
-
-      if (currentKeyword !== keyword) {
-        return;
-      }
-
-      updateRemoteFilterOptionsState((state) => ({
-        ...state,
-        isLoadingFilterOptions: {
-          ...state.isLoadingFilterOptions,
-          [filterKey]: false,
-        },
-      }));
-    }
-  }
+  }, [filtersOpen, loadFirstFilterOptionPage]);
 
   function handleFilterOptionSearch(
     filterKey: RemoteOptionFilterKey,
@@ -239,17 +263,15 @@ export function useRemoteFilterOptions(
       const currentKeyword =
         remoteFilterOptionsStateRef.current.remoteOptionKeywords[filterKey];
 
-      if (currentKeyword !== keyword) {
-        return;
+      if (currentKeyword === keyword) {
+        updateRemoteFilterOptionsState((state) => ({
+          ...state,
+          isLoadingMoreFilterOptions: {
+            ...state.isLoadingMoreFilterOptions,
+            [filterKey]: false,
+          },
+        }));
       }
-
-      updateRemoteFilterOptionsState((state) => ({
-        ...state,
-        isLoadingMoreFilterOptions: {
-          ...state.isLoadingMoreFilterOptions,
-          [filterKey]: false,
-        },
-      }));
     }
   }
 
@@ -287,31 +309,6 @@ export function useRemoteFilterOptions(
     optionValueLookup: remoteFilterOptionsState.optionValueLookup,
     remoteFilterOptionsSnapshot,
   };
-
-  async function readFilterOptionPage(
-    filterKey: RemoteOptionFilterKey,
-    keyword: string,
-    page: number,
-  ) {
-    return queryClient.fetchQuery({
-      queryKey: [
-        "searchFilterOptions",
-        filterKey,
-        keyword,
-        page,
-        SEARCH_FILTER_OPTION_LIMIT,
-      ],
-      queryFn: () =>
-        getFilterOptionPage(
-          filterKey,
-          keyword,
-          page,
-          SEARCH_FILTER_OPTION_LIMIT,
-        ),
-      staleTime: 5 * 60 * 1000,
-    });
-  }
-
   function updateRemoteFilterOptionsState(
     updater: (state: RemoteFilterOptionsState) => RemoteFilterOptionsState,
   ) {

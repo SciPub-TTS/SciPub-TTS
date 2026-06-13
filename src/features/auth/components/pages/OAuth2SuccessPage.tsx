@@ -49,20 +49,20 @@ function BrandLockup() {
 export default function OAuth2SuccessPage() {
   const navigate = useNavigate();
   useReloadOnHistoryRestore();
-
-  const [status, setStatus] = useState<Status>("loading");
-  const [errorMessage, setErrorMessage] = useState("");
   const hasCalled = useRef(false);
 
   const searchParams = new URLSearchParams(window.location.search);
   const urlError = searchParams.get("error");
+  const initialErrorMessage = urlError
+    ? ERROR_MESSAGES[urlError] ?? "Google authentication failed. Please try again."
+    : "";
+  const [status, setStatus] = useState<Status>(
+    initialErrorMessage ? "error" : "loading",
+  );
+  const [errorMessage, setErrorMessage] = useState(initialErrorMessage);
 
   useEffect(() => {
     if (urlError) {
-      setErrorMessage(
-        ERROR_MESSAGES[urlError] ?? "Google authentication failed. Please try again.",
-      );
-      setStatus("error");
       return;
     }
 

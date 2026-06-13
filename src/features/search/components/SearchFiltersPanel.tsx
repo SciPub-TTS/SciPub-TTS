@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import { ChevronDown, Filter, SlidersHorizontal } from "lucide-react";
 
 import type {
@@ -27,8 +26,6 @@ import {
   YearFilterWidget,
 } from "@/layout/components/Filters";
 
-const FILTER_PANEL_ANIMATION_DURATION_MS = 500;
-
 export function SearchFiltersPanel({
   activeFilterCount,
   appliedFilterSummary,
@@ -50,50 +47,17 @@ export function SearchFiltersPanel({
   onToggleVisibleFilterWidget,
   updateFilter,
 }: SearchFiltersPanelProps) {
-  const [shouldRenderFilterContent, setShouldRenderFilterContent] =
-    useState(filtersOpen);
-  const [filterPanelAnimationClassName, setFilterPanelAnimationClassName] =
-    useState("");
-
-  useEffect(() => {
-    if (filtersOpen) {
-      setShouldRenderFilterContent(true);
-      setFilterPanelAnimationClassName("search-filters-panel-enter");
-      return;
-    }
-
-    if (!shouldRenderFilterContent) {
-      return;
-    }
-
-    setFilterPanelAnimationClassName("search-filters-panel-exit");
-
-    const timerId = window.setTimeout(() => {
-      setShouldRenderFilterContent(false);
-      setFilterPanelAnimationClassName("");
-    }, FILTER_PANEL_ANIMATION_DURATION_MS);
-
-    return () => {
-      window.clearTimeout(timerId);
-    };
-  }, [filtersOpen, shouldRenderFilterContent]);
-
   return (
     <div className="rounded-b-2xl border-t border-black bg-slate-50/80">
       <SearchFiltersHeader
         activeFilterCount={activeFilterCount}
-        filtersOpen={shouldRenderFilterContent}
+        filtersOpen={filtersOpen}
         matchedPaperCount={matchedPaperCount}
         onToggleFilters={onToggleFilters}
       />
 
-      {shouldRenderFilterContent ? (
-        <div
-          className={`${filterPanelAnimationClassName} overflow-hidden`}
-          style={{
-            animationDuration: `${FILTER_PANEL_ANIMATION_DURATION_MS}ms`,
-          }}
-        >
+      {filtersOpen ? (
+        <div className="search-filters-panel-enter overflow-hidden">
           <FilterVisibilityToggle
             visibleFilterWidgets={visibleFilterWidgets}
             onToggleVisibleFilterWidget={onToggleVisibleFilterWidget}

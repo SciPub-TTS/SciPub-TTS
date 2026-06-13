@@ -210,6 +210,7 @@ function SearchInputRow({
   onSelectSuggestion,
 }: SearchInputRowProps) {
   const [isSuggestionOpen, setIsSuggestionOpen] = useState(false);
+  const [dismissedSaveToken, setDismissedSaveToken] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -227,6 +228,7 @@ function SearchInputRow({
       }
 
       setIsSuggestionOpen(false);
+      setDismissedSaveToken(saveSearchSuccessToken);
     }
 
     document.addEventListener("mousedown", handleDocumentMouseDown);
@@ -234,15 +236,7 @@ function SearchInputRow({
     return () => {
       document.removeEventListener("mousedown", handleDocumentMouseDown);
     };
-  }, [isSuggestionOpen]);
-
-  useEffect(() => {
-    if (!saveSearchSuccessToken || !searchQuery.trim()) {
-      return;
-    }
-
-    setIsSuggestionOpen(true);
-  }, [saveSearchSuccessToken, searchQuery]);
+  }, [isSuggestionOpen, saveSearchSuccessToken]);
 
   // Controlled input: React state is the source of truth for the search value.
   function handleSearchInputChange(event: ChangeEvent<HTMLInputElement>) {
@@ -268,6 +262,7 @@ function SearchInputRow({
 
   function handleSearchClick() {
     setIsSuggestionOpen(false);
+    setDismissedSaveToken(saveSearchSuccessToken);
     onSearch();
   }
 
@@ -275,6 +270,7 @@ function SearchInputRow({
     const suggestion = event.currentTarget.value;
 
     setIsSuggestionOpen(false);
+    setDismissedSaveToken(saveSearchSuccessToken);
     onSelectSuggestion(suggestion);
   }
 
@@ -297,10 +293,13 @@ function SearchInputRow({
   }
 
   function handleClearSuggestionsClick() {
+    setDismissedSaveToken(saveSearchSuccessToken);
     onClearSuggestions();
   }
 
-  const shouldShowSuggestions = isSuggestionOpen && recentSearches.length > 0;
+  const shouldShowSuggestions =
+    recentSearches.length > 0
+    && (isSuggestionOpen || saveSearchSuccessToken > dismissedSaveToken);
 
   return (
     <div

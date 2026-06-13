@@ -22,7 +22,7 @@ const vi = {
   },
 
   admin: {
-    appName: "ScholarTrack",
+    appName: "Owlreka",
     console: "Bảng quản trị",
     dashboard: "Dashboard quản trị",
     users: "Người dùng",

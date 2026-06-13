@@ -1,4 +1,5 @@
 import { Globe2, Landmark, Tag } from "lucide-react";
+import type { ReactNode } from "react";
 
 import MetadataBadge from "@/layout/components/MetadataBadge";
 
@@ -19,13 +20,13 @@ type SummaryGridProps = {
 
 type TagClusterProps = {
   emptyLabel?: string;
-  icon?: any;
+  icon?: ReactNode;
   items: string[];
   title: string;
 };
 
 type EntityTagClusterProps = {
-  icon?: any;
+  icon?: ReactNode;
   items: PaperDetailEntityRef[];
   title: string;
 };

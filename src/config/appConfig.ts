@@ -1,25 +1,24 @@
-function trim(value: string) {
+function trimTrailingSlashes(value: string) {
   return value.replace(/\/+$/, "");
 }
 
-const configuredBackendUrl =
-  import.meta.env.VITE_API_BASE_URL?.trim() ||
-  import.meta.env.VITE_API_URL?.trim() ||
-  import.meta.env.VITE_BACKEND_URL?.trim();
+const configuredApiBaseUrl = import.meta.env.VITE_API_BASE_URL?.trim();
 
-if (!configuredBackendUrl) {
+if (!configuredApiBaseUrl) {
   throw new Error(
     "Missing frontend API base URL. Set VITE_API_BASE_URL in your .env file.",
   );
 }
 
-const normalizedBackendUrl = trim(configuredBackendUrl);
+const normalizedApiBaseUrl = trimTrailingSlashes(configuredApiBaseUrl);
+const hasApiSuffix = normalizedApiBaseUrl.toLowerCase().endsWith("/api");
 
-export const apiBaseUrl = normalizedBackendUrl.toLowerCase().endsWith("/api")
-  ? normalizedBackendUrl
-  : `${normalizedBackendUrl}/api`;
+export const apiBaseUrl = hasApiSuffix
+  ? normalizedApiBaseUrl
+  : `${normalizedApiBaseUrl}/api`;
 
-export const apiOrigin = apiBaseUrl.replace(/\/api$/i, "");
-export const googleAuthUrl =
-  import.meta.env.VITE_GOOGLE_AUTH_URL?.trim() ||
-  `${apiBaseUrl}/auth/oauth2/google`;
+export const apiOrigin = hasApiSuffix
+  ? normalizedApiBaseUrl.slice(0, -4)
+  : normalizedApiBaseUrl;
+
+export const googleAuthUrl = `${apiBaseUrl}/auth/oauth2/google`;

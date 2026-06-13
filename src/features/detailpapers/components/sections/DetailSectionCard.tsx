@@ -1,6 +1,8 @@
+import type { ReactNode } from "react";
+
 type DetailSectionCardProps = {
-  children?: any;
-  icon?: any;
+  children?: ReactNode;
+  icon?: ReactNode;
   title: string;
 };
 

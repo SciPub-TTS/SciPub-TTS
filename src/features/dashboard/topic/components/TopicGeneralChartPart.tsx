@@ -281,7 +281,7 @@ function EmergingPart(){
 }
 
 function MomentumPart(){
-    const formatAxisTick = (value: any): string => {
+    const formatAxisTick = (value: string | number): string => {
         return `${value}`;
     };
 

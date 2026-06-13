@@ -71,6 +71,10 @@ import { useRemoteFilterOptions } from "./useRemoteFilterOptions";
 const SEARCH_HISTORY_QUERY_DEBOUNCE_MS = 250;
 const SAVE_SEARCH_FEEDBACK_DURATION_MS = 2800;
 
+function getMutationErrorMessage(error: unknown, fallbackMessage: string) {
+  return error instanceof Error ? error.message : fallbackMessage;
+}
+
 export function useSearchPageState() {
   const dispatch = useAppDispatch();
   const queryClient = useQueryClient();
@@ -135,6 +139,13 @@ export function useSearchPageState() {
   });
   const saveSearchMutation = useMutation({
     mutationFn: saveSearchHistory,
+    onError: (error) => {
+      console.error("Cannot save search history:", error);
+      setSaveSearchFeedback({
+        kind: "error",
+        message: getMutationErrorMessage(error, "Could not save search history."),
+      });
+    },
     onSuccess: () => {
       setSaveSearchFeedback({
         kind: "success",
@@ -148,6 +159,16 @@ export function useSearchPageState() {
   });
   const deleteSearchMutation = useMutation({
     mutationFn: deleteSearchHistory,
+    onError: (error) => {
+      console.error("Cannot delete search history item:", error);
+      setSaveSearchFeedback({
+        kind: "error",
+        message: getMutationErrorMessage(
+          error,
+          "Could not delete search history.",
+        ),
+      });
+    },
     onSuccess: () => {
       setSaveSearchFeedback({
         kind: "success",
@@ -160,6 +181,13 @@ export function useSearchPageState() {
   });
   const clearSearchMutation = useMutation({
     mutationFn: clearSearchHistory,
+    onError: (error) => {
+      console.error("Cannot clear search history:", error);
+      setSaveSearchFeedback({
+        kind: "error",
+        message: getMutationErrorMessage(error, "Could not clear search history."),
+      });
+    },
     onSuccess: () => {
       setSaveSearchFeedback({
         kind: "success",
@@ -241,48 +269,6 @@ export function useSearchPageState() {
       console.error("Search API failed:", searchResultsQuery.error);
     }
   }, [searchResultsQuery.error]);
-
-  useEffect(() => {
-    if (saveSearchMutation.error) {
-      console.error("Cannot save search history:", saveSearchMutation.error);
-      setSaveSearchFeedback({
-        kind: "error",
-        message:
-          saveSearchMutation.error instanceof Error
-            ? saveSearchMutation.error.message
-            : "Could not save search history.",
-      });
-    }
-  }, [saveSearchMutation.error]);
-
-  useEffect(() => {
-    if (deleteSearchMutation.error) {
-      console.error(
-        "Cannot delete search history item:",
-        deleteSearchMutation.error,
-      );
-      setSaveSearchFeedback({
-        kind: "error",
-        message:
-          deleteSearchMutation.error instanceof Error
-            ? deleteSearchMutation.error.message
-            : "Could not delete search history.",
-      });
-    }
-  }, [deleteSearchMutation.error]);
-
-  useEffect(() => {
-    if (clearSearchMutation.error) {
-      console.error("Cannot clear search history:", clearSearchMutation.error);
-      setSaveSearchFeedback({
-        kind: "error",
-        message:
-          clearSearchMutation.error instanceof Error
-            ? clearSearchMutation.error.message
-            : "Could not clear search history.",
-      });
-    }
-  }, [clearSearchMutation.error]);
 
   useEffect(() => {
     if (!saveSearchFeedback) {
