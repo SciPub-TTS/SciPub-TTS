@@ -103,8 +103,6 @@ export function normalizeCurrentUser(input: unknown): UserPrincipal {
     lastName,
     fullName,
     avatarUrl: typeof source.avatarUrl === "string" ? source.avatarUrl : null,
-    googleLinked: Boolean(source.googleLinked),
-    hasPassword: Boolean(source.hasPassword),
     role: resolveRole(source),
     authorities: normalizeAuthorities(source.authorities),
   };

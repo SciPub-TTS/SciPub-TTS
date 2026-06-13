@@ -2,14 +2,13 @@ import axios from "axios";
 
 import {
     clearAuthStorage,
-    getAccessToken
+    getAccessToken, setAccessToken
 } from "@/features/auth/utils/authStorage";
 import type { AuthResponse } from "@/features/auth/types/auth.types";
-import { apiBaseUrl } from "@/config/appConfig";
 import type {ApiResponse} from "@/types/common.types.ts";
 
 export const apiClient = axios.create({
-    baseURL: apiBaseUrl,
+    baseURL: import.meta.env.VITE_BACKEND_URL,
     withCredentials: true,
     headers: {
         "Content-Type": "application/json",
@@ -17,7 +16,7 @@ export const apiClient = axios.create({
 });
 
 const refreshClient = axios.create({
-    baseURL: apiBaseUrl,
+    baseURL: import.meta.env.VITE_BACKEND_URL,
     withCredentials: true,
     headers: {
         "Content-Type": "application/json",
@@ -41,18 +40,30 @@ apiClient.interceptors.response.use(
     async (error) => {
         const originalRequest = error.config;
 
+        const requestUrl = originalRequest?.url ?? "";
+
+        const skipRefreshUrls = [
+            "/auth/login",
+            "/auth/register",
+            "/auth/register/google/preview",
+            "/auth/register/google/complete",
+            "/auth/refresh",
+            "/auth/forgot-password",
+            "/auth/reset-password",
+        ];
+
+        const shouldSkipRefresh = skipRefreshUrls.some((url) =>
+            requestUrl.includes(url)
+        );
+
         if (
             error.response?.status !== 401 ||
             !originalRequest ||
             originalRequest._retry ||
-            originalRequest.url?.includes("/auth/login") ||
-            originalRequest.url?.includes("/auth/register") ||
-            originalRequest.url?.includes("/auth/refresh") ||
-            originalRequest.url?.includes("/auth/forgot-password")
+            shouldSkipRefresh
         ) {
             return Promise.reject(error);
         }
-
         originalRequest._retry = true;
 
         refreshPromise ??= refreshClient
@@ -76,8 +87,15 @@ apiClient.interceptors.response.use(
 
         const newAccessToken = await refreshPromise;
 
+
+
         if (!newAccessToken) {
             clearAuthStorage();
             return Promise.reject(error);
         }
+
+        setAccessToken(newAccessToken);
+
+        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+        return apiClient(originalRequest); // Thực hiện lại request bị lỗi ban đầu
     })

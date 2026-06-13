@@ -9,6 +9,8 @@ import type {
   UserPrincipal,
   VerifyResetCodeRequest,
   VerifyResetCodeResponse,
+    CompleteGoogleRegisterRequest,
+    GoogleSignupPreviewResponse,
 } from "@/features/auth/types/auth.types";
 import { googleAuthUrl } from "@/config/appConfig";
 import type { ApiResponse } from "@/types/common.types.ts";
@@ -44,11 +46,31 @@ export const authApi = {
       .then((res) => res.data);
   },
 
-  me() {
-    return http
-      .get<ApiResponse<UserPrincipal>>(`${AUTH_BASE}/me`)
-      .then((res) => res.data);
-  },
+    me() {
+        return http
+            .get<ApiResponse<UserPrincipal>>(`${AUTH_BASE}/me`)
+            .then((res) => res.data);
+    },
+
+    previewGoogleRegister(token: string) {
+        return http
+            .get<ApiResponse<GoogleSignupPreviewResponse>>(
+                `${AUTH_BASE}/register/google/preview`,
+                {
+                    params: { token },
+                },
+            )
+            .then((res) => res.data);
+    },
+
+    completeGoogleRegister(payload: CompleteGoogleRegisterRequest) {
+        return http
+            .post<ApiResponse<AuthResponse>>(
+                `${AUTH_BASE}/register/google/complete`,
+                payload,
+            )
+            .then((res) => res.data);
+    },
 
   changePassword(payload: ChangePasswordRequest) {
     return http
