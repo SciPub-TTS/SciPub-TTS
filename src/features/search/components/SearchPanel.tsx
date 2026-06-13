@@ -386,7 +386,7 @@ function SearchInputRow({
         disabled={isLoadingResults}
         className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[#14532D] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#15803D] disabled:cursor-not-allowed disabled:bg-slate-400 md:w-auto md:shrink-0"
       >
-        {isLoadingResults ? "Searching..." : "Search"}
+        Search
         <ArrowRight className="h-4 w-4" />
       </button>
     </div>
