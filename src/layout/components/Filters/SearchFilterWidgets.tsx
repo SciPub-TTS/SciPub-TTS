@@ -224,10 +224,17 @@ function YearFilterControl({ filters, updateFilter }: YearFilterProps) {
   ].join(" ");
 
   function handleYearModeClick(event: MouseEvent<HTMLButtonElement>) {
-    updateFilter(
-      "yearMode",
-      event.currentTarget.value as SearchFilters["yearMode"],
-    );
+    const nextYearMode = event.currentTarget.value as SearchFilters["yearMode"];
+
+    updateFilter("yearMode", nextYearMode);
+
+    if (nextYearMode === "range") {
+      updateFilter("yearExact", "");
+      return;
+    }
+
+    updateFilter("yearFrom", "");
+    updateFilter("yearTo", "");
   }
 
   function handleYearFromChange(event: ChangeEvent<HTMLInputElement>) {
@@ -316,10 +323,18 @@ function CitationFilterControl({ filters, updateFilter }: CitationFilterProps) {
   ].join(" ");
 
   function handleCitationModeClick(event: MouseEvent<HTMLButtonElement>) {
-    updateFilter(
-      "citationMode",
-      event.currentTarget.value as SearchFilters["citationMode"],
-    );
+    const nextCitationMode =
+      event.currentTarget.value as SearchFilters["citationMode"];
+
+    updateFilter("citationMode", nextCitationMode);
+
+    if (nextCitationMode === "range") {
+      updateFilter("citationExact", "");
+      return;
+    }
+
+    updateFilter("citationMin", "");
+    updateFilter("citationMax", "");
   }
 
   function handleCitationMinChange(event: ChangeEvent<HTMLInputElement>) {
@@ -563,7 +578,7 @@ function getVisibleOptions(options: string[], keyword: string) {
   const visibleOptions: string[] = [];
 
   for (const option of options) {
-    if (option.toLowerCase().startsWith(normalizedKeyword)) {
+    if (option.toLowerCase().includes(normalizedKeyword)) {
       visibleOptions.push(option);
     }
   }

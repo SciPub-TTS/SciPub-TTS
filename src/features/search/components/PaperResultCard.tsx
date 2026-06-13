@@ -13,7 +13,7 @@ export function PaperResultCard({ paper }: PaperResultCardProps) {
       field={paper.field}
       isSaved={paper.saved}
       isTrendTopic={paper.isTrendTopic}
-      keywords={paper.tags}
+      keywords={paper.keywords}
       pdfUrl={paper.pdfUrl}
       subField={paper.subField}
       title={paper.title}

@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { ChevronDown, Filter, SlidersHorizontal } from "lucide-react";
 
 import type {
@@ -26,6 +27,8 @@ import {
   YearFilterWidget,
 } from "@/layout/components/Filters";
 
+const FILTER_PANEL_ANIMATION_DURATION_MS = 500;
+
 export function SearchFiltersPanel({
   activeFilterCount,
   appliedFilterSummary,
@@ -47,17 +50,50 @@ export function SearchFiltersPanel({
   onToggleVisibleFilterWidget,
   updateFilter,
 }: SearchFiltersPanelProps) {
+  const [shouldRenderFilterContent, setShouldRenderFilterContent] =
+    useState(filtersOpen);
+  const [filterPanelAnimationClassName, setFilterPanelAnimationClassName] =
+    useState("");
+
+  useEffect(() => {
+    if (filtersOpen) {
+      setShouldRenderFilterContent(true);
+      setFilterPanelAnimationClassName("search-filters-panel-enter");
+      return;
+    }
+
+    if (!shouldRenderFilterContent) {
+      return;
+    }
+
+    setFilterPanelAnimationClassName("search-filters-panel-exit");
+
+    const timerId = window.setTimeout(() => {
+      setShouldRenderFilterContent(false);
+      setFilterPanelAnimationClassName("");
+    }, FILTER_PANEL_ANIMATION_DURATION_MS);
+
+    return () => {
+      window.clearTimeout(timerId);
+    };
+  }, [filtersOpen, shouldRenderFilterContent]);
+
   return (
     <div className="rounded-b-2xl border-t border-black bg-slate-50/80">
       <SearchFiltersHeader
         activeFilterCount={activeFilterCount}
-        filtersOpen={filtersOpen}
+        filtersOpen={shouldRenderFilterContent}
         matchedPaperCount={matchedPaperCount}
         onToggleFilters={onToggleFilters}
       />
 
-      {filtersOpen ? (
-        <>
+      {shouldRenderFilterContent ? (
+        <div
+          className={`${filterPanelAnimationClassName} overflow-hidden`}
+          style={{
+            animationDuration: `${FILTER_PANEL_ANIMATION_DURATION_MS}ms`,
+          }}
+        >
           <FilterVisibilityToggle
             visibleFilterWidgets={visibleFilterWidgets}
             onToggleVisibleFilterWidget={onToggleVisibleFilterWidget}
@@ -84,7 +120,7 @@ export function SearchFiltersPanel({
             onApplyFilters={onApplyFilters}
             onResetFilters={onResetFilters}
           />
-        </>
+        </div>
       ) : null}
     </div>
   );
@@ -166,12 +202,13 @@ function SearchFilterGrid({
   if (resultItems.length === 0) {
     return (
       <div className="px-5 py-8">
-        <div className="rounded-3xl border border-dashed border-slate-300 bg-white px-6 py-10 text-center">
-          <p className="text-sm font-extrabold uppercase tracking-[0.24em] text-[#14532D]">
+        <div className="rounded-3xl border  border-black bg-white px-6 py-10 text-center">
+          <p className="text-xl font-extrabold uppercase tracking-[0.24em] text-[#14532D]">
             No Filter Widgets Yet
           </p>
-          <p className="mt-2 text-sm font-medium text-slate-600">
-            Use `Add filter` to choose which filters should appear in this panel.
+          <p className="mt-2 text-sm font-medium text-black">
+            Use "Add filter" to choose which filters should appear in this
+            panel.
           </p>
         </div>
       </div>
@@ -219,9 +256,16 @@ function renderFilterWidget(
         <TypeFilterWidget
           key={widgetKey}
           filterKey="type"
+          hasMoreOptions={hasMoreFilterOptions.type}
+          isLoadingOptions={isLoadingFilterOptions.type}
+          isLoadingMoreOptions={isLoadingMoreFilterOptions.type}
           options={filterOptions.type}
           selected={filters.type}
           onChange={(nextSelected) => updateFilter("type", nextSelected)}
+          onLoadMoreOptions={() => onLoadMoreFilterOptions("type")}
+          onSearchKeywordChange={(keyword) =>
+            onFilterOptionSearch("type", keyword)
+          }
         />
       );
     case "openAccess":
@@ -237,9 +281,16 @@ function renderFilterWidget(
         <SubFieldFilterWidget
           key={widgetKey}
           filterKey="subField"
+          hasMoreOptions={hasMoreFilterOptions.subField}
+          isLoadingOptions={isLoadingFilterOptions.subField}
+          isLoadingMoreOptions={isLoadingMoreFilterOptions.subField}
           options={filterOptions.subField}
           selected={filters.subField}
           onChange={(nextSelected) => updateFilter("subField", nextSelected)}
+          onLoadMoreOptions={() => onLoadMoreFilterOptions("subField")}
+          onSearchKeywordChange={(keyword) =>
+            onFilterOptionSearch("subField", keyword)
+          }
         />
       );
     case "author":
@@ -254,7 +305,9 @@ function renderFilterWidget(
           selected={filters.author}
           onChange={(nextSelected) => updateFilter("author", nextSelected)}
           onLoadMoreOptions={() => onLoadMoreFilterOptions("author")}
-          onSearchKeywordChange={(keyword) => onFilterOptionSearch("author", keyword)}
+          onSearchKeywordChange={(keyword) =>
+            onFilterOptionSearch("author", keyword)
+          }
         />
       );
     case "institution":
@@ -267,9 +320,7 @@ function renderFilterWidget(
           isLoadingMoreOptions={isLoadingMoreFilterOptions.institution}
           options={filterOptions.institution}
           selected={filters.institution}
-          onChange={(nextSelected) =>
-            updateFilter("institution", nextSelected)
-          }
+          onChange={(nextSelected) => updateFilter("institution", nextSelected)}
           onLoadMoreOptions={() => onLoadMoreFilterOptions("institution")}
           onSearchKeywordChange={(keyword) =>
             onFilterOptionSearch("institution", keyword)
@@ -296,7 +347,9 @@ function renderFilterWidget(
           selected={filters.country}
           onChange={(nextSelected) => updateFilter("country", nextSelected)}
           onLoadMoreOptions={() => onLoadMoreFilterOptions("country")}
-          onSearchKeywordChange={(keyword) => onFilterOptionSearch("country", keyword)}
+          onSearchKeywordChange={(keyword) =>
+            onFilterOptionSearch("country", keyword)
+          }
         />
       );
     case "citation":
@@ -319,7 +372,9 @@ function renderFilterWidget(
           selected={filters.source}
           onChange={(nextSelected) => updateFilter("source", nextSelected)}
           onLoadMoreOptions={() => onLoadMoreFilterOptions("source")}
-          onSearchKeywordChange={(keyword) => onFilterOptionSearch("source", keyword)}
+          onSearchKeywordChange={(keyword) =>
+            onFilterOptionSearch("source", keyword)
+          }
         />
       );
     case "award":
@@ -334,7 +389,9 @@ function renderFilterWidget(
           selected={filters.award}
           onChange={(nextSelected) => updateFilter("award", nextSelected)}
           onLoadMoreOptions={() => onLoadMoreFilterOptions("award")}
-          onSearchKeywordChange={(keyword) => onFilterOptionSearch("award", keyword)}
+          onSearchKeywordChange={(keyword) =>
+            onFilterOptionSearch("award", keyword)
+          }
         />
       );
     case "indexedByOrcid":

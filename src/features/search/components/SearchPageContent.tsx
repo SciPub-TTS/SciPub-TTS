@@ -11,33 +11,44 @@ export default function SearchPageContent() {
     appliedFilterSummary,
     appliedSearchQuery,
     autoLoadAnchorIndex,
+    canSaveSearch,
     canLoadMoreResults,
     filterOptions,
     filters,
     filtersOpen,
     handleApplyFilters,
+    handleClearRecentSearches,
+    handleDeleteRecentSearch,
+    handleSaveSearch,
     handleFilterOptionSearch,
     handleLoadMoreFilterOptions,
     handleLoadMoreResults,
     handleSearch,
     handleClearSorts,
     handleSearchQueryChange,
+    handleSelectSort,
     handleSuggestedSearch,
     handleToggleFilters,
-    handleToggleSort,
     handleToggleVisibleFilterWidget,
     hasFormError,
     hasSearched,
     hasMoreFilterOptions,
     isLoadingFilterOptions,
     isLoadingMoreFilterOptions,
+    isClearingRecentSearches,
+    isDeletingRecentSearch,
     isLoadingResults,
     isLoadingMoreResults,
+    isSavingSearch,
     matchedPaperCount,
+    recentSearches,
     resetFilters,
     responseTimeSeconds,
+    saveSearchFeedback,
+    saveSearchNotice,
+    saveSearchSuccessToken,
     searchQuery,
-    selectedSorts,
+    sortState,
     totalIndexedPapers,
     updateFilter,
     visibleFilterWidgets,
@@ -51,24 +62,35 @@ export default function SearchPageContent() {
       <SearchPanel
         activeFilterCount={activeFilterCount}
         appliedFilterSummary={appliedFilterSummary}
+        canSaveSearch={canSaveSearch}
         filterOptions={filterOptions}
         filters={filters}
         filtersOpen={filtersOpen}
         hasFormError={hasFormError}
         hasMoreFilterOptions={hasMoreFilterOptions}
+        isClearingRecentSearches={isClearingRecentSearches}
+        isDeletingRecentSearch={isDeletingRecentSearch}
         isLoadingFilterOptions={isLoadingFilterOptions}
         isLoadingMoreFilterOptions={isLoadingMoreFilterOptions}
         isLoadingResults={isLoadingResults}
+        isSavingSearch={isSavingSearch}
         matchedPaperCount={matchedPaperCount}
+        recentSearches={recentSearches}
+        saveSearchFeedback={saveSearchFeedback}
+        saveSearchNotice={saveSearchNotice}
+        saveSearchSuccessToken={saveSearchSuccessToken}
         searchQuery={searchQuery}
         totalIndexedPapers={totalIndexedPapers}
         visibleFilterWidgets={visibleFilterWidgets}
         onApplyFilters={handleApplyFilters}
+        onClearRecentSearches={handleClearRecentSearches}
+        onDeleteRecentSearch={handleDeleteRecentSearch}
         onFilterOptionSearch={handleFilterOptionSearch}
         onLoadMoreFilterOptions={handleLoadMoreFilterOptions}
         onResetFilters={resetFilters}
         onSearch={handleSearch}
         onSearchQueryChange={handleSearchQueryChange}
+        onSaveSearch={handleSaveSearch}
         onSuggestedSearchSelect={handleSuggestedSearch}
         onToggleFilters={handleToggleFilters}
         onToggleVisibleFilterWidget={handleToggleVisibleFilterWidget}
@@ -83,12 +105,12 @@ export default function SearchPageContent() {
         isLoadingResults={isLoadingResults}
         isLoadingMoreResults={isLoadingMoreResults}
         responseTimeSeconds={responseTimeSeconds}
-        selectedSorts={selectedSorts}
+        sortState={sortState}
         totalResultCount={matchedPaperCount}
         visiblePaperResults={visiblePaperResults}
         onLoadMoreResults={handleLoadMoreResults}
         onClearSorts={handleClearSorts}
-        onToggleSort={handleToggleSort}
+        onSelectSort={handleSelectSort}
       />
     </section>
   );

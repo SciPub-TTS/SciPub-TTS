@@ -39,8 +39,21 @@ function EyeIcon({ open }: { open: boolean }) {
 function LockIcon() {
   return (
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-      <rect x="3" y="11" width="18" height="11" rx="2" stroke="currentColor" strokeWidth="1.5" />
-      <path d="M7 11V7a5 5 0 0110 0v4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      <rect
+        x="3"
+        y="11"
+        width="18"
+        height="11"
+        rx="2"
+        stroke="currentColor"
+        strokeWidth="1.5"
+      />
+      <path
+        d="M7 11V7a5 5 0 0110 0v4"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
     </svg>
   );
 }
@@ -64,7 +77,7 @@ function PasswordField({
 }: FieldProps) {
   return (
     <div>
-      <label className="font-subtext mb-1.5 block text-sm font-medium text-slate-700">
+      <label className="mb-1.5 block text-sm font-medium text-slate-700">
         {label}
       </label>
       <div className="relative">
@@ -79,7 +92,7 @@ function PasswordField({
           }}
           placeholder={placeholder}
           required
-          className="h-11 w-full rounded-xl border border-slate-200/90 bg-white pl-9 pr-10 text-sm text-slate-900 placeholder-slate-400 shadow-[0_1px_2px_rgba(15,23,42,0.03)] transition-all focus:border-emerald-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+          className="h-11 w-full rounded-lg border border-slate-200 pl-9 pr-10 text-sm text-slate-900 placeholder-slate-400 transition-all focus:border-transparent focus:outline-none focus:ring-2 focus:ring-emerald-500"
         />
         <button
           type="button"
@@ -95,8 +108,6 @@ function PasswordField({
 
 export default function ChangePasswordPage() {
   const navigate = useNavigate();
-  // Temporarily keep the old "change password only" behavior
-  // while login/register is being tested in isolation.
   //
   // const currentUser = getCurrentUser();
   // const hasPassword = currentUser?.hasPassword ?? true;
@@ -127,11 +138,33 @@ export default function ChangePasswordPage() {
     setShow((previous) => ({ ...previous, [field]: !previous[field] }));
   }
 
+  const newPassword = form.newPassword;
+  const checks = {
+    length: newPassword.length >= 10,
+    upper: /[A-Z]/.test(newPassword),
+    number: /[0-9]/.test(newPassword),
+    special: /[^a-zA-Z0-9]/.test(newPassword),
+  };
+  const strength = Object.values(checks).filter(Boolean).length;
+  const strengthLabel =
+    ["", "Too weak", "Weak", "Medium", "Strong"][strength] ?? "";
+  const strengthColor =
+    ["", "bg-red-400", "bg-orange-400", "bg-amber-400", "bg-emerald-500"][
+      strength
+    ] ?? "";
+  const strengthWidth =
+    ["w-0", "w-1/4", "w-2/4", "w-3/4", "w-full"][strength] ?? "w-0";
+
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
 
     if (!hasPassword && !form.newPassword.trim()) {
       setError("Please enter a password.");
+      return;
+    }
+
+    if (form.newPassword.length < 10) {
+      setError("The new password must be at least 10 characters long.");
       return;
     }
 
@@ -141,7 +174,9 @@ export default function ChangePasswordPage() {
     }
 
     if (hasPassword && form.newPassword === form.currentPassword) {
-      setError("The new password must be different from your current password.");
+      setError(
+        "The new password must be different from your current password.",
+      );
       return;
     }
 
@@ -165,7 +200,10 @@ export default function ChangePasswordPage() {
       });
     } catch (err) {
       setError(
-        getApiErrorMessage(err, "Unable to update your password. Please try again."),
+        getApiErrorMessage(
+          err,
+          "Unable to update your password. Please try again.",
+        ),
       );
     } finally {
       setSubmitting(false);
@@ -180,22 +218,27 @@ export default function ChangePasswordPage() {
 
   return (
     <div className="max-w-2xl">
-      <div className="mb-6 border-b border-slate-100 pb-5">
-        <p className="font-subtext mb-2 flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-emerald-600">
-          <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500" />
-          Account Security
-        </p>
-        <h2 className="font-title text-[1.95rem] leading-tight text-slate-950">{title}</h2>
-        <p className="font-subtext mt-2 max-w-xl text-sm leading-relaxed text-slate-500">
-          {description}
-        </p>
+      <div className="mb-6">
+        <h2 className="text-xl font-semibold text-slate-900">{title}</h2>
+        <p className="mt-1 text-sm text-slate-500">{description}</p>
       </div>
 
       {error ? (
-        <div className="font-subtext mb-5 flex items-start gap-2.5 rounded-xl border border-red-200 bg-red-50/90 px-4 py-3 text-sm text-red-700">
-          <svg className="mt-0.5 shrink-0" width="15" height="15" viewBox="0 0 24 24" fill="none">
+        <div className="mb-5 flex items-start gap-2.5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          <svg
+            className="mt-0.5 shrink-0"
+            width="15"
+            height="15"
+            viewBox="0 0 24 24"
+            fill="none"
+          >
             <circle cx="12" cy="12" r="10" stroke="#ef4444" strokeWidth="1.5" />
-            <path d="M12 8v5" stroke="#ef4444" strokeWidth="1.5" strokeLinecap="round" />
+            <path
+              d="M12 8v5"
+              stroke="#ef4444"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+            />
             <circle cx="12" cy="16.5" r="1.2" fill="#ef4444" />
           </svg>
           {error}
@@ -217,8 +260,9 @@ export default function ChangePasswordPage() {
         {hasPassword ? <div className="h-px bg-slate-100" /> : null}
 
         {isGoogleOnly ? (
-          <div className="font-subtext rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm leading-relaxed text-emerald-800">
-            Once you set a password, you can sign in with either Google or your email and password.
+          <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+            Once you set a password, you can sign in with either Google or your
+            email and password.
           </div>
         ) : null}
 
@@ -226,10 +270,62 @@ export default function ChangePasswordPage() {
           label={hasPassword ? "New password" : "Password"}
           value={form.newPassword}
           show={show.next}
-          placeholder="Enter new password"
+          placeholder="At least 10 characters"
           onChange={setField("newPassword")}
           onToggleShow={() => toggleShow("next")}
         />
+
+        {form.newPassword.length > 0 ? (
+          <div className="-mt-2 space-y-2">
+            <div className="flex items-center gap-2">
+              <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-slate-100">
+                <div
+                  className={`h-full rounded-full transition-all duration-500 ${strengthColor} ${strengthWidth}`}
+                />
+              </div>
+              <span className="w-16 text-right text-xs text-slate-500">
+                {strengthLabel}
+              </span>
+            </div>
+            <div className="flex flex-wrap gap-x-4 gap-y-1">
+              {[
+                { label: "10+ characters", ok: checks.length },
+                { label: "Uppercase letter", ok: checks.upper },
+                { label: "Number", ok: checks.number },
+                { label: "Special character", ok: checks.special },
+              ].map((check) => (
+                <span
+                  key={check.label}
+                  className={`flex items-center gap-1.5 text-xs ${check.ok ? "text-emerald-600" : "text-slate-400"}`}
+                >
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                    {check.ok ? (
+                      <>
+                        <circle cx="6" cy="6" r="5.5" fill="#059669" />
+                        <path
+                          d="M3.5 6l2 2 3-3"
+                          stroke="white"
+                          strokeWidth="1.2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </>
+                    ) : (
+                      <circle
+                        cx="6"
+                        cy="6"
+                        r="5.5"
+                        stroke="#cbd5e1"
+                        strokeWidth="1"
+                      />
+                    )}
+                  </svg>
+                  {check.label}
+                </span>
+              ))}
+            </div>
+          </div>
+        ) : null}
 
         <PasswordField
           label="Confirm password"
@@ -240,23 +336,47 @@ export default function ChangePasswordPage() {
           onToggleShow={() => toggleShow("confirm")}
         />
 
-        {form.confirmNewPassword && form.confirmNewPassword !== form.newPassword ? (
-          <p className="font-subtext -mt-3 text-xs text-red-500">Passwords do not match.</p>
+        {form.confirmNewPassword &&
+        form.confirmNewPassword !== form.newPassword ? (
+          <p className="-mt-3 text-xs text-red-500">Passwords do not match.</p>
         ) : null}
 
-        <div className="flex gap-2.5 rounded-xl border border-sky-100 bg-sky-50/80 px-4 py-3">
-          <svg className="mt-0.5 shrink-0" width="15" height="15" viewBox="0 0 24 24" fill="none">
+        <div className="flex gap-2.5 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
+          <svg
+            className="mt-0.5 shrink-0"
+            width="15"
+            height="15"
+            viewBox="0 0 24 24"
+            fill="none"
+          >
             <path
               d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"
-              stroke="#0284c7"
+              stroke="#d97706"
               strokeWidth="1.5"
               strokeLinejoin="round"
             />
-            <line x1="12" y1="9" x2="12" y2="13" stroke="#0284c7" strokeWidth="1.5" strokeLinecap="round" />
-            <line x1="12" y1="17" x2="12.01" y2="17" stroke="#0284c7" strokeWidth="2" strokeLinecap="round" />
+            <line
+              x1="12"
+              y1="9"
+              x2="12"
+              y2="13"
+              stroke="#d97706"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+            />
+            <line
+              x1="12"
+              y1="17"
+              x2="12.01"
+              y2="17"
+              stroke="#d97706"
+              strokeWidth="2"
+              strokeLinecap="round"
+            />
           </svg>
-          <p className="font-subtext text-xs leading-relaxed text-sky-800">
-            After saving, you will be signed out on this device and any other active sessions will be revoked.
+          <p className="text-xs leading-relaxed text-amber-700">
+            After saving, you will be signed out on this device and any other
+            active sessions will be revoked.
           </p>
         </div>
 
@@ -264,9 +384,13 @@ export default function ChangePasswordPage() {
           <button
             type="button"
             onClick={() => {
-              setForm({ currentPassword: "", newPassword: "", confirmNewPassword: "" });
+              setForm({
+                currentPassword: "",
+                newPassword: "",
+                confirmNewPassword: "",
+              });
             }}
-            className="font-subtext text-sm text-slate-500 transition-colors hover:text-slate-700"
+            className="text-sm text-slate-500 transition-colors hover:text-slate-700"
           >
             Discard changes
           </button>
@@ -274,13 +398,30 @@ export default function ChangePasswordPage() {
           <button
             type="submit"
             disabled={submitting}
-            className="flex h-10 items-center gap-2 rounded-xl bg-emerald-800 px-5 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(5,150,105,0.16)] transition-all hover:bg-emerald-900 disabled:cursor-not-allowed disabled:opacity-60"
+            className="flex h-10 items-center gap-2 rounded-lg bg-emerald-800 px-5 text-sm font-semibold text-white transition-all hover:bg-emerald-900 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {submitting ? (
               <>
-                <svg className="animate-spin" width="14" height="14" viewBox="0 0 24 24" fill="none">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                <svg
+                  className="animate-spin"
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="3"
+                  />
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                  />
                 </svg>
                 Saving...
               </>
