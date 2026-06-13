@@ -70,7 +70,6 @@ export default function RegisterPage() {
                 email: validation.data.email,
                 password: validation.data.password,
                 confirmPassword: validation.data.confirmPassword,
-                appBaseUrl: window.location.origin,
             };
 
             const response = await submitRegister(payload);

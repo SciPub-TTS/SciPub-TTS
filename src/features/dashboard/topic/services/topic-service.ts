@@ -1,7 +1,8 @@
+import { createApiUrl, requestPublicJson } from "@/lib/api/fetchJson";
 import type {MetricResponse} from "@/features/dashboard/topic/types/metric.ts";
 import type {PublicationTrend, PublicationTrendApiResponse} from "@/features/dashboard/topic/types/publication.ts";
 
-const USE_MOCK = true;
+const USE_MOCK = import.meta.env.VITE_ENABLE_DASHBOARD_MOCKS === "true";
 
 export const MOCK_METRICS_RESPONSE: MetricResponse[] = [
     {
@@ -135,14 +136,8 @@ export const MOCK_PUBLICATION_TRENDING: PublicationTrend[] = [
     }
 ];
 
-const apiBaseUrl = (
-    import.meta.env.VITE_API_BASE_URL || "http://localhost:8080"
-).replace(/\/$/, "");
-
-async function requestData<T>(url: string): Promise<T> {
-    const response = await fetch(url);
-    if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
-    return response.json() as Promise<T>;
+async function requestData<T>(url: URL): Promise<T> {
+    return requestPublicJson<T>(url);
 }
 
 export const topicService = {
@@ -154,16 +149,16 @@ export const topicService = {
 
         if(!period) return [];
 
-        const endpoint = new URL(`${apiBaseUrl}/api/statistic/metrics`);
+        const endpoint = createApiUrl("/api/statistic/metrics");
         const startOfDay = new Date(period);
         startOfDay.setHours(0, 0, 0, 0);
         endpoint.searchParams.append("period", startOfDay.toISOString());
 
-        return await requestData<MetricResponse[]>(endpoint.toString());
+        return await requestData<MetricResponse[]>(endpoint);
     },
 
     getPublicationTrend: async(startYear?: number, endYear?: number):Promise<PublicationTrend[]> => {
-        if(!USE_MOCK) {
+        if(USE_MOCK) {
             return MOCK_PUBLICATION_TRENDING;
         }
 
@@ -171,12 +166,12 @@ export const topicService = {
             return [];
         }
 
-        const endpoint = new URL(`${apiBaseUrl}/api/data/publication-trends/filter`);
+        const endpoint = createApiUrl("/api/data/publication-trends/filter");
         endpoint.searchParams.append("startYear", String(startYear));
         endpoint.searchParams.append("endYear", String(endYear));
 
         const response = await requestData<PublicationTrendApiResponse>(
-                endpoint.toString()
+                endpoint
             );
 
         return response.data.publicationTrends;
