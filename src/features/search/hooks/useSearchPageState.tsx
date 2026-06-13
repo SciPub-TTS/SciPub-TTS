@@ -27,6 +27,8 @@ import {
   SEARCH_RECENT_SEARCH_LIMIT,
 } from "../constants";
 import {
+  clearSearchHistory,
+  deleteSearchHistory,
   defaultSearchSortState,
   emptySearchOptionValueLookup,
   getRecentSearches,
@@ -35,7 +37,11 @@ import {
   saveSearchHistory,
   searchWorks,
 } from "../services";
-import type { SearchFilters, SearchFilterWidgetKey } from "../types";
+import type {
+  SaveSearchFeedback,
+  SearchFilters,
+  SearchFilterWidgetKey,
+} from "../types";
 import {
   buildAppliedFilterSummary,
   countActiveFilters,
@@ -62,6 +68,9 @@ import {
 import type { SearchPageSnapshot } from "./types";
 import { useRemoteFilterOptions } from "./useRemoteFilterOptions";
 
+const SEARCH_HISTORY_QUERY_DEBOUNCE_MS = 250;
+const SAVE_SEARCH_FEEDBACK_DURATION_MS = 2800;
+
 export function useSearchPageState() {
   const dispatch = useAppDispatch();
   const queryClient = useQueryClient();
@@ -74,6 +83,11 @@ export function useSearchPageState() {
   const [restoredSnapshot] = useState<SearchPageSnapshot | null>(() =>
     shouldRestoreSearchPageState ? readPersistedSearchPageSnapshot() : null,
   );
+  const [debouncedRecentSearchKeyword, setDebouncedRecentSearchKeyword] =
+    useState("");
+  const [saveSearchFeedback, setSaveSearchFeedback] =
+    useState<SaveSearchFeedback | null>(null);
+  const [saveSearchSuccessToken, setSaveSearchSuccessToken] = useState(0);
   const hasInitializedRef = useRef(false);
   const shouldRestoreScrollRef = useRef(Boolean(restoredSnapshot));
   const latestSnapshotRef = useRef<SearchPageSnapshot | null>(restoredSnapshot);
@@ -105,17 +119,16 @@ export function useSearchPageState() {
     queryKey: ["searchSummary"],
     staleTime: 10 * 60 * 1000,
   });
-  const normalizedSearchHistoryKeyword = searchQuery.trim();
   const recentSearchesQuery = useQuery({
     enabled: isSearchHistoryEnabled,
     queryFn: () =>
       getRecentSearches(
-        normalizedSearchHistoryKeyword,
+        debouncedRecentSearchKeyword,
         SEARCH_RECENT_SEARCH_LIMIT,
       ),
     queryKey: [
       "searchHistoryRecent",
-      normalizedSearchHistoryKeyword,
+      debouncedRecentSearchKeyword,
       SEARCH_RECENT_SEARCH_LIMIT,
     ],
     staleTime: 60 * 1000,
@@ -123,6 +136,35 @@ export function useSearchPageState() {
   const saveSearchMutation = useMutation({
     mutationFn: saveSearchHistory,
     onSuccess: () => {
+      setSaveSearchFeedback({
+        kind: "success",
+        message: "Saved successfully.",
+      });
+      setSaveSearchSuccessToken((currentValue) => currentValue + 1);
+      void queryClient.invalidateQueries({
+        queryKey: ["searchHistoryRecent"],
+      });
+    },
+  });
+  const deleteSearchMutation = useMutation({
+    mutationFn: deleteSearchHistory,
+    onSuccess: () => {
+      setSaveSearchFeedback({
+        kind: "success",
+        message: "Deleted successfully.",
+      });
+      void queryClient.invalidateQueries({
+        queryKey: ["searchHistoryRecent"],
+      });
+    },
+  });
+  const clearSearchMutation = useMutation({
+    mutationFn: clearSearchHistory,
+    onSuccess: () => {
+      setSaveSearchFeedback({
+        kind: "success",
+        message: "Cleared successfully.",
+      });
       void queryClient.invalidateQueries({
         queryKey: ["searchHistoryRecent"],
       });
@@ -175,6 +217,17 @@ export function useSearchPageState() {
   }, [searchSummaryQuery.error]);
 
   useEffect(() => {
+    const normalizedKeyword = searchQuery.trim();
+    const timerId = window.setTimeout(() => {
+      setDebouncedRecentSearchKeyword(normalizedKeyword);
+    }, SEARCH_HISTORY_QUERY_DEBOUNCE_MS);
+
+    return () => {
+      window.clearTimeout(timerId);
+    };
+  }, [searchQuery]);
+
+  useEffect(() => {
     if (recentSearchesQuery.error) {
       console.error(
         "Cannot load recent search history:",
@@ -192,8 +245,58 @@ export function useSearchPageState() {
   useEffect(() => {
     if (saveSearchMutation.error) {
       console.error("Cannot save search history:", saveSearchMutation.error);
+      setSaveSearchFeedback({
+        kind: "error",
+        message:
+          saveSearchMutation.error instanceof Error
+            ? saveSearchMutation.error.message
+            : "Could not save search history.",
+      });
     }
   }, [saveSearchMutation.error]);
+
+  useEffect(() => {
+    if (deleteSearchMutation.error) {
+      console.error(
+        "Cannot delete search history item:",
+        deleteSearchMutation.error,
+      );
+      setSaveSearchFeedback({
+        kind: "error",
+        message:
+          deleteSearchMutation.error instanceof Error
+            ? deleteSearchMutation.error.message
+            : "Could not delete search history.",
+      });
+    }
+  }, [deleteSearchMutation.error]);
+
+  useEffect(() => {
+    if (clearSearchMutation.error) {
+      console.error("Cannot clear search history:", clearSearchMutation.error);
+      setSaveSearchFeedback({
+        kind: "error",
+        message:
+          clearSearchMutation.error instanceof Error
+            ? clearSearchMutation.error.message
+            : "Could not clear search history.",
+      });
+    }
+  }, [clearSearchMutation.error]);
+
+  useEffect(() => {
+    if (!saveSearchFeedback) {
+      return;
+    }
+
+    const timerId = window.setTimeout(() => {
+      setSaveSearchFeedback(null);
+    }, SAVE_SEARCH_FEEDBACK_DURATION_MS);
+
+    return () => {
+      window.clearTimeout(timerId);
+    };
+  }, [saveSearchFeedback]);
 
   useEffect(() => {
     if (!hasInitializedRef.current) {
@@ -237,6 +340,10 @@ export function useSearchPageState() {
     hasInvalidYearRange(filters) || hasInvalidCitationRange(filters);
   const recentSearches = recentSearchesQuery.data || [];
   const canSaveSearch = isSearchHistoryEnabled && Boolean(searchQuery.trim());
+  const saveSearchNotice =
+    !isSearchHistoryEnabled && Boolean(searchQuery.trim())
+      ? "Sign in to save search history."
+      : null;
   const totalIndexedPapers = searchSummaryQuery.data?.totalIndexedPapers || 0;
 
   useEffect(() => {
@@ -270,6 +377,7 @@ export function useSearchPageState() {
   }
 
   function handleSearchQueryChange(nextQuery: string) {
+    setSaveSearchFeedback(null);
     dispatch(setSearchQuery(nextQuery));
   }
 
@@ -311,6 +419,24 @@ export function useSearchPageState() {
     }
 
     void saveSearchMutation.mutateAsync(normalizedQuery);
+  }
+
+  function handleDeleteRecentSearch(query: string) {
+    const normalizedQuery = query.trim();
+
+    if (!normalizedQuery || deleteSearchMutation.isPending) {
+      return;
+    }
+
+    void deleteSearchMutation.mutateAsync(normalizedQuery);
+  }
+
+  function handleClearRecentSearches() {
+    if (clearSearchMutation.isPending) {
+      return;
+    }
+
+    void clearSearchMutation.mutateAsync();
   }
 
   function handleToggleFilters() {
@@ -396,9 +522,11 @@ export function useSearchPageState() {
     filters,
     filtersOpen,
     handleApplyFilters,
+    handleClearRecentSearches,
     handleFilterOptionSearch,
     handleLoadMoreFilterOptions,
     handleLoadMoreResults,
+    handleDeleteRecentSearch,
     handleSearch,
     handleSearchQueryChange,
     handleClearSorts,
@@ -414,11 +542,16 @@ export function useSearchPageState() {
     isLoadingMoreFilterOptions,
     isLoadingResults: submittedSearch !== null && searchResultsQuery.isPending,
     isLoadingMoreResults: searchResultsQuery.isFetchingNextPage,
+    isClearingRecentSearches: clearSearchMutation.isPending,
+    isDeletingRecentSearch: deleteSearchMutation.isPending,
     isSavingSearch: saveSearchMutation.isPending,
     matchedPaperCount,
     recentSearches,
     resetFilters,
     responseTimeSeconds,
+    saveSearchFeedback,
+    saveSearchNotice,
+    saveSearchSuccessToken,
     searchQuery,
     sortState,
     totalIndexedPapers,

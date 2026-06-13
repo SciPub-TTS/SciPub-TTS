@@ -17,6 +17,8 @@ export default function SearchPageContent() {
     filters,
     filtersOpen,
     handleApplyFilters,
+    handleClearRecentSearches,
+    handleDeleteRecentSearch,
     handleSaveSearch,
     handleFilterOptionSearch,
     handleLoadMoreFilterOptions,
@@ -33,6 +35,8 @@ export default function SearchPageContent() {
     hasMoreFilterOptions,
     isLoadingFilterOptions,
     isLoadingMoreFilterOptions,
+    isClearingRecentSearches,
+    isDeletingRecentSearch,
     isLoadingResults,
     isLoadingMoreResults,
     isSavingSearch,
@@ -40,6 +44,9 @@ export default function SearchPageContent() {
     recentSearches,
     resetFilters,
     responseTimeSeconds,
+    saveSearchFeedback,
+    saveSearchNotice,
+    saveSearchSuccessToken,
     searchQuery,
     sortState,
     totalIndexedPapers,
@@ -61,16 +68,23 @@ export default function SearchPageContent() {
         filtersOpen={filtersOpen}
         hasFormError={hasFormError}
         hasMoreFilterOptions={hasMoreFilterOptions}
+        isClearingRecentSearches={isClearingRecentSearches}
+        isDeletingRecentSearch={isDeletingRecentSearch}
         isLoadingFilterOptions={isLoadingFilterOptions}
         isLoadingMoreFilterOptions={isLoadingMoreFilterOptions}
         isLoadingResults={isLoadingResults}
         isSavingSearch={isSavingSearch}
         matchedPaperCount={matchedPaperCount}
         recentSearches={recentSearches}
+        saveSearchFeedback={saveSearchFeedback}
+        saveSearchNotice={saveSearchNotice}
+        saveSearchSuccessToken={saveSearchSuccessToken}
         searchQuery={searchQuery}
         totalIndexedPapers={totalIndexedPapers}
         visibleFilterWidgets={visibleFilterWidgets}
         onApplyFilters={handleApplyFilters}
+        onClearRecentSearches={handleClearRecentSearches}
+        onDeleteRecentSearch={handleDeleteRecentSearch}
         onFilterOptionSearch={handleFilterOptionSearch}
         onLoadMoreFilterOptions={handleLoadMoreFilterOptions}
         onResetFilters={resetFilters}

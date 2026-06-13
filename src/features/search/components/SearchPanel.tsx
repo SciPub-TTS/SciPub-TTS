@@ -1,4 +1,4 @@
-import { ArrowRight, History, Save, Search } from "lucide-react";
+import { ArrowRight, History, Save, Search, X } from "lucide-react";
 import {
   useEffect,
   useRef,
@@ -26,16 +26,23 @@ export function SearchPanel({
   filtersOpen,
   hasMoreFilterOptions,
   hasFormError,
+  isClearingRecentSearches,
+  isDeletingRecentSearch,
   isLoadingFilterOptions,
   isLoadingMoreFilterOptions,
   isLoadingResults,
   isSavingSearch,
   matchedPaperCount,
   recentSearches,
+  saveSearchFeedback,
+  saveSearchNotice,
+  saveSearchSuccessToken,
   searchQuery,
   totalIndexedPapers,
   visibleFilterWidgets,
   onApplyFilters,
+  onClearRecentSearches,
+  onDeleteRecentSearch,
   onFilterOptionSearch,
   onLoadMoreFilterOptions,
   onResetFilters,
@@ -53,6 +60,8 @@ export function SearchPanel({
       <SearchTabsHeader
         canSaveSearch={canSaveSearch}
         isSavingSearch={isSavingSearch}
+        saveSearchFeedback={saveSearchFeedback}
+        saveSearchNotice={saveSearchNotice}
         totalIndexedPapers={totalIndexedPapers}
         onSaveSearch={onSaveSearch}
       />
@@ -62,7 +71,12 @@ export function SearchPanel({
           <SearchInputRow
             isLoadingResults={isLoadingResults}
             recentSearches={recentSearches}
+            saveSearchSuccessToken={saveSearchSuccessToken}
             searchQuery={searchQuery}
+            isClearingRecentSearches={isClearingRecentSearches}
+            isDeletingRecentSearch={isDeletingRecentSearch}
+            onClearSuggestions={onClearRecentSearches}
+            onDeleteSuggestion={onDeleteRecentSearch}
             onSearch={onSearch}
             onSearchQueryChange={onSearchQueryChange}
             onSelectSuggestion={onSuggestedSearchSelect}
@@ -98,6 +112,8 @@ export function SearchPanel({
 type SearchTabsHeaderProps = {
   canSaveSearch: boolean;
   isSavingSearch: boolean;
+  saveSearchFeedback: SearchPanelProps["saveSearchFeedback"];
+  saveSearchNotice: string | null;
   totalIndexedPapers: number;
   onSaveSearch: () => void;
 };
@@ -106,6 +122,8 @@ function SearchTabsHeader(props: SearchTabsHeaderProps) {
   const {
     canSaveSearch,
     isSavingSearch,
+    saveSearchFeedback,
+    saveSearchNotice,
     totalIndexedPapers,
     onSaveSearch,
   } = props;
@@ -131,25 +149,47 @@ function SearchTabsHeader(props: SearchTabsHeaderProps) {
           ))}
         </div>
 
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
-          <p className="text-[11px] font-extrabold uppercase tracking-[0.32em] text-black">
-            {indexedPaperLabel}
-          </p>
+        <div className="flex flex-col items-start gap-2 lg:items-end">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
+            <p className="text-[11px] font-extrabold uppercase tracking-[0.32em] text-black">
+              {indexedPaperLabel}
+            </p>
 
-          <button
-            type="button"
-            onClick={onSaveSearch}
-            disabled={!canSaveSearch || isSavingSearch}
-            className={[
-              "inline-flex items-center justify-center gap-2 rounded-lg border px-4 py-3 text-sm font-semibold transition",
-              canSaveSearch
-                ? "border-black bg-white text-black hover:bg-[#FEF3C7]"
-                : "border-slate-300 bg-slate-100 text-slate-400",
-            ].join(" ")}
-          >
-            <Save className="h-4 w-4" />
-            {isSavingSearch ? "Saving..." : "Save your search"}
-          </button>
+            <button
+              type="button"
+              title={saveSearchNotice || undefined}
+              onClick={onSaveSearch}
+              disabled={!canSaveSearch || isSavingSearch}
+              className={[
+                "inline-flex items-center justify-center gap-2 rounded-lg border px-4 py-3 text-sm font-semibold transition",
+                canSaveSearch
+                  ? "border-black bg-white text-black hover:bg-[#FEF3C7]"
+                  : "border-slate-300 bg-slate-100 text-slate-400",
+              ].join(" ")}
+            >
+              <Save className="h-4 w-4" />
+              {isSavingSearch ? "Saving..." : "Save your search"}
+            </button>
+          </div>
+
+          {saveSearchFeedback ? (
+            <p
+              className={[
+                "text-xs font-semibold lg:text-right",
+                saveSearchFeedback.kind === "success"
+                  ? "text-[#166534]"
+                  : "text-[#B91C1C]",
+              ].join(" ")}
+            >
+              {saveSearchFeedback.message}
+            </p>
+          ) : null}
+
+          {!saveSearchFeedback && saveSearchNotice ? (
+            <p className="text-xs font-semibold text-[#92400E] lg:text-right">
+              {saveSearchNotice}
+            </p>
+          ) : null}
         </div>
       </div>
     </div>
@@ -159,7 +199,12 @@ function SearchTabsHeader(props: SearchTabsHeaderProps) {
 function SearchInputRow({
   isLoadingResults,
   recentSearches,
+  saveSearchSuccessToken,
   searchQuery,
+  isClearingRecentSearches,
+  isDeletingRecentSearch,
+  onClearSuggestions,
+  onDeleteSuggestion,
   onSearch,
   onSearchQueryChange,
   onSelectSuggestion,
@@ -190,6 +235,14 @@ function SearchInputRow({
       document.removeEventListener("mousedown", handleDocumentMouseDown);
     };
   }, [isSuggestionOpen]);
+
+  useEffect(() => {
+    if (!saveSearchSuccessToken || !searchQuery.trim()) {
+      return;
+    }
+
+    setIsSuggestionOpen(true);
+  }, [saveSearchSuccessToken, searchQuery]);
 
   // Controlled input: React state is the source of truth for the search value.
   function handleSearchInputChange(event: ChangeEvent<HTMLInputElement>) {
@@ -229,14 +282,32 @@ function SearchInputRow({
     event.preventDefault();
   }
 
+  function handleDeleteSuggestionMouseDown(
+    event: MouseEvent<HTMLButtonElement>,
+  ) {
+    event.preventDefault();
+  }
+
+  function handleDeleteSuggestionClick(
+    event: MouseEvent<HTMLButtonElement>,
+  ) {
+    const suggestion = event.currentTarget.value;
+
+    onDeleteSuggestion(suggestion);
+  }
+
+  function handleClearSuggestionsClick() {
+    onClearSuggestions();
+  }
+
   const shouldShowSuggestions = isSuggestionOpen && recentSearches.length > 0;
 
   return (
     <div
       ref={containerRef}
-      className="mx-auto flex w-full max-w-5xl flex-col gap-3 rounded-xl bg-white px-4 py-5 shadow-sm ring-1 ring-[#2f8551] md:flex-row md:items-center"
+      className="flex w-full flex-col gap-3 md:flex-row md:items-stretch"
     >
-      <div className="relative flex min-w-0 flex-1 items-center gap-3">
+      <div className="relative flex min-w-0 flex-1 items-center gap-3 rounded-xl bg-white px-4 py-5 shadow-sm ring-1 ring-[#2f8551]">
         <Search className="h-5 w-5 shrink-0 font-extrabold" />
 
         <div className="min-w-0 flex-1">
@@ -253,27 +324,55 @@ function SearchInputRow({
           />
 
           {shouldShowSuggestions ? (
-            <div className="absolute left-0 right-0 top-full z-30 mt-3 overflow-hidden rounded-2xl border border-black bg-white shadow-[0_18px_40px_rgba(15,23,42,0.12)]">
-              <div className="flex items-center gap-2 border-b border-slate-200 bg-slate-50 px-4 py-3">
-                <History className="h-4 w-4 text-[#14532D]" />
-                <span className="text-[11px] font-extrabold uppercase tracking-[0.24em] text-black">
-                  Recent searches
-                </span>
+            <div className="absolute left-0 right-0 top-full z-30 mt-3 overflow-hidden rounded-md border border-black bg-white shadow-[0_18px_40px_rgba(15,23,42,0.12)]">
+              <div className="flex items-center justify-between gap-3 border-b border-black bg-slate-50 px-4 py-3">
+                <div className="flex items-center gap-2">
+                  <History className="h-4 w-4 text-[#14532D]" />
+                  <span className="text-[11px] font-extrabold uppercase tracking-[0.24em] text-black">
+                    Recent searches
+                  </span>
+                </div>
+
+                <button
+                  type="button"
+                  onMouseDown={handleSuggestionMouseDown}
+                  onClick={handleClearSuggestionsClick}
+                  disabled={isClearingRecentSearches}
+                  className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-black transition hover:text-[#14532D] disabled:cursor-not-allowed disabled:text-slate-400"
+                >
+                  {isClearingRecentSearches ? "Clearing..." : "Clear all"}
+                </button>
               </div>
 
-              <div className="max-h-72 overflow-y-auto p-2">
+              <div className="max-h-72 overflow-y-auto divide-y divide-black">
                 {recentSearches.map((savedSearch) => (
-                  <button
-                    key={`${savedSearch.query}-${savedSearch.savedAt}`}
-                    type="button"
-                    value={savedSearch.query}
-                    onMouseDown={handleSuggestionMouseDown}
-                    onClick={handleSuggestionClick}
-                    className="flex w-full items-center rounded-xl px-3 py-3 text-left text-sm font-semibold text-black transition hover:bg-[#A3E635]/20 hover:text-[#15803D]"
+                  <div
+                    key={savedSearch.id}
+                    className="flex items-center gap-2 pr-2 transition hover:bg-[#A3E635]/20"
                   >
-                    <Search className="mr-3 h-4 w-4 shrink-0" />
-                    <span className="truncate">{savedSearch.query}</span>
-                  </button>
+                    <button
+                      type="button"
+                      value={savedSearch.query}
+                      onMouseDown={handleSuggestionMouseDown}
+                      onClick={handleSuggestionClick}
+                      className="flex min-w-0 flex-1 items-center px-4 py-3 text-left text-sm font-semibold text-black transition hover:text-[#15803D]"
+                    >
+                      <Search className="mr-3 h-4 w-4 shrink-0" />
+                      <span className="truncate">{savedSearch.query}</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      value={savedSearch.query}
+                      onMouseDown={handleDeleteSuggestionMouseDown}
+                      onClick={handleDeleteSuggestionClick}
+                      disabled={isDeletingRecentSearch}
+                      aria-label={`Delete ${savedSearch.query}`}
+                      className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-sm text-black transition hover:bg-black hover:text-white disabled:cursor-not-allowed disabled:text-slate-400"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
                 ))}
               </div>
             </div>

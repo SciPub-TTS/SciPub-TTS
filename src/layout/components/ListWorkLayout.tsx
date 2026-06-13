@@ -223,7 +223,7 @@ export default function ListWorkLayout({
           <Link
             to={detailHref}
             onClick={markSearchPageRestorePending}
-            className="inline-flex items-center gap-2 rounded-lg border border-slate-400 bg-white px-3 py-2 text-xs font-bold text-black transition hover:bg-slate-50"
+            className="inline-flex items-center gap-2 rounded-lg border border-[#14532D] bg-white px-3 py-2 text-xs font-bold text-[#14532D] transition hover:border-[#14532D] hover:bg-[#14532D] hover:text-white"
           >
             <Eye className="h-4 w-4" />
             View Details

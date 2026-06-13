@@ -1,7 +1,13 @@
 // Domain data types returned by the backend or mock services.
 export type SavedSearch = {
+  id: string;
   query: string;
   savedAt: string;
+};
+
+export type SaveSearchFeedback = {
+  kind: "error" | "success";
+  message: string;
 };
 
 export type PaperResult = {
@@ -129,10 +135,17 @@ export type SearchPanelProps = {
   hasMoreFilterOptions: RemoteOptionStateMap;
   matchedPaperCount: number;
   recentSearches: SavedSearch[];
+  saveSearchFeedback: SaveSearchFeedback | null;
+  saveSearchNotice: string | null;
+  saveSearchSuccessToken: number;
   searchQuery: string;
   totalIndexedPapers: number;
   visibleFilterWidgets: SearchFilterWidgetKey[];
+  isClearingRecentSearches: boolean;
+  isDeletingRecentSearch: boolean;
   onApplyFilters: () => void;
+  onClearRecentSearches: () => void;
+  onDeleteRecentSearch: (query: string) => void;
   onFilterOptionSearch: (filterKey: RemoteOptionFilterKey, keyword: string) => void;
   onLoadMoreFilterOptions: (filterKey: RemoteOptionFilterKey) => void;
   onResetFilters: () => void;
@@ -148,7 +161,12 @@ export type SearchPanelProps = {
 export type SearchInputRowProps = {
   isLoadingResults: boolean;
   recentSearches: SavedSearch[];
+  saveSearchSuccessToken: number;
   searchQuery: string;
+  isClearingRecentSearches: boolean;
+  isDeletingRecentSearch: boolean;
+  onClearSuggestions: () => void;
+  onDeleteSuggestion: (query: string) => void;
   onSearch: () => void;
   onSearchQueryChange: (query: string) => void;
   onSelectSuggestion: (query: string) => void;

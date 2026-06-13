@@ -21,6 +21,8 @@ export {
   getSearchSummary,
 } from "./filterOptionsApi";
 export {
+  clearSearchHistory,
+  deleteSearchHistory,
   getRecentSearches,
   saveSearchHistory,
 } from "./searchHistoryApi";
