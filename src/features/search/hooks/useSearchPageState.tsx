@@ -6,7 +6,7 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import { useNavigationType } from "react-router-dom";
-import { isAuthenticated } from "@/features/auth/utils/authStorage";
+import { useAuthSession } from "@/features/auth/hooks/useAuthSession";
 import { useAppDispatch, useAppSelector } from "@/store";
 import {
   clearSearchResults,
@@ -76,10 +76,11 @@ function getMutationErrorMessage(error: unknown, fallbackMessage: string) {
 }
 
 export function useSearchPageState() {
+  const { isAuthenticated } = useAuthSession();
   const dispatch = useAppDispatch();
   const queryClient = useQueryClient();
   const navigationType = useNavigationType();
-  const isSearchHistoryEnabled = isAuthenticated();
+  const isSearchHistoryEnabled = isAuthenticated;
   const shouldRestoreSearchPageState =
     navigationType === "POP"
     && readSearchPageRestorePending()

@@ -1,5 +1,6 @@
 import { getAccessToken } from "@/features/auth/utils/authStorage";
-import { apiOrigin } from "@/config/appConfig";
+
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
 
 type ResponseEnvelope<T> = {
   status: number;
@@ -9,10 +10,10 @@ type ResponseEnvelope<T> = {
 
 export function buildApiPath(path: string) {
   if (!path.startsWith("/")) {
-    return `${apiOrigin}/${path}`;
+    return `${apiBaseUrl}/${path}`;
   }
 
-  return `${apiOrigin}${path}`;
+  return `${apiBaseUrl}${path}`;
 }
 
 export function createApiUrl(path: string) {

@@ -4,10 +4,17 @@ import { useNavigate } from "react-router-dom";
 import { AUTH_ROLES } from "@/features/auth/constants/roles.ts";
 import { useReloadOnHistoryRestore } from "@/features/auth/hooks/useReloadOnHistoryRestore";
 import { authApi } from "@/features/auth/services/auth.api.ts";
-import { setAuthSession, setCurrentUser } from "@/features/auth/utils/authStorage.ts";
+import {
+  clearAuthStorage,
+  setAuthSession,
+  setCurrentUser,
+} from "@/features/auth/utils/authStorage.ts";
 import { getApiErrorMessage } from "@/features/auth/utils/getApiErrorMessage.ts";
 
 type Status = "loading" | "error";
+
+const MAX_REFRESH_ATTEMPTS = 3;
+const RETRY_DELAY_MS = 250;
 
 const ERROR_MESSAGES: Record<string, string> = {
   access_denied: "Google sign-in was cancelled.",
@@ -46,6 +53,71 @@ function BrandLockup() {
   );
 }
 
+function wait(ms: number) {
+  return new Promise((resolve) => {
+    window.setTimeout(resolve, ms);
+  });
+}
+
+function getOAuth2CallbackRefreshToken() {
+  const hash = window.location.hash.startsWith("#")
+    ? window.location.hash.slice(1)
+    : window.location.hash;
+
+  const hashToken = new URLSearchParams(hash).get("refreshToken");
+  if (hashToken) {
+    return hashToken;
+  }
+
+  const hrefHash = window.location.href.split("#")[1] ?? "";
+  const hrefToken = new URLSearchParams(hrefHash).get("refreshToken");
+  if (hrefToken) {
+    return hrefToken;
+  }
+
+  const searchToken = new URLSearchParams(window.location.search).get("refreshToken");
+  if (searchToken) {
+    return searchToken;
+  }
+
+  return null;
+}
+
+async function createSessionFromOAuthCallback() {
+  clearAuthStorage();
+
+  const rawRefreshToken = getOAuth2CallbackRefreshToken();
+
+  let lastError: unknown = null;
+
+  for (let attempt = 0; attempt < MAX_REFRESH_ATTEMPTS; attempt += 1) {
+    try {
+      const refreshResponse = rawRefreshToken
+        ? await authApi.exchangeOAuth2Session(rawRefreshToken)
+        : await authApi.refreshForOAuth2Callback();
+
+      setAuthSession(refreshResponse.data);
+
+      if (rawRefreshToken) {
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+
+      const meResponse = await authApi.me();
+      setCurrentUser(meResponse.data);
+
+      return meResponse.data;
+    } catch (error) {
+      lastError = error;
+
+      if (attempt < MAX_REFRESH_ATTEMPTS - 1) {
+        await wait(RETRY_DELAY_MS);
+      }
+    }
+  }
+
+  throw lastError;
+}
+
 export default function OAuth2SuccessPage() {
   const navigate = useNavigate();
   useReloadOnHistoryRestore();
@@ -73,17 +145,14 @@ export default function OAuth2SuccessPage() {
 
     async function handleOAuth2Callback() {
       try {
-        const refreshResponse = await authApi.refresh();
-        setAuthSession(refreshResponse.data);
-
-        const meResponse = await authApi.me();
-        setCurrentUser(meResponse.data);
+        const currentUser = await createSessionFromOAuthCallback();
 
         const redirectTo =
-          meResponse.data.role === AUTH_ROLES.ADMIN ? "/admin/dashboard" : "/";
+          currentUser.role === AUTH_ROLES.ADMIN ? "/admin/dashboard" : "/";
 
         navigate(redirectTo, { replace: true });
       } catch (err) {
+        clearAuthStorage();
         setErrorMessage(
           getApiErrorMessage(err, "Google authentication failed. Please try again."),
         );

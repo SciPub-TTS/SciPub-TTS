@@ -12,9 +12,9 @@ import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 
 import { ROUTES } from "@/app/router";
 import logoImage from "@/assets/images/logo.png";
+import { useAuthSession } from "@/features/auth/hooks/useAuthSession";
 import {
   clearAuthStorage,
-  getCurrentUser,
 } from "@/features/auth/utils/authStorage";
 
 const workspaceMenuItems = [
@@ -47,8 +47,7 @@ function getInitials(name: string) {
 export default function MainSidebar() {
   const location = useLocation();
   const navigate = useNavigate();
-  const currentUser = getCurrentUser();
-  const loggedIn = Boolean(currentUser);
+  const { currentUser, isAuthenticated: loggedIn } = useAuthSession();
   const displayName = currentUser?.fullName ?? "Guest";
   const displayEmail = currentUser?.email ?? "Sign in to manage your profile";
   const initials = getInitials(displayName) || "G";

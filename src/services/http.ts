@@ -6,8 +6,9 @@ import {
     setAccessToken,
 } from "@/features/auth/utils/authStorage";
 import type {AuthResponse } from "@/features/auth/types/auth.types";
-import { apiBaseUrl } from "@/config/appConfig";
 import type {ApiResponse} from "@/types/common.types.ts";
+
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
 
 export const http = axios.create({
     baseURL: apiBaseUrl,

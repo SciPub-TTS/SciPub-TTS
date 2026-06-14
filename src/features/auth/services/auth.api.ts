@@ -1,4 +1,4 @@
-import { http } from "@/services/http";
+import { http, publicHttp } from "@/services/http";
 import type {
   AuthResponse,
   ChangePasswordRequest,
@@ -12,14 +12,15 @@ import type {
     CompleteGoogleRegisterRequest,
     GoogleSignupPreviewResponse,
 } from "@/features/auth/types/auth.types";
-import { googleAuthUrl } from "@/config/appConfig";
 import type { ApiResponse } from "@/types/common.types.ts";
+import { clearAuthStorage } from "@/features/auth/utils/authStorage";
 
-const AUTH_BASE = "/auth";
-const FORGOT_PASSWORD_BASE = "/auth/forgot-password";
+const AUTH_BASE = "/api/auth";
+const FORGOT_PASSWORD_BASE = "/api/auth/forgot-password";
 
 const CHANGE_PASSWORD_PATH =
-  import.meta.env.VITE_CHANGE_PASSWORD_PATH ?? "/account/change-password";
+  import.meta.env.VITE_CHANGE_PASSWORD_PATH ?? "/api/account/change-password";
+const googleAuthUrl = import.meta.env.VITE_GOOGLE_AUTH_URL;
 
 export const authApi = {
   register(payload: RegisterLocalRequest) {
@@ -37,6 +38,20 @@ export const authApi = {
   refresh() {
     return http
       .post<ApiResponse<AuthResponse>>(`${AUTH_BASE}/refresh`)
+      .then((res) => res.data);
+  },
+
+  refreshForOAuth2Callback() {
+    return publicHttp
+      .post<ApiResponse<AuthResponse>>(`${AUTH_BASE}/refresh`)
+      .then((res) => res.data);
+  },
+
+  exchangeOAuth2Session(rawRefreshToken: string) {
+    return publicHttp
+      .post<ApiResponse<AuthResponse>>(`${AUTH_BASE}/oauth2/exchange`, {
+        rawRefreshToken,
+      })
       .then((res) => res.data);
   },
 
@@ -100,7 +115,8 @@ export const authApi = {
   },
 
   startGoogleLogin() {
-    const targetUrl = new URL(googleAuthUrl, window.location.origin);
+    clearAuthStorage();
+    const targetUrl = new URL(googleAuthUrl);
     window.location.href = targetUrl.toString();
   },
 };
