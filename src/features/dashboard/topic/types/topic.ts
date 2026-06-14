@@ -7,3 +7,18 @@ export type TopicData = {
     state: string;
     isFollowed: boolean;
 }
+
+export type TopicApiResponse = {
+    status: number;
+    message: string;
+    data: {
+        topics: TopicData[];
+    };
+};
+
+export type TopicApiRequestBody = {
+    startDate: string;
+    endDate: string;
+    fieldId: string;
+    formula: string;
+};

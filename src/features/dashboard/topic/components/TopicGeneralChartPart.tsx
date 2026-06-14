@@ -14,17 +14,29 @@ import {
 } from "recharts";
 import {useEffect, useRef, useState} from "react";
 import {
-    topicGrowthMetrics,
     topicTrend
 } from "@/features/dashboard/topic/constants/topic-data.ts";
 import {usePublicationTrend} from "@/features/dashboard/topic/hooks/usePublicationTrend.ts";
 import {ChevronDown} from "lucide-react";
 import type {YearSelectProps} from "@/features/dashboard/topic/types/publication.ts";
+import {useTopicMomentum} from "@/features/dashboard/topic/hooks/useTopicMomentum.ts";
 
 const MIN_YEAR = 2000;
 const MAX_YEAR = new Date().getFullYear();
 
-export default function TopicGeneralChartPart(){
+type TopicGeneralChartPartProps = {
+    startDate: string;
+    endDate: string;
+    fieldId: string;
+    formula: string;
+};
+
+export default function TopicGeneralChartPart({
+                                                  startDate,
+                                                  endDate,
+                                                  fieldId,
+                                                  formula
+                                              }: TopicGeneralChartPartProps){
     return(
         <div className="flex flex-col items-center gap-6">
             <GeneralPart/>
@@ -32,7 +44,12 @@ export default function TopicGeneralChartPart(){
             <div className="grid grid-cols-2 gap-6 select-none">
                 <EmergingPart/>
 
-                <MomentumPart/>
+                <MomentumPart
+                    startDate={startDate}
+                    endDate={endDate}
+                    fieldId={fieldId}
+                    formula={formula}
+                />
             </div>
         </div>
     )
@@ -280,10 +297,24 @@ function EmergingPart(){
     )
 }
 
-function MomentumPart(){
+type MomentumPartProps = {
+    startDate: string;
+    endDate: string;
+    fieldId: string;
+    formula: string;
+};
+
+function MomentumPart({
+                          startDate,
+                          endDate,
+                          fieldId,
+                          formula
+                      }: MomentumPartProps){
     const formatAxisTick = (value: any): string => {
         return `${value}`;
     };
+
+    const {momentumData} = useTopicMomentum({startDate, endDate, fieldId, formula});
 
     return(
         <div className="rounded-lg border border-slate-200 bg-white p-4
@@ -304,7 +335,7 @@ function MomentumPart(){
             <BarChart
                 width={600}
                 height={350}
-                data={topicGrowthMetrics}
+                data={momentumData}
                 margin={{
                     top: 20,
                     right: 20,
@@ -313,7 +344,7 @@ function MomentumPart(){
                 }}
             >
                 <XAxis
-                    dataKey="topic"
+                    dataKey="name"
                     tickFormatter={formatAxisTick}
                     label={{ position: 'insideBottomRight', offset: -10 }}
                 />
@@ -338,7 +369,7 @@ function MomentumPart(){
                         className="text-xs"
                         dataKey="growthPercentage"
                         position="top"
-                        formatter={(value) => `+${value}%`}
+                        formatter={(value) => value > 0 ? `+${value}%` : `${value}%`}
                     />
                 </Bar>
 

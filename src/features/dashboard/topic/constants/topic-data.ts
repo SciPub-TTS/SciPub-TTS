@@ -1,4 +1,5 @@
 import type {TopicData} from "@/features/dashboard/topic/types/topic.ts";
+import type {Momentum} from "@/features/dashboard/topic/types/momentum.ts";
 
 export const LIST_TOPICS: TopicData[] = [
     {
@@ -332,63 +333,63 @@ export const publicationTrend = [
     { year: "2024", publications: 21480 }
 ];
 
-export const topicGrowthMetrics = [
+export const topicGrowthMetrics: Momentum[] = [
     {
-        topic: "Large Language Models (LLMs)",
+        name: "Large Language Models (LLMs)",
         currentAverage: 80.2,
         pastAverage: 70.41,
         growthPercentage: 13.9
     },
     {
-        topic: "Quantum Machine Learning",
+        name: "Quantum Machine Learning",
         currentAverage: 69.6,
         pastAverage: 52.55,
         growthPercentage: 32.45
     },
     {
-        topic: "CRISPR Gene Editing",
+        name: "CRISPR Gene Editing",
         currentAverage: 71.8,
         pastAverage: 57.8,
         growthPercentage: 24.22
     },
     {
-        topic: "Autonomous Vehicle Safety",
+        name: "Autonomous Vehicle Safety",
         currentAverage: 66.0,
         pastAverage: 52.45,
         growthPercentage: 25.83
     },
     {
-        topic: "Edge Computing Architecture",
+        name: "Edge Computing Architecture",
         currentAverage: 60.2,
         pastAverage: 54.02,
         growthPercentage: 11.44
     },
     {
-        topic: "Solid-State Batteries",
+        name: "Solid-State Batteries",
         currentAverage: 75.6,
         pastAverage: 66.93,
         growthPercentage: 12.95
     },
     {
-        topic: "Neuromorphic Computing",
+        name: "Neuromorphic Computing",
         currentAverage: 75.4,
         pastAverage: 70.0,
         growthPercentage: 7.71
     },
     {
-        topic: "Graph Neural Networks",
+        name: "Graph Neural Networks",
         currentAverage: 66.6,
         pastAverage: 51.11,
         growthPercentage: 30.31
     },
     {
-        topic: "Generative AI in Drug Discovery",
+        name: "Generative AI in Drug Discovery",
         currentAverage: 82.8,
         pastAverage: 69.09,
         growthPercentage: 19.84
     },
     {
-        topic: "Perovskite Solar Cells",
+        name: "Perovskite Solar Cells",
         currentAverage: 60.6,
         pastAverage: 45.81,
         growthPercentage: 32.29

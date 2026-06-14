@@ -1,8 +1,15 @@
 import type {MetricData} from "@/features/dashboard/topic/types/metric.ts";
 import {useGeneralMetrics} from "@/features/dashboard/topic/hooks/useMetric.ts";
 
-export default function MetricPart() {
-    const {metricList} = useGeneralMetrics();
+type MetricPartProps = {
+    startDate?: string;
+    endDate?: string;
+};
+
+export default function MetricPart({startDate, endDate}: MetricPartProps) {
+    const {metricList} = useGeneralMetrics(startDate, endDate);
+
+    console.log(metricList);
 
     return (
         <div className="grid grid-cols-4 gap-6">
@@ -38,7 +45,7 @@ function MetricField({metrics}:{metrics: MetricData}) {
             </div>
 
             <div className="absolute left-4 bottom-4 text-xs text-blue-700">
-                {metrics.changes}
+                {metrics.change}
             </div>
         </div>
     )

@@ -1,33 +1,36 @@
-import type {MetricResponse} from "@/features/dashboard/topic/types/metric.ts";
+import type {MetricApiResponse, MetricItem} from "@/features/dashboard/topic/types/metric.ts";
 import type {PublicationTrend, PublicationTrendApiResponse} from "@/features/dashboard/topic/types/publication.ts";
+import type {TopicApiRequestBody, TopicApiResponse, TopicData} from "@/features/dashboard/topic/types/topic.ts";
+import {LIST_TOPICS, topicGrowthMetrics} from "@/features/dashboard/topic/constants/topic-data.ts";
+import type {Momentum, TopicMomentumApiResponse} from "@/features/dashboard/topic/types/momentum.ts";
 
 const USE_MOCK = true;
 
-export const MOCK_METRICS_RESPONSE: MetricResponse[] = [
+export const MOCK_METRICS_RESPONSE: MetricItem[] = [
     {
         title: "TOTAL PAPERS",
-        value: `${Math.floor(Math.random() * 900000 + 100000)}`,
-        changes: `+${(Math.random() * 30).toFixed(1)}% YoY`
+        value: Math.floor(Math.random() * 900000 + 100000),
+        change: Number((Math.random() * 30 - 10).toFixed(2))
     },
     {
         title: "ACTIVE TRENDING TOPICS",
-        value: `${Math.floor(Math.random() * 80 + 20)}`,
-        changes: `+${Math.floor(Math.random() * 10 + 1)} this week`
+        value: Math.floor(Math.random() * 80 + 20),
+        change: Number((Math.random() * 20 - 5).toFixed(2))
     },
     {
         title: "RISING KEYWORDS",
-        value: `${Math.floor(Math.random() * 300 + 50)}`,
-        changes: `+${Math.floor(Math.random() * 25 + 5)} this week`
+        value: Math.floor(Math.random() * 300 + 50),
+        change: Number((Math.random() * 25 - 5).toFixed(2))
     },
     {
         title: "AVERAGE GROWTH RATE",
-        value: `+${(Math.random() * 40).toFixed(1)}%`,
-        changes: "vs last quarter"
+        value: Number((Math.random() * 40).toFixed(2)),
+        change: Number((Math.random() * 15 - 5).toFixed(2))
     },
     {
         title: "CITATION IMPACT",
-        value: (Math.random() * 10).toFixed(2),
-        changes: `${(Math.random() * 3 + 1).toFixed(1)}-yr mean citedness`
+        value: Number((Math.random() * 10).toFixed(2)),
+        change: Number((Math.random() * 10 - 3).toFixed(2))
     },
     {
         title: "TOP FIELD",
@@ -38,17 +41,17 @@ export const MOCK_METRICS_RESPONSE: MetricResponse[] = [
             "Medicine",
             "Physics"
         ][Math.floor(Math.random() * 5)],
-        changes: `${Math.floor(Math.random() * 50000 + 10000).toLocaleString()} papers`
+        change: Number((Math.random() * 1000000).toFixed(0))
     },
     {
         title: "NEW PAPERS THIS WEEK",
-        value: `${Math.floor(Math.random() * 5000 + 500)}`,
-        changes: `+${Math.floor(Math.random() * 15 + 1)}% vs last week`
+        value: Math.floor(Math.random() * 5000 + 500),
+        change: Number((Math.random() * 30 - 5).toFixed(2))
     },
     {
         title: "LAST SYNC",
         value: new Date().toLocaleString(),
-        changes: "OpenAlex Active"
+        change: 0
     }
 ];
 
@@ -147,19 +150,24 @@ async function requestData<T>(url: string): Promise<T> {
 
 export const topicService = {
 
-    getMetricList: async(period?: string):Promise<MetricResponse[]> => {
-        if(USE_MOCK) {
+    getMetricList: async(startDate?: string, endDate?: string):Promise<MetricItem[]> => {
+        if(!USE_MOCK) {
             return MOCK_METRICS_RESPONSE;
         }
 
-        if(!period) return [];
+        if (!startDate || !endDate) {
+            return MOCK_METRICS_RESPONSE;
+        }
 
-        const endpoint = new URL(`${apiBaseUrl}/api/statistic/metrics`);
-        const startOfDay = new Date(period);
-        startOfDay.setHours(0, 0, 0, 0);
-        endpoint.searchParams.append("period", startOfDay.toISOString());
+        const endpoint = new URL(`${apiBaseUrl}/api/data/metrics`);
+        endpoint.searchParams.append("startTime", startDate);
+        endpoint.searchParams.append("endTime", endDate);
 
-        return await requestData<MetricResponse[]>(endpoint.toString());
+        const response = await requestData<MetricApiResponse>(
+            endpoint.toString()
+        );
+
+        return response.data.metricList;
     },
 
     getPublicationTrend: async(startYear?: number, endYear?: number):Promise<PublicationTrend[]> => {
@@ -180,5 +188,41 @@ export const topicService = {
             );
 
         return response.data.publicationTrends;
+    },
+
+    getRankedTopics: async({startDate, endDate, formula, fieldId}:TopicApiRequestBody):Promise<TopicData[]> => {
+        if (!USE_MOCK) {
+            return LIST_TOPICS;
+        }
+
+        const endpoint = new URL(
+            `${apiBaseUrl}/api/data/topicScore-all`
+        );
+
+        endpoint.searchParams.append("startTime", startDate);
+        endpoint.searchParams.append("endTime", endDate);
+        endpoint.searchParams.append("fieldId", fieldId);
+        endpoint.searchParams.append("formula", formula);
+
+        const response = await requestData<TopicApiResponse>(
+            endpoint.toString()
+        );
+
+        return response.data.topics;
+    },
+
+    getTopicsMomentum: async ({ startDate, endDate, formula, fieldId }: TopicApiRequestBody): Promise<Momentum[]> => {
+        if (!USE_MOCK) {
+            return topicGrowthMetrics;
+        }
+
+        const endpoint = new URL(`${apiBaseUrl}/api/data/topic-momentum`);
+        endpoint.searchParams.append("startTime", startDate);
+        endpoint.searchParams.append("endTime", endDate);
+        endpoint.searchParams.append("fieldId", fieldId);
+        endpoint.searchParams.append("formula", formula);
+
+        const response = await requestData<TopicMomentumApiResponse>(endpoint.toString());
+        return response.data.topicGrowthMetrics;
     }
 }
