@@ -1,9 +1,25 @@
-import {LIST_TOPICS} from "@/features/dashboard/topic/constants/topic-data.ts";
 import {Link} from "react-router-dom";
 import {Check} from "lucide-react";
 import type {TopicData} from "@/features/dashboard/topic/types/topic.ts";
+import {useTopicRanking} from "@/features/dashboard/topic/hooks/useTopicRanking.ts";
 
-export default function TrendingPart (){
+type TrendingPartProps = {
+    startDate: string;
+    endDate: string;
+    fieldId: string;
+    formula: string;
+};
+
+
+export default function TrendingPart ({
+                                          startDate,
+                                          endDate,
+                                          fieldId,
+                                          formula
+                                      }: TrendingPartProps){
+
+    const {topics} = useTopicRanking({startDate, endDate, fieldId, formula});
+
     return (
         <div className="rounded-lg border border-slate-200 bg-white p-4
         flex flex-col gap-2"
@@ -20,7 +36,7 @@ export default function TrendingPart (){
             </div>
 
             <div className="flex flex-col w-full">
-                {LIST_TOPICS.map((topic, id) => (
+                {topics.map((topic, id) => (
                     <Topic topic={topic} id={id}/>
                 ))}
             </div>
@@ -66,9 +82,6 @@ function Topic({topic, id}:
 
                     <span>{topic.score}</span>
                 </div>
-                <p className="text-green-600">
-                    +{topic.change}%
-                </p>
             </div>
 
             <div className="flex flex-row items-center gap-10 justify-between">

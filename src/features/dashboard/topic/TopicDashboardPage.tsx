@@ -4,6 +4,7 @@ import TrendingPart from "@/features/dashboard/topic/components/TrendingPart.tsx
 import TopicSpecificChartPart from "@/features/dashboard/topic/components/TopicSpecificChartPart.tsx";
 import {useNavigate} from "react-router-dom";
 import {ROUTE_SEGMENTS} from "@/app/router";
+import {useState} from "react";
 
 export default function TopicDashboardPage() {
     const navigate = useNavigate();
@@ -11,6 +12,22 @@ export default function TopicDashboardPage() {
     const handleClick = () => {
         navigate(ROUTE_SEGMENTS.TRENDING_KEYWORD);
     }
+
+    const currentMonday = getMonday(new Date());
+
+    const oneWeekBefore = new Date(currentMonday);
+    oneWeekBefore.setDate(oneWeekBefore.getDate() - 7);
+
+    const fiveYearsBefore = new Date(currentMonday);
+    fiveYearsBefore.setFullYear(fiveYearsBefore.getFullYear() - 5);
+
+    const [shortStartDate] = useState<string>(formatDate(oneWeekBefore));
+    const [longStartDate] = useState<string>(formatDate(fiveYearsBefore));
+    const [endDate] = useState<string>(formatDate(currentMonday));
+    const [fieldId] = useState<string>("17");
+    const [formula] = useState<string>("balanced");
+
+    console.log(shortStartDate, longStartDate, endDate, fieldId, formula);
 
   return (
     <div className="flex flex-col gap-[3vh]">
@@ -32,13 +49,42 @@ export default function TopicDashboardPage() {
 
         {/*<FilterPart/>*/}
 
-        <MetricPart/>
+        <MetricPart startDate={shortStartDate} endDate={endDate}/>
 
-        <TopicGeneralChartPart/>
+        <TopicGeneralChartPart startDate={longStartDate}
+                               endDate={endDate}
+                               fieldId={fieldId}
+                               formula={formula}
+        />
 
-        <TrendingPart/>
+        <TrendingPart startDate={longStartDate}
+                      endDate={endDate}
+                      fieldId={fieldId}
+                      formula={formula}/>
 
-        <TopicSpecificChartPart/>
+        <TopicSpecificChartPart startDate={longStartDate}
+                                endDate={endDate}
+                                fieldId={fieldId}
+        />
     </div>
   );
+}
+
+function getMonday(date: Date): Date {
+    const result = new Date(date);
+
+    const day = result.getDay(); // 0 = Sunday, 1 = Monday
+    const diff = day === 0 ? -6 : 1 - day;
+
+    result.setDate(result.getDate() + diff);
+    result.setHours(0, 0, 0, 0);
+
+    return result;
+}
+
+function formatDate(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
 }
