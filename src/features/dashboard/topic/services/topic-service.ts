@@ -1,8 +1,14 @@
 import type {MetricApiResponse, MetricItem} from "@/features/dashboard/topic/types/metric.ts";
 import type {PublicationTrend, PublicationTrendApiResponse} from "@/features/dashboard/topic/types/publication.ts";
-import type {TopicApiRequestBody, TopicApiResponse, TopicData} from "@/features/dashboard/topic/types/topic.ts";
-import {LIST_TOPICS, topicGrowthMetrics} from "@/features/dashboard/topic/constants/topic-data.ts";
+import type {
+    TopicAnalystApiRequestBody,
+    TopicApiRequestBody,
+    TopicApiResponse,
+    TopicData
+} from "@/features/dashboard/topic/types/topic.ts";
+import {LIST_TOPICS, topicGrowthMetrics, topicMetrics} from "@/features/dashboard/topic/constants/topic-data.ts";
 import type {Momentum, TopicMomentumApiResponse} from "@/features/dashboard/topic/types/momentum.ts";
+import type {TopicRadarApiResponse, TopicRadarData, TopicRadarMetrics} from "@/features/dashboard/topic/types/radar.ts";
 
 const USE_MOCK = true;
 
@@ -224,5 +230,24 @@ export const topicService = {
 
         const response = await requestData<TopicMomentumApiResponse>(endpoint.toString());
         return response.data.topicGrowthMetrics;
-    }
+    },
+
+    getTopicRadar: async ({ startDate, endDate, fieldId }: TopicAnalystApiRequestBody): Promise<TopicRadarData> => {
+        if (!USE_MOCK) {
+            return {
+                average: {} as TopicRadarMetrics,
+                topics: topicMetrics
+            };
+        }
+
+        const endpoint = new URL(`${apiBaseUrl}/api/data/topic-radar`);
+
+        endpoint.searchParams.append("startTime", startDate);
+        endpoint.searchParams.append("endTime", endDate);
+        endpoint.searchParams.append("fieldId", String(fieldId));
+
+        const response = await requestData<TopicRadarApiResponse>(endpoint.toString());
+
+        return response.data;
+    },
 }

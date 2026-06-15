@@ -22,3 +22,9 @@ export type TopicApiRequestBody = {
     fieldId: string;
     formula: string;
 };
+
+export type TopicAnalystApiRequestBody = {
+    startDate: string;
+    endDate: string;
+    fieldId: string | number;
+}

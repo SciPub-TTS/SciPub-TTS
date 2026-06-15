@@ -369,7 +369,7 @@ function MomentumPart({
                         className="text-xs"
                         dataKey="growthPercentage"
                         position="top"
-                        formatter={(value) => value > 0 ? `+${value}%` : `${value}%`}
+                        formatter={(value) => Number(value) > 0 ? `+${value}%` : `${value}%`}
                     />
                 </Bar>
 

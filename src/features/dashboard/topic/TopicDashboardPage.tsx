@@ -62,7 +62,10 @@ export default function TopicDashboardPage() {
                       fieldId={fieldId}
                       formula={formula}/>
 
-        <TopicSpecificChartPart/>
+        <TopicSpecificChartPart startDate={longStartDate}
+                                endDate={endDate}
+                                fieldId={fieldId}
+        />
     </div>
   );
 }
