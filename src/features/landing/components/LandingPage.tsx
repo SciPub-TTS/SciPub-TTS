@@ -24,8 +24,7 @@ import { Link } from "react-router-dom";
 import { ROUTES } from "@/app/router";
 import logoImage from "@/assets/images/logo.png";
 import { AUTH_ROLES } from "@/features/auth/constants/roles";
-import { getCurrentUser } from "@/features/auth/utils/authStorage";
-import { isAuthenticated } from "@/features/auth/utils/authGuard";
+import { useAuthSession } from "@/features/auth/hooks/useAuthSession";
 import MainFooter from "@/layout/main/Footer";
 
 const floatCards = [
@@ -61,8 +60,7 @@ const floatCards = [
 
 export default function LandingPage() {
   const [isSectionMenuOpen, setIsSectionMenuOpen] = useState(false);
-  const currentUser = getCurrentUser();
-  const loggedIn = isAuthenticated();
+  const { currentUser, isAuthenticated: loggedIn } = useAuthSession();
   const dashboardPath =
     currentUser?.role === AUTH_ROLES.ADMIN
       ? ROUTES.ADMIN_DASHBOARD

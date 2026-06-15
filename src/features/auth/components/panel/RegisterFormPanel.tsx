@@ -4,7 +4,6 @@ import { ROUTES } from "@/app/router";
 import AuthMessage from "@/features/auth/components/common/AuthMessage";
 import GoogleLoginButton from "@/features/auth/components/common/GoogleLoginButton";
 import PasswordInput from "@/features/auth/components/form/PasswordInput";
-import PasswordStrength from "@/features/auth/components/form/PasswordStrength";
 
 type RegisterFormState = {
     firstName: string;
@@ -91,9 +90,8 @@ export default function RegisterFormPanel({
                                 label="Password"
                                 value={form.password}
                                 onChange={(value) => onChange("password", value)}
-                                placeholder="At least 10 characters"
+                                placeholder="Enter password"
                             />
-                            <PasswordStrength password={form.password} />
                         </div>
 
                         <PasswordInput

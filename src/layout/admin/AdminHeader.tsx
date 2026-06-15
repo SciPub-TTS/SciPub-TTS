@@ -1,5 +1,5 @@
 import { ROUTES } from "@/app/router";
-import { getCurrentUser } from "@/features/auth/utils/authStorage";
+import { useAuthSession } from "@/features/auth/hooks/useAuthSession";
 import BreadcrumbBar from "../components/BreadcrumbBar";
 import LanguageSwitcher from "../components/LanguageSwitcher";
 
@@ -14,7 +14,7 @@ function getInitials(name: string) {
 }
 
 export default function AdminHeader() {
-  const user = getCurrentUser();
+  const { currentUser: user } = useAuthSession();
   const displayName = user?.fullName ?? "Admin";
   const initials = getInitials(displayName) || "AD";
 

@@ -1,6 +1,5 @@
-import type { ReactNode } from "react";
-
 import { Globe2, Landmark, Tag } from "lucide-react";
+import type { ReactNode } from "react";
 
 import MetadataBadge from "@/layout/components/MetadataBadge";
 
@@ -21,13 +20,13 @@ type SummaryGridProps = {
 
 type TagClusterProps = {
   emptyLabel?: string;
-  icon: ReactNode;
+  icon?: ReactNode;
   items: string[];
   title: string;
 };
 
 type EntityTagClusterProps = {
-  icon: ReactNode;
+  icon?: ReactNode;
   items: PaperDetailEntityRef[];
   title: string;
 };
@@ -152,20 +151,20 @@ function EntityTagCluster(props: EntityTagClusterProps) {
   }
 
   return (
-      <div className="border-t border-black pt-4">
-        <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.22em] text-black">
-          {icon}
-          {title}
-        </div>
-        <div className="mt-3 flex flex-wrap gap-2">
-          {items.map((item) => (
-            <MetadataBadge
-              key={`${item.type}-${item.id}`}
-              tone="topic"
-              label={item.name}
-            />
-          ))}
-        </div>
+    <div className="border-t border-black pt-4">
+      <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.22em] text-black">
+        {icon}
+        {title}
       </div>
+      <div className="mt-3 flex flex-wrap gap-2">
+        {items.map((item) => (
+          <MetadataBadge
+            key={`${item.type}-${item.id}`}
+            tone="topic"
+            label={item.name}
+          />
+        ))}
+      </div>
+    </div>
   );
 }

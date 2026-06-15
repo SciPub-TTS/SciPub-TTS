@@ -190,8 +190,8 @@ export const topicService = {
         endpoint.searchParams.append("endYear", String(endYear));
 
         const response = await requestData<PublicationTrendApiResponse>(
-                endpoint.toString()
-            );
+            endpoint.toString()
+        );
 
         return response.data.publicationTrends;
     },

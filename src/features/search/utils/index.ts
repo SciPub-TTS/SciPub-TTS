@@ -1,13 +1,6 @@
-import {
-  SEARCH_MIN_CITATION,
-  SEARCH_VISIBLE_SAVED_SEARCH_LIMIT,
-} from "../constants";
+import { SEARCH_MIN_CITATION } from "../constants";
 import { mockSearchYearRange } from "../services";
-import type {
-  SavedSearch,
-  SearchFilters,
-  SearchFilterWidgetKey,
-} from "../types";
+import type { SearchFilters, SearchFilterWidgetKey } from "../types";
 
 const { currentYear, minimumYear } = mockSearchYearRange;
 
@@ -19,7 +12,7 @@ const compactNumberFormatter = new Intl.NumberFormat("en", {
 
 const fullNumberFormatter = new Intl.NumberFormat("en");
 
-const searchFilterWidgetKeyMap = {
+const searchFilterWidgetKeyMap: Record<string, SearchFilterWidgetKey> = {
   year: "year",
   type: "type",
   openaccess: "openAccess",
@@ -33,7 +26,7 @@ const searchFilterWidgetKeyMap = {
   source: "source",
   award: "award",
   indexedbyorcid: "indexedByOrcid",
-} satisfies Record<string, SearchFilterWidgetKey>;
+};
 
 export function formatCompactNumber(value: number) {
   return compactNumberFormatter.format(value);
@@ -223,30 +216,6 @@ export function buildAppliedFilterSummary(filters: SearchFilters) {
   return summary;
 }
 
-export function getVisibleSearchSuggestions(
-  savedSearches: SavedSearch[],
-  keyword: string,
-  showAll: boolean,
-) {
-  const normalizedKeyword = keyword.trim().toLowerCase();
-  let matchedSearches = savedSearches;
-
-  // Empty keyword shows all saved searches; typed keyword filters them.
-  if (normalizedKeyword) {
-    matchedSearches = [];
-
-    for (const savedSearch of savedSearches) {
-      if (savedSearchMatchesKeyword(savedSearch, normalizedKeyword)) {
-        matchedSearches.push(savedSearch);
-      }
-    }
-  }
-
-  return showAll
-    ? matchedSearches
-    : matchedSearches.slice(0, SEARCH_VISIBLE_SAVED_SEARCH_LIMIT);
-}
-
 function hasYearFilter(filters: SearchFilters) {
   if (filters.yearMode === "exact") {
     return Boolean(filters.yearExact);
@@ -302,12 +271,5 @@ function addListFilterSummary(
   }
 
   summary.push(`${label}: ${values.join(", ")}`);
-}
-
-function savedSearchMatchesKeyword(
-  savedSearch: SavedSearch,
-  normalizedKeyword: string,
-) {
-  return savedSearch.query.toLowerCase().includes(normalizedKeyword);
 }
 

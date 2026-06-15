@@ -3,9 +3,9 @@ import { Link, NavLink, useNavigate } from "react-router-dom";
 
 import { ROUTES } from "@/app/router";
 import logoImage from "@/assets/images/logo.png";
+import { useAuthSession } from "@/features/auth/hooks/useAuthSession";
 import {
   clearAuthStorage,
-  getCurrentUser,
 } from "@/features/auth/utils/authStorage";
 
 const adminMenuItems = [
@@ -33,7 +33,7 @@ function getInitials(name: string) {
 
 export default function AdminSidebar() {
   const navigate = useNavigate();
-  const currentUser = getCurrentUser();
+  const { currentUser } = useAuthSession();
   const displayName = currentUser?.fullName ?? "Admin";
   const initials = getInitials(displayName) || "AD";
 

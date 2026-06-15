@@ -12,9 +12,9 @@ import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 
 import { ROUTES } from "@/app/router";
 import logoImage from "@/assets/images/logo.png";
+import { useAuthSession } from "@/features/auth/hooks/useAuthSession";
 import {
   clearAuthStorage,
-  getCurrentUser,
 } from "@/features/auth/utils/authStorage";
 
 const workspaceMenuItems = [
@@ -43,8 +43,7 @@ function getInitials(name: string) {
 export default function MainSidebar() {
   const location = useLocation();
   const navigate = useNavigate();
-  const currentUser = getCurrentUser();
-  const loggedIn = Boolean(currentUser);
+  const { currentUser, isAuthenticated: loggedIn } = useAuthSession();
   const displayName = currentUser?.fullName ?? "Guest";
   const displayEmail = currentUser?.email ?? "Sign in to manage your profile";
   const initials = getInitials(displayName) || "G";
@@ -75,8 +74,8 @@ export default function MainSidebar() {
       </Link>
 
       <div className="flex-1 px-2.5 py-5">
-        <p className="mb-2 px-2 text-[14px] font-bold uppercase tracking-wider text-white">
-          Workspace
+        <p className="mb-3 px-2 text-[17px] font-extrabold tracking-wider text-white">
+          WORKSPACE
         </p>
 
         <nav className="space-y-1">
@@ -93,14 +92,14 @@ export default function MainSidebar() {
                 to={item.path}
                 className={({ isActive }) =>
                   [
-                    "flex items-center gap-3 rounded-lg px-2.5 py-2 text-xs font-medium transition",
+                    "flex items-center gap-3 rounded-lg px-3 py-2.5 text-[13px] font-semibold transition",
                     isActive || isSearchSectionActive
-                      ? "bg-emerald-600 text-white shadow-sm ring-1 ring-emerald-300/40"
-                      : "text-slate-300 ",
+                      ? "bg-emerald-600 text-white"
+                      : "text-white hover:bg-emerald-500/15 hover:text-emerald-300",
                   ].join(" ")
                 }
               >
-                <Icon className="h-4 w-4 shrink-0" />
+                <Icon className="h-5 w-5 shrink-0" />
                 <span className="truncate">{item.label}</span>
               </NavLink>
             );
@@ -110,21 +109,21 @@ export default function MainSidebar() {
 
       <div className="border-t-2 border-[#3c8534] px-2.5 py-4">
         <div className="mb-4 flex items-center gap-3 rounded-lg border border-white/10 bg-white/[0.08] px-2.5 py-2.5">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-xs font-bold text-white">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-sm font-bold text-white">
             {initials}
           </div>
           <div className="min-w-0">
-            <p className="truncate text-xs font-bold text-white">
+            <p className="truncate text-sm font-bold text-white">
               {displayName}
             </p>
-            <p className="mt-0.5 truncate text-[10px] text-slate-400">
+            <p className="mt-0.5 truncate text-xs text-slate-400">
               {displayEmail}
             </p>
           </div>
         </div>
 
-        <p className="mb-2 px-2 text-[14px] font-bold uppercase tracking-wider text-white">
-          Account
+        <p className="mb-3 px-2 text-[17px] font-extrabold tracking-wider text-white">
+          ACCOUNT
         </p>
 
         <nav className="space-y-1">
@@ -138,14 +137,14 @@ export default function MainSidebar() {
                 to={targetPath}
                 className={({ isActive }) =>
                   [
-                    "flex items-center gap-3 rounded-lg px-2.5 py-2 text-xs font-medium transition",
+                    "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold transition",
                     loggedIn && isActive
-                      ? "bg-emerald-600 text-white shadow-sm ring-1 ring-emerald-300/40"
-                      : "text-slate-300 hover:bg-emerald-500/15 hover:text-emerald-100",
+                      ? "bg-emerald-600 text-white shadow-sm ring-1 ring-emerald-600"
+                      : "text-white hover:bg-emerald-500/15 hover:text-emerald-300",
                   ].join(" ")
                 }
               >
-                <Icon className="h-4 w-4 shrink-0" />
+                <Icon className="h-5 w-5 shrink-0" />
                 <span className="truncate">{item.label}</span>
               </NavLink>
             );
@@ -155,9 +154,9 @@ export default function MainSidebar() {
             <button
               type="button"
               onClick={handleLogout}
-              className="flex w-full items-center gap-3 rounded-lg px-2.5 py-2 text-left text-xs font-medium text-slate-300 transition hover:bg-rose-500/15 hover:text-rose-100"
+              className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-semibold text-slate-300 transition hover:bg-rose-500/15 hover:text-rose-100"
             >
-              <LogOut className="h-4 w-4 shrink-0" />
+              <LogOut className="h-5 w-5 shrink-0" />
               <span className="truncate">Log out</span>
             </button>
           )}

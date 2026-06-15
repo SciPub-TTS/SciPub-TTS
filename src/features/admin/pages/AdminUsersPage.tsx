@@ -1,6 +1,6 @@
 import { Ban, Search, X } from "lucide-react";
 import type { ReactNode } from "react";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 import Pagination from "@/layout/components/Pagination";
 
@@ -69,7 +69,7 @@ const adminUsers: AdminUser[] = [
   {
     id: "U-006",
     fullName: "Do Quang Huy",
-    email: "admin@scholartrack.io",
+    email: "admin@owlreka.io",
     role: "Admin",
     status: "Active",
     topics: 0,
@@ -120,10 +120,6 @@ export default function AdminUsersPage() {
     return filteredUsers.slice(startIndex, startIndex + USERS_PAGE_SIZE);
   }, [currentPage, filteredUsers]);
 
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [query]);
-
   function toggleUserBan(userId: string) {
     setUsers((currentUsers) =>
       currentUsers.map((user) => {
@@ -153,7 +149,10 @@ export default function AdminUsersPage() {
             <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
             <input
               className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-11 pr-4 text-sm font-medium text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-blue-300 focus:ring-4 focus:ring-blue-50"
-              onChange={(event) => setQuery(event.target.value)}
+              onChange={(event) => {
+                setQuery(event.target.value);
+                setCurrentPage(1);
+              }}
               placeholder="Search users by name, email, or status..."
               type="search"
               value={query}

@@ -9,6 +9,8 @@ export const ROUTES = {
   TOPIC_DASHBOARD: "/topic_dashboard",
   TRENDING_TOPIC: "/trending-topic",
 
+  GOOGLE_REGISTER_COMPLETE: "/register/complete",
+
   //Auth
   FORGOT_PASSWORD: "/forgot-password",
   FORGOT_PASSWORD_VERIFY: "/forgot-password/verify-code",
@@ -42,6 +44,13 @@ export const routePaths = {
   guide: () => ROUTES.GUIDE,
   search: () => ROUTES.SEARCH,
   trendingTopic: () => ROUTES.TRENDING_TOPIC,
+
+  googleRegisterComplete: (token: string) =>
+      `${ROUTES.GOOGLE_REGISTER_COMPLETE}?token=${encodeURIComponent(token)}`,
+
+  forgotPassword: () => ROUTES.FORGOT_PASSWORD,
+  forgotPasswordVerify: () => ROUTES.FORGOT_PASSWORD_VERIFY,
+  forgotPasswordReset: () => ROUTES.FORGOT_PASSWORD_RESET,
 
   paperDetail: (paperId: string | number) =>
     `/papers/${encodeURIComponent(String(paperId))}`,

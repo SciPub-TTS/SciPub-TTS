@@ -1,20 +1,18 @@
 import { Check, ChevronDown, LoaderCircle } from "lucide-react";
-import type { ReactNode, RefObject } from "react";
-import { memo, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 
 import {
+  getSearchSortOptionValue,
+  hasActiveSearchSort,
   searchResultSortGroups,
   type SearchResultSortGroup,
 } from "@/features/search/services";
-import type {
-  ResultsListProps,
-  SearchResultsProps,
-} from "@/features/search/types";
+import type { SearchResultsProps } from "@/features/search/types";
 import { formatFullNumber, formatResponseTime } from "@/features/search/utils";
 
 import { PaperResultCard } from "./PaperResultCard";
 
-function SearchResultsComponent({
+export function SearchResults({
   appliedSearchQuery,
   autoLoadAnchorIndex,
   canLoadMoreResults,
@@ -22,12 +20,12 @@ function SearchResultsComponent({
   isLoadingResults,
   isLoadingMoreResults,
   responseTimeSeconds,
-  selectedSorts,
+  sortState,
   totalResultCount,
   visiblePaperResults,
   onLoadMoreResults,
   onClearSorts,
-  onToggleSort,
+  onSelectSort,
 }: SearchResultsProps) {
   const lazyLoadAnchorRef = useRef<HTMLDivElement>(null);
   const resultTitle = appliedSearchQuery || "all papers";
@@ -40,15 +38,26 @@ function SearchResultsComponent({
   useEffect(() => {
     const anchor = lazyLoadAnchorRef.current;
 
-    if (!anchor || !canLoadMoreResults || isLoadingMoreResults) {
+    if (
+      !anchor ||
+      autoLoadAnchorIndex < 0 ||
+      !canLoadMoreResults ||
+      isLoadingMoreResults
+    ) {
       return;
     }
+
+    anchor.dataset.autoLoadTriggered = "0";
 
     const observer = new IntersectionObserver(
       (entries) => {
         const anchorIsVisible = entries.some((entry) => entry.isIntersecting);
 
-        if (anchorIsVisible) {
+        if (
+          anchorIsVisible &&
+          anchor.dataset.autoLoadTriggered !== "1"
+        ) {
+          anchor.dataset.autoLoadTriggered = "1";
           onLoadMoreResults();
         }
       },
@@ -95,11 +104,11 @@ function SearchResultsComponent({
           ) : null}
 
           <div className="flex shrink-0 justify-end lg:justify-start">
-            <MemoizedSortActions
+            <SortActions
               canSortResults={canSortResults}
-              selectedSorts={selectedSorts}
+              sortState={sortState}
               onClearSorts={onClearSorts}
-              onToggleSort={onToggleSort}
+              onSelectSort={onSelectSort}
             />
           </div>
         </div>
@@ -109,7 +118,8 @@ function SearchResultsComponent({
         ) : !hasSearched ? (
           <div className="rounded-2xl border border-slate-600 bg-white p-8 text-center">
             <p className="text-lg font-bold text-black">
-              Enter a keyword or choose filters, then click Search or Apply filters.
+              Enter a keyword or choose filters, then click Search or Apply
+              filters.
             </p>
           </div>
         ) : visiblePaperResults.length === 0 ? (
@@ -136,8 +146,6 @@ function SearchResultsComponent({
   );
 }
 
-export const SearchResults = memo(SearchResultsComponent);
-
 function SearchLoadingState() {
   return (
     <div className="rounded-2xl border border-[#059669] bg-white p-8 text-center shadow-sm">
@@ -151,39 +159,39 @@ function SearchLoadingState() {
 
 type SortActionsProps = {
   canSortResults: boolean;
-  selectedSorts: string[];
+  sortState: SearchResultsProps["sortState"];
   onClearSorts: () => void;
-  onToggleSort: (sortOption: string) => void;
+  onSelectSort: (sortOption: string) => void;
 };
 
-type ResultsListWithAnchorProps = ResultsListProps & {
-  lazyLoadAnchorRef: RefObject<HTMLDivElement | null>;
+type ResultsListProps = {
+  autoLoadAnchorIndex: number;
+  lazyLoadAnchorRef: { current: HTMLDivElement | null };
+  visiblePaperResults: SearchResultsProps["visiblePaperResults"];
 };
 
-function SortActionsComponent(props: SortActionsProps) {
-  const { canSortResults, selectedSorts, onClearSorts, onToggleSort } = props;
+function SortActions(props: SortActionsProps) {
+  const { canSortResults, sortState, onClearSorts, onSelectSort } = props;
+  const hasActiveSort = hasActiveSearchSort(sortState);
 
   return (
     <div className="flex flex-wrap items-end gap-3 rounded-2xl border border-black bg-slate-50/80 p-3 shadow-sm">
       {searchResultSortGroups.map((group) => (
-        <MemoizedSortDropdown
+        <SortDropdown
           key={group.key}
           group={group}
           canSortResults={canSortResults}
-          selectedSort={
-            group.options.find((option) => selectedSorts.includes(option.value))
-              ?.value ?? ""
-          }
-          onToggleSort={onToggleSort}
+          selectedSort={getSearchSortOptionValue(sortState, group.key)}
+          onSelectSort={onSelectSort}
         />
       ))}
       <button
         type="button"
         onClick={onClearSorts}
-        disabled={!canSortResults || selectedSorts.length === 0}
+        disabled={!canSortResults || !hasActiveSort}
         className={[
           "h-10 rounded-lg border px-4 text-sm font-bold transition disabled:cursor-not-allowed disabled:opacity-50",
-          canSortResults && selectedSorts.length > 0
+          canSortResults && hasActiveSort
             ? "border-black bg-white text-black hover:bg-red-600 hover:text-white"
             : "border-black bg-slate-200 text-slate-500",
         ].join(" ")}
@@ -194,27 +202,30 @@ function SortActionsComponent(props: SortActionsProps) {
   );
 }
 
-const MemoizedSortActions = memo(SortActionsComponent);
-
 type SortDropdownProps = {
   canSortResults: boolean;
   group: SearchResultSortGroup;
   selectedSort: string;
-  onToggleSort: (sortOption: string) => void;
+  onSelectSort: (sortOption: string) => void;
 };
 
-function SortDropdownComponent(props: SortDropdownProps) {
-  const { canSortResults, group, selectedSort, onToggleSort } = props;
+function SortDropdown(props: SortDropdownProps) {
+  const { canSortResults, group, selectedSort, onSelectSort } = props;
   const detailsRef = useRef<HTMLDetailsElement>(null);
   const selectedOption =
-    group.options.find((option) => option.value === selectedSort) ?? null;
+    group.options.find((option) => option.value === selectedSort) || null;
   const isActive = selectedOption !== null;
-  const summaryLabel = selectedOption?.label ?? "Any";
+  const isDisabledGroup = Boolean(group.disabled);
+  const summaryLabel = isDisabledGroup
+    ? "Coming soon"
+    : selectedOption
+      ? selectedOption.label
+      : "None";
 
   function handleDetailsToggle() {
     const currentDropdown = detailsRef.current;
 
-    if (!currentDropdown?.open) {
+    if (!currentDropdown || !currentDropdown.open) {
       return;
     }
 
@@ -230,7 +241,7 @@ function SortDropdownComponent(props: SortDropdownProps) {
   }
 
   function handleSelectSort(sortValue: string) {
-    onToggleSort(sortValue);
+    onSelectSort(sortValue);
 
     if (detailsRef.current) {
       detailsRef.current.open = false;
@@ -256,18 +267,13 @@ function SortDropdownComponent(props: SortDropdownProps) {
             isActive
               ? "border-[#15803D] bg-[#A3E635]/15"
               : "hover:border-[#15803D]",
-            canSortResults
+            canSortResults && !isDisabledGroup
               ? ""
               : "pointer-events-none border-black bg-slate-100 text-slate-500",
           ].join(" ")}
         >
           <span className="truncate">{summaryLabel}</span>
-          <ChevronDown
-            className={[
-              "h-4 w-4 transition group-open:rotate-180",
-              canSortResults ? "text-black" : "text-slate-400",
-            ].join(" ")}
-          />
+          <ChevronDown className="h-4 w-4 transition group-open:rotate-180 text-black" />
         </summary>
 
         <div className="absolute left-0 top-full z-20 mt-2 w-full min-w-[9.5rem] divide-y divide-black overflow-hidden rounded-sm border border-black bg-white shadow-xl">
@@ -279,9 +285,12 @@ function SortDropdownComponent(props: SortDropdownProps) {
                 key={option.value}
                 type="button"
                 onClick={() => handleSelectSort(option.value)}
+                disabled={isDisabledGroup}
                 className={[
                   "flex w-full items-center gap-2 px-2.5 py-2 text-left text-sm font-semibold transition",
-                  isSelected
+                  isDisabledGroup
+                    ? "cursor-not-allowed bg-slate-100 text-slate-400"
+                    : isSelected
                     ? "bg-[#A3E635]/20 text-[#15803D]"
                     : "text-black hover:bg-[#A3E635]/20 hover:text-[#15803D]",
                 ].join(" ")}
@@ -304,13 +313,13 @@ function SortDropdownComponent(props: SortDropdownProps) {
   );
 }
 
-const MemoizedSortDropdown = memo(SortDropdownComponent);
-
-function ResultsList(props: ResultsListWithAnchorProps) {
+function ResultsList(props: ResultsListProps) {
   const { autoLoadAnchorIndex, lazyLoadAnchorRef, visiblePaperResults } = props;
+  const resultItems = [];
 
-  const resultItems: ReactNode[] = [];
   for (let index = 0; index < visiblePaperResults.length; index += 1) {
+    const paper = visiblePaperResults[index];
+
     if (index === autoLoadAnchorIndex) {
       resultItems.push(
         <div
@@ -321,7 +330,6 @@ function ResultsList(props: ResultsListWithAnchorProps) {
       );
     }
 
-    const paper = visiblePaperResults[index];
     resultItems.push(<PaperResultCard key={paper.id} paper={paper} />);
   }
 

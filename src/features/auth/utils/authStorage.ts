@@ -48,6 +48,11 @@ const ACCESS_TOKEN_KEY = "owlreka.access_token";
 const CURRENT_USER_KEY = "owlreka.current_user";
 const PASSWORD_RECOVERY_EMAIL_KEY = "owlreka.password_recovery.email";
 const PASSWORD_RECOVERY_GRANT_TOKEN_KEY = "owlreka.password_recovery.grant_token";
+const AUTH_STATE_EVENT = "owlreka-auth-state";
+
+function notifyAuthStateChanged() {
+  window.dispatchEvent(new Event(AUTH_STATE_EVENT));
+}
 
 function safeParse<T>(raw: string | null): T | null {
   if (!raw) return null;
@@ -110,6 +115,7 @@ export function normalizeCurrentUser(input: unknown): UserPrincipal {
 
 export function setAccessToken(token: string) {
   localStorage.setItem(ACCESS_TOKEN_KEY, token);
+  notifyAuthStateChanged();
 }
 
 export function getAccessToken() {
@@ -119,6 +125,7 @@ export function getAccessToken() {
 export function setCurrentUser(user: unknown) {
   const normalized = normalizeCurrentUser(user);
   localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(normalized));
+  notifyAuthStateChanged();
 }
 
 export function getCurrentUser(): UserPrincipal | null {
@@ -133,10 +140,31 @@ export function setAuthSession(data: AuthResponse) {
 export function clearAuthStorage() {
   localStorage.removeItem(ACCESS_TOKEN_KEY);
   localStorage.removeItem(CURRENT_USER_KEY);
+  notifyAuthStateChanged();
 }
 
 export function isAuthenticated() {
   return Boolean(getAccessToken() && getCurrentUser());
+}
+
+export function subscribeAuthState(listener: () => void) {
+  const handleStorage = (event: StorageEvent) => {
+    if (
+      event.key === ACCESS_TOKEN_KEY
+      || event.key === CURRENT_USER_KEY
+      || event.key === null
+    ) {
+      listener();
+    }
+  };
+
+  window.addEventListener(AUTH_STATE_EVENT, listener);
+  window.addEventListener("storage", handleStorage);
+
+  return () => {
+    window.removeEventListener(AUTH_STATE_EVENT, listener);
+    window.removeEventListener("storage", handleStorage);
+  };
 }
 
 export function setPasswordRecoveryEmail(email: string) {

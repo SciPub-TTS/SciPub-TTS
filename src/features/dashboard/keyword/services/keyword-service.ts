@@ -1,6 +1,7 @@
+import { createApiUrl, requestPublicJson } from "@/lib/api/fetchJson";
 import type {KeywordMetric} from "@/features/dashboard/keyword/types/metric.ts";
 
-const USE_MOCK = true;
+const USE_MOCK = import.meta.env.VITE_ENABLE_DASHBOARD_MOCKS === "true";
 
 const generateYearly = (recentPapers: number) => [
     {
@@ -137,14 +138,8 @@ export const MOCK_KEYWORDS: KeywordMetric[] = [
     },
 ];
 
-const apiBaseUrl = (
-    import.meta.env.VITE_API_BASE_URL || "http://localhost:8080"
-).replace(/\/$/, "");
-
-async function requestData<T>(url: string): Promise<T> {
-    const response = await fetch(url);
-    if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
-    return response.json() as Promise<T>;
+async function requestData<T>(url: string | URL): Promise<T> {
+    return requestPublicJson<T>(url);
 }
 
 export const keywordService = {
@@ -152,7 +147,7 @@ export const keywordService = {
         if(USE_MOCK) {
             return MOCK_KEYWORDS;
         }
-        return await requestData<KeywordMetric[]>(`${apiBaseUrl}/api/statistic/keywords`);
+        return await requestData<KeywordMetric[]>(createApiUrl("/api/statistic/keywords"));
     },
 
     getTrendList: async (): Promise<KeywordMetric[]> => {
@@ -161,7 +156,7 @@ export const keywordService = {
         }
 
         return requestData<KeywordMetric[]>(
-            `${apiBaseUrl}/api/statistic/keyword-trends`
+            createApiUrl("/api/statistic/keyword-trends")
         );
     },
 }

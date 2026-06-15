@@ -1,7 +1,13 @@
 // Domain data types returned by the backend or mock services.
 export type SavedSearch = {
+  id: string;
   query: string;
   savedAt: string;
+};
+
+export type SaveSearchFeedback = {
+  kind: "error" | "success";
+  message: string;
 };
 
 export type PaperResult = {
@@ -15,14 +21,29 @@ export type PaperResult = {
   fullText: string;
   doi: string;
   pdfUrl: string | null;
-  tags: string[];
+  keywords: string[];
   field: string;
   topic: string;
   subField: string;
+  matchesTrendingKeyword: boolean;
+  matchesTrendingTopic: boolean;
+  trendingScore: number;
   growthPercent: number;
   isTrendTopic?: boolean;
   saved?: boolean;
   trend?: boolean;
+};
+
+export type SearchTrendingMode = "none" | "keyword" | "topic" | "both";
+
+export type SearchSortBy = "relevance" | "citation" | "published";
+
+export type SearchSortDirection = "asc" | "desc";
+
+export type SearchSortState = {
+  sortBy: SearchSortBy;
+  sortDirection: SearchSortDirection;
+  trendingMode: SearchTrendingMode;
 };
 
 export type SearchFilters = {
@@ -61,6 +82,8 @@ export type SearchFilterWidgetKey =
   | "indexedByOrcid";
 
 export type RemoteOptionFilterKey =
+  | "type"
+  | "subField"
   | "author"
   | "institution"
   | "country"
@@ -92,14 +115,6 @@ export type UpdateSearchFilter = (
   value: SearchFilters[keyof SearchFilters],
 ) => void;
 
-export type SearchSummaryStats = {
-  totalIndexedPapers: number;
-  matchedPapers: number;
-  latestUpdatedMinutesAgo: number;
-  resultCount: number;
-  responseTimeSeconds: number;
-};
-
 // Component prop types live here so JSX files stay focused on rendering.
 export type PaperResultCardProps = {
   paper: PaperResult;
@@ -108,24 +123,35 @@ export type PaperResultCardProps = {
 export type SearchPanelProps = {
   activeFilterCount: number;
   appliedFilterSummary: string[];
+  canSaveSearch: boolean;
   filterOptions: SearchFilterOptions;
   filters: SearchFilters;
   filtersOpen: boolean;
   hasFormError: boolean;
   isLoadingResults: boolean;
+  isSavingSearch: boolean;
   isLoadingFilterOptions: RemoteOptionStateMap;
   isLoadingMoreFilterOptions: RemoteOptionStateMap;
   hasMoreFilterOptions: RemoteOptionStateMap;
   matchedPaperCount: number;
+  recentSearches: SavedSearch[];
+  saveSearchFeedback: SaveSearchFeedback | null;
+  saveSearchNotice: string | null;
+  saveSearchSuccessToken: number;
   searchQuery: string;
   totalIndexedPapers: number;
   visibleFilterWidgets: SearchFilterWidgetKey[];
+  isClearingRecentSearches: boolean;
+  isDeletingRecentSearch: boolean;
   onApplyFilters: () => void;
+  onClearRecentSearches: () => void;
+  onDeleteRecentSearch: (query: string) => void;
   onFilterOptionSearch: (filterKey: RemoteOptionFilterKey, keyword: string) => void;
   onLoadMoreFilterOptions: (filterKey: RemoteOptionFilterKey) => void;
   onResetFilters: () => void;
   onSearch: () => void;
   onSearchQueryChange: (query: string) => void;
+  onSaveSearch: () => void;
   onSuggestedSearchSelect: (query: string) => void;
   onToggleFilters: () => void;
   onToggleVisibleFilterWidget: (widgetKey: SearchFilterWidgetKey) => void;
@@ -134,13 +160,16 @@ export type SearchPanelProps = {
 
 export type SearchInputRowProps = {
   isLoadingResults: boolean;
+  recentSearches: SavedSearch[];
+  saveSearchSuccessToken: number;
   searchQuery: string;
+  isClearingRecentSearches: boolean;
+  isDeletingRecentSearch: boolean;
+  onClearSuggestions: () => void;
+  onDeleteSuggestion: (query: string) => void;
   onSearch: () => void;
   onSearchQueryChange: (query: string) => void;
-};
-
-export type SuggestedSearchListProps = {
-  onSelect: (query: string) => void;
+  onSelectSuggestion: (query: string) => void;
 };
 
 export type SearchFiltersPanelProps = {
@@ -250,12 +279,12 @@ export type SearchResultsProps = {
   isLoadingResults: boolean;
   isLoadingMoreResults: boolean;
   responseTimeSeconds: number;
-  selectedSorts: string[];
+  sortState: SearchSortState;
   totalResultCount: number;
   visiblePaperResults: PaperResult[];
   onLoadMoreResults: () => void;
   onClearSorts: () => void;
-  onToggleSort: (sortOption: string) => void;
+  onSelectSort: (sortOption: string) => void;
 };
 
 export type ResultsListProps = {

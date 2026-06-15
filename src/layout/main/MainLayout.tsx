@@ -2,7 +2,7 @@ import { Navigate, Outlet, useLocation } from "react-router-dom";
 
 import { ROUTES } from "@/app/router";
 import { AUTH_ROLES } from "@/features/auth/constants/roles";
-import { getCurrentUser } from "@/features/auth/utils/authStorage";
+import { useAuthSession } from "@/features/auth/hooks/useAuthSession";
 
 import MainFooter from "./Footer";
 import MainHeader from "./Header";
@@ -10,7 +10,7 @@ import MainSidebar from "./Sidebar";
 
 export default function MainLayout() {
   const location = useLocation();
-  const currentUser = getCurrentUser();
+  const { currentUser } = useAuthSession();
 
   if (
     currentUser?.role === AUTH_ROLES.ADMIN &&

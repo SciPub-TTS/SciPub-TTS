@@ -1,19 +1,18 @@
 import { ROUTES } from "@/app/router";
-import { AUTH_ROLES, type AuthRole } from "@/features/auth/constants/roles";
+import { AUTH_ROLES } from "@/features/auth/constants/roles";
 import { authApi } from "@/features/auth/services/auth.api";
 import type {
     ChangePasswordRequest,
+    CompleteGoogleRegisterRequest,
     ForgotPasswordRequest,
     LoginRequest,
     RegisterLocalRequest,
     ResetPasswordRequest,
     VerifyResetCodeRequest,
 } from "@/features/auth/types/auth.types";
-
 import {
     clearAuthStorage,
     clearPasswordRecoveryState,
-    getCurrentUser,
     getPasswordRecoveryEmail,
     getPasswordRecoveryGrantToken,
     setAuthSession,
@@ -21,53 +20,55 @@ import {
     setPasswordRecoveryEmail,
     setPasswordRecoveryGrantToken,
 } from "@/features/auth/utils/authStorage";
+import {getAppBaseUrl} from "@/features/auth/utils/getAppBaseUrl.ts";
 
-function resolvePostLoginPath(role: AuthRole, requestedPath?: string) {
-    if (
-        requestedPath &&
-        requestedPath !== ROUTES.LOGIN &&
-        requestedPath !== ROUTES.REGISTER
-    ) {
-        return requestedPath;
-    }
-
-    return role === AUTH_ROLES.ADMIN
-        ? ROUTES.ADMIN_DASHBOARD
-        : ROUTES.HOME;
-}
-
-export async function submitRegister(payload: RegisterLocalRequest) {
-    return authApi.register(payload);
-}
-
-export async function submitLogin(
-    payload: LoginRequest,
-    requestedPath?: string,
+export async function submitRegister(
+    payload: Omit<RegisterLocalRequest, "appBaseUrl">,
 ) {
-    const loginResponse = await authApi.login(payload);
+    return authApi.register({
+        ...payload,
+        appBaseUrl: getAppBaseUrl(),
+    });
+}
 
+export async function submitLogin(payload: LoginRequest, requestedPath?: string) {
+    const loginResponse = await authApi.login(payload);
     setAuthSession(loginResponse.data);
 
-    try {
-        const meResponse = await authApi.me();
-        setCurrentUser(meResponse.data);
-    } catch {
-        if (loginResponse.data?.user) {
-            setCurrentUser(loginResponse.data.user);
-        }
-    }
+    const meResponse = await authApi.me();
+    setCurrentUser(meResponse.data);
 
-    const user = getCurrentUser();
+    const role = meResponse.data.role;
 
-    if (!user) {
-        throw new Error("Không thể khởi tạo phiên đăng nhập sau khi login.");
-    }
+    const redirectTo =
+        requestedPath ??
+        (role === AUTH_ROLES.ADMIN ? ROUTES.ADMIN_DASHBOARD : ROUTES.HOME);
 
     return {
-        message: loginResponse.message,
-        user,
-        redirectTo: resolvePostLoginPath(user.role, requestedPath),
+        redirectTo,
+        user: meResponse.data,
     };
+}
+
+export async function submitPreviewGoogleRegister(token: string) {
+    return authApi.previewGoogleRegister(token);
+}
+
+export async function submitCompleteGoogleRegister(
+    payload: CompleteGoogleRegisterRequest,
+) {
+    const response = await authApi.completeGoogleRegister(payload);
+    setAuthSession(response.data);
+
+    const meResponse = await authApi.me();
+    setCurrentUser(meResponse.data);
+
+    const role = meResponse.data.role;
+
+    return {
+        response,
+        redirectTo: role === AUTH_ROLES.ADMIN ? ROUTES.ADMIN_DASHBOARD : ROUTES.HOME,
+    }
 }
 
 export async function bootstrapCurrentUser() {

@@ -1,8 +1,32 @@
-import { createBrowserRouter, Navigate, type Location } from "react-router-dom";
+import { createBrowserRouter, Navigate } from "react-router-dom";
+import { Suspense, type ReactNode } from "react";
 
-import type { AppRouteHandle } from "./breadcrumbs";
 import { ROUTES } from "./routes";
 import { ROUTE_SEGMENTS } from "./routeSegments";
+import type {AppRouteHandle} from "@/app/router/breadcrumbs.ts";
+import PlaceholderPage from "./PlaceholderPage";
+import {
+  AdminDashboardPage,
+  AdminUsersPage,
+  BookmarkLibraryPage,
+  ChangePasswordPage,
+  FeedPage,
+  ForgotPasswordPage,
+  GoogleRegisterCompletePage,
+  GuideHelpPage,
+  KeywordDashboardPage,
+  LandingPage,
+  LoginPage,
+  OAuth2SuccessPage,
+  PaperDetailPage,
+  ProfilePage,
+  RegisterPage,
+  ReportPage,
+  ResetPasswordPage,
+  SearchPage,
+  TopicDashboardPage,
+  VerifyResetCodePage,
+} from "./lazyPages";
 
 import MainLayout from "@/layout/main/MainLayout";
 import AdminLayout from "@/layout/admin/AdminLayout";
@@ -13,37 +37,12 @@ import {
   AUTH_ROLES,
   AUTHENTICATED_ROLES,
 } from "@/features/auth/constants/roles";
-
-import LoginPage from "@/features/auth/components/pages/LoginPage.tsx";
-import RegisterPage from "@/features/auth/components/pages/RegisterPage.tsx";
-
-import LandingPage from "@/features/landing/components/LandingPage";
-import GuideHelpPage from "@/features/guide/components/GuideHelpPage";
-import SearchPage from "@/features/search/components/SearchPage";
-import PaperDetailPage from "@/features/detailpapers/components/PaperDetailPage";
-
-import ProfilePage from "@/features/profile/components/ProfilePage";
-import BookmarksPage from "@/features/bookmarks/components/BookmarksPage";
-import FeedPage from "@/features/newfeeds/components/FeedPage";
-import ReportPage from "@/features/reports/components/ReportPage";
-
-//import AdminDashboardPage from "@/pages/admin/AdminDashboardPage";
-import AdminDashboardPage from "@/features/admin/components/AdminDashboardPage.tsx";
-import AdminUsersPage from "@/features/admin/pages/AdminUsersPage.tsx";
-import ForgotPasswordPage from "@/features/auth/components/pages/ForgotPasswordPage.tsx";
-import VerifyResetCodePage from "@/features/auth/components/pages/VerifyResetCodePage.tsx";
-import ResetPasswordPage from "@/features/auth/components/pages/ResetPasswordPage.tsx";
-// import VerifyEmailSuccessPage from "@/features/auth/components/VerifyEmailResultPage.tsx";
-import ChangePasswordPage from "@/features/profile/components/ChangePasswordPage.tsx";
-import OAuth2SuccessPage from "@/features/auth/components/pages/OAuth2SuccessPage.tsx";
 import { getPaperTitle } from "@/features/detailpapers/paperTitleStore";
 import {
   buildPaperDetailTrailUrl,
   parseWorkTrail,
 } from "@/features/detailpapers/workTrail";
 import { markSearchPageRestorePending } from "@/features/search/utils/navigationState";
-import TopicDashboardPage from "@/features/dashboard/topic/TopicDashboardPage.tsx";
-import {KeywordDashboardPage} from "@/features/dashboard/keyword/KeywordDashboard.tsx";
 
 function getPaperBreadcrumbLabel(paperId: string) {
   return getPaperTitle(paperId) || "Paper Detail";
@@ -91,13 +90,14 @@ function getProfileBreadcrumb(search: string): AppRouteHandle["breadcrumb"] {
   return "Profile";
 }
 
-function PlaceholderPage({ title }: { title: string }) {
-  return (
-    <section className="rounded-lg border border-dashed border-slate-300 bg-white p-8">
-      <h1 className="text-2xl font-semibold text-slate-900">{title}</h1>
-      <p className="mt-2 text-sm text-slate-500">This page is being built.</p>
-    </section>
-  );
+const routeFallback = (
+  <div className="px-6 py-10 text-sm font-medium text-slate-500">
+    Loading page...
+  </div>
+);
+
+function withSuspense(page: ReactNode) {
+  return <Suspense fallback={routeFallback}>{page}</Suspense>;
 }
 
 export const router = createBrowserRouter([
@@ -106,35 +106,39 @@ export const router = createBrowserRouter([
     children: [
       {
         path: ROUTES.LOGIN,
-        element: <LoginPage />,
+        element: withSuspense(<LoginPage />),
       },
       {
         path: ROUTES.REGISTER,
-        element: <RegisterPage />,
+        element: withSuspense(<RegisterPage />),
       },
       {
         path: ROUTES.FORGOT_PASSWORD,
-        element: <ForgotPasswordPage />,
+        element: withSuspense(<ForgotPasswordPage />),
       },
       {
         path: ROUTES.FORGOT_PASSWORD_VERIFY,
-        element: <VerifyResetCodePage />,
+        element: withSuspense(<VerifyResetCodePage />),
       },
       {
         path: ROUTES.FORGOT_PASSWORD_RESET,
-        element: <ResetPasswordPage />,
+        element: withSuspense(<ResetPasswordPage />),
       },
+      {
+        path: ROUTES.GOOGLE_REGISTER_COMPLETE,
+        element: withSuspense(<GoogleRegisterCompletePage />),
+      }
     ],
   },
 
   {
     path: ROUTES.HOME,
-    element: <LandingPage />,
+    element: withSuspense(<LandingPage />),
   },
 
   {
     path: "/oauth2/success",
-    element: <OAuth2SuccessPage />,
+    element: withSuspense(<OAuth2SuccessPage />),
   },
 
   {
@@ -143,29 +147,29 @@ export const router = createBrowserRouter([
     children: [
       {
         path: ROUTE_SEGMENTS.GUIDE,
-        element: <GuideHelpPage />,
+        element: withSuspense(<GuideHelpPage />),
         handle: {
           breadcrumb: "Guide",
         },
       },
       {
         path: ROUTE_SEGMENTS.SEARCH,
-        element: <SearchPage />,
+        element: withSuspense(<SearchPage />),
         handle: {
           breadcrumb: "Search",
         },
       },
       {
         path: ROUTE_SEGMENTS.TRENDING_TOPIC,
-        element: <TopicDashboardPage />,
+        element: withSuspense(<TopicDashboardPage />),
       },
       {
         path: ROUTE_SEGMENTS.TRENDING_KEYWORD,
-        element: <KeywordDashboardPage/>,
+        element: withSuspense(<KeywordDashboardPage />),
       },
       {
         path: ROUTE_SEGMENTS.PAPER_DETAIL,
-        element: <PaperDetailPage />,
+        element: withSuspense(<PaperDetailPage />),
         handle: {
           breadcrumb: ({
             location,
@@ -186,28 +190,21 @@ export const router = createBrowserRouter([
         children: [
           {
             path: ROUTE_SEGMENTS.FEED,
-            element: <FeedPage />,
+            element: withSuspense(<FeedPage />),
             handle: {
               breadcrumb: "Feed",
             },
           },
           {
-            path: ROUTE_SEGMENTS.BOOKMARKS,
-            element: <BookmarksPage />,
-            handle: {
-              breadcrumb: "Bookmarks",
-            },
-          },
-          {
             path: ROUTE_SEGMENTS.REPORT,
-            element: <ReportPage />,
+            element: withSuspense(<ReportPage />),
             handle: {
               breadcrumb: "Reports",
             },
           },
           {
             path: ROUTE_SEGMENTS.PROFILE,
-            element: <ProfilePage />,
+            element: withSuspense(<ProfilePage />),
             handle: {
               breadcrumb: ({ location }: { location: Location }) =>
                 getProfileBreadcrumb(location.search),
@@ -215,12 +212,19 @@ export const router = createBrowserRouter([
           },
           {
             path: ROUTE_SEGMENTS.PROFILE_SECURITY,
-            element: <ChangePasswordPage />,
+            element: withSuspense(<ChangePasswordPage />),
             handle: {
               breadcrumb: [
                 { label: "Profile", to: ROUTES.PROFILE },
                 { label: "Security" },
               ],
+            },
+          },
+          {
+            path: ROUTES.BOOKMARKS,
+            element: withSuspense(<BookmarkLibraryPage />),
+            handle: {
+              breadcrumb: "Bookmarks",
             },
           },
         ],
@@ -244,28 +248,28 @@ export const router = createBrowserRouter([
           },
           {
             path: ROUTE_SEGMENTS.ADMIN_DASHBOARD,
-            element: <AdminDashboardPage />,
+            element: withSuspense(<AdminDashboardPage />),
             handle: {
               breadcrumb: "Dashboard",
             },
           },
           {
             path: ROUTE_SEGMENTS.ADMIN_USERS,
-            element: <AdminUsersPage />,
+            element: withSuspense(<AdminUsersPage />),
             handle: {
               breadcrumb: "User Management",
             },
           },
           {
             path: ROUTE_SEGMENTS.ADMIN_FIELDS,
-            element: <PlaceholderPage title="Admin Fields" />,
+            element: withSuspense(<PlaceholderPage title="Admin Fields" />),
             handle: {
               breadcrumb: "Fields",
             },
           },
           {
             path: ROUTE_SEGMENTS.ADMIN_SYNC,
-            element: <PlaceholderPage title="Admin Sync" />,
+            element: withSuspense(<PlaceholderPage title="Admin Sync" />),
             handle: {
               breadcrumb: "Sync",
             },

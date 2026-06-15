@@ -1,8 +1,7 @@
 import { Link } from "react-router-dom";
 
 import { ROUTES } from "@/app/router";
-import { getCurrentUser } from "@/features/auth/utils/authStorage";
-import { isAuthenticated } from "@/features/auth/utils/authGuard";
+import { useAuthSession } from "@/features/auth/hooks/useAuthSession";
 
 function getInitials(name: string) {
   return name
@@ -15,8 +14,7 @@ function getInitials(name: string) {
 }
 
 export default function MainHeaderAccount() {
-  const user = getCurrentUser();
-  const loggedIn = isAuthenticated();
+  const { currentUser: user, isAuthenticated: loggedIn } = useAuthSession();
   const displayName = user?.fullName ?? "User";
   const initials = getInitials(displayName) || "U";
 
