@@ -1,6 +1,8 @@
 import { Globe2, Landmark, Tag } from "lucide-react";
 import type { ReactNode } from "react";
+import { Link } from "react-router-dom";
 
+import { routePaths } from "@/app/router";
 import MetadataBadge from "@/layout/components/MetadataBadge";
 
 import type {
@@ -158,11 +160,21 @@ function EntityTagCluster(props: EntityTagClusterProps) {
       </div>
       <div className="mt-3 flex flex-wrap gap-2">
         {items.map((item) => (
-          <MetadataBadge
-            key={`${item.type}-${item.id}`}
-            tone="topic"
-            label={item.name}
-          />
+          item.type === "topic" ? (
+            <Link
+              key={`${item.type}-${item.id}`}
+              to={routePaths.topicDetail(item.id)}
+              className="transition hover:-translate-y-0.5"
+            >
+              <MetadataBadge tone="topic" label={item.name} />
+            </Link>
+          ) : (
+            <MetadataBadge
+              key={`${item.type}-${item.id}`}
+              tone="topic"
+              label={item.name}
+            />
+          )
         ))}
       </div>
     </div>

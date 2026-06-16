@@ -7,6 +7,7 @@ export function PaperResultCard({ paper }: PaperResultCardProps) {
     <ListWorkLayout
       abstractText={paper.abstract}
       authors={paper.authors}
+      authorRefs={paper.authorRefs}
       citations={paper.citations}
       detailHref={routePaths.paperDetail(paper.id)}
       doi={paper.doi}
@@ -18,6 +19,7 @@ export function PaperResultCard({ paper }: PaperResultCardProps) {
       subField={paper.subField}
       title={paper.title}
       topic={paper.topic}
+      topicRef={paper.topicRef}
       venue={paper.venue}
       year={paper.year}
     />

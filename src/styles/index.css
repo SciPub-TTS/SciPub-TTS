@@ -43,14 +43,19 @@
 @import "@fontsource/space-grotesk/vietnamese-500.css";
 @import "@fontsource/space-grotesk/vietnamese-600.css";
 @import "@fontsource/space-grotesk/vietnamese-700.css";
-@import "@fontsource/acme";
+@import "@fontsource/cormorant-garamond/vietnamese-600.css";
+@import "@fontsource/cormorant-garamond/vietnamese-700.css";
+@import "@fontsource/cormorant-garamond/latin-ext-600.css";
+@import "@fontsource/cormorant-garamond/latin-ext-700.css";
+@import "@fontsource/cormorant-garamond/latin-600.css";
+@import "@fontsource/cormorant-garamond/latin-700.css";
 @import "tailwindcss";
 
 :root {
   --font-title: "Space Grotesk", system-ui, sans-serif;
   --font-text: "Be Vietnam Pro", system-ui, sans-serif;
   --font-subtext: "Manrope", system-ui, sans-serif;
-  --font-search-title: "Acme", cursive;
+  --font-search-title: "Cormorant Garamond", Georgia, serif;
 }
 
 * {
@@ -80,6 +85,10 @@ h6,
 
 .font-search-title {
   font-family: var(--font-search-title);
+  font-weight: 600;
+  letter-spacing: -0.035em;
+  font-feature-settings: "liga" 1, "kern" 1;
+  text-rendering: optimizeLegibility;
 }
 
 p,

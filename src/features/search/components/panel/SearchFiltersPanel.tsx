@@ -48,7 +48,7 @@ export function SearchFiltersPanel({
   updateFilter,
 }: SearchFiltersPanelProps) {
   return (
-    <div className="rounded-b-2xl border-t border-black bg-slate-50/80">
+    <div className="relative rounded-b-2xl border-t border-black bg-slate-50/80 overflow-visible">
       <SearchFiltersHeader
         activeFilterCount={activeFilterCount}
         filtersOpen={filtersOpen}
@@ -57,7 +57,7 @@ export function SearchFiltersPanel({
       />
 
       {filtersOpen ? (
-        <div className="search-filters-panel-enter overflow-hidden">
+        <div className="search-filters-panel-enter relative z-10 overflow-visible">
           <FilterVisibilityToggle
             visibleFilterWidgets={visibleFilterWidgets}
             onToggleVisibleFilterWidget={onToggleVisibleFilterWidget}
@@ -130,7 +130,7 @@ function FilterVisibilityToggle({
   onToggleVisibleFilterWidget,
 }: FilterVisibilityToggleProps) {
   return (
-    <div className="flex justify-end border-b border-slate-200 px-5 py-4">
+    <div className="relative z-40 flex justify-end border-b border-slate-200 px-5 py-4">
       <SearchFilterAddMenu
         onToggleWidget={onToggleVisibleFilterWidget}
         visibleFilterWidgets={visibleFilterWidgets}
@@ -180,7 +180,7 @@ function SearchFilterGrid({
   }
 
   return (
-    <div className="grid gap-5 px-5 py-5 lg:grid-cols-2 2xl:grid-cols-3">
+    <div className="relative z-10 grid gap-5 px-5 py-5 lg:grid-cols-2 2xl:grid-cols-3">
       {resultItems}
     </div>
   );

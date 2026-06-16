@@ -10,7 +10,7 @@ import {
 import type { AppRouteHandle } from "@/app/router/breadcrumbs";
 import { resolveBreadcrumbItems } from "@/app/router/breadcrumbs";
 import { ROUTES } from "@/app/router";
-import { usePaperTitleStoreVersion } from "@/features/detailpapers/paperTitleStore";
+import { useDetailTitleStoreVersion } from "@/store/detailTitleStore";
 
 type BreadcrumbBarProps = {
   homePath?: string;
@@ -34,7 +34,7 @@ export default function BreadcrumbBar({
   const location = useLocation();
   const matches = useMatches() as UIMatch<unknown, AppRouteHandle>[];
   const navigate = useNavigate();
-  usePaperTitleStoreVersion();
+  useDetailTitleStoreVersion();
 
   const breadcrumbItems = resolveBreadcrumbItems(matches, location);
 

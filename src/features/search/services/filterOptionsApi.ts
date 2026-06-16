@@ -1,6 +1,6 @@
 import { createApiUrl, requestPublicJson } from "@/lib/api/fetchJson";
 import { SEARCH_FILTER_OPTION_LIMIT } from "../constants";
-import type { RemoteOptionFilterKey } from "../types";
+import type { RemoteOptionFilterKey, SearchEntityType } from "../types";
 import {
   mapOptionsToLabels,
   mapOptionsToValueLookup,
@@ -13,12 +13,17 @@ import type {
   SearchSummaryState,
 } from "./types";
 
-export async function getSearchSummary(): Promise<SearchSummaryState> {
+export async function getSearchSummary(
+  entityType: SearchEntityType,
+): Promise<SearchSummaryState> {
   const endpoint = createApiUrl("/api/search/summary");
+  endpoint.searchParams.set("entityType", entityType);
   const data = await requestPublicJson<SearchSummaryApiData>(endpoint);
 
   return {
-    totalIndexedPapers: data.totalWorks,
+    entityType: data.entityType,
+    totalIndexedCount: data.totalCount,
+    totalCountExact: data.totalCountExact,
   };
 }
 

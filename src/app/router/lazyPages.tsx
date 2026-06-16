@@ -5,7 +5,9 @@ export const RegisterPage = lazy(() => import("@/features/auth/components/pages/
 export const LandingPage = lazy(() => import("@/features/landing/components/LandingPage"));
 export const GuideHelpPage = lazy(() => import("@/features/guide/components/GuideHelpPage"));
 export const SearchPage = lazy(() => import("@/features/search/components/SearchPage"));
-export const PaperDetailPage = lazy(() => import("@/features/detailpapers/components/PaperDetailPage"));
+export const PaperDetailPage = lazy(() => import("@/features/detail/works/components/PaperDetailPage"));
+export const AuthorDetailPage = lazy(() => import("@/features/detail/entities/components/AuthorDetailPage"));
+export const TopicDetailPage = lazy(() => import("@/features/detail/entities/components/TopicDetailPage"));
 export const ProfilePage = lazy(() => import("@/features/profile/components/ProfilePage"));
 export const FeedPage = lazy(() => import("@/features/newfeeds/components/FeedPage"));
 export const ReportPage = lazy(() => import("@/features/reports/components/ReportPage"));

@@ -2,6 +2,7 @@ import { Check, ChevronDown, LoaderCircle } from "lucide-react";
 import { useEffect, useRef } from "react";
 
 import {
+  getSearchEntityMetadata,
   getSearchSortOptionValue,
   hasActiveSearchSort,
   searchResultSortGroups,
@@ -10,32 +11,44 @@ import {
 import type { SearchResultsProps } from "@/features/search/types";
 import { formatFullNumber, formatResponseTime } from "@/features/search/utils";
 
-import { PaperResultCard } from "./PaperResultCard";
+import { SearchResultCard } from "./SearchResultCard";
 
 export function SearchResults({
+  activeEntityType,
   appliedSearchQuery,
   autoLoadAnchorIndex,
   canLoadMoreResults,
   hasSearched,
+  isTotalResultCountExact,
   isLoadingResults,
   isLoadingMoreResults,
   responseTimeSeconds,
   sortState,
   totalResultCount,
-  visiblePaperResults,
+  visibleResults,
   onLoadMoreResults,
   onClearSorts,
   onSelectSort,
 }: SearchResultsProps) {
+  // Khối này phụ trách phần đầu ra của search:
+  // thống kê nhanh, sort và danh sách kết quả đang hiển thị.
   const lazyLoadAnchorRef = useRef<HTMLDivElement>(null);
-  const resultTitle = appliedSearchQuery || "all papers";
-  const formattedResultCount = formatFullNumber(totalResultCount);
+  const entityMetadata = getSearchEntityMetadata(activeEntityType);
+  const resultTitle = appliedSearchQuery || `all ${entityMetadata.resultLabelPlural}`;
+  const formattedResultCount = formatResultCount(
+    totalResultCount,
+    isTotalResultCountExact,
+  );
   const formattedResponseTime = formatResponseTime(responseTimeSeconds);
-  const resultMetaText = `${formattedResultCount} papers - ${formattedResponseTime}.`;
+  const resultMetaText = `${formattedResultCount} ${entityMetadata.resultLabelPlural} - ${formattedResponseTime}.`;
   const canSortResults =
-    hasSearched && visiblePaperResults.length > 0 && !isLoadingResults;
+    activeEntityType === "works"
+    && hasSearched
+    && visibleResults.length > 0
+    && !isLoadingResults;
 
   useEffect(() => {
+    // Tự động lấy thêm trang tiếp theo khi anchor lazy load đi vào viewport.
     const anchor = lazyLoadAnchorRef.current;
 
     if (
@@ -103,36 +116,37 @@ export function SearchResults({
             </div>
           ) : null}
 
-          <div className="flex shrink-0 justify-end lg:justify-start">
-            <SortActions
-              canSortResults={canSortResults}
-              sortState={sortState}
-              onClearSorts={onClearSorts}
-              onSelectSort={onSelectSort}
-            />
-          </div>
+          {activeEntityType === "works" ? (
+            <div className="flex shrink-0 justify-end lg:justify-start">
+              <SortActions
+                canSortResults={canSortResults}
+                sortState={sortState}
+                onClearSorts={onClearSorts}
+                onSelectSort={onSelectSort}
+              />
+            </div>
+          ) : null}
         </div>
 
         {isLoadingResults ? (
-          <SearchLoadingState />
+          <SearchLoadingState loadingLabel={entityMetadata.loadingLabel} />
         ) : !hasSearched ? (
           <div className="rounded-2xl border border-slate-600 bg-white p-8 text-center">
             <p className="text-lg font-bold text-black">
-              Enter a keyword or choose filters, then click Search or Apply
-              filters.
+              {entityMetadata.emptyStateMessage}
             </p>
           </div>
-        ) : visiblePaperResults.length === 0 ? (
+        ) : visibleResults.length === 0 ? (
           <div className="rounded-2xl border border-slate-600 bg-white p-8 text-center">
             <p className="text-lg font-bold text-black">
-              No papers matched this search.
+              {entityMetadata.noResultsLabel}
             </p>
           </div>
         ) : (
           <ResultsList
             autoLoadAnchorIndex={autoLoadAnchorIndex}
             lazyLoadAnchorRef={lazyLoadAnchorRef}
-            visiblePaperResults={visiblePaperResults}
+            visibleResults={visibleResults}
           />
         )}
 
@@ -146,13 +160,23 @@ export function SearchResults({
   );
 }
 
-function SearchLoadingState() {
+function formatResultCount(totalResultCount: number, isTotalResultCountExact: boolean) {
+  const formattedCount = formatFullNumber(totalResultCount);
+
+  return isTotalResultCountExact ? formattedCount : `${formattedCount}+`;
+}
+
+type SearchLoadingStateProps = {
+  loadingLabel: string;
+};
+
+function SearchLoadingState({ loadingLabel }: SearchLoadingStateProps) {
   return (
     <div className="rounded-2xl border border-[#059669] bg-white p-8 text-center shadow-sm">
       <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[#A3E635]/20 text-[#059669]">
         <LoaderCircle className="h-6 w-6 animate-spin" />
       </div>
-      <p className="mt-4 text-lg font-bold text-black">Searching papers...</p>
+      <p className="mt-4 text-lg font-bold text-black">{loadingLabel}</p>
     </div>
   );
 }
@@ -167,7 +191,7 @@ type SortActionsProps = {
 type ResultsListProps = {
   autoLoadAnchorIndex: number;
   lazyLoadAnchorRef: { current: HTMLDivElement | null };
-  visiblePaperResults: SearchResultsProps["visiblePaperResults"];
+  visibleResults: SearchResultsProps["visibleResults"];
 };
 
 function SortActions(props: SortActionsProps) {
@@ -175,7 +199,7 @@ function SortActions(props: SortActionsProps) {
   const hasActiveSort = hasActiveSearchSort(sortState);
 
   return (
-    <div className="flex flex-wrap items-end gap-3 rounded-2xl border border-black bg-slate-50/80 p-3 shadow-sm">
+    <div className="flex flex-wrap items-end gap-3">
       {searchResultSortGroups.map((group) => (
         <SortDropdown
           key={group.key}
@@ -273,7 +297,7 @@ function SortDropdown(props: SortDropdownProps) {
           ].join(" ")}
         >
           <span className="truncate">{summaryLabel}</span>
-          <ChevronDown className="h-4 w-4 transition group-open:rotate-180 text-black" />
+          <ChevronDown className="h-4 w-4 text-black transition group-open:rotate-180" />
         </summary>
 
         <div className="absolute left-0 top-full z-20 mt-2 w-full min-w-[9.5rem] divide-y divide-black overflow-hidden rounded-sm border border-black bg-white shadow-xl">
@@ -291,8 +315,8 @@ function SortDropdown(props: SortDropdownProps) {
                   isDisabledGroup
                     ? "cursor-not-allowed bg-slate-100 text-slate-400"
                     : isSelected
-                    ? "bg-[#A3E635]/20 text-[#15803D]"
-                    : "text-black hover:bg-[#A3E635]/20 hover:text-[#15803D]",
+                      ? "bg-[#A3E635]/20 text-[#15803D]"
+                      : "text-black hover:bg-[#A3E635]/20 hover:text-[#15803D]",
                 ].join(" ")}
               >
                 <span
@@ -314,11 +338,11 @@ function SortDropdown(props: SortDropdownProps) {
 }
 
 function ResultsList(props: ResultsListProps) {
-  const { autoLoadAnchorIndex, lazyLoadAnchorRef, visiblePaperResults } = props;
+  const { autoLoadAnchorIndex, lazyLoadAnchorRef, visibleResults } = props;
   const resultItems = [];
 
-  for (let index = 0; index < visiblePaperResults.length; index += 1) {
-    const paper = visiblePaperResults[index];
+  for (let index = 0; index < visibleResults.length; index += 1) {
+    const item = visibleResults[index];
 
     if (index === autoLoadAnchorIndex) {
       resultItems.push(
@@ -330,7 +354,12 @@ function ResultsList(props: ResultsListProps) {
       );
     }
 
-    resultItems.push(<PaperResultCard key={paper.id} paper={paper} />);
+    resultItems.push(
+      <SearchResultCard
+        key={`${item.entityType}:${item.id}`}
+        item={item}
+      />,
+    );
   }
 
   return <div className="space-y-4">{resultItems}</div>;

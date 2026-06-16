@@ -10,9 +10,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@fontsource/acme": "^5.2.7",
     "@fontsource/agbalumo": "^5.2.8",
     "@fontsource/be-vietnam-pro": "^5.2.8",
+    "@fontsource/cormorant-garamond": "^5.2.11",
     "@fontsource/manrope": "^5.2.8",
     "@fontsource/space-grotesk": "^5.2.10",
     "@hookform/resolvers": "^5.2.2",

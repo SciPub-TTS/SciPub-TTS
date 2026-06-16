@@ -17,6 +17,7 @@ export async function searchWorks(
   const works = data.results.map(mapApiWorkToPaperResult);
 
   return {
+    entityType: "works",
     page: data.meta.page,
     perPage: data.meta.perPage,
     responseTimeSeconds: data.meta.dbResponseTimeMs / 1000,

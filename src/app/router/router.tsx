@@ -1,6 +1,9 @@
 import { createBrowserRouter, Navigate } from "react-router-dom";
 import { Suspense, type ReactNode } from "react";
 
+import type { DetailTitleEntityType } from "@/store/detailTitleStore";
+import { getDetailTitle } from "@/store/detailTitleStore";
+
 import { ROUTES } from "./routes";
 import { ROUTE_SEGMENTS } from "./routeSegments";
 import type {AppRouteHandle} from "@/app/router/breadcrumbs.ts";
@@ -8,6 +11,7 @@ import PlaceholderPage from "./PlaceholderPage";
 import {
   AdminDashboardPage,
   AdminUsersPage,
+  AuthorDetailPage,
   BookmarkLibraryPage,
   ChangePasswordPage,
   FeedPage,
@@ -25,6 +29,7 @@ import {
   ResetPasswordPage,
   SearchPage,
   TopicDashboardPage,
+  TopicDetailPage,
   VerifyResetCodePage,
 } from "./lazyPages";
 
@@ -37,15 +42,14 @@ import {
   AUTH_ROLES,
   AUTHENTICATED_ROLES,
 } from "@/features/auth/constants/roles";
-import { getPaperTitle } from "@/features/detailpapers/paperTitleStore";
 import {
   buildPaperDetailTrailUrl,
   parseWorkTrail,
-} from "@/features/detailpapers/workTrail";
+} from "@/features/detail/works/workTrail";
 import { markSearchPageRestorePending } from "@/features/search/utils/navigationState";
 
 function getPaperBreadcrumbLabel(paperId: string) {
-  return getPaperTitle(paperId) || "Paper Detail";
+  return getDetailTitle("works", paperId) || "Paper Detail";
 }
 
 function getPaperBreadcrumb(location: Location, paperId: string) {
@@ -88,6 +92,39 @@ function getProfileBreadcrumb(search: string): AppRouteHandle["breadcrumb"] {
   }
 
   return "Profile";
+}
+
+function getEntityDetailBreadcrumb(label: string): AppRouteHandle["breadcrumb"] {
+  return [
+    {
+      label: "Search",
+      to: ROUTES.SEARCH,
+      onClick: markSearchPageRestorePending,
+    },
+    { label },
+  ];
+}
+
+function getEntityBreadcrumbLabel(
+  entityType: Extract<DetailTitleEntityType, "authors" | "topics">,
+  entityId: string,
+) {
+  const fallbackLabel =
+    entityType === "authors" ? "Author Detail" : "Topic Detail";
+
+  return getDetailTitle(entityType, entityId) || fallbackLabel;
+}
+
+function getAuthorDetailBreadcrumb(authorId: string): AppRouteHandle["breadcrumb"] {
+  return getEntityDetailBreadcrumb(
+    getEntityBreadcrumbLabel("authors", authorId),
+  );
+}
+
+function getTopicDetailBreadcrumb(topicId: string): AppRouteHandle["breadcrumb"] {
+  return getEntityDetailBreadcrumb(
+    getEntityBreadcrumbLabel("topics", topicId),
+  );
 }
 
 const routeFallback = (
@@ -182,6 +219,22 @@ export const router = createBrowserRouter([
               };
             };
           }) => getPaperBreadcrumb(location, match.params.paperId || ""),
+        },
+      },
+      {
+        path: ROUTE_SEGMENTS.AUTHOR_DETAIL,
+        element: withSuspense(<AuthorDetailPage />),
+        handle: {
+          breadcrumb: ({ match }: { match: { params: { authorId?: string } } }) =>
+            getAuthorDetailBreadcrumb(match.params.authorId || ""),
+        },
+      },
+      {
+        path: ROUTE_SEGMENTS.TOPIC_DETAIL,
+        element: withSuspense(<TopicDetailPage />),
+        handle: {
+          breadcrumb: ({ match }: { match: { params: { topicId?: string } } }) =>
+            getTopicDetailBreadcrumb(match.params.topicId || ""),
         },
       },
 

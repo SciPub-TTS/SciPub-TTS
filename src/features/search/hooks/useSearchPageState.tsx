@@ -14,6 +14,7 @@ import {
   resetSearchFilters,
   resetSearchPageState,
   selectSearchPageState,
+  setActiveEntityType,
   setFiltersOpen,
   setSearchQuery,
   setSortState,
@@ -28,17 +29,21 @@ import {
 } from "../constants";
 import {
   clearSearchHistory,
-  deleteSearchHistory,
   defaultSearchSortState,
-  emptySearchOptionValueLookup,
+  deleteSearchHistory,
   getRecentSearches,
   getSearchSummary,
+  searchEntities,
+  searchWorks,
+} from "../services";
+import {
+  getSearchEntityMetadata,
   normalizeSearchSortState,
   saveSearchHistory,
-  searchWorks,
 } from "../services";
 import type {
   SaveSearchFeedback,
+  SearchEntityType,
   SearchFilters,
   SearchFilterWidgetKey,
 } from "../types";
@@ -98,6 +103,7 @@ export function useSearchPageState() {
   const latestSnapshotRef = useRef<SearchPageSnapshot | null>(restoredSnapshot);
   const searchPageState = useAppSelector(selectSearchPageState);
   const {
+    activeEntityType,
     filters,
     filtersOpen,
     searchQuery,
@@ -105,6 +111,8 @@ export function useSearchPageState() {
     submittedSearch,
     visibleFilterWidgets,
   } = searchPageState;
+  const isWorksTab = activeEntityType === "works";
+  const activeEntityMetadata = getSearchEntityMetadata(activeEntityType);
   const {
     filterOptions,
     handleFilterOptionSearch,
@@ -116,12 +124,12 @@ export function useSearchPageState() {
     remoteFilterOptionsSnapshot,
   } = useRemoteFilterOptions(
     filters,
-    filtersOpen,
+    filtersOpen && isWorksTab,
     restoredSnapshot?.remoteFilterOptions,
   );
   const searchSummaryQuery = useQuery({
-    queryFn: () => getSearchSummary(),
-    queryKey: ["searchSummary"],
+    queryFn: () => getSearchSummary(activeEntityType),
+    queryKey: ["searchSummary", activeEntityType],
     staleTime: 10 * 60 * 1000,
   });
   const recentSearchesQuery = useQuery({
@@ -203,16 +211,28 @@ export function useSearchPageState() {
     enabled: submittedSearch !== null,
     getNextPageParam: getNextSearchResultsPage,
     initialPageParam: SEARCH_DEFAULT_PAGE,
-    queryFn: ({ pageParam }) =>
-      searchWorks({
-        appliedSearchQuery: submittedSearch?.appliedSearchQuery || "",
-        filters: submittedSearch?.appliedFilters || initialFilters,
-        optionValueLookup:
-          submittedSearch?.optionValueLookup || emptySearchOptionValueLookup,
+    queryFn: ({ pageParam }) => {
+      if (!submittedSearch) {
+        throw new Error("Search request is missing.");
+      }
+
+      if (submittedSearch.entityType === "works") {
+        return searchWorks({
+          appliedSearchQuery: submittedSearch.appliedSearchQuery,
+          filters: submittedSearch.appliedFilters,
+          optionValueLookup: submittedSearch.optionValueLookup,
+          page: Number(pageParam),
+          sortState: submittedSearch.sortState,
+        });
+      }
+
+      return searchEntities({
+        appliedSearchQuery: submittedSearch.appliedSearchQuery,
+        entityType: submittedSearch.entityType,
         page: Number(pageParam),
-        sortState: submittedSearch?.sortState || defaultSearchSortState,
-      }),
-    queryKey: ["searchWorks", submittedSearch],
+      });
+    },
+    queryKey: ["searchResults", submittedSearch],
     staleTime: 30 * 1000,
   });
 
@@ -302,17 +322,28 @@ export function useSearchPageState() {
   }, [remoteFilterOptionsSnapshot, searchPageState]);
 
   const appliedSearchQuery = submittedSearch?.appliedSearchQuery || "";
-  const appliedFilters = submittedSearch
-    ? submittedSearch.appliedFilters
-    : initialFilters;
-  const visiblePaperResults = flattenSearchResultPages(
+  const appliedEntityType = submittedSearch?.entityType || activeEntityType;
+  const appliedFilters =
+    submittedSearch?.entityType === "works"
+      ? submittedSearch.appliedFilters
+      : initialFilters;
+  const visibleResults = flattenSearchResultPages(
     searchResultsQuery.data?.pages || [],
+    appliedEntityType,
     submittedSearch?.sortState || sortState,
   );
+  const latestResultsPage =
+    searchResultsQuery.data?.pages[
+      Math.max((searchResultsQuery.data?.pages.length || 1) - 1, 0)
+    ];
   const hasSearched = submittedSearch !== null;
   const hasMoreResults = Boolean(searchResultsQuery.hasNextPage);
-  const canLoadMoreResults = hasMoreResults && visiblePaperResults.length > 0;
-  const matchedPaperCount = searchResultsQuery.data?.pages[0]?.totalCount || 0;
+  const canLoadMoreResults = hasMoreResults && visibleResults.length > 0;
+  const matchedResultCount = latestResultsPage?.totalCount || 0;
+  const isTotalResultCountExact =
+    latestResultsPage?.entityType === "works"
+      ? true
+      : latestResultsPage?.totalCountExact ?? true;
   const responseTimeSeconds = getSearchResponseTime(
     searchResultsQuery.data?.pages || [],
   );
@@ -321,17 +352,21 @@ export function useSearchPageState() {
     hasMoreResults,
     searchResultsQuery.data?.pages.length || 0,
   );
-  const activeFilterCount = countActiveFilters(filters);
-  const appliedFilterSummary = buildAppliedFilterSummary(appliedFilters);
-  const hasFormError =
-    hasInvalidYearRange(filters) || hasInvalidCitationRange(filters);
+  const showFilters = isWorksTab;
+  const activeFilterCount = showFilters ? countActiveFilters(filters) : 0;
+  const appliedFilterSummary =
+    appliedEntityType === "works" ? buildAppliedFilterSummary(appliedFilters) : [];
+  const hasFormError = showFilters
+    ? hasInvalidYearRange(filters) || hasInvalidCitationRange(filters)
+    : false;
   const recentSearches = recentSearchesQuery.data || [];
   const canSaveSearch = isSearchHistoryEnabled && Boolean(searchQuery.trim());
   const saveSearchNotice =
     !isSearchHistoryEnabled && Boolean(searchQuery.trim())
       ? "Sign in to save search history."
       : null;
-  const totalIndexedPapers = searchSummaryQuery.data?.totalIndexedPapers || 0;
+  const totalIndexedCount = searchSummaryQuery.data?.totalIndexedCount || 0;
+  const isIndexedCountExact = searchSummaryQuery.data?.totalCountExact ?? true;
 
   useEffect(() => {
     if (!shouldRestoreScrollRef.current) {
@@ -347,9 +382,10 @@ export function useSearchPageState() {
         behavior: "auto",
       });
     });
-  }, [restoredSnapshot, visiblePaperResults.length]);
+  }, [restoredSnapshot, visibleResults.length]);
 
   function submitSearchRequest(
+    nextEntityType: SearchEntityType,
     nextQuery: string,
     nextFilters: SearchFilters,
     nextSortState = sortState,
@@ -358,9 +394,58 @@ export function useSearchPageState() {
     dispatch(submitSearch({
       appliedFilters: nextFilters,
       appliedSearchQuery: nextQuery,
+      entityType: nextEntityType,
       optionValueLookup: nextOptionValueLookup,
       sortState: nextSortState,
     }));
+  }
+
+  function shouldClearWorkSearch(nextQuery: string, nextFilters: SearchFilters) {
+    return !nextQuery && countActiveFilters(nextFilters) === 0;
+  }
+
+  function handleEntityTypeChange(nextEntityType: SearchEntityType) {
+    if (nextEntityType === activeEntityType) {
+      return;
+    }
+
+    setSaveSearchFeedback(null);
+    dispatch(setActiveEntityType(nextEntityType));
+
+    if (nextEntityType !== "works") {
+      dispatch(setFiltersOpen(false));
+    }
+
+    const normalizedQuery = searchQuery.trim();
+
+    if (nextEntityType === "works") {
+      if (shouldClearWorkSearch(normalizedQuery, filters)) {
+        dispatch(clearSearchResults());
+        return;
+      }
+
+      submitSearchRequest(
+        nextEntityType,
+        normalizedQuery,
+        filters,
+        sortState,
+        optionValueLookup,
+      );
+      return;
+    }
+
+    if (!normalizedQuery) {
+      dispatch(clearSearchResults());
+      return;
+    }
+
+    submitSearchRequest(
+      nextEntityType,
+      normalizedQuery,
+      filters,
+      defaultSearchSortState,
+      optionValueLookup,
+    );
   }
 
   function handleSearchQueryChange(nextQuery: string) {
@@ -369,33 +454,80 @@ export function useSearchPageState() {
   }
 
   function handleApplyFilters() {
-    if (hasFormError) {
+    if (!showFilters || hasFormError) {
       return;
     }
 
     const normalizedQuery = searchQuery.trim();
-    const nextActiveFilterCount = countActiveFilters(filters);
 
-    if (!normalizedQuery && nextActiveFilterCount === 0) {
+    if (shouldClearWorkSearch(normalizedQuery, filters)) {
       dispatch(clearSearchResults());
       return;
     }
 
-    submitSearchRequest(normalizedQuery, filters, sortState, optionValueLookup);
-  }
-
-  function handleSearch() {
     submitSearchRequest(
-      searchQuery.trim(),
+      "works",
+      normalizedQuery,
       filters,
       sortState,
       optionValueLookup,
     );
   }
 
+  function handleSearch() {
+    const normalizedQuery = searchQuery.trim();
+
+    if (activeEntityType === "works") {
+      if (shouldClearWorkSearch(normalizedQuery, filters)) {
+        dispatch(clearSearchResults());
+        return;
+      }
+
+      submitSearchRequest(
+        "works",
+        normalizedQuery,
+        filters,
+        sortState,
+        optionValueLookup,
+      );
+      return;
+    }
+
+    if (!normalizedQuery) {
+      dispatch(clearSearchResults());
+      return;
+    }
+
+    submitSearchRequest(
+      activeEntityType,
+      normalizedQuery,
+      filters,
+      defaultSearchSortState,
+      optionValueLookup,
+    );
+  }
+
   function handleSuggestedSearch(query: string) {
     dispatch(setSearchQuery(query));
-    submitSearchRequest(query, filters, sortState, optionValueLookup);
+
+    if (activeEntityType === "works") {
+      submitSearchRequest(
+        "works",
+        query,
+        filters,
+        sortState,
+        optionValueLookup,
+      );
+      return;
+    }
+
+    submitSearchRequest(
+      activeEntityType,
+      query,
+      filters,
+      defaultSearchSortState,
+      optionValueLookup,
+    );
   }
 
   function handleSaveSearch() {
@@ -427,6 +559,10 @@ export function useSearchPageState() {
   }
 
   function handleToggleFilters() {
+    if (!showFilters) {
+      return;
+    }
+
     dispatch(setFiltersOpen(!filtersOpen));
   }
 
@@ -449,11 +585,12 @@ export function useSearchPageState() {
 
     dispatch(setSortState(nextSortState));
 
-    if (!submittedSearch) {
+    if (!submittedSearch || submittedSearch.entityType !== "works") {
       return;
     }
 
     submitSearchRequest(
+      "works",
       appliedSearchQuery,
       appliedFilters,
       nextSortState,
@@ -464,11 +601,12 @@ export function useSearchPageState() {
   function handleClearSorts() {
     dispatch(setSortState({ ...defaultSearchSortState }));
 
-    if (!submittedSearch) {
+    if (!submittedSearch || submittedSearch.entityType !== "works") {
       return;
     }
 
     submitSearchRequest(
+      "works",
       appliedSearchQuery,
       appliedFilters,
       defaultSearchSortState,
@@ -479,13 +617,21 @@ export function useSearchPageState() {
   function resetFilters() {
     dispatch(resetSearchFilters());
 
-    if (!hasSearched) {
+    if (!hasSearched || appliedEntityType !== "works") {
+      return;
+    }
+
+    const resetFilterState = cloneSearchFilters(initialFilters);
+
+    if (shouldClearWorkSearch(appliedSearchQuery, resetFilterState)) {
+      dispatch(clearSearchResults());
       return;
     }
 
     submitSearchRequest(
+      "works",
       appliedSearchQuery,
-      cloneSearchFilters(initialFilters),
+      resetFilterState,
       sortState,
       optionValueLookup,
     );
@@ -499,6 +645,7 @@ export function useSearchPageState() {
   }
 
   return {
+    activeEntityType,
     activeFilterCount,
     appliedFilterSummary,
     appliedSearchQuery,
@@ -510,14 +657,15 @@ export function useSearchPageState() {
     filtersOpen,
     handleApplyFilters,
     handleClearRecentSearches,
+    handleClearSorts,
+    handleDeleteRecentSearch,
+    handleEntityTypeChange,
     handleFilterOptionSearch,
     handleLoadMoreFilterOptions,
     handleLoadMoreResults,
-    handleDeleteRecentSearch,
+    handleSaveSearch,
     handleSearch,
     handleSearchQueryChange,
-    handleClearSorts,
-    handleSaveSearch,
     handleSelectSort,
     handleSuggestedSearch,
     handleToggleFilters,
@@ -525,25 +673,29 @@ export function useSearchPageState() {
     hasFormError,
     hasSearched,
     hasMoreFilterOptions,
-    isLoadingFilterOptions,
-    isLoadingMoreFilterOptions,
-    isLoadingResults: submittedSearch !== null && searchResultsQuery.isPending,
-    isLoadingMoreResults: searchResultsQuery.isFetchingNextPage,
     isClearingRecentSearches: clearSearchMutation.isPending,
     isDeletingRecentSearch: deleteSearchMutation.isPending,
+    isIndexedCountExact,
+    isLoadingFilterOptions,
+    isLoadingMoreFilterOptions,
+    isLoadingMoreResults: searchResultsQuery.isFetchingNextPage,
+    isLoadingResults: submittedSearch !== null && searchResultsQuery.isPending,
     isSavingSearch: saveSearchMutation.isPending,
-    matchedPaperCount,
+    isTotalResultCountExact,
+    matchedResultCount,
     recentSearches,
     resetFilters,
     responseTimeSeconds,
     saveSearchFeedback,
     saveSearchNotice,
     saveSearchSuccessToken,
+    searchPlaceholder: activeEntityMetadata.placeholder,
     searchQuery,
+    showFilters,
     sortState,
-    totalIndexedPapers,
+    totalIndexedCount,
     updateFilter,
     visibleFilterWidgets,
-    visiblePaperResults,
+    visibleResults,
   };
 }

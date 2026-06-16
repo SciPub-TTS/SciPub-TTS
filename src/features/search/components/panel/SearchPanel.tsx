@@ -8,7 +8,10 @@ import {
   type MouseEvent,
 } from "react";
 
-import { searchTabs } from "@/features/search/services";
+import {
+  getSearchEntityMetadata,
+  searchTabs,
+} from "@/features/search/services";
 import type {
   SearchInputRowProps,
   SearchPanelProps,
@@ -18,6 +21,7 @@ import { formatCompactNumber } from "@/features/search/utils";
 import { SearchFiltersPanel } from "./SearchFiltersPanel";
 
 export function SearchPanel({
+  activeEntityType,
   activeFilterCount,
   appliedFilterSummary,
   canSaveSearch,
@@ -37,12 +41,16 @@ export function SearchPanel({
   saveSearchFeedback,
   saveSearchNotice,
   saveSearchSuccessToken,
+  searchPlaceholder,
   searchQuery,
-  totalIndexedPapers,
+  showFilters,
+  totalIndexedCount,
+  isIndexedCountExact,
   visibleFilterWidgets,
   onApplyFilters,
   onClearRecentSearches,
   onDeleteRecentSearch,
+  onEntityTypeChange,
   onFilterOptionSearch,
   onLoadMoreFilterOptions,
   onResetFilters,
@@ -54,24 +62,30 @@ export function SearchPanel({
   onToggleVisibleFilterWidget,
   updateFilter,
 }: SearchPanelProps) {
-  // This component composes the top search area and the advanced filters.
+  // Khối này quản lý phần tương tác đầu vào của search:
+  // tabs entity, ô search, lịch sử tìm kiếm và panel filter.
   return (
     <div className="overflow-visible rounded-2xl border border-black bg-white shadow-[0_18px_50px_rgba(15,23,42,0.06)]">
       <SearchTabsHeader
+        activeEntityType={activeEntityType}
         canSaveSearch={canSaveSearch}
         isSavingSearch={isSavingSearch}
         saveSearchFeedback={saveSearchFeedback}
         saveSearchNotice={saveSearchNotice}
-        totalIndexedPapers={totalIndexedPapers}
+        totalIndexedCount={totalIndexedCount}
+        isIndexedCountExact={isIndexedCountExact}
+        onEntityTypeChange={onEntityTypeChange}
         onSaveSearch={onSaveSearch}
       />
 
       <div className="p-5">
         <div className="rounded-2xl border border-black bg-slate-50/60 px-3 py-4 shadow-inner">
           <SearchInputRow
+            activeEntityType={activeEntityType}
             isLoadingResults={isLoadingResults}
             recentSearches={recentSearches}
             saveSearchSuccessToken={saveSearchSuccessToken}
+            searchPlaceholder={searchPlaceholder}
             searchQuery={searchQuery}
             isClearingRecentSearches={isClearingRecentSearches}
             isDeletingRecentSearch={isDeletingRecentSearch}
@@ -84,75 +98,94 @@ export function SearchPanel({
         </div>
       </div>
 
-      <SearchFiltersPanel
-        activeFilterCount={activeFilterCount}
-        appliedFilterSummary={appliedFilterSummary}
-        filterOptions={filterOptions}
-        filters={filters}
-        filtersOpen={filtersOpen}
-        hasMoreFilterOptions={hasMoreFilterOptions}
-        hasFormError={hasFormError}
-        isLoadingFilterOptions={isLoadingFilterOptions}
-        isLoadingMoreFilterOptions={isLoadingMoreFilterOptions}
-        isLoadingResults={isLoadingResults}
-        matchedPaperCount={matchedPaperCount}
-        visibleFilterWidgets={visibleFilterWidgets}
-        onApplyFilters={onApplyFilters}
-        onFilterOptionSearch={onFilterOptionSearch}
-        onLoadMoreFilterOptions={onLoadMoreFilterOptions}
-        onResetFilters={onResetFilters}
-        onToggleFilters={onToggleFilters}
-        onToggleVisibleFilterWidget={onToggleVisibleFilterWidget}
-        updateFilter={updateFilter}
-      />
+      {showFilters ? (
+        <SearchFiltersPanel
+          activeFilterCount={activeFilterCount}
+          appliedFilterSummary={appliedFilterSummary}
+          filterOptions={filterOptions}
+          filters={filters}
+          filtersOpen={filtersOpen}
+          hasMoreFilterOptions={hasMoreFilterOptions}
+          hasFormError={hasFormError}
+          isLoadingFilterOptions={isLoadingFilterOptions}
+          isLoadingMoreFilterOptions={isLoadingMoreFilterOptions}
+          isLoadingResults={isLoadingResults}
+          matchedPaperCount={matchedPaperCount}
+          visibleFilterWidgets={visibleFilterWidgets}
+          onApplyFilters={onApplyFilters}
+          onFilterOptionSearch={onFilterOptionSearch}
+          onLoadMoreFilterOptions={onLoadMoreFilterOptions}
+          onResetFilters={onResetFilters}
+          onToggleFilters={onToggleFilters}
+          onToggleVisibleFilterWidget={onToggleVisibleFilterWidget}
+          updateFilter={updateFilter}
+        />
+      ) : null}
     </div>
   );
 }
 
 type SearchTabsHeaderProps = {
+  activeEntityType: SearchPanelProps["activeEntityType"];
   canSaveSearch: boolean;
   isSavingSearch: boolean;
   saveSearchFeedback: SearchPanelProps["saveSearchFeedback"];
   saveSearchNotice: string | null;
-  totalIndexedPapers: number;
+  totalIndexedCount: number;
+  isIndexedCountExact: boolean;
+  onEntityTypeChange: (entityType: SearchPanelProps["activeEntityType"]) => void;
   onSaveSearch: () => void;
 };
 
 function SearchTabsHeader(props: SearchTabsHeaderProps) {
   const {
+    activeEntityType,
     canSaveSearch,
     isSavingSearch,
     saveSearchFeedback,
     saveSearchNotice,
-    totalIndexedPapers,
+    totalIndexedCount,
+    isIndexedCountExact,
+    onEntityTypeChange,
     onSaveSearch,
   } = props;
-
-  // Format display text before JSX so the markup stays simple.
-  const indexedPaperLabel =
-    totalIndexedPapers > 0
-      ? `${formatCompactNumber(totalIndexedPapers)} works indexed`
-      : "Loading total works...";
+  const activeEntityMetadata = getSearchEntityMetadata(activeEntityType);
+  const indexedLabel =
+    !isIndexedCountExact
+      ? `Scoped ${activeEntityMetadata.resultLabelPlural}`
+      : totalIndexedCount > 0
+      ? `${formatCompactNumber(totalIndexedCount)} ${activeEntityMetadata.indexedLabel}`
+      : `Loading ${activeEntityMetadata.resultLabelPlural}...`;
 
   return (
     <div className="rounded-t-2xl border-b border-black px-5 py-4">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex flex-wrap gap-1">
-          {searchTabs.map((tab) => (
-            <button
-              key={tab}
-              type="button"
-              className="rounded-md bg-[#14532D] px-5 py-2.5 text-sm font-bold text-white shadow-sm transition"
-            >
-              {tab}
-            </button>
-          ))}
+          {searchTabs.map((tab) => {
+            const isActive = tab.entityType === activeEntityType;
+
+            return (
+              <button
+                key={tab.entityType}
+                type="button"
+                onClick={() => onEntityTypeChange(tab.entityType)}
+                className={[
+                  "rounded-md px-5 py-2.5 text-sm font-bold shadow-sm transition",
+                  isActive
+                    ? "bg-[#14532D] text-white"
+                    : "bg-slate-100 text-black hover:bg-[#A3E635]/30",
+                ].join(" ")}
+              >
+                {tab.label}
+              </button>
+            );
+          })}
         </div>
 
         <div className="flex flex-col items-start gap-2 lg:items-end">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
             <p className="text-[11px] font-extrabold uppercase tracking-[0.32em] text-black">
-              {indexedPaperLabel}
+              {indexedLabel}
             </p>
 
             <button
@@ -197,9 +230,11 @@ function SearchTabsHeader(props: SearchTabsHeaderProps) {
 }
 
 function SearchInputRow({
+  activeEntityType,
   isLoadingResults,
   recentSearches,
   saveSearchSuccessToken,
+  searchPlaceholder,
   searchQuery,
   isClearingRecentSearches,
   isDeletingRecentSearch,
@@ -212,8 +247,10 @@ function SearchInputRow({
   const [isSuggestionOpen, setIsSuggestionOpen] = useState(false);
   const [dismissedSaveToken, setDismissedSaveToken] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
+  const searchAriaLabel = getSearchEntityMetadata(activeEntityType).searchAriaLabel;
 
   useEffect(() => {
+    // Đóng popup gợi ý khi user click ra ngoài vùng search box.
     if (!isSuggestionOpen) {
       return;
     }
@@ -238,7 +275,6 @@ function SearchInputRow({
     };
   }, [isSuggestionOpen, saveSearchSuccessToken]);
 
-  // Controlled input: React state is the source of truth for the search value.
   function handleSearchInputChange(event: ChangeEvent<HTMLInputElement>) {
     const nextSearchQuery = event.target.value;
 
@@ -247,10 +283,7 @@ function SearchInputRow({
   }
 
   function handleSearchInputKeyDown(event: KeyboardEvent<HTMLInputElement>) {
-    const enterKeyWasPressed = event.key === "Enter";
-
-    // Pressing Enter triggers the same search action as the button.
-    if (enterKeyWasPressed) {
+    if (event.key === "Enter") {
       setIsSuggestionOpen(false);
       onSearch();
     }
@@ -317,9 +350,9 @@ function SearchInputRow({
             onChange={handleSearchInputChange}
             onFocus={handleInputFocus}
             onKeyDown={handleSearchInputKeyDown}
-            aria-label="Search papers"
+            aria-label={searchAriaLabel}
             className="min-w-0 w-full bg-transparent text-base font-medium text-black outline-none placeholder:text-black disabled:cursor-not-allowed disabled:opacity-60"
-            placeholder="Search by title or abstract."
+            placeholder={searchPlaceholder}
           />
 
           {shouldShowSuggestions ? (

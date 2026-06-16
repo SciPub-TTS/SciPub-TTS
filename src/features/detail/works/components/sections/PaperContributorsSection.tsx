@@ -1,5 +1,7 @@
 import { Users } from "lucide-react";
+import { Link } from "react-router-dom";
 
+import { routePaths } from "@/app/router";
 import type {
   PaperDetailAuthor,
   PaperDetailCountry,
@@ -86,7 +88,16 @@ function AuthorList(props: AuthorListProps) {
           key={author.id}
           className="flex flex-wrap items-center gap-x-2 gap-y-2 text-base text-black"
         >
-          <span className="text-sm font-semibold text-black">{author.name}</span>
+          {author.entityId ? (
+            <Link
+              to={routePaths.authorDetail(author.entityId)}
+              className="text-sm font-semibold text-blue-700 transition hover:text-blue-900 hover:underline"
+            >
+              {author.name}
+            </Link>
+          ) : (
+            <span className="text-sm font-semibold text-black">{author.name}</span>
+          )}
 
           {author.position || author.isCorresponding || author.isFollowed ? (
             <span className="text-black">-</span>

@@ -1,5 +1,7 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 
+import { routePaths } from "@/app/router";
 import {
   Bookmark,
   CalendarDays,
@@ -24,11 +26,24 @@ export default function PaperDetailHeader(props: PaperDetailHeaderProps) {
     <article className="rounded-3xl border border-black bg-white p-6 shadow-sm">
       <div className="flex flex-wrap gap-2">
         {paperDetail.headerBadges.map((badge) => (
-          <MetadataBadge
-            key={badge.entityId ? `${badge.entityType}-${badge.entityId}` : badge.label}
-            label={badge.label}
-            tone={badge.tone}
-          />
+          badge.entityType === "topic" && badge.entityId ? (
+            <Link
+              key={`${badge.entityType}-${badge.entityId}`}
+              to={routePaths.topicDetail(badge.entityId)}
+              className="transition hover:-translate-y-0.5"
+            >
+              <MetadataBadge
+                label={badge.label}
+                tone={badge.tone}
+              />
+            </Link>
+          ) : (
+            <MetadataBadge
+              key={badge.entityId ? `${badge.entityType}-${badge.entityId}` : badge.label}
+              label={badge.label}
+              tone={badge.tone}
+            />
+          )
         ))}
       </div>
 

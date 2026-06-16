@@ -1,7 +1,9 @@
 import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useParams } from "react-router-dom";
-import { setPaperTitle } from "../paperTitleStore";
+
+import { setDetailTitle } from "@/store/detailTitleStore";
+
 import { getPaperDetail } from "../services";
 
 export function usePaperDetailPageState() {
@@ -18,7 +20,7 @@ export function usePaperDetailPageState() {
       return;
     }
 
-    setPaperTitle(normalizedPaperId, paperDetailQuery.data.title);
+    setDetailTitle("works", normalizedPaperId, paperDetailQuery.data.title);
   }, [normalizedPaperId, paperDetailQuery.data]);
 
   let errorMessage = "";

@@ -6,18 +6,22 @@ import {
   ExternalLink,
   FileText,
   Quote,
+  Share2,
   Tags,
   Users,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 
+import { routePaths } from "@/app/router";
 import { markSearchPageRestorePending } from "@/features/search/utils/navigationState";
+import type { PaperResultEntityRef } from "@/features/search/types";
 import MetadataBadge from "@/layout/components/MetadataBadge";
 
 type ListWorkLayoutProps = {
   abstractText: string;
   authors: string[];
+  authorRefs?: PaperResultEntityRef[];
   citations: number;
   detailHref: string;
   doi: string;
@@ -27,9 +31,11 @@ type ListWorkLayoutProps = {
   isTrendTopic?: boolean;
   keywords: string[];
   pdfUrl: string | null;
+  preserveSearchStateOnDetailClick?: boolean;
   subField: string;
   title: string;
   topic: string;
+  topicRef?: PaperResultEntityRef | null;
   venue: string;
   year: number;
   onBookmarkClick?: () => void;
@@ -47,9 +53,46 @@ function getPreviewText(text: string, limit: number) {
   return `${text.slice(0, limit).trim()}...`;
 }
 
+function copyTextWithFallback(value: string) {
+  if (
+    typeof navigator !== "undefined"
+    && navigator.clipboard
+    && typeof navigator.clipboard.writeText === "function"
+  ) {
+    return navigator.clipboard.writeText(value);
+  }
+
+  if (typeof document === "undefined") {
+    return Promise.reject(new Error("Clipboard is not available."));
+  }
+
+  const textArea = document.createElement("textarea");
+  textArea.value = value;
+  textArea.setAttribute("readonly", "");
+  textArea.style.position = "fixed";
+  textArea.style.opacity = "0";
+  document.body.appendChild(textArea);
+  textArea.select();
+
+  try {
+    const copied = document.execCommand("copy");
+    document.body.removeChild(textArea);
+
+    if (!copied) {
+      return Promise.reject(new Error("Copy command was not successful."));
+    }
+
+    return Promise.resolve();
+  } catch (error) {
+    document.body.removeChild(textArea);
+    return Promise.reject(error);
+  }
+}
+
 export default function ListWorkLayout({
   abstractText,
   authors,
+  authorRefs = [],
   citations,
   detailHref,
   doi,
@@ -59,22 +102,30 @@ export default function ListWorkLayout({
   isTrendTopic = false,
   keywords,
   pdfUrl,
+  preserveSearchStateOnDetailClick = true,
   subField,
   title,
   topic,
+  topicRef = null,
   venue,
   year,
   onBookmarkClick,
 }: ListWorkLayoutProps) {
   const [showAllAuthors, setShowAllAuthors] = useState(false);
   const [showFullAbstract, setShowFullAbstract] = useState(false);
+  const [shareLabel, setShareLabel] = useState("Share");
+  const shareResetTimeoutRef = useRef<number | null>(null);
+  const authorItems =
+    authorRefs.length > 0
+      ? authorRefs
+      : authors.map((authorName) => ({ id: null, name: authorName }));
 
   const bookmarkClassName = isSaved
     ? "bg-[#14532D] text-white"
     : "border border-slate-400 bg-white text-black hover:bg-slate-50";
 
-  const visibleAuthors = showAllAuthors ? authors : authors.slice(0, 3);
-  const hasMoreAuthors = authors.length > 3;
+  const visibleAuthors = showAllAuthors ? authorItems : authorItems.slice(0, 3);
+  const hasMoreAuthors = authorItems.length > 3;
   const normalizedDoi = doi.trim();
   const hasDoi = normalizedDoi.length > 0;
   const hasPdfUrl = Boolean(pdfUrl && pdfUrl.trim().length > 0);
@@ -85,11 +136,54 @@ export default function ListWorkLayout({
   const normalizedFollowedAuthors = followedAuthors.map((author) =>
     author.trim().toLocaleLowerCase(),
   );
+  const entityNavigationOnClick = preserveSearchStateOnDetailClick
+    ? markSearchPageRestorePending
+    : undefined;
 
   function isFollowedAuthor(author: string) {
     return normalizedFollowedAuthors.includes(
       author.trim().toLocaleLowerCase(),
     );
+  }
+
+  useEffect(() => () => {
+    if (
+      typeof window !== "undefined"
+      && shareResetTimeoutRef.current !== null
+    ) {
+      window.clearTimeout(shareResetTimeoutRef.current);
+    }
+  }, []);
+
+  function scheduleShareLabelReset() {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    if (shareResetTimeoutRef.current !== null) {
+      window.clearTimeout(shareResetTimeoutRef.current);
+    }
+
+    shareResetTimeoutRef.current = window.setTimeout(() => {
+      setShareLabel("Share");
+      shareResetTimeoutRef.current = null;
+    }, 6000);
+  }
+
+  async function handleShareClick() {
+    const shareUrl =
+      typeof window !== "undefined"
+        ? new URL(detailHref, window.location.origin).toString()
+        : detailHref;
+
+    try {
+      await copyTextWithFallback(shareUrl);
+      setShareLabel("Copied link!");
+      scheduleShareLabelReset();
+    } catch (error) {
+      setShareLabel("Copy failed");
+      scheduleShareLabelReset();
+    }
   }
 
   return (
@@ -98,10 +192,23 @@ export default function ListWorkLayout({
         <div className="flex flex-wrap gap-2">
           <MetadataBadge tone="accent" label={subField} />
 
-          <MetadataBadge
-            label={topic}
-            tone={isTrendTopic ? "topicTrend" : "topic"}
-          />
+          {topicRef?.id ? (
+            <Link
+              to={routePaths.topicDetail(topicRef.id)}
+              onClick={entityNavigationOnClick}
+              className="transition hover:-translate-y-0.5"
+            >
+              <MetadataBadge
+                label={topicRef.name}
+                tone={isTrendTopic ? "topicTrend" : "topic"}
+              />
+            </Link>
+          ) : (
+            <MetadataBadge
+              label={topic}
+              tone={isTrendTopic ? "topicTrend" : "topic"}
+            />
+          )}
 
           <MetadataBadge tone="default" label={field} />
         </div>
@@ -121,14 +228,27 @@ export default function ListWorkLayout({
           <Users className="h-4 w-4 text-black" />
           <span className="break-words">
             {visibleAuthors.map((author, index) => (
-              <span key={`${author}-${index}`}>
-                <span
-                  className={
-                    isFollowedAuthor(author) ? "font-bold underline" : undefined
-                  }
-                >
-                  {author}
-                </span>
+              <span key={`${author.name}-${author.id || index}`}>
+                {author.id ? (
+                  <Link
+                    to={routePaths.authorDetail(author.id)}
+                    onClick={entityNavigationOnClick}
+                    className={[
+                      "text-blue-700 transition hover:text-blue-900 hover:underline",
+                      isFollowedAuthor(author.name) ? "font-bold underline" : "font-semibold",
+                    ].join(" ")}
+                  >
+                    {author.name}
+                  </Link>
+                ) : (
+                  <span
+                    className={
+                      isFollowedAuthor(author.name) ? "font-bold underline" : undefined
+                    }
+                  >
+                    {author.name}
+                  </span>
+                )}
                 {index < visibleAuthors.length - 1 ? ", " : ""}
               </span>
             ))}
@@ -220,9 +340,20 @@ export default function ListWorkLayout({
             {isSaved ? "Saved" : "Bookmark"}
           </button>
 
+          <button
+            type="button"
+            onClick={() => {
+              void handleShareClick();
+            }}
+            className="inline-flex items-center gap-2 rounded-lg border border-[#14532D] bg-white px-3 py-2 text-xs font-bold text-[#14532D] transition hover:border-[#14532D] hover:bg-[#14532D] hover:text-white"
+          >
+            <Share2 className="h-4 w-4" />
+            {shareLabel}
+          </button>
+
           <Link
             to={detailHref}
-            onClick={markSearchPageRestorePending}
+            onClick={entityNavigationOnClick}
             className="inline-flex items-center gap-2 rounded-lg border border-[#14532D] bg-white px-3 py-2 text-xs font-bold text-[#14532D] transition hover:border-[#14532D] hover:bg-[#14532D] hover:text-white"
           >
             <Eye className="h-4 w-4" />
