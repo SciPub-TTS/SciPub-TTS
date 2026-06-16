@@ -1,11 +1,11 @@
 import {topicMetrics} from "@/features/dashboard/topic/constants/topic-data.ts";
 
 export const metricKeys = [
-    "Velocity",
-    "Acceleration",
-    "Citation",
-    "InstitutionDivers",
-    "AuthorNewcomerRatio",
+    "velocity",
+    "accelerate",
+    "citationDecay",
+    "institution",
+    "newComerAuthor",
 ] as const;
 
 export const averageMetrics = metricKeys.reduce((acc, key) => {

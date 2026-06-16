@@ -9,6 +9,8 @@ import type {
 import {LIST_TOPICS, topicGrowthMetrics, topicMetrics} from "@/features/dashboard/topic/constants/topic-data.ts";
 import type {Momentum, TopicMomentumApiResponse} from "@/features/dashboard/topic/types/momentum.ts";
 import type {TopicRadarApiResponse, TopicRadarData, TopicRadarMetrics} from "@/features/dashboard/topic/types/radar.ts";
+import type {TopicHeatmapApiResponse, TopicHeatmapData} from "@/features/dashboard/topic/types/heatmap.ts";
+import {buildMockHeatmapData} from "@/features/dashboard/topic/constants/topic-heatmap.ts";
 
 const USE_MOCK = true;
 
@@ -248,6 +250,20 @@ export const topicService = {
 
         const response = await requestData<TopicRadarApiResponse>(endpoint.toString());
 
+        return response.data;
+    },
+
+    getTopicHeatmap: async ({ startDate, endDate, fieldId }: TopicAnalystApiRequestBody): Promise<TopicHeatmapData> => {
+        if (!USE_MOCK) {
+            return buildMockHeatmapData(endDate);
+        }
+
+        const endpoint = new URL(`${apiBaseUrl}/api/data/topic-heatmap`);
+        endpoint.searchParams.append("startTime", startDate);
+        endpoint.searchParams.append("endTime", endDate);
+        endpoint.searchParams.append("fieldId", String(fieldId));
+
+        const response = await requestData<TopicHeatmapApiResponse>(endpoint.toString());
         return response.data;
     },
 }

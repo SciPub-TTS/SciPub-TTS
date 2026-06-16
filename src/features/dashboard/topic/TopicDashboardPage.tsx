@@ -4,7 +4,8 @@ import TrendingPart from "@/features/dashboard/topic/components/TrendingPart.tsx
 import TopicSpecificChartPart from "@/features/dashboard/topic/components/TopicSpecificChartPart.tsx";
 import {useNavigate} from "react-router-dom";
 import {ROUTE_SEGMENTS} from "@/app/router";
-import {useState} from "react";
+import {useMemo, useState} from "react";
+import FilterPart from "@/features/dashboard/topic/components/FilterPart.tsx";
 
 export default function TopicDashboardPage() {
     const navigate = useNavigate();
@@ -21,11 +22,20 @@ export default function TopicDashboardPage() {
     const fiveYearsBefore = new Date(currentMonday);
     fiveYearsBefore.setFullYear(fiveYearsBefore.getFullYear() - 5);
 
-    const [shortStartDate] = useState<string>(formatDate(oneWeekBefore));
-    const [longStartDate] = useState<string>(formatDate(fiveYearsBefore));
-    const [endDate] = useState<string>(formatDate(currentMonday));
-    const [fieldId] = useState<string>("17");
-    const [formula] = useState<string>("balanced");
+    const [endDate, setEndDate] = useState<string>(formatDate(currentMonday));
+    const shortStartDate = useMemo(() => {
+        const date = new Date(endDate);
+        date.setDate(date.getDate() - 7);
+        return formatDate(date);
+    }, [endDate]);
+
+    const longStartDate = useMemo(() => {
+        const date = new Date(endDate);
+        date.setFullYear(date.getFullYear() - 5);
+        return formatDate(date);
+    }, [endDate]);
+    const [fieldId, setFieldId] = useState("22");
+    const [formula, setFormula] = useState("balanced");
 
     console.log(shortStartDate, longStartDate, endDate, fieldId, formula);
 
@@ -47,7 +57,12 @@ export default function TopicDashboardPage() {
             </h2>
         </div>
 
-        {/*<FilterPart/>*/}
+        <FilterPart endDate={endDate}
+        fieldId={fieldId}
+        formula={formula}
+        setEndDate={setEndDate}
+        setFieldId={setFieldId}
+        setFormula={setFormula}/>
 
         <MetricPart startDate={shortStartDate} endDate={endDate}/>
 
