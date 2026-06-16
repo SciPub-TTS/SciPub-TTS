@@ -24,7 +24,7 @@ import PaperDetailPage from "@/features/detailpapers/components/PaperDetailPage"
 
 import ProfilePage from "@/features/profile/components/ProfilePage";
 import BookmarksPage from "@/features/bookmarks/components/BookmarksPage";
-import FeedPage from "@/features/newfeeds/components/FeedPage";
+import FeedPage from "@/features/newfeeds/pages/FeedPage";
 import ReportPage from "@/features/reports/components/ReportPage";
 
 //import AdminDashboardPage from "@/pages/admin/AdminDashboardPage";
