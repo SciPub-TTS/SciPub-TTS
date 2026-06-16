@@ -164,7 +164,7 @@ function EntityTagCluster(props: EntityTagClusterProps) {
         {icon}
         {title}
       </div>
-      <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2">
+      <div className="mt-3 space-y-2">
         {items.map((item) => (
           item.type === "topic" ? (
             <Link
@@ -180,14 +180,14 @@ function EntityTagCluster(props: EntityTagClusterProps) {
                     )
                   : routePaths.topicDetail(item.id)
               }
-              className="text-sm font-semibold text-blue-700 transition hover:text-blue-900 hover:underline"
+              className="block text-sm font-semibold text-blue-700 transition hover:text-blue-900 hover:underline"
             >
               {item.name}
             </Link>
           ) : (
             <span
               key={`${item.type}-${item.id}`}
-              className="text-sm font-semibold text-black"
+              className="block text-sm font-semibold text-black"
             >
               {item.name}
             </span>
