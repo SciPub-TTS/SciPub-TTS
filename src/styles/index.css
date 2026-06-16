@@ -278,6 +278,35 @@ select {
   display: none;
 }
 
+.hover-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.hover-scrollbar::-webkit-scrollbar {
+  height: 0;
+}
+
+.hover-scrollbar:hover,
+.hover-scrollbar:focus-within {
+  scrollbar-width: thin;
+}
+
+.hover-scrollbar:hover::-webkit-scrollbar,
+.hover-scrollbar:focus-within::-webkit-scrollbar {
+  height: 6px;
+}
+
+.hover-scrollbar::-webkit-scrollbar-thumb {
+  background-color: transparent;
+  border-radius: 9999px;
+}
+
+.hover-scrollbar:hover::-webkit-scrollbar-thumb,
+.hover-scrollbar:focus-within::-webkit-scrollbar-thumb {
+  background-color: rgba(148, 163, 184, 0.9);
+}
+
 .reveal-on-scroll {
   opacity: 0;
   transform: translateY(-18px);

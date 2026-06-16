@@ -79,7 +79,7 @@ export default function BreadcrumbBar({
           <Home className="h-5 w-5" />
         </Link>
 
-        <div className="no-scrollbar flex min-w-0 flex-1 items-center gap-3 overflow-x-auto overflow-y-hidden whitespace-nowrap">
+        <div className="hover-scrollbar flex min-w-0 flex-1 items-center gap-3 overflow-x-auto overflow-y-hidden whitespace-nowrap">
           {breadcrumbItems.length > 0 && (
             <ChevronRight className={`h-5 w-5 shrink-0 ${mutedClass}`} />
           )}

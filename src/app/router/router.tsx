@@ -187,10 +187,19 @@ export const router = createBrowserRouter([
       {
         path: ROUTE_SEGMENTS.TRENDING_TOPIC,
         element: withSuspense(<TopicDashboardPage />),
+        handle: {
+          breadcrumb: "Trending",
+        },
       },
       {
         path: ROUTE_SEGMENTS.TRENDING_KEYWORD,
         element: withSuspense(<KeywordDashboardPage />),
+        handle: {
+          breadcrumb: [
+            { label: "Trending", to: ROUTES.TRENDING_TOPIC },
+            { label: "Keyword Dashboard" },
+          ],
+        },
       },
       {
         path: ROUTE_SEGMENTS.PAPER_DETAIL,
