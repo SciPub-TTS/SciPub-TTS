@@ -1,9 +1,9 @@
 import {useEffect, useState} from "react";
-import type {MetricData, MetricResponse} from "@/features/dashboard/topic/types/metric.ts";
+import type {MetricData, MetricItem} from "@/features/dashboard/topic/types/metric.ts";
 import {topicService} from "@/features/dashboard/topic/services/topic-service.ts";
 import {MENU_METRICS} from "@/features/dashboard/topic/constants/metric-data.ts";
 
-export function useGeneralMetrics(){
+export function useGeneralMetrics(startDate?: string, endDate?: string){
     const [loading, setLoading] = useState<boolean>(false);
     const [metricList, setMetricList] = useState<MetricData[]>([]);
     const [error, setError] = useState<string | null>(null);
@@ -14,8 +14,8 @@ export function useGeneralMetrics(){
             setError(null);
 
             try {
-                const data: MetricResponse[] =
-                    await topicService.getMetricList();
+                const data: MetricItem[] =
+                    await topicService.getMetricList(startDate, endDate);
 
                 const mergedMetrics: MetricData[] = MENU_METRICS.map(
                     (metric) => {
@@ -23,10 +23,15 @@ export function useGeneralMetrics(){
                             (item) => item.title === metric.title
                         );
 
+                        const formattedChange =
+                            responseMetric?.change != null
+                                ? `${metric.title !== "TOP FIELD" && Number(responseMetric.change) >= 0 ? "+" : ""}${Number(responseMetric.change).toFixed(2)} ${metric.changeSuffix}`
+                                : "";
+
                         return {
                             ...metric,
                             value: responseMetric?.value ?? "-",
-                            changes: responseMetric?.changes ?? "",
+                            change: formattedChange,
                         };
                     }
                 );
@@ -44,7 +49,7 @@ export function useGeneralMetrics(){
         };
 
         fetchMetricList();
-    },[])
+    },[startDate, endDate])
 
     return { loading, metricList, error };
 }
