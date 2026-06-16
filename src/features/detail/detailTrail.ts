@@ -2,8 +2,10 @@ import { routePaths } from "@/app/router/routes";
 import type { DetailTitleEntityType } from "@/store/detailTitleStore";
 
 const detailTrailSearchParam = "trail";
+const detailOriginSearchParam = "origin";
 
 export type DetailTrailEntityType = DetailTitleEntityType;
+export type DetailOrigin = "bookmarks" | "search";
 
 export type DetailTrailEntry = {
   entityId: string;
@@ -18,6 +20,10 @@ type DetailRouteParams = {
 
 function normalizeEntityId(entityId: string) {
   return entityId.trim();
+}
+
+function normalizeDetailOrigin(origin: string | null | undefined): DetailOrigin {
+  return origin?.trim().toLowerCase() === "bookmarks" ? "bookmarks" : "search";
 }
 
 function normalizeEntityType(entityType: string) {
@@ -96,6 +102,11 @@ export function parseDetailTrail(search: string) {
     .filter((entry): entry is DetailTrailEntry => entry !== null);
 }
 
+export function parseDetailOrigin(search: string): DetailOrigin {
+  const params = new URLSearchParams(search);
+  return normalizeDetailOrigin(params.get(detailOriginSearchParam));
+}
+
 export function appendDetailTrailEntry(
   currentTrail: DetailTrailEntry[],
   currentEntityType: DetailTrailEntityType,
@@ -132,21 +143,33 @@ export function buildDetailTrailUrl(
   entityType: DetailTrailEntityType,
   entityId: string | number,
   trail: DetailTrailEntry[],
+  origin: DetailOrigin = "search",
 ) {
   const basePath = buildDetailPath(entityType, entityId);
   const normalizedTrail = trail
     .map((entry) => normalizeDetailTrailEntry(entry))
     .filter((entry): entry is DetailTrailEntry => entry !== null);
 
-  if (normalizedTrail.length === 0) {
+  const normalizedOrigin = normalizeDetailOrigin(origin);
+
+  if (normalizedTrail.length === 0 && normalizedOrigin === "search") {
     return basePath;
   }
 
-  const params = new URLSearchParams({
-    [detailTrailSearchParam]: normalizedTrail
-      .map((entry) => encodeURIComponent(serializeDetailTrailEntry(entry)))
-      .join(","),
-  });
+  const params = new URLSearchParams();
+
+  if (normalizedTrail.length > 0) {
+    params.set(
+      detailTrailSearchParam,
+      normalizedTrail
+        .map((entry) => encodeURIComponent(serializeDetailTrailEntry(entry)))
+        .join(","),
+    );
+  }
+
+  if (normalizedOrigin !== "search") {
+    params.set(detailOriginSearchParam, normalizedOrigin);
+  }
 
   return `${basePath}?${params.toString()}`;
 }
@@ -160,16 +183,27 @@ export function buildNextDetailUrl(
 ) {
   const normalizedTargetId = normalizeEntityId(String(targetEntityId));
   const currentTrail = parseDetailTrail(search);
+  const currentOrigin = parseDetailOrigin(search);
 
   if (!normalizedTargetId) {
-    return buildDetailTrailUrl(targetEntityType, targetEntityId, currentTrail);
+    return buildDetailTrailUrl(
+      targetEntityType,
+      targetEntityId,
+      currentTrail,
+      currentOrigin,
+    );
   }
 
   if (
     currentEntityType === targetEntityType &&
     normalizeEntityId(currentEntityId) === normalizedTargetId
   ) {
-    return buildDetailTrailUrl(targetEntityType, normalizedTargetId, currentTrail);
+    return buildDetailTrailUrl(
+      targetEntityType,
+      normalizedTargetId,
+      currentTrail,
+      currentOrigin,
+    );
   }
 
   const nextTrail = appendDetailTrailEntry(
@@ -178,7 +212,12 @@ export function buildNextDetailUrl(
     currentEntityId,
   );
 
-  return buildDetailTrailUrl(targetEntityType, normalizedTargetId, nextTrail);
+  return buildDetailTrailUrl(
+    targetEntityType,
+    normalizedTargetId,
+    nextTrail,
+    currentOrigin,
+  );
 }
 
 export function getDetailContextFromRouteParams(params: DetailRouteParams) {

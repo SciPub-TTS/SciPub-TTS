@@ -14,6 +14,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useLocation, useParams } from "react-router-dom";
 
 import { routePaths } from "@/app/router";
+import { useWorkBookmark } from "@/features/bookmarks/hooks/useWorkBookmark";
 import {
   buildNextDetailUrl,
   getDetailContextFromRouteParams,
@@ -140,9 +141,26 @@ export default function ListWorkLayout({
       ? authorRefs
       : authors.map((authorName) => ({ id: null, name: authorName }));
 
-  const bookmarkClassName = isSaved
-    ? "bg-[#14532D] text-white"
-    : "border border-slate-400 bg-white text-black hover:bg-slate-50";
+  const {
+    bookmarkButtonLabel,
+    handleBookmarkClick: handleWorkBookmarkClick,
+    isBookmarkActionPending,
+    isSaved: savedState,
+  } = useWorkBookmark({
+    authors,
+    citations,
+    initialSaved: isSaved,
+    onSuccess: onBookmarkClick,
+    openAlexId: workId,
+    source: venue,
+    title,
+    topic: topicRef?.name || topic,
+    year,
+  });
+
+  const bookmarkClassName = savedState
+    ? "border border-[#14532D] bg-[#14532D] text-white hover:border-[#0f3d22] hover:bg-[#0f3d22] hover:text-white"
+    : "border border-black bg-white text-black hover:border-[#14532D] hover:bg-[#14532D] hover:text-white";
 
   const visibleAuthors = showAllAuthors ? authorItems : authorItems.slice(0, 3);
   const hasMoreAuthors = authorItems.length > 3;
@@ -389,14 +407,18 @@ export default function ListWorkLayout({
         <div className="flex flex-wrap items-center gap-2">
           <button
             type="button"
-            onClick={onBookmarkClick}
+            disabled={isBookmarkActionPending}
+            onClick={() => {
+              void handleWorkBookmarkClick();
+            }}
+            title={savedState ? "Remove bookmark" : "Save bookmark"}
             className={[
-              "inline-flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-bold transition border-black",
+              "inline-flex items-center gap-2 rounded-lg border-black px-3 py-2 text-xs font-bold transition disabled:cursor-not-allowed disabled:opacity-70",
               bookmarkClassName,
             ].join(" ")}
           >
             <Bookmark className="h-4 w-4" />
-            {isSaved ? "Saved" : "Bookmark"}
+            {bookmarkButtonLabel}
           </button>
 
           <button

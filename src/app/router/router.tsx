@@ -44,6 +44,7 @@ import {
 } from "@/features/auth/constants/roles";
 import {
   buildDetailTrailUrl,
+  parseDetailOrigin,
   parseDetailTrail,
   type DetailTrailEntityType,
 } from "@/features/detail/detailTrail";
@@ -95,21 +96,31 @@ function getDetailBreadcrumb(
   entityId: string,
 ): AppRouteHandle["breadcrumb"] {
   const detailTrail = parseDetailTrail(location.search);
+  const detailOrigin = parseDetailOrigin(location.search);
   const trailItems = detailTrail.map((trailEntry, index) => ({
     label: getDetailBreadcrumbLabel(trailEntry.entityType, trailEntry.entityId),
     to: buildDetailTrailUrl(
       trailEntry.entityType,
       trailEntry.entityId,
       detailTrail.slice(0, index),
+      detailOrigin,
     ),
   }));
 
+  const rootItem =
+    detailOrigin === "bookmarks"
+      ? {
+          label: "Bookmarks",
+          to: ROUTES.BOOKMARKS,
+        }
+      : {
+          label: "Search",
+          to: ROUTES.SEARCH,
+          onClick: markSearchPageRestorePending,
+        };
+
   return [
-    {
-      label: "Search",
-      to: ROUTES.SEARCH,
-      onClick: markSearchPageRestorePending,
-    },
+    rootItem,
     ...trailItems,
     { label: getDetailBreadcrumbLabel(entityType, entityId) },
   ];

@@ -1,4 +1,7 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
+
+import { buildDetailTrailUrl } from "@/features/detail/detailTrail";
 import type { BookmarkResponse } from "@/features/bookmarks/types/bookmark.types";
 import {
     formatAuthors,
@@ -150,14 +153,22 @@ export function BookmarkCard({ bookmark, onDelete, onUpdateNote }: BookmarkCardP
         </span>
 
                 <div className="flex items-center gap-1">
-                    {/* Open external */}
-                    <button className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-all" title="Open paper">
+                    <Link
+                        to={buildDetailTrailUrl(
+                            "works",
+                            bookmark.openAlexId,
+                            [],
+                            "bookmarks",
+                        )}
+                        className="inline-flex h-7 items-center gap-1 rounded-lg border border-slate-200 px-2.5 text-[11px] font-semibold text-slate-500 transition-all hover:border-[#14532D] hover:bg-[#14532D] hover:text-white"
+                        title="View detail"
+                    >
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
-                            <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                            <polyline points="15,3 21,3 21,9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                            <line x1="10" y1="14" x2="21" y2="3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                            <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                            <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.5" />
                         </svg>
-                    </button>
+                        View Detail
+                    </Link>
 
                     {/* Share */}
                     <button className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-all" title="Share">
