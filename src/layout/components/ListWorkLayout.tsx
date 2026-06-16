@@ -83,9 +83,9 @@ function copyTextWithFallback(value: string) {
     }
 
     return Promise.resolve();
-  } catch (error) {
+  } catch {
     document.body.removeChild(textArea);
-    return Promise.reject(error);
+    return Promise.reject(new Error("Copy command was not successful."));
   }
 }
 
@@ -180,7 +180,7 @@ export default function ListWorkLayout({
       await copyTextWithFallback(shareUrl);
       setShareLabel("Copied link!");
       scheduleShareLabelReset();
-    } catch (error) {
+    } catch {
       setShareLabel("Copy failed");
       scheduleShareLabelReset();
     }
