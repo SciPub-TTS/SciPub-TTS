@@ -1,5 +1,6 @@
 import { mapApiWorkToPaperResult } from "@/features/search/services/searchWorksMapper";
-import { buildApiPath, requestPublicJson } from "@/lib/api/fetchJson";
+import { publicHttp } from "@/services/http";
+import type { ApiResponse } from "@/types/common.types";
 
 import type {
   AuthorDetailData,
@@ -17,10 +18,10 @@ export async function getAuthorDetail(authorId: string): Promise<AuthorDetailDat
     throw new Error("Author ID is missing.");
   }
 
-  const endpoint = buildApiPath(
+  const response = await publicHttp.get<ApiResponse<EntityDetailApiResponse>>(
     `/api/authors/${encodeURIComponent(normalizedAuthorId)}`,
   );
-  const data = await requestPublicJson<EntityDetailApiResponse>(endpoint);
+  const data = response.data.data;
 
   return mapAuthorDetail(data);
 }
@@ -32,10 +33,10 @@ export async function getTopicDetail(topicId: string): Promise<TopicDetailData> 
     throw new Error("Topic ID is missing.");
   }
 
-  const endpoint = buildApiPath(
+  const response = await publicHttp.get<ApiResponse<EntityDetailApiResponse>>(
     `/api/topics/${encodeURIComponent(normalizedTopicId)}`,
   );
-  const data = await requestPublicJson<EntityDetailApiResponse>(endpoint);
+  const data = response.data.data;
 
   return mapTopicDetail(data);
 }

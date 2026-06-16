@@ -1,4 +1,5 @@
-import { createApiUrl, requestPublicJson } from "@/lib/api/fetchJson";
+import { publicHttp } from "@/services/http";
+import type { ApiResponse } from "@/types/common.types";
 import { SEARCH_WORKS_PER_PAGE } from "../constants";
 import type { SearchFilters } from "../types";
 import { mapApiWorkToPaperResult } from "./searchWorksMapper";
@@ -12,8 +13,12 @@ import type {
 export async function searchWorks(
   request: SearchWorksRequest,
 ): Promise<SearchWorksState> {
-  const endpoint = buildSearchWorksUrl(request);
-  const data = await requestPublicJson<SearchWorksApiResponse>(endpoint);
+  const params = buildSearchWorksParams(request);
+  const response = await publicHttp.get<ApiResponse<SearchWorksApiResponse>>(
+    "/api/search/works",
+    { params },
+  );
+  const data = response.data.data;
   const works = data.results.map(mapApiWorkToPaperResult);
 
   return {
@@ -26,98 +31,98 @@ export async function searchWorks(
   };
 }
 
-function buildSearchWorksUrl(request: SearchWorksRequest) {
-  const endpoint = createApiUrl("/api/search/works");
+function buildSearchWorksParams(request: SearchWorksRequest) {
+  const params = new URLSearchParams();
   const { filters, optionValueLookup } = request;
   const { sortState } = request;
 
-  appendIfFilled(endpoint, "query", request.appliedSearchQuery.trim());
+  appendIfFilled(params, "query", request.appliedSearchQuery.trim());
 
   if (hasActiveYearFilter(filters)) {
-    appendIfFilled(endpoint, "yearMode", filters.yearMode);
+    appendIfFilled(params, "yearMode", filters.yearMode);
 
     if (filters.yearMode === "exact") {
-      appendIfFilled(endpoint, "yearExact", filters.yearExact);
+      appendIfFilled(params, "yearExact", filters.yearExact);
     } else {
-      appendIfFilled(endpoint, "yearFrom", filters.yearFrom);
-      appendIfFilled(endpoint, "yearTo", filters.yearTo);
+      appendIfFilled(params, "yearFrom", filters.yearFrom);
+      appendIfFilled(params, "yearTo", filters.yearTo);
     }
   }
 
-  appendMappedValues(endpoint, "type", filters.type, optionValueLookup.type);
+  appendMappedValues(params, "type", filters.type, optionValueLookup.type);
 
   if (filters.openAccess) {
-    endpoint.searchParams.append("openAccess", "true");
+    params.append("openAccess", "true");
   }
 
   appendMappedValues(
-    endpoint,
+    params,
     "subField",
     filters.subField,
     optionValueLookup.subField,
   );
   appendMappedValues(
-    endpoint,
+    params,
     "author",
     filters.author,
     optionValueLookup.author,
   );
   appendMappedValues(
-    endpoint,
+    params,
     "institution",
     filters.institution,
     optionValueLookup.institution,
   );
 
   if (filters.pdf) {
-    endpoint.searchParams.append("pdf", "true");
+    params.append("pdf", "true");
   }
 
   appendMappedValues(
-    endpoint,
+    params,
     "country",
     filters.country,
     optionValueLookup.country,
   );
 
   if (hasActiveCitationFilter(filters)) {
-    appendIfFilled(endpoint, "citationMode", filters.citationMode);
+    appendIfFilled(params, "citationMode", filters.citationMode);
 
     if (filters.citationMode === "exact") {
-      appendIfFilled(endpoint, "citationExact", filters.citationExact);
+      appendIfFilled(params, "citationExact", filters.citationExact);
     } else {
-      appendIfFilled(endpoint, "citationMin", filters.citationMin);
-      appendIfFilled(endpoint, "citationMax", filters.citationMax);
+      appendIfFilled(params, "citationMin", filters.citationMin);
+      appendIfFilled(params, "citationMax", filters.citationMax);
     }
   }
 
   appendMappedValues(
-    endpoint,
+    params,
     "source",
     filters.source,
     optionValueLookup.source,
   );
   appendMappedValues(
-    endpoint,
+    params,
     "award",
     filters.award,
     optionValueLookup.award,
   );
-  appendIfFilled(endpoint, "indexedByOrcid", filters.indexedByOrcid);
+  appendIfFilled(params, "indexedByOrcid", filters.indexedByOrcid);
 
   if (sortState.trendingMode !== "none") {
-    appendIfFilled(endpoint, "trendingMode", sortState.trendingMode);
+    appendIfFilled(params, "trendingMode", sortState.trendingMode);
   }
 
   if (sortState.sortBy !== "relevance") {
-    appendIfFilled(endpoint, "sortBy", sortState.sortBy);
-    appendIfFilled(endpoint, "sortDirection", sortState.sortDirection);
+    appendIfFilled(params, "sortBy", sortState.sortBy);
+    appendIfFilled(params, "sortDirection", sortState.sortDirection);
   }
 
-  endpoint.searchParams.set("page", String(request.page));
-  endpoint.searchParams.set("perPage", String(SEARCH_WORKS_PER_PAGE));
+  params.set("page", String(request.page));
+  params.set("perPage", String(SEARCH_WORKS_PER_PAGE));
 
-  return endpoint;
+  return params;
 }
 
 function hasActiveYearFilter(filters: SearchFilters) {
@@ -136,18 +141,18 @@ function hasActiveCitationFilter(filters: SearchFilters) {
   return Boolean(filters.citationMin.trim() || filters.citationMax.trim());
 }
 
-function appendIfFilled(url: URL, key: string, value: string) {
+function appendIfFilled(params: URLSearchParams, key: string, value: string) {
   const normalizedValue = value.trim();
 
   if (!normalizedValue) {
     return;
   }
 
-  url.searchParams.append(key, normalizedValue);
+  params.append(key, normalizedValue);
 }
 
 function appendMappedValues(
-  url: URL,
+  params: URLSearchParams,
   key: string,
   labels: string[],
   valueLookup: Record<string, string>,
@@ -159,6 +164,6 @@ function appendMappedValues(
       continue;
     }
 
-    url.searchParams.append(key, value);
+    params.append(key, value);
   }
 }

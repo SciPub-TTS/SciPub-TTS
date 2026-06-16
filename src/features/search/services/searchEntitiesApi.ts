@@ -1,4 +1,5 @@
-import { createApiUrl, requestPublicJson } from "@/lib/api/fetchJson";
+import { publicHttp } from "@/services/http";
+import type { ApiResponse } from "@/types/common.types";
 import { SEARCH_WORKS_PER_PAGE } from "../constants";
 import { mapApiEntityToResult } from "./searchEntitiesMapper";
 import type {
@@ -10,13 +11,17 @@ import type {
 export async function searchEntities(
   request: SearchEntityRequest,
 ): Promise<SearchEntitiesState> {
-  const endpoint = createApiUrl("/api/search/entities");
-  endpoint.searchParams.set("entityType", request.entityType);
-  endpoint.searchParams.set("page", String(request.page));
-  endpoint.searchParams.set("perPage", String(SEARCH_WORKS_PER_PAGE));
-  appendIfFilled(endpoint, "query", request.appliedSearchQuery);
+  const params = new URLSearchParams();
+  params.set("entityType", request.entityType);
+  params.set("page", String(request.page));
+  params.set("perPage", String(SEARCH_WORKS_PER_PAGE));
+  appendIfFilled(params, "query", request.appliedSearchQuery);
 
-  const data = await requestPublicJson<SearchEntitiesApiResponse>(endpoint);
+  const response = await publicHttp.get<ApiResponse<SearchEntitiesApiResponse>>(
+    "/api/search/entities",
+    { params },
+  );
+  const data = response.data.data;
   const normalizedEntityType = normalizeEntityType(
     data.meta?.entityType,
     request.entityType,
@@ -35,14 +40,14 @@ export async function searchEntities(
   };
 }
 
-function appendIfFilled(url: URL, key: string, value: string) {
+function appendIfFilled(params: URLSearchParams, key: string, value: string) {
   const normalizedValue = value.trim();
 
   if (!normalizedValue) {
     return;
   }
 
-  url.searchParams.append(key, normalizedValue);
+  params.append(key, normalizedValue);
 }
 
 function normalizeEntityType(

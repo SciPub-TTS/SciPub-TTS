@@ -130,7 +130,6 @@ export function useSearchPageState() {
   const searchSummaryQuery = useQuery({
     queryFn: () => getSearchSummary(activeEntityType),
     queryKey: ["searchSummary", activeEntityType],
-    staleTime: 10 * 60 * 1000,
   });
   const recentSearchesQuery = useQuery({
     enabled: isSearchHistoryEnabled,
@@ -233,7 +232,6 @@ export function useSearchPageState() {
       });
     },
     queryKey: ["searchResults", submittedSearch],
-    staleTime: 30 * 1000,
   });
 
   useEffect(() => {
