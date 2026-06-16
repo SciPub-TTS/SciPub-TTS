@@ -160,10 +160,8 @@ export type PaperDetailSummaryItem = {
 };
 
 export type PaperDetailMetric = {
-  badgeLabel?: string;
   label: string;
   value: string;
-  tone?: "default" | "positive";
 };
 
 export type PaperDetailImpactChartItem = {

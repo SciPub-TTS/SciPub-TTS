@@ -112,9 +112,6 @@ function EntityCardLayout({
             <h3 className="break-words text-[24px] font-semibold leading-tight text-slate-950">
               {title}
             </h3>
-            <p className="mt-1 text-[11px] font-extrabold uppercase tracking-[0.24em] text-[#005CB9]">
-              Research entity snapshot
-            </p>
           </div>
         </div>
 

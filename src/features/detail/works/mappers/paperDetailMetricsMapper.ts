@@ -22,28 +22,18 @@ export function buildMetrics(
   institutionCount: number,
 ) {
   const percentile = work.citation_normalized_percentile;
-  const isFwciPositive = work.fwci !== null && work.fwci >= 1;
-  const percentileBadgeLabel = percentile?.is_in_top_1_percent
-    ? "Top 1%"
-    : percentile?.is_in_top_10_percent
-      ? "Top 10%"
-      : undefined;
   const items: PaperDetailMetric[] = [
     {
-      badgeLabel: isFwciPositive ? "Above avg" : undefined,
       label: "FWCI",
       value: formatDecimalValue(work.fwci),
-      tone: isFwciPositive ? "positive" : "default",
     },
     {
       label: "Citations",
       value: formatFullNumber(work.cited_by_count || 0),
     },
     {
-      badgeLabel: percentileBadgeLabel,
       label: "Citation percentile",
       value: formatCitationPercentile(percentile?.value),
-      tone: percentileBadgeLabel ? "positive" : "default",
     },
     {
       label: "Referenced works",

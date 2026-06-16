@@ -184,9 +184,9 @@ function LocationAccessChart(props: LocationAccessChartProps) {
                   className="inline-flex h-3.5 w-3.5 rounded-full border border-black"
                   style={{ backgroundColor: item.color }}
                 />
-                <p className="text-sm font-semibold text-black">{item.label}</p>
+                <p className="text-sm font-semibold text-[#9a6700]">{item.label}</p>
               </div>
-              <p className="mt-2 text-lg font-semibold text-[#9a6700]">
+              <p className="mt-2 text-lg font-semibold text-black">
                 {formatFullNumber(item.value)}
               </p>
             </div>
