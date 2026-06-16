@@ -118,7 +118,7 @@ export default function MainFooter() {
       <div className="dynamic-divider-top border-t border-slate-200 py-4">
         <div className="mx-auto flex max-w-7xl flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <p className="text-slate-500">
-            &copy; 2026 SJPTTS &mdash; For academic review and demonstration
+            &copy; 2026 Owlreka &mdash; For academic review and demonstration
             purposes.
           </p>
         </div>
