@@ -1,9 +1,54 @@
 import type {FilterData} from "@/features/dashboard/topic/types/filter.ts";
+import {getAvailableMondays} from "@/features/dashboard/topic/hooks/getAvailableMondays.ts";
 
 export const MENU_FILTER: FilterData[] = [
-    { title: "Velocity", className: "w-[8vw]" },
-    { title: "Acceleration", className: "w-[8vw]" },
-    { title: "Institutional Diversity", className: "w-[12vw]" },
-    { title: "Author Newcomer Ratio", className: "w-[14vw]" },
-    { title: "Citation Quality", className: "w-[8vw]" },
+    {
+        key: "endDate",
+        title: "End Date",
+        className: "w-[12vw]",
+        options: getAvailableMondays().map(date => ({
+            label: date,
+            value: date,
+        })),
+    },
+
+    {
+        key: "fieldId",
+        title: "Field",
+        className: "w-[12vw]",
+        options: [
+            {
+                label: "Computer Science",
+                value: "17",
+            },
+            {
+                label: "Engineering",
+                value: "22",
+            },
+        ],
+    },
+
+    {
+        key: "formula",
+        title: "Formula",
+        className: "w-[12vw]",
+        options: [
+            {
+                label: "Balanced",
+                value: "balanced",
+            },
+            {
+                label: "Trending",
+                value: "trending",
+            },
+            {
+                label: "Emerging",
+                value: "emerging",
+            },
+            {
+                label: "Impact",
+                value: "impact",
+            },
+        ],
+    },
 ];

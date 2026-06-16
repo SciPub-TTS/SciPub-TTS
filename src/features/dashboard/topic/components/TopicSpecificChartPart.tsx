@@ -1,9 +1,9 @@
 import {Legend, PolarAngleAxis, PolarGrid, PolarRadiusAxis, Radar, RadarChart, ResponsiveContainer} from "recharts";
 import {useEffect, useMemo, useState} from "react";
 import {ResponsiveHeatMap} from "@nivo/heatmap";
-import {topicHeatmaps} from "@/features/dashboard/topic/constants/topic-heatmap.ts";
 import type {TopicRadarData} from "@/features/dashboard/topic/types/radar.ts";
 import {useTopicRadar} from "@/features/dashboard/topic/hooks/useTopicRadar.ts";
+import {useTopicHeatmap} from "@/features/dashboard/topic/hooks/useTopicHeatmap.ts";
 
 type TopicSpecificChartPartProps = {
     startDate: string;
@@ -44,7 +44,12 @@ export default function TopicSpecificChartPart({
         <div className="grid grid-cols-2 gap-4">
             <RadarPart data={radarData} selectedTopic={selectedTopic} setSelectedTopic={setSelectedTopic}/>
 
-            <HeatMapPart selectedTopic={selectedTopic}/>
+            <HeatMapPart
+                selectedTopic={selectedTopic}
+                startDate={startDate}
+                endDate={endDate}
+                fieldId={fieldId}
+            />
         </div>
     );
 }
@@ -160,10 +165,16 @@ function RadarPart({ data, selectedTopic, setSelectedTopic }: RadarPartProps
     );
 }
 
-function HeatMapPart({selectedTopic}:{selectedTopic:string}) {
-    const data =
-        topicHeatmaps[selectedTopic] ??
-        topicHeatmaps["Large Language Models (LLMs)"];
+function HeatMapPart({ selectedTopic, startDate, endDate, fieldId }: {
+    selectedTopic: string;
+    startDate: string;
+    endDate: string;
+    fieldId: string | number;
+}) {
+    const { loading, nivoData, error } = useTopicHeatmap(
+        { startDate, endDate, fieldId },
+        selectedTopic
+    );
 
     return (
         <div className="rounded-lg border border-slate-200 bg-white p-4">
@@ -171,7 +182,6 @@ function HeatMapPart({selectedTopic}:{selectedTopic:string}) {
                 <h2 className="text-xl font-bold text-slate-900">
                     Research Metrics Heat Map
                 </h2>
-
                 <p className="text-sm text-slate-500">
                     Visualize how key research indicators have evolved from
                     2021 to 2026 across velocity, impact, diversity, and
@@ -179,35 +189,33 @@ function HeatMapPart({selectedTopic}:{selectedTopic:string}) {
                 </p>
                 <div className="mt-2 inline-flex items-center gap-2 rounded-full
                     bg-blue-50 px-3 py-1 text-sm text-blue-700 border border-blue-200">
-                    <span className="font-medium">
-                        Current topic:
-                    </span>
-
-                                <span>
-                        {selectedTopic}
-                    </span>
+                    <span className="font-medium">Current topic:</span>
+                    <span>{selectedTopic}</span>
                 </div>
             </div>
 
             <div className="h-[450px]">
-                <ResponsiveHeatMap
-                    data={data}
-
-                    margin={{
-                        top: 40,
-                        right: 60,
-                        bottom: 60,
-                        left: 140,
-                    }}
-                    valueFormat=">-.0f"
-                    colors={{
-                        type: "sequential",
-                        scheme: "greens",
-                    }}
-                    emptyColor="#f3f4f6"
-                    borderWidth={1}
-                    borderColor="#fff"
-                />
+                {loading && (
+                    <div className="flex h-full items-center justify-center text-slate-400 text-sm">
+                        Loading heatmap...
+                    </div>
+                )}
+                {error && (
+                    <div className="flex h-full items-center justify-center text-red-400 text-sm">
+                        {error}
+                    </div>
+                )}
+                {!loading && !error && nivoData.length > 0 && (
+                    <ResponsiveHeatMap
+                        data={nivoData}
+                        margin={{ top: 40, right: 60, bottom: 60, left: 140 }}
+                        valueFormat=">-.0f"
+                        colors={{ type: "sequential", scheme: "greens" }}
+                        emptyColor="#f3f4f6"
+                        borderWidth={1}
+                        borderColor="#fff"
+                    />
+                )}
             </div>
         </div>
     );

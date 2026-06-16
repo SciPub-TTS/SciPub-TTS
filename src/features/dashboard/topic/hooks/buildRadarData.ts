@@ -2,7 +2,7 @@ import {topicMetrics} from "@/features/dashboard/topic/constants/topic-data.ts";
 import {averageMetrics, metricKeys} from "@/features/dashboard/topic/hooks/averageMetrics.ts";
 
 export const buildRadarData = (topicName: string) => {
-    const topic = topicMetrics.find(t => t.topic === topicName);
+    const topic = topicMetrics.find(t => t.name === topicName); // "topic" → "name"
 
     if (!topic) return [];
 
