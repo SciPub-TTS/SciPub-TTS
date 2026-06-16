@@ -1,8 +1,12 @@
 import { Globe2, Landmark, Tag } from "lucide-react";
 import type { ReactNode } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useParams } from "react-router-dom";
 
 import { routePaths } from "@/app/router";
+import {
+  buildNextDetailUrl,
+  getDetailContextFromRouteParams,
+} from "@/features/detail/detailTrail";
 import MetadataBadge from "@/layout/components/MetadataBadge";
 
 import type {
@@ -43,12 +47,12 @@ export default function PaperSourceAccessSection(
       icon={<Landmark className="h-5 w-5" />}
       title="Source, Awards & Access"
     >
-      <div className="space-y-2 text-sm font-semibold text-[#9a6700]">
+      <div className="space-y-2 text-sm font-semibold text-black">
         <p className="font-bold text-black">
           {section.source?.name || section.sourceName}
         </p>
         <p>
-          <span className="font-bold text-black">Source type:</span>{" "}
+          <span className="font-bold text-[#9a6700]">Source type:</span>{" "}
           {section.sourceType}
         </p>
         {section.sourceHostOrganization ? (
@@ -96,7 +100,7 @@ function SummaryGrid(props: SummaryGridProps) {
           key={`${item.label}-${item.value}`}
           className="min-w-0 space-y-1"
         >
-          <p className="text-xs font-bold uppercase tracking-[0.18em] text-black">
+          <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#9a6700]">
             {item.label}
           </p>
           {item.href ? (
@@ -104,12 +108,12 @@ function SummaryGrid(props: SummaryGridProps) {
               href={item.href}
               target="_blank"
               rel="noreferrer"
-              className="block overflow-hidden break-all text-sm font-semibold text-[#9a6700] transition hover:text-blue-700 hover:underline hover:decoration-blue-700 hover:underline-offset-4"
+              className="block overflow-hidden break-all text-sm font-semibold text-black transition hover:text-blue-700 hover:underline hover:decoration-blue-700 hover:underline-offset-4"
             >
               {item.value}
             </a>
           ) : (
-            <p className="break-words text-sm font-semibold text-[#9a6700]">
+            <p className="break-words text-sm font-semibold text-black">
               {item.value}
             </p>
           )}
@@ -124,7 +128,7 @@ function TagCluster(props: TagClusterProps) {
 
   return (
     <div className="border-t border-black pt-4">
-      <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.22em] text-black">
+      <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.22em] text-[#9a6700]">
         {icon}
         {title}
       </div>
@@ -147,6 +151,8 @@ function TagCluster(props: TagClusterProps) {
 
 function EntityTagCluster(props: EntityTagClusterProps) {
   const { icon, items, title } = props;
+  const location = useLocation();
+  const currentDetailContext = getDetailContextFromRouteParams(useParams());
 
   if (items.length === 0) {
     return null;
@@ -154,26 +160,37 @@ function EntityTagCluster(props: EntityTagClusterProps) {
 
   return (
     <div className="border-t border-black pt-4">
-      <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.22em] text-black">
+      <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.22em] text-[#9a6700]">
         {icon}
         {title}
       </div>
-      <div className="mt-3 flex flex-wrap gap-2">
+      <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2">
         {items.map((item) => (
           item.type === "topic" ? (
             <Link
               key={`${item.type}-${item.id}`}
-              to={routePaths.topicDetail(item.id)}
-              className="transition hover:-translate-y-0.5"
+              to={
+                currentDetailContext
+                  ? buildNextDetailUrl(
+                      location.search,
+                      currentDetailContext.entityType,
+                      currentDetailContext.entityId,
+                      "topics",
+                      item.id,
+                    )
+                  : routePaths.topicDetail(item.id)
+              }
+              className="text-sm font-semibold text-blue-700 transition hover:text-blue-900 hover:underline"
             >
-              <MetadataBadge tone="topic" label={item.name} />
+              {item.name}
             </Link>
           ) : (
-            <MetadataBadge
+            <span
               key={`${item.type}-${item.id}`}
-              tone="topic"
-              label={item.name}
-            />
+              className="text-sm font-semibold text-black"
+            >
+              {item.name}
+            </span>
           )
         ))}
       </div>

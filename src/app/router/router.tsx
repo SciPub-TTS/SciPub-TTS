@@ -43,35 +43,11 @@ import {
   AUTHENTICATED_ROLES,
 } from "@/features/auth/constants/roles";
 import {
-  buildPaperDetailTrailUrl,
-  parseWorkTrail,
-} from "@/features/detail/works/workTrail";
+  buildDetailTrailUrl,
+  parseDetailTrail,
+  type DetailTrailEntityType,
+} from "@/features/detail/detailTrail";
 import { markSearchPageRestorePending } from "@/features/search/utils/navigationState";
-
-function getPaperBreadcrumbLabel(paperId: string) {
-  return getDetailTitle("works", paperId) || "Paper Detail";
-}
-
-function getPaperBreadcrumb(location: Location, paperId: string) {
-  const workTrail = parseWorkTrail(location.search);
-  const trailItems = workTrail.map((trailPaperId, index) => ({
-    label: getPaperBreadcrumbLabel(trailPaperId),
-    to:
-      index === 0
-        ? buildPaperDetailTrailUrl(trailPaperId, [])
-        : buildPaperDetailTrailUrl(trailPaperId, workTrail.slice(0, index)),
-  }));
-
-  return [
-    {
-      label: "Search",
-      to: ROUTES.SEARCH,
-      onClick: markSearchPageRestorePending,
-    },
-    ...trailItems,
-    { label: getPaperBreadcrumbLabel(paperId) },
-  ];
-}
 
 function getProfileBreadcrumb(search: string): AppRouteHandle["breadcrumb"] {
   const params = new URLSearchParams(search);
@@ -94,37 +70,49 @@ function getProfileBreadcrumb(search: string): AppRouteHandle["breadcrumb"] {
   return "Profile";
 }
 
-function getEntityDetailBreadcrumb(label: string): AppRouteHandle["breadcrumb"] {
+function getDetailFallbackLabel(entityType: DetailTitleEntityType) {
+  if (entityType === "works") {
+    return "Paper Detail";
+  }
+
+  if (entityType === "authors") {
+    return "Author Detail";
+  }
+
+  return "Topic Detail";
+}
+
+function getDetailBreadcrumbLabel(
+  entityType: DetailTitleEntityType,
+  entityId: string,
+) {
+  return getDetailTitle(entityType, entityId) || getDetailFallbackLabel(entityType);
+}
+
+function getDetailBreadcrumb(
+  location: Location,
+  entityType: DetailTrailEntityType,
+  entityId: string,
+): AppRouteHandle["breadcrumb"] {
+  const detailTrail = parseDetailTrail(location.search);
+  const trailItems = detailTrail.map((trailEntry, index) => ({
+    label: getDetailBreadcrumbLabel(trailEntry.entityType, trailEntry.entityId),
+    to: buildDetailTrailUrl(
+      trailEntry.entityType,
+      trailEntry.entityId,
+      detailTrail.slice(0, index),
+    ),
+  }));
+
   return [
     {
       label: "Search",
       to: ROUTES.SEARCH,
       onClick: markSearchPageRestorePending,
     },
-    { label },
+    ...trailItems,
+    { label: getDetailBreadcrumbLabel(entityType, entityId) },
   ];
-}
-
-function getEntityBreadcrumbLabel(
-  entityType: Extract<DetailTitleEntityType, "authors" | "topics">,
-  entityId: string,
-) {
-  const fallbackLabel =
-    entityType === "authors" ? "Author Detail" : "Topic Detail";
-
-  return getDetailTitle(entityType, entityId) || fallbackLabel;
-}
-
-function getAuthorDetailBreadcrumb(authorId: string): AppRouteHandle["breadcrumb"] {
-  return getEntityDetailBreadcrumb(
-    getEntityBreadcrumbLabel("authors", authorId),
-  );
-}
-
-function getTopicDetailBreadcrumb(topicId: string): AppRouteHandle["breadcrumb"] {
-  return getEntityDetailBreadcrumb(
-    getEntityBreadcrumbLabel("topics", topicId),
-  );
 }
 
 const routeFallback = (
@@ -218,23 +206,35 @@ export const router = createBrowserRouter([
                 paperId?: string;
               };
             };
-          }) => getPaperBreadcrumb(location, match.params.paperId || ""),
+          }) => getDetailBreadcrumb(location, "works", match.params.paperId || ""),
         },
       },
       {
         path: ROUTE_SEGMENTS.AUTHOR_DETAIL,
         element: withSuspense(<AuthorDetailPage />),
         handle: {
-          breadcrumb: ({ match }: { match: { params: { authorId?: string } } }) =>
-            getAuthorDetailBreadcrumb(match.params.authorId || ""),
+          breadcrumb: ({
+            location,
+            match,
+          }: {
+            location: Location;
+            match: { params: { authorId?: string } };
+          }) =>
+            getDetailBreadcrumb(location, "authors", match.params.authorId || ""),
         },
       },
       {
         path: ROUTE_SEGMENTS.TOPIC_DETAIL,
         element: withSuspense(<TopicDetailPage />),
         handle: {
-          breadcrumb: ({ match }: { match: { params: { topicId?: string } } }) =>
-            getTopicDetailBreadcrumb(match.params.topicId || ""),
+          breadcrumb: ({
+            location,
+            match,
+          }: {
+            location: Location;
+            match: { params: { topicId?: string } };
+          }) =>
+            getDetailBreadcrumb(location, "topics", match.params.topicId || ""),
         },
       },
 

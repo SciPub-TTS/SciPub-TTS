@@ -1,7 +1,11 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useParams } from "react-router-dom";
 
 import { routePaths } from "@/app/router";
+import {
+  buildNextDetailUrl,
+  getDetailContextFromRouteParams,
+} from "@/features/detail/detailTrail";
 import {
   Bookmark,
   CalendarDays,
@@ -20,6 +24,8 @@ type PaperDetailHeaderProps = {
 export default function PaperDetailHeader(props: PaperDetailHeaderProps) {
   const { paperDetail } = props;
   const [isBookmarked, setIsBookmarked] = useState(false);
+  const location = useLocation();
+  const currentDetailContext = getDetailContextFromRouteParams(useParams());
   const hasPdfUrl = Boolean(paperDetail.pdfUrl?.trim());
 
   return (
@@ -29,7 +35,17 @@ export default function PaperDetailHeader(props: PaperDetailHeaderProps) {
           badge.entityType === "topic" && badge.entityId ? (
             <Link
               key={`${badge.entityType}-${badge.entityId}`}
-              to={routePaths.topicDetail(badge.entityId)}
+              to={
+                currentDetailContext
+                  ? buildNextDetailUrl(
+                      location.search,
+                      currentDetailContext.entityType,
+                      currentDetailContext.entityId,
+                      "topics",
+                      badge.entityId,
+                    )
+                  : routePaths.topicDetail(badge.entityId)
+              }
               className="transition hover:-translate-y-0.5"
             >
               <MetadataBadge

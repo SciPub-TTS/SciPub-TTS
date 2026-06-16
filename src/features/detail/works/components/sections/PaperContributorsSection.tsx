@@ -1,7 +1,11 @@
 import { Users } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useParams } from "react-router-dom";
 
 import { routePaths } from "@/app/router";
+import {
+  buildNextDetailUrl,
+  getDetailContextFromRouteParams,
+} from "@/features/detail/detailTrail";
 import type {
   PaperDetailAuthor,
   PaperDetailCountry,
@@ -40,7 +44,7 @@ export default function PaperContributorsSection(
       title="Authors, Institutions & Countries"
     >
       <div>
-        <h3 className="text-base font-semibold uppercase tracking-[0.18em] text-black">
+        <h3 className="text-base font-semibold uppercase tracking-[0.18em] text-[#9a6700]">
           Authors
         </h3>
         {hasCorrespondingAuthor ? (
@@ -56,13 +60,13 @@ export default function PaperContributorsSection(
       </div>
 
       <div className="border-t border-black pt-4">
-        <h3 className="text-base font-semibold uppercase tracking-[0.18em] text-black">
+        <h3 className="text-base font-semibold uppercase tracking-[0.18em] text-[#9a6700]">
           Institutions
         </h3>
         <InstitutionList institutions={section.institutions} />
 
         <div className="mt-5 border-t border-black pt-4">
-          <h3 className="text-base font-semibold uppercase tracking-[0.18em] text-black">
+          <h3 className="text-base font-semibold uppercase tracking-[0.18em] text-[#9a6700]">
             Countries
           </h3>
           <CountryList countries={section.countries} />
@@ -74,6 +78,8 @@ export default function PaperContributorsSection(
 
 function AuthorList(props: AuthorListProps) {
   const { authors } = props;
+  const location = useLocation();
+  const currentDetailContext = getDetailContextFromRouteParams(useParams());
 
   if (authors.length === 0) {
     return (
@@ -90,7 +96,17 @@ function AuthorList(props: AuthorListProps) {
         >
           {author.entityId ? (
             <Link
-              to={routePaths.authorDetail(author.entityId)}
+              to={
+                currentDetailContext
+                  ? buildNextDetailUrl(
+                      location.search,
+                      currentDetailContext.entityType,
+                      currentDetailContext.entityId,
+                      "authors",
+                      author.entityId,
+                    )
+                  : routePaths.authorDetail(author.entityId)
+              }
               className="text-sm font-semibold text-blue-700 transition hover:text-blue-900 hover:underline"
             >
               {author.name}

@@ -1,63 +1,41 @@
-import { routePaths } from "@/app/router/routes";
-
-const workTrailSearchParam = "trail";
-
-function normalizePaperId(paperId: string) {
-  return paperId.trim();
-}
+import {
+  appendDetailTrailEntry,
+  buildDetailTrailUrl,
+  parseDetailTrail,
+} from "../detailTrail";
 
 export function parseWorkTrail(search: string) {
-  const params = new URLSearchParams(search);
-  const rawTrail = params.get(workTrailSearchParam);
-
-  if (!rawTrail) {
-    return [];
-  }
-
-  return rawTrail
-    .split(",")
-    .map((paperId) => decodeURIComponent(paperId).trim())
-    .filter(Boolean);
+  return parseDetailTrail(search)
+    .filter((entry) => entry.entityType === "works")
+    .map((entry) => entry.entityId);
 }
 
 export function appendWorkTrailEntry(
   currentTrail: string[],
   currentPaperId: string,
 ) {
-  const normalizedCurrentPaperId = normalizePaperId(currentPaperId);
-
-  if (!normalizedCurrentPaperId) {
-    return [...currentTrail];
-  }
-
-  const nextTrail = [...currentTrail];
-  const lastPaperId = nextTrail[nextTrail.length - 1];
-
-  if (lastPaperId !== normalizedCurrentPaperId) {
-    nextTrail.push(normalizedCurrentPaperId);
-  }
-
-  return nextTrail;
+  return appendDetailTrailEntry(
+    currentTrail.map((paperId) => ({
+      entityId: paperId,
+      entityType: "works" as const,
+    })),
+    "works",
+    currentPaperId,
+  )
+    .filter((entry) => entry.entityType === "works")
+    .map((entry) => entry.entityId);
 }
 
 export function buildPaperDetailTrailUrl(
   paperId: string | number,
   trail: string[],
 ) {
-  const basePath = routePaths.paperDetail(paperId);
-  const normalizedTrail = trail
-    .map((trailPaperId) => normalizePaperId(trailPaperId))
-    .filter(Boolean);
-
-  if (normalizedTrail.length === 0) {
-    return basePath;
-  }
-
-  const params = new URLSearchParams({
-    [workTrailSearchParam]: normalizedTrail
-      .map((trailPaperId) => encodeURIComponent(trailPaperId))
-      .join(","),
-  });
-
-  return `${basePath}?${params.toString()}`;
+  return buildDetailTrailUrl(
+    "works",
+    paperId,
+    trail.map((trailPaperId) => ({
+      entityId: trailPaperId,
+      entityType: "works" as const,
+    })),
+  );
 }

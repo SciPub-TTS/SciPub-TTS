@@ -11,9 +11,13 @@ import {
   Users,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useParams } from "react-router-dom";
 
 import { routePaths } from "@/app/router";
+import {
+  buildNextDetailUrl,
+  getDetailContextFromRouteParams,
+} from "@/features/detail/detailTrail";
 import { markSearchPageRestorePending } from "@/features/search/utils/navigationState";
 import type { PaperResultEntityRef } from "@/features/search/types";
 import MetadataBadge from "@/layout/components/MetadataBadge";
@@ -30,6 +34,7 @@ type ListWorkLayoutProps = {
   isSaved?: boolean;
   isTrendTopic?: boolean;
   keywords: string[];
+  workId: string;
   pdfUrl: string | null;
   preserveSearchStateOnDetailClick?: boolean;
   subField: string;
@@ -53,11 +58,23 @@ function getPreviewText(text: string, limit: number) {
   return `${text.slice(0, limit).trim()}...`;
 }
 
+function getDisplayDoi(doi: string, limit: number) {
+  if (doi.length <= limit) {
+    return doi;
+  }
+
+  if (limit <= 3) {
+    return doi.slice(0, limit);
+  }
+
+  return `${doi.slice(0, limit - 3).trim()}...`;
+}
+
 function copyTextWithFallback(value: string) {
   if (
-    typeof navigator !== "undefined"
-    && navigator.clipboard
-    && typeof navigator.clipboard.writeText === "function"
+    typeof navigator !== "undefined" &&
+    navigator.clipboard &&
+    typeof navigator.clipboard.writeText === "function"
   ) {
     return navigator.clipboard.writeText(value);
   }
@@ -101,6 +118,7 @@ export default function ListWorkLayout({
   isSaved = false,
   isTrendTopic = false,
   keywords,
+  workId,
   pdfUrl,
   preserveSearchStateOnDetailClick = true,
   subField,
@@ -111,6 +129,8 @@ export default function ListWorkLayout({
   year,
   onBookmarkClick,
 }: ListWorkLayoutProps) {
+  const location = useLocation();
+  const currentDetailContext = getDetailContextFromRouteParams(useParams());
   const [showAllAuthors, setShowAllAuthors] = useState(false);
   const [showFullAbstract, setShowFullAbstract] = useState(false);
   const [shareLabel, setShareLabel] = useState("Share");
@@ -127,6 +147,7 @@ export default function ListWorkLayout({
   const visibleAuthors = showAllAuthors ? authorItems : authorItems.slice(0, 3);
   const hasMoreAuthors = authorItems.length > 3;
   const normalizedDoi = doi.trim();
+  const displayDoi = getDisplayDoi(normalizedDoi, 30);
   const hasDoi = normalizedDoi.length > 0;
   const hasPdfUrl = Boolean(pdfUrl && pdfUrl.trim().length > 0);
   const canExpandAbstract = abstractText.length > 520;
@@ -139,6 +160,36 @@ export default function ListWorkLayout({
   const entityNavigationOnClick = preserveSearchStateOnDetailClick
     ? markSearchPageRestorePending
     : undefined;
+  const resolvedDetailHref = currentDetailContext
+    ? buildNextDetailUrl(
+        location.search,
+        currentDetailContext.entityType,
+        currentDetailContext.entityId,
+        "works",
+        workId,
+      )
+    : detailHref;
+
+  function buildEntityHref(
+    entityType: "authors" | "topics",
+    entityId: string,
+  ) {
+    if (!currentDetailContext) {
+      if (entityType === "authors") {
+        return routePaths.authorDetail(entityId);
+      }
+
+      return routePaths.topicDetail(entityId);
+    }
+
+    return buildNextDetailUrl(
+      location.search,
+      currentDetailContext.entityType,
+      currentDetailContext.entityId,
+      entityType,
+      entityId,
+    );
+  }
 
   function isFollowedAuthor(author: string) {
     return normalizedFollowedAuthors.includes(
@@ -146,14 +197,17 @@ export default function ListWorkLayout({
     );
   }
 
-  useEffect(() => () => {
-    if (
-      typeof window !== "undefined"
-      && shareResetTimeoutRef.current !== null
-    ) {
-      window.clearTimeout(shareResetTimeoutRef.current);
-    }
-  }, []);
+  useEffect(
+    () => () => {
+      if (
+        typeof window !== "undefined" &&
+        shareResetTimeoutRef.current !== null
+      ) {
+        window.clearTimeout(shareResetTimeoutRef.current);
+      }
+    },
+    [],
+  );
 
   function scheduleShareLabelReset() {
     if (typeof window === "undefined") {
@@ -194,7 +248,7 @@ export default function ListWorkLayout({
 
           {topicRef?.id ? (
             <Link
-              to={routePaths.topicDetail(topicRef.id)}
+              to={buildEntityHref("topics", topicRef.id)}
               onClick={entityNavigationOnClick}
               className="transition hover:-translate-y-0.5"
             >
@@ -231,11 +285,13 @@ export default function ListWorkLayout({
               <span key={`${author.name}-${author.id || index}`}>
                 {author.id ? (
                   <Link
-                    to={routePaths.authorDetail(author.id)}
+                    to={buildEntityHref("authors", author.id)}
                     onClick={entityNavigationOnClick}
                     className={[
                       "text-blue-700 transition hover:text-blue-900 hover:underline",
-                      isFollowedAuthor(author.name) ? "font-bold underline" : "font-semibold",
+                      isFollowedAuthor(author.name)
+                        ? "font-bold underline"
+                        : "font-semibold",
                     ].join(" ")}
                   >
                     {author.name}
@@ -243,7 +299,9 @@ export default function ListWorkLayout({
                 ) : (
                   <span
                     className={
-                      isFollowedAuthor(author.name) ? "font-bold underline" : undefined
+                      isFollowedAuthor(author.name)
+                        ? "font-bold underline"
+                        : undefined
                     }
                   >
                     {author.name}
@@ -315,10 +373,11 @@ export default function ListWorkLayout({
             href={`https://${normalizedDoi}`}
             target="_blank"
             rel="noreferrer"
+            title={normalizedDoi}
             className="inline-flex min-w-0 items-center gap-2 text-xs font-bold text-blue-700 hover:text-blue-900"
           >
             <ExternalLink className="h-4 w-4 shrink-0" />
-            <span className="truncate">{normalizedDoi}</span>
+            <span>{displayDoi}</span>
           </a>
         ) : (
           <span className="inline-flex min-w-0 items-center gap-2 text-xs font-bold text-black">
@@ -332,7 +391,7 @@ export default function ListWorkLayout({
             type="button"
             onClick={onBookmarkClick}
             className={[
-              "inline-flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-bold transition",
+              "inline-flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-bold transition border-black",
               bookmarkClassName,
             ].join(" ")}
           >
@@ -345,16 +404,16 @@ export default function ListWorkLayout({
             onClick={() => {
               void handleShareClick();
             }}
-            className="inline-flex items-center gap-2 rounded-lg border border-[#14532D] bg-white px-3 py-2 text-xs font-bold text-[#14532D] transition hover:border-[#14532D] hover:bg-[#14532D] hover:text-white"
+            className="inline-flex items-center gap-2 rounded-lg border border-black bg-white px-3 py-2 text-xs font-bold text-black transition hover:border-[#14532D] hover:bg-[#14532D] hover:text-white"
           >
             <Share2 className="h-4 w-4" />
             {shareLabel}
           </button>
 
           <Link
-            to={detailHref}
+            to={resolvedDetailHref}
             onClick={entityNavigationOnClick}
-            className="inline-flex items-center gap-2 rounded-lg border border-[#14532D] bg-white px-3 py-2 text-xs font-bold text-[#14532D] transition hover:border-[#14532D] hover:bg-[#14532D] hover:text-white"
+            className="inline-flex items-center gap-2 rounded-lg border border-black bg-white px-3 py-2 text-xs font-bold text-black transition hover:border-[#14532D] hover:bg-[#14532D] hover:text-white"
           >
             <Eye className="h-4 w-4" />
             View Details
@@ -365,7 +424,7 @@ export default function ListWorkLayout({
               href={pdfUrl || undefined}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center gap-2 rounded-lg border border-[#16A34A] bg-[#A3E635]/20 px-3 py-2 text-xs font-bold text-[#14532D] transition hover:bg-[#A3E635]/35"
+              className="inline-flex items-center gap-2 rounded-lg border border-black bg-white px-3 py-2 text-xs font-bold text-black transition hover:border-[#14532D] hover:bg-[#14532D] hover:text-white"
             >
               <FileText className="h-4 w-4" />
               PDF

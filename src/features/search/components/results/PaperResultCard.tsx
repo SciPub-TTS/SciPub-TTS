@@ -21,6 +21,7 @@ export function PaperResultCard({ paper }: PaperResultCardProps) {
       topic={paper.topic}
       topicRef={paper.topicRef}
       venue={paper.venue}
+      workId={paper.id}
       year={paper.year}
     />
   );

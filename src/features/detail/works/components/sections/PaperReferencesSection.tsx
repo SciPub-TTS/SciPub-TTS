@@ -2,10 +2,8 @@ import { Link2 } from "lucide-react";
 import { Link, useLocation, useParams } from "react-router-dom";
 
 import {
-  appendWorkTrailEntry,
-  buildPaperDetailTrailUrl,
-  parseWorkTrail,
-} from "../../workTrail";
+  buildNextDetailUrl,
+} from "@/features/detail/detailTrail";
 
 import type { PaperDetailWorkLink } from "../../types";
 import type { PaperReferencesSectionData } from "../../view-models/referencesSection";
@@ -55,17 +53,14 @@ function WorkReferenceList(props: WorkReferenceListProps) {
   const { emptyLabel, items, title } = props;
   const location = useLocation();
   const { paperId = "" } = useParams();
-  const currentTrail = parseWorkTrail(location.search);
-  const nextTrail = appendWorkTrailEntry(currentTrail, paperId);
-  const showScrollHint = items.length > 6;
 
   return (
     <div className="rounded-2xl border border-black bg-white p-4 shadow-[0_10px_24px_rgba(15,23,42,0.05)]">
       <div className="flex items-center justify-between gap-3">
-        <h3 className="text-sm font-bold uppercase tracking-[0.18em] text-black">
+        <h3 className="text-sm font-bold uppercase tracking-[0.18em] text-[#9a6700]">
           {title}
         </h3>
-        <span className="text-sm font-semibold text-[#9a6700]">
+        <span className="text-sm font-semibold text-black">
           {items.length}
         </span>
       </div>
@@ -74,12 +69,6 @@ function WorkReferenceList(props: WorkReferenceListProps) {
         <p className="mt-4 text-sm font-semibold text-slate-500">{emptyLabel}</p>
       ) : (
         <div className="mt-4 space-y-3">
-          {showScrollHint ? (
-            <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400">
-              Scroll to explore
-            </p>
-          ) : null}
-
           <div className="relative">
             <div className="pointer-events-none absolute inset-x-0 top-0 h-5 bg-gradient-to-b from-white to-transparent" />
             <div className="pointer-events-none absolute inset-x-0 bottom-0 h-7 bg-gradient-to-t from-white via-white/80 to-transparent" />
@@ -88,7 +77,13 @@ function WorkReferenceList(props: WorkReferenceListProps) {
               {items.map((item) => (
                 <Link
                   key={`${title}-${item.id}`}
-                  to={buildPaperDetailTrailUrl(item.id, nextTrail)}
+                  to={buildNextDetailUrl(
+                    location.search,
+                    "works",
+                    paperId,
+                    "works",
+                    item.id,
+                  )}
                   className="block rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm font-semibold text-black transition hover:border-blue-300 hover:bg-white hover:text-blue-700 hover:shadow-sm"
                 >
                   {item.label}

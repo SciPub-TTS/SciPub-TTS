@@ -2,15 +2,12 @@ import {
   BarChart3,
   BookOpenText,
   Building2,
-  ExternalLink,
-  FileText,
   Layers3,
   Orbit,
-  Quote,
   Tags,
   UserRound,
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useParams } from "react-router-dom";
 import {
   Bar,
   BarChart,
@@ -24,13 +21,17 @@ import {
 
 import { routePaths } from "@/app/router";
 import {
+  buildNextDetailUrl,
+  type DetailTrailEntityType,
+  getDetailContextFromRouteParams,
+} from "@/features/detail/detailTrail";
+import {
   PaperDetailErrorState,
   PaperDetailLoadingState,
 } from "@/features/detail/works/components/sections/PaperDetailFeedbackState";
 import DetailSectionCard from "@/features/detail/works/components/sections/DetailSectionCard";
 import { formatCompactNumber, formatFullNumber } from "@/features/search/utils";
 import ListWorkLayout from "@/layout/components/ListWorkLayout";
-import MetadataBadge from "@/layout/components/MetadataBadge";
 
 import { useEntityDetailPageState } from "../hooks/useEntityDetailPageState";
 import type {
@@ -45,6 +46,11 @@ type EntityDetailPageProps = {
   entityType: EntityDetailType;
 };
 
+type DetailHrefBuilder = (
+  entityType: DetailTrailEntityType,
+  entityId: string,
+) => string;
+
 type YearChartTooltipProps = {
   active?: boolean;
   label?: number | string;
@@ -53,7 +59,35 @@ type YearChartTooltipProps = {
 
 export default function EntityDetailPage(props: EntityDetailPageProps) {
   const { entityType } = props;
-  const { detail, errorMessage, isLoading } = useEntityDetailPageState(entityType);
+  const location = useLocation();
+  const currentDetailContext = getDetailContextFromRouteParams(useParams());
+  const { detail, errorMessage, isLoading } =
+    useEntityDetailPageState(entityType);
+
+  function buildDetailHref(
+    targetEntityType: DetailTrailEntityType,
+    targetEntityId: string,
+  ) {
+    if (!currentDetailContext) {
+      if (targetEntityType === "works") {
+        return routePaths.paperDetail(targetEntityId);
+      }
+
+      if (targetEntityType === "authors") {
+        return routePaths.authorDetail(targetEntityId);
+      }
+
+      return routePaths.topicDetail(targetEntityId);
+    }
+
+    return buildNextDetailUrl(
+      location.search,
+      currentDetailContext.entityType,
+      currentDetailContext.entityId,
+      targetEntityType,
+      targetEntityId,
+    );
+  }
 
   if (isLoading) {
     return <PaperDetailLoadingState />;
@@ -69,17 +103,23 @@ export default function EntityDetailPage(props: EntityDetailPageProps) {
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.65fr)_minmax(320px,1fr)]">
         <div className="space-y-6">
-          <EntityOverviewSection detail={detail} />
-          <EntityWorksSection detail={detail} />
+          <EntityOverviewSection detail={detail} buildDetailHref={buildDetailHref} />
+          <EntityWorksSection detail={detail} buildDetailHref={buildDetailHref} />
         </div>
 
         <div className="space-y-6">
           <EntityMetricsSection detail={detail} />
           <EntityYearChartSection detail={detail} />
           {detail.entityType === "authors" ? (
-            <EntityTopicHighlightsSection detail={detail} />
+            <EntityTopicHighlightsSection
+              detail={detail}
+              buildDetailHref={buildDetailHref}
+            />
           ) : (
-            <EntityTypeBreakdownSection detail={detail} />
+            <EntityTypeBreakdownSection
+              detail={detail}
+              buildDetailHref={buildDetailHref}
+            />
           )}
         </div>
       </div>
@@ -88,65 +128,27 @@ export default function EntityDetailPage(props: EntityDetailPageProps) {
 }
 
 function EntityDetailHero({ detail }: { detail: EntityDetailData }) {
-  const isAuthor = detail.entityType === "authors";
-  const orcidHref =
-    isAuthor && detail.orcid
-      ? detail.orcid.startsWith("http")
-        ? detail.orcid
-        : `https://orcid.org/${detail.orcid.replace(/^https?:\/\/orcid\.org\//i, "")}`
-      : null;
-
   return (
-    <article className="rounded-[32px] border border-black bg-white px-6 py-7 shadow-sm">
-      <div className="flex flex-wrap gap-2">
-        <MetadataBadge
-          tone={isAuthor ? "default" : "topic"}
-          label={isAuthor ? "Author Detail" : "Topic Detail"}
-        />
-
-        {isAuthor ? null : (
-          <MetadataBadge
-            tone="accent"
-            label={(detail as TopicDetailData).subfieldName || "Topic cluster"}
-          />
-        )}
-      </div>
-
-      <h1 className="mt-4 text-4xl font-semibold tracking-[-0.03em] text-slate-950 sm:text-5xl">
+    <div className="px-4 py-4 text-center sm:py-6">
+      <h1 className="text-4xl font-semibold tracking-[-0.03em] text-slate-950 sm:text-5xl">
         {detail.displayName}
       </h1>
-
-      <div className="mt-4 flex flex-wrap items-center gap-3 text-sm font-semibold text-black">
-        <span className="inline-flex items-center gap-2 rounded-full border border-[#005CB9] bg-[#EEF6FF] px-3 py-1.5 text-[#005CB9]">
-          <FileText className="h-4 w-4" />
-          {formatFullNumber(detail.worksCount)} works
-        </span>
-        <span className="inline-flex items-center gap-2 rounded-full border border-black bg-white px-3 py-1.5">
-          <Quote className="h-4 w-4" />
-          {formatFullNumber(detail.citedByCount)} citations
-        </span>
-        {orcidHref ? (
-          <a
-            href={orcidHref}
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex items-center gap-2 rounded-full border border-[#14532D] bg-[#ECFFF5] px-3 py-1.5 text-[#14532D] transition hover:bg-[#D7FBE8]"
-          >
-            <ExternalLink className="h-4 w-4" />
-            ORCID
-          </a>
-        ) : null}
-      </div>
-    </article>
+    </div>
   );
 }
 
-function EntityOverviewSection({ detail }: { detail: EntityDetailData }) {
+function EntityOverviewSection({
+  detail,
+  buildDetailHref,
+}: {
+  buildDetailHref: DetailHrefBuilder;
+  detail: EntityDetailData;
+}) {
   if (detail.entityType === "authors") {
     return <AuthorOverviewSection detail={detail} />;
   }
 
-  return <TopicOverviewSection detail={detail} />;
+  return <TopicOverviewSection detail={detail} buildDetailHref={buildDetailHref} />;
 }
 
 function AuthorOverviewSection({ detail }: { detail: AuthorDetailData }) {
@@ -157,7 +159,10 @@ function AuthorOverviewSection({ detail }: { detail: AuthorDetailData }) {
     >
       <OverviewRow
         label="Observed names"
-        value={joinValues(detail.observedNames, "No alternative names available.")}
+        value={joinValues(
+          detail.observedNames,
+          "No alternative names available.",
+        )}
       />
       <OverviewRow
         label="Primary institution"
@@ -174,7 +179,13 @@ function AuthorOverviewSection({ detail }: { detail: AuthorDetailData }) {
   );
 }
 
-function TopicOverviewSection({ detail }: { detail: TopicDetailData }) {
+function TopicOverviewSection({
+  detail,
+  buildDetailHref,
+}: {
+  buildDetailHref: DetailHrefBuilder;
+  detail: TopicDetailData;
+}) {
   return (
     <DetailSectionCard
       icon={<Layers3 className="h-5 w-5" />}
@@ -183,18 +194,6 @@ function TopicOverviewSection({ detail }: { detail: TopicDetailData }) {
       <OverviewRow
         label="Description"
         value={detail.description || "No description available."}
-      />
-      <OverviewRow
-        label="Parent subfield"
-        value={detail.subfieldName || "No subfield available."}
-      />
-      <OverviewRow
-        label="Field"
-        value={detail.fieldName || "No field available."}
-      />
-      <OverviewRow
-        label="Domain"
-        value={detail.domainName || "No domain available."}
       />
 
       {detail.siblingTopics.length > 0 ? (
@@ -207,7 +206,7 @@ function TopicOverviewSection({ detail }: { detail: TopicDetailData }) {
             {detail.siblingTopics.map((topic) => (
               <Link
                 key={topic.id}
-                to={routePaths.topicDetail(topic.id)}
+                to={buildDetailHref("topics", topic.id)}
                 className="inline-flex items-center gap-2 rounded-full border border-[#00A859] bg-[#ECFFF5] px-3.5 py-1.5 text-xs font-semibold text-[#007A41] transition hover:-translate-y-0.5"
               >
                 <Tags className="h-3.5 w-3.5" />
@@ -221,7 +220,13 @@ function TopicOverviewSection({ detail }: { detail: TopicDetailData }) {
   );
 }
 
-function EntityWorksSection({ detail }: { detail: EntityDetailData }) {
+function EntityWorksSection({
+  detail,
+  buildDetailHref,
+}: {
+  buildDetailHref: DetailHrefBuilder;
+  detail: EntityDetailData;
+}) {
   const title =
     detail.entityType === "authors"
       ? "Works by this author"
@@ -239,9 +244,6 @@ function EntityWorksSection({ detail }: { detail: EntityDetailData }) {
         </div>
         <div>
           <h2 className="text-2xl font-semibold text-black">{title}</h2>
-          <p className="text-sm font-medium text-slate-600">
-            View the connected work detail pages without leaving this flow.
-          </p>
         </div>
       </div>
 
@@ -258,7 +260,7 @@ function EntityWorksSection({ detail }: { detail: EntityDetailData }) {
               authors={work.authors}
               authorRefs={work.authorRefs}
               citations={work.citations}
-              detailHref={routePaths.paperDetail(work.id)}
+              detailHref={buildDetailHref("works", work.id)}
               doi={work.doi}
               field={work.field}
               isSaved={work.saved}
@@ -271,6 +273,7 @@ function EntityWorksSection({ detail }: { detail: EntityDetailData }) {
               topic={work.topic}
               topicRef={work.topicRef}
               venue={work.venue}
+              workId={work.id}
               year={work.year}
             />
           ))}
@@ -285,20 +288,26 @@ function EntityMetricsSection({ detail }: { detail: EntityDetailData }) {
     detail.entityType === "authors"
       ? [
           { label: "Works count", value: formatFullNumber(detail.worksCount) },
-          { label: "Citation count", value: formatFullNumber(detail.citedByCount) },
+          {
+            label: "Citation count",
+            value: formatFullNumber(detail.citedByCount),
+          },
           { label: "H-index", value: formatNullableMetric(detail.hIndex) },
           { label: "I10-index", value: formatNullableMetric(detail.i10Index) },
         ]
       : [
           { label: "Works count", value: formatFullNumber(detail.worksCount) },
-          { label: "Citation count", value: formatFullNumber(detail.citedByCount) },
+          {
+            label: "Citation count",
+            value: formatFullNumber(detail.citedByCount),
+          },
+          {
+            label: "Field",
+            value: detail.fieldName || "No field",
+          },
           {
             label: "Subfield",
             value: detail.subfieldName || "No subfield",
-          },
-          {
-            label: "Domain",
-            value: detail.domainName || "No domain",
           },
         ];
 
@@ -313,7 +322,7 @@ function EntityMetricsSection({ detail }: { detail: EntityDetailData }) {
             key={item.label}
             className="flex items-start justify-between gap-4 border-b border-slate-200 pb-3 last:border-b-0 last:pb-0"
           >
-            <p className="text-sm font-bold uppercase tracking-[0.18em] text-slate-500">
+            <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#9a6700]">
               {item.label}
             </p>
             <p className="text-right text-xl font-semibold text-slate-950">
@@ -338,9 +347,7 @@ function EntityYearChartSection({ detail }: { detail: EntityDetailData }) {
     >
       <div className="rounded-2xl border border-black bg-[#f1f3f4] p-4">
         <div className="flex flex-col gap-1">
-          <h3 className="text-base font-semibold text-black">
-            Works by year
-          </h3>
+          <h3 className="text-base font-semibold text-black">Works by year</h3>
           <p className="text-sm text-black">
             Recent publishing activity returned from OpenAlex.
           </p>
@@ -353,7 +360,13 @@ function EntityYearChartSection({ detail }: { detail: EntityDetailData }) {
               margin={{ top: 12, right: 12, bottom: 6, left: 0 }}
             >
               <defs>
-                <linearGradient id="entityYearBarGradient" x1="0" y1="0" x2="0" y2="1">
+                <linearGradient
+                  id="entityYearBarGradient"
+                  x1="0"
+                  y1="0"
+                  x2="0"
+                  y2="1"
+                >
                   <stop offset="0%" stopColor="#14532D" stopOpacity={0.96} />
                   <stop offset="100%" stopColor="#86EFAC" stopOpacity={0.86} />
                 </linearGradient>
@@ -399,7 +412,13 @@ function EntityYearChartSection({ detail }: { detail: EntityDetailData }) {
   );
 }
 
-function EntityTopicHighlightsSection({ detail }: { detail: AuthorDetailData }) {
+function EntityTopicHighlightsSection({
+  detail,
+  buildDetailHref,
+}: {
+  buildDetailHref: DetailHrefBuilder;
+  detail: AuthorDetailData;
+}) {
   if (detail.topicHighlights.length === 0) {
     return null;
   }
@@ -410,6 +429,7 @@ function EntityTopicHighlightsSection({ detail }: { detail: AuthorDetailData }) 
       title="Topic Highlights"
     >
       <RelatedTopicList
+        buildDetailHref={buildDetailHref}
         items={detail.topicHighlights}
         emptyLabel="No topics are available for this author."
       />
@@ -417,12 +437,21 @@ function EntityTopicHighlightsSection({ detail }: { detail: AuthorDetailData }) 
   );
 }
 
-function EntityTypeBreakdownSection({ detail }: { detail: TopicDetailData }) {
+function EntityTypeBreakdownSection({
+  detail,
+  buildDetailHref,
+}: {
+  buildDetailHref: DetailHrefBuilder;
+  detail: TopicDetailData;
+}) {
   if (detail.typeBreakdown.length === 0) {
     return null;
   }
 
-  const maxCount = Math.max(...detail.typeBreakdown.map((item) => item.count), 1);
+  const maxCount = Math.max(
+    ...detail.typeBreakdown.map((item) => item.count),
+    1,
+  );
 
   return (
     <DetailSectionCard
@@ -458,6 +487,7 @@ function EntityTypeBreakdownSection({ detail }: { detail: TopicDetailData }) {
           </div>
           <div className="mt-3">
             <RelatedTopicList
+              buildDetailHref={buildDetailHref}
               items={detail.siblingTopics}
               emptyLabel="No sibling topics are available."
             />
@@ -469,9 +499,11 @@ function EntityTypeBreakdownSection({ detail }: { detail: TopicDetailData }) {
 }
 
 function RelatedTopicList({
+  buildDetailHref,
   items,
   emptyLabel,
 }: {
+  buildDetailHref: DetailHrefBuilder;
   items: EntityDetailRelatedItem[];
   emptyLabel: string;
 }) {
@@ -484,7 +516,7 @@ function RelatedTopicList({
       {items.map((item) => (
         <Link
           key={item.id}
-          to={routePaths.topicDetail(item.id)}
+          to={buildDetailHref("topics", item.id)}
           className="inline-flex items-center gap-2 rounded-full border border-[#00A859] bg-[#ECFFF5] px-3.5 py-1.5 text-xs font-semibold text-[#007A41] transition hover:-translate-y-0.5"
         >
           <Tags className="h-3.5 w-3.5" />
@@ -500,16 +532,10 @@ function RelatedTopicList({
   );
 }
 
-function OverviewRow({
-  label,
-  value,
-}: {
-  label: string;
-  value: string;
-}) {
+function OverviewRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="border-b border-slate-200 pb-4 last:border-b-0 last:pb-0">
-      <h3 className="text-sm font-bold uppercase tracking-[0.2em] text-slate-500">
+      <h3 className="text-sm font-bold uppercase tracking-[0.2em] text-[#9a6700]">
         {label}
       </h3>
       <p className="mt-2 text-lg leading-8 text-slate-950">{value}</p>
