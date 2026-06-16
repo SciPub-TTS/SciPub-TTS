@@ -12,6 +12,8 @@ import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
 
 import { routePaths } from "@/app/router";
+import { useEntityFollow } from "@/features/follows/hooks/useEntityFollow";
+import type { FollowTargetType } from "@/features/follows/types/follow.types";
 import { markSearchPageRestorePending } from "@/features/search/utils/navigationState";
 import type { SearchResultItem } from "@/features/search/types";
 import { formatFullNumber } from "@/features/search/utils";
@@ -23,18 +25,16 @@ type SearchResultCardProps = {
 };
 
 export function SearchResultCard({ item }: SearchResultCardProps) {
-  // Chọn đúng card theo entity để phần render bên ngoài không phải if/else nhiều nơi.
   switch (item.entityType) {
     case "works":
       return <PaperResultCard paper={item} />;
     case "authors":
       return (
         <EntityCardLayout
-          heroIcon={<User className="h-5 w-5" />}
-          showFollowButton
           detailHref={routePaths.authorDetail(item.id)}
-          title={item.displayName}
-          worksCount={item.worksCount}
+          followTargetId={item.id}
+          followTargetType="AUTHOR"
+          heroIcon={<User className="h-5 w-5" />}
           metadataItems={[
             {
               icon: <Building2 className="h-3 w-3" />,
@@ -45,17 +45,18 @@ export function SearchResultCard({ item }: SearchResultCardProps) {
               text: `Topic: ${item.primaryTopicName || "No topic available"}`,
             },
           ]}
+          showFollowButton
+          title={item.displayName}
+          worksCount={item.worksCount}
         />
       );
     case "topics":
       return (
         <EntityCardLayout
-          heroIcon={<Layers3 className="h-5 w-5" />}
-          showFollowButton
-          followButtonTitle="Topic follow is coming soon."
           detailHref={routePaths.topicDetail(item.id)}
-          title={item.displayName}
-          worksCount={item.worksCount}
+          followTargetId={item.id}
+          followTargetType="TOPIC"
+          heroIcon={<Layers3 className="h-5 w-5" />}
           metadataItems={[
             {
               icon: <Tags className="h-3 w-3" />,
@@ -70,6 +71,9 @@ export function SearchResultCard({ item }: SearchResultCardProps) {
               text: `Domain: ${item.domainName || "No domain available"}`,
             },
           ]}
+          showFollowButton
+          title={item.displayName}
+          worksCount={item.worksCount}
         />
       );
   }
@@ -77,7 +81,8 @@ export function SearchResultCard({ item }: SearchResultCardProps) {
 
 type EntityCardLayoutProps = {
   detailHref: string;
-  followButtonTitle?: string;
+  followTargetId?: string;
+  followTargetType?: FollowTargetType;
   heroIcon: ReactNode;
   metadataItems: {
     icon: ReactNode;
@@ -90,14 +95,28 @@ type EntityCardLayoutProps = {
 
 function EntityCardLayout({
   detailHref,
-  followButtonTitle = "Follow is coming soon.",
+  followTargetId,
+  followTargetType,
   heroIcon,
   metadataItems,
   showFollowButton = false,
   title,
   worksCount,
 }: EntityCardLayoutProps) {
-  // Layout dùng chung cho 4 entity mới để style và vị trí action luôn nhất quán.
+  const {
+    buttonLabel: followButtonLabel,
+    handleFollowClick,
+    isFollowActionPending,
+    isFollowed,
+  } = useEntityFollow({
+    displayName: title,
+    targetOpenAlexId: followTargetId || "",
+    targetType: followTargetType || "AUTHOR",
+  });
+  const followButtonClassName = isFollowed
+    ? "bg-[#007A41] text-white hover:bg-[#006536]"
+    : "bg-[#00A859] text-white hover:bg-[#007A41]";
+
   return (
     <article className="rounded-[28px] border border-slate-200 bg-white px-5 py-4 transition-colors duration-200 hover:border-slate-300 hover:bg-slate-50/60">
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:gap-x-5">
@@ -136,13 +155,20 @@ function EntityCardLayout({
         </div>
 
         <div className="flex flex-wrap items-center justify-start gap-2 lg:col-start-2 lg:row-start-2 lg:justify-end lg:self-end">
-          {showFollowButton ? (
+          {showFollowButton && followTargetId && followTargetType ? (
             <button
               type="button"
-              title={followButtonTitle}
-              className="inline-flex items-center gap-2 rounded-xl bg-[#00A859] px-3.5 py-2 text-xs font-semibold text-white transition hover:bg-[#007A41]"
+              disabled={isFollowActionPending}
+              onClick={() => {
+                void handleFollowClick();
+              }}
+              title={isFollowed ? "Already followed" : "Follow this entity"}
+              className={[
+                "inline-flex items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-70",
+                followButtonClassName,
+              ].join(" ")}
             >
-              + Follow
+              {followButtonLabel}
             </button>
           ) : null}
 
