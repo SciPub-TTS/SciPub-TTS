@@ -1,5 +1,6 @@
 import { SEARCH_MIN_YEAR } from "../constants";
 import type {
+  SearchEntityType,
   SearchFilterOptions,
   SearchSortDirection,
   SearchSortState,
@@ -13,7 +14,68 @@ import type {
   SearchResultSortGroupKey,
 } from "./types";
 
-export const searchTabs = ["Works"];
+type SearchEntityMetadata = {
+  emptyStateMessage: string;
+  indexedLabel: string;
+  loadingLabel: string;
+  noResultsLabel: string;
+  placeholder: string;
+  resultLabelPlural: string;
+  resultLabelSingular: string;
+  searchAriaLabel: string;
+  tabLabel: string;
+};
+
+const searchEntityMetadataMap: Record<SearchEntityType, SearchEntityMetadata> = {
+  works: {
+    emptyStateMessage:
+      "Enter a keyword or choose filters, then click Search or Apply filters.",
+    indexedLabel: "works indexed",
+    loadingLabel: "Searching papers...",
+    noResultsLabel: "No papers matched this search.",
+    placeholder: "Search papers by title or abstract.",
+    resultLabelPlural: "papers",
+    resultLabelSingular: "paper",
+    searchAriaLabel: "Search papers",
+    tabLabel: "Works",
+  },
+  authors: {
+    emptyStateMessage: "Enter an author name, then click Search.",
+    indexedLabel: "authors indexed",
+    loadingLabel: "Searching authors...",
+    noResultsLabel: "No authors matched this search.",
+    placeholder: "Search authors by name.",
+    resultLabelPlural: "authors",
+    resultLabelSingular: "author",
+    searchAriaLabel: "Search authors",
+    tabLabel: "Authors",
+  },
+  topics: {
+    emptyStateMessage: "Enter a topic name, then click Search.",
+    indexedLabel: "topics indexed",
+    loadingLabel: "Searching topics...",
+    noResultsLabel: "No topics matched this search.",
+    placeholder: "Search topics by name.",
+    resultLabelPlural: "topics",
+    resultLabelSingular: "topic",
+    searchAriaLabel: "Search topics",
+    tabLabel: "Topics",
+  },
+};
+
+const searchTabOrder: SearchEntityType[] = [
+  "works",
+  "authors",
+  "topics",
+];
+
+export const searchScopeLabel =
+  "Scope: Physical Sciences - Computer Science (17) and Engineering (22).";
+
+export const searchTabs = searchTabOrder.map((entityType) => ({
+  entityType,
+  label: searchEntityMetadataMap[entityType].tabLabel,
+}));
 
 export const defaultSearchSortState: SearchSortState = {
   sortBy: "relevance",
@@ -74,6 +136,18 @@ export const emptySearchOptionValueLookup: SearchOptionValueLookup = {
   source: {},
   award: {},
 };
+
+export function getSearchEntityMetadata(entityType: SearchEntityType) {
+  return searchEntityMetadataMap[entityType];
+}
+
+export function normalizeSearchTabEntityType(
+  entityType: SearchEntityType | null | undefined,
+): SearchEntityType {
+  return searchTabOrder.includes(entityType as SearchEntityType)
+    ? (entityType as SearchEntityType)
+    : "works";
+}
 
 export function hasActiveSearchSort(sortState: SearchSortState) {
   return (

@@ -1,4 +1,5 @@
-import { requestJson, createApiUrl } from "@/lib/api/fetchJson";
+import { http } from "@/services/http";
+import type { ApiResponse } from "@/types/common.types";
 import { SEARCH_RECENT_SEARCH_LIMIT } from "../constants";
 import type { SavedSearch } from "../types";
 import type { SearchHistoryApiItem } from "./types";
@@ -8,11 +9,16 @@ export async function getRecentSearches(
   limit = SEARCH_RECENT_SEARCH_LIMIT,
 ): Promise<SavedSearch[]> {
   const normalizedKeyword = keyword.trim();
-  const endpoint = createApiUrl("/api/search/history/recent");
-  endpoint.searchParams.set("keyword", normalizedKeyword);
-  endpoint.searchParams.set("limit", String(limit));
-
-  const data = await requestJson<SearchHistoryApiItem[]>(endpoint);
+  const response = await http.get<ApiResponse<SearchHistoryApiItem[]>>(
+    "/api/search/history/recent",
+    {
+      params: {
+        keyword: normalizedKeyword,
+        limit,
+      },
+    },
+  );
+  const data = response.data.data;
 
   return data.map((item) => ({
     id: item.id,
@@ -28,11 +34,8 @@ export async function saveSearchHistory(query: string): Promise<void> {
     return;
   }
 
-  await requestJson<null>(createApiUrl("/api/search/history"), {
-    method: "POST",
-    body: JSON.stringify({
+  await http.post<ApiResponse<null>>("/api/search/history", {
       query: normalizedQuery,
-    }),
   });
 }
 
@@ -43,16 +46,13 @@ export async function deleteSearchHistory(query: string): Promise<void> {
     return;
   }
 
-  const endpoint = createApiUrl("/api/search/history");
-  endpoint.searchParams.set("query", normalizedQuery);
-
-  await requestJson<null>(endpoint, {
-    method: "DELETE",
+  await http.delete<ApiResponse<null>>("/api/search/history", {
+    params: {
+      query: normalizedQuery,
+    },
   });
 }
 
 export async function clearSearchHistory(): Promise<void> {
-  await requestJson<null>(createApiUrl("/api/search/history/all"), {
-    method: "DELETE",
-  });
+  await http.delete<ApiResponse<null>>("/api/search/history/all");
 }

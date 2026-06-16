@@ -21,6 +21,8 @@ export const ROUTES = {
 
   // Paper
   PAPER_DETAIL: "/papers/:paperId",
+  AUTHOR_DETAIL: "/authors/:authorId",
+  TOPIC_DETAIL: "/topics/:topicId",
 
   // User protected
   PROFILE: "/profile",
@@ -54,6 +56,10 @@ export const routePaths = {
 
   paperDetail: (paperId: string | number) =>
     `/papers/${encodeURIComponent(String(paperId))}`,
+  authorDetail: (authorId: string | number) =>
+    `/authors/${encodeURIComponent(String(authorId))}`,
+  topicDetail: (topicId: string | number) =>
+    `/topics/${encodeURIComponent(String(topicId))}`,
 
   profile: () => ROUTES.PROFILE,
   profileTab: (tab: "profile" | "interests" | "security" = "profile") =>

@@ -43,14 +43,19 @@
 @import "@fontsource/space-grotesk/vietnamese-500.css";
 @import "@fontsource/space-grotesk/vietnamese-600.css";
 @import "@fontsource/space-grotesk/vietnamese-700.css";
-@import "@fontsource/acme";
+@import "@fontsource/cormorant-garamond/vietnamese-600.css";
+@import "@fontsource/cormorant-garamond/vietnamese-700.css";
+@import "@fontsource/cormorant-garamond/latin-ext-600.css";
+@import "@fontsource/cormorant-garamond/latin-ext-700.css";
+@import "@fontsource/cormorant-garamond/latin-600.css";
+@import "@fontsource/cormorant-garamond/latin-700.css";
 @import "tailwindcss";
 
 :root {
   --font-title: "Space Grotesk", system-ui, sans-serif;
   --font-text: "Be Vietnam Pro", system-ui, sans-serif;
   --font-subtext: "Manrope", system-ui, sans-serif;
-  --font-search-title: "Acme", cursive;
+  --font-search-title: "Cormorant Garamond", Georgia, serif;
 }
 
 * {
@@ -80,6 +85,10 @@ h6,
 
 .font-search-title {
   font-family: var(--font-search-title);
+  font-weight: 600;
+  letter-spacing: -0.035em;
+  font-feature-settings: "liga" 1, "kern" 1;
+  text-rendering: optimizeLegibility;
 }
 
 p,
@@ -267,6 +276,35 @@ select {
 
 .no-scrollbar::-webkit-scrollbar {
   display: none;
+}
+
+.hover-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.hover-scrollbar::-webkit-scrollbar {
+  height: 0;
+}
+
+.hover-scrollbar:hover,
+.hover-scrollbar:focus-within {
+  scrollbar-width: thin;
+}
+
+.hover-scrollbar:hover::-webkit-scrollbar,
+.hover-scrollbar:focus-within::-webkit-scrollbar {
+  height: 6px;
+}
+
+.hover-scrollbar::-webkit-scrollbar-thumb {
+  background-color: transparent;
+  border-radius: 9999px;
+}
+
+.hover-scrollbar:hover::-webkit-scrollbar-thumb,
+.hover-scrollbar:focus-within::-webkit-scrollbar-thumb {
+  background-color: rgba(148, 163, 184, 0.9);
 }
 
 .reveal-on-scroll {

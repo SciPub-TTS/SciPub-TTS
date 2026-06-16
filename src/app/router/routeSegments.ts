@@ -5,6 +5,8 @@ export const ROUTE_SEGMENTS = {
   TRENDING_TOPIC: "/trending-topic",
   TRENDING_KEYWORD: "/trending-keyword",
   PAPER_DETAIL: "papers/:paperId",
+  AUTHOR_DETAIL: "authors/:authorId",
+  TOPIC_DETAIL: "topics/:topicId",
 
   PROFILE: "profile",
   PROFILE_SECURITY: "profile/security",

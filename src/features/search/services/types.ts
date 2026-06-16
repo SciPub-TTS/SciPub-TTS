@@ -1,8 +1,12 @@
 import type {
+  AuthorResult,
   PaperResult,
   RemoteOptionFilterKey,
+  SearchEntityType,
   SearchFilters,
+  SearchResultItem,
   SearchSortState,
+  TopicResult,
 } from "../types";
 
 export type SearchOptionGroupKey =
@@ -22,7 +26,9 @@ export type OptionItem = {
 };
 
 export type SearchSummaryApiData = {
-  totalWorks: number;
+  totalCount: number;
+  entityType: SearchEntityType;
+  totalCountExact: boolean;
 };
 
 export type SearchHistoryApiItem = {
@@ -53,7 +59,15 @@ export type SearchWorksApiItem = {
   sourceId: string | null;
   sourceName: string | null;
   authors: string[];
+  authorRefs?: Array<{
+    id: string | null;
+    displayName: string;
+  }> | null;
   keywords: string[];
+  topicRef?: {
+    id: string | null;
+    displayName: string;
+  } | null;
   matchesTrendingKeyword: boolean | null;
   matchesTrendingTopic: boolean | null;
   trendingScore: number | null;
@@ -72,8 +86,36 @@ export type SearchWorksApiResponse = {
   results: SearchWorksApiItem[];
 };
 
+export type SearchEntityApiItem = {
+  id: string;
+  entityType: Exclude<SearchEntityType, "works">;
+  displayName: string;
+  primaryInstitutionName: string | null;
+  primaryTopicName: string | null;
+  subfieldName: string | null;
+  fieldName: string | null;
+  domainName: string | null;
+  worksCount: number;
+};
+
+export type SearchEntitiesApiResponse = {
+  meta: {
+    totalCount: number;
+    page: number;
+    perPage: number;
+    dbResponseTimeMs: number;
+    costUsd: number;
+    entityType: Exclude<SearchEntityType, "works">;
+    hasMore: boolean;
+    totalCountExact: boolean;
+  };
+  results: SearchEntityApiItem[];
+};
+
 export type SearchSummaryState = {
-  totalIndexedPapers: number;
+  entityType: SearchEntityType;
+  totalIndexedCount: number;
+  totalCountExact: boolean;
 };
 
 export type SearchOptionValueLookup = Record<
@@ -89,12 +131,41 @@ export type SearchWorksRequest = {
   sortState: SearchSortState;
 };
 
+export type SearchEntityRequest = {
+  appliedSearchQuery: string;
+  entityType: Exclude<SearchEntityType, "works">;
+  page: number;
+};
+
 export type SearchWorksState = {
+  entityType: "works";
   page: number;
   perPage: number;
   responseTimeSeconds: number;
   totalCount: number;
   works: PaperResult[];
+};
+
+export type SearchEntitiesState = {
+  entityType: Exclude<SearchEntityType, "works">;
+  items: Array<AuthorResult | TopicResult>;
+  page: number;
+  perPage: number;
+  responseTimeSeconds: number;
+  totalCount: number;
+  hasMore: boolean;
+  totalCountExact: boolean;
+};
+
+export type SearchResultsPage = SearchWorksState | SearchEntitiesState;
+
+export type SearchResultState = {
+  entityType: SearchEntityType;
+  items: SearchResultItem[];
+  page: number;
+  perPage: number;
+  responseTimeSeconds: number;
+  totalCount: number;
 };
 
 export type RemoteFilterOptionsPage = {

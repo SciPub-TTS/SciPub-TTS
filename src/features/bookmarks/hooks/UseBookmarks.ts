@@ -1,236 +1,327 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+  type InfiniteData,
+} from "@tanstack/react-query";
 
 import { bookmarkApi } from "@/features/bookmarks/services/bookmark.api";
+import { bookmarkQueryKeys } from "@/features/bookmarks/services/bookmarkQueryKeys";
 import type {
-    BookmarkFilters,
-    BookmarkResponse,
-    BookmarkStatsResponse,
-    FilterOptionsResponse,
+  BookmarkFilters,
+  BookmarkPageResponse,
+  BookmarkResponse,
 } from "@/features/bookmarks/types/bookmark.types";
 
 const PAGE_SIZE = 12;
 
 const DEFAULT_FILTERS: BookmarkFilters = {
-    keyword: "",
-    topic: "",
-    source: "",
-    author: "",
-    year: null,
-    sort: "RECENT",
+  author: "",
+  keyword: "",
+  sort: "RECENT",
+  source: "",
+  topic: "",
+  year: null,
 };
 
+type BookmarkMutationContext = {
+  previousBookmarks?: InfiniteData<BookmarkPageResponse>;
+};
+
+function getMutationErrorMessage(error: unknown, fallbackMessage: string) {
+  return error instanceof Error ? error.message : fallbackMessage;
+}
+
+function mapQueryErrorToMessage(error: unknown) {
+  return getMutationErrorMessage(
+    error,
+    "Cannot load bookmarks. Please try again.",
+  );
+}
+
+function updateInfiniteBookmarkPages(
+  cachedData: InfiniteData<BookmarkPageResponse> | undefined,
+  updater: (bookmark: BookmarkResponse) => BookmarkResponse | null,
+) {
+  if (!cachedData) {
+    return cachedData;
+  }
+
+  let removedItemCount = 0;
+
+  for (const page of cachedData.pages) {
+    for (const bookmark of page.items) {
+      if (updater(bookmark) === null) {
+        removedItemCount += 1;
+      }
+    }
+  }
+
+  return {
+    ...cachedData,
+    pages: cachedData.pages.map((page) => {
+      const nextItems: BookmarkResponse[] = [];
+
+      for (const bookmark of page.items) {
+        const updatedBookmark = updater(bookmark);
+
+        if (updatedBookmark) {
+          nextItems.push(updatedBookmark);
+        }
+      }
+
+      return {
+        ...page,
+        items: nextItems,
+        totalElements: removedItemCount > 0
+          ? Math.max(0, page.totalElements - removedItemCount)
+          : page.totalElements,
+      };
+    }),
+  };
+}
+
 export function useBookmarks() {
-    const [items, setItems] = useState<BookmarkResponse[]>([]);
-    const [page, setPage] = useState(0);
-    const [hasNext, setHasNext] = useState(false);
-    const [totalElements, setTotalElements] = useState(0);
-    const [isLoadingMore, setIsLoadingMore] = useState(false);
-    const [isRefreshing, setIsRefreshing] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
+  const [filters, setFilters] = useState<BookmarkFilters>(DEFAULT_FILTERS);
+  const [error, setError] = useState<string | null>(null);
+  const bookmarkListQueryKey = bookmarkQueryKeys.list(filters);
+  const bookmarkListQuery = useInfiniteQuery<
+    BookmarkPageResponse,
+    Error,
+    InfiniteData<BookmarkPageResponse>,
+    ReturnType<typeof bookmarkQueryKeys.list>,
+    number
+  >({
+    getNextPageParam: (lastPage) =>
+      lastPage.hasNext ? lastPage.page + 1 : undefined,
+    initialPageParam: 0,
+    queryFn: async ({ pageParam }) => {
+      const response = await bookmarkApi.getList({
+        author: filters.author,
+        keyword: filters.keyword,
+        page: Number(pageParam),
+        size: PAGE_SIZE,
+        sort: filters.sort,
+        source: filters.source,
+        topic: filters.topic,
+        year: filters.year,
+      });
 
-    const [filters, setFilters] = useState<BookmarkFilters>(DEFAULT_FILTERS);
+      return response.data;
+    },
+    queryKey: bookmarkListQueryKey,
+    retry: false,
+  });
+  const bookmarkStatsQuery = useQuery({
+    queryFn: async () => {
+      const response = await bookmarkApi.getStats();
+      return response.data;
+    },
+    queryKey: bookmarkQueryKeys.stats(),
+    retry: false,
+  });
+  const bookmarkFilterOptionsQuery = useQuery({
+    queryFn: async () => {
+      const response = await bookmarkApi.getFilterOptions();
+      return response.data;
+    },
+    queryKey: bookmarkQueryKeys.filterOptions(),
+    retry: false,
+  });
 
-    const [stats, setStats] = useState<BookmarkStatsResponse | null>(null);
-    const [filterOptions, setFilterOptions] =
-        useState<FilterOptionsResponse | null>(null);
+  const deleteBookmarkMutation = useMutation<
+    Awaited<ReturnType<typeof bookmarkApi.deleteById>>,
+    Error,
+    string,
+    BookmarkMutationContext
+  >({
+    mutationFn: (bookmarkId: string) => bookmarkApi.deleteById(bookmarkId),
+    onError: (mutationError, bookmarkId, context) => {
+      if (context?.previousBookmarks) {
+        queryClient.setQueryData(bookmarkListQueryKey, context.previousBookmarks);
+      }
 
-    /**
-     * requestIdRef dùng để chống race condition:
-     * request cũ về sau request mới thì không được ghi đè state mới.
-     */
-    const requestIdRef = useRef(0);
+      void queryClient.invalidateQueries({
+        queryKey: bookmarkQueryKeys.stats(),
+      });
+      void queryClient.invalidateQueries({
+        queryKey: bookmarkQueryKeys.filterOptions(),
+      });
+      setError(
+        getMutationErrorMessage(
+          mutationError,
+          `Cannot delete bookmark ${bookmarkId}. Please try again.`,
+        ),
+      );
+    },
+    onMutate: async (bookmarkId) => {
+      setError(null);
+      await queryClient.cancelQueries({ queryKey: bookmarkListQueryKey });
 
-    const loadPage = useCallback(
-        async (targetPage: number, append: boolean) => {
-            const requestId = ++requestIdRef.current;
+      const previousBookmarks = queryClient.getQueryData<
+        InfiniteData<BookmarkPageResponse>
+      >(bookmarkListQueryKey);
 
-            if (append) {
-                setIsLoadingMore(true);
-            } else {
-                setIsRefreshing(true);
-                setHasNext(false);
-                setPage(0);
-                setItems([]);
-            }
+      queryClient.setQueryData<InfiniteData<BookmarkPageResponse> | undefined>(
+        bookmarkListQueryKey,
+        (cachedData) =>
+          updateInfiniteBookmarkPages(cachedData, (bookmark) =>
+            bookmark.id === bookmarkId ? null : bookmark,
+          ),
+      );
 
-            try {
-                console.log("LOAD", {
-                    targetPage,
-                    append,
-                    filters,
-                });
-                const res = await bookmarkApi.getList({
-                    page: targetPage,
-                    size: PAGE_SIZE,
-                    keyword: filters.keyword,
-                    topic: filters.topic,
-                    source: filters.source,
-                    author: filters.author,
-                    year: filters.year,
-                    sort: filters.sort,
-                });
-                console.log("RESPONSE", {
-                    total: res.data.totalElements,
-                    count: res.data.items.length,
-                    append,
-                    titles: res.data.items.map((item) => item.title),
-                });
-                /**
-                 * Nếu đây không phải request mới nhất thì bỏ qua.
-                 */
-                if (requestId !== requestIdRef.current) {
-                    return;
-                }
+      return { previousBookmarks };
+    },
+    onSettled: () => {
+      void queryClient.invalidateQueries({ queryKey: bookmarkListQueryKey });
+      void queryClient.invalidateQueries({
+        queryKey: bookmarkQueryKeys.stats(),
+      });
+      void queryClient.invalidateQueries({
+        queryKey: bookmarkQueryKeys.filterOptions(),
+      });
+    },
+  });
+  const updateNoteMutation = useMutation<
+    Awaited<ReturnType<typeof bookmarkApi.updateNote>>,
+    Error,
+    {
+      bookmarkId: string;
+      note: string | null;
+    },
+    BookmarkMutationContext
+  >({
+    mutationFn: ({
+      bookmarkId,
+      note,
+    }: {
+      bookmarkId: string;
+      note: string | null;
+    }) =>
+      bookmarkApi.updateNote(bookmarkId, {
+        note,
+      }),
+    onError: (mutationError, variables, context) => {
+      if (context?.previousBookmarks) {
+        queryClient.setQueryData(bookmarkListQueryKey, context.previousBookmarks);
+      }
 
-                setTotalElements(res.data.totalElements);
-                setHasNext(res.data.hasNext);
-                setPage(res.data.page);
+      setError(
+        getMutationErrorMessage(
+          mutationError,
+          `Cannot update note for bookmark ${variables.bookmarkId}.`,
+        ),
+      );
+    },
+    onMutate: async ({ bookmarkId, note }) => {
+      setError(null);
+      await queryClient.cancelQueries({ queryKey: bookmarkListQueryKey });
 
-                if (append) {
-                    setItems((prev) => [...prev, ...res.data.items]);
-                } else {
-                    setItems(res.data.items);
-                }
+      const previousBookmarks = queryClient.getQueryData<
+        InfiniteData<BookmarkPageResponse>
+      >(bookmarkListQueryKey);
 
-                setError(null);
-            } catch {
-                if (requestId === requestIdRef.current) {
-                    setError("Cannot load bookmarks. Please try again.");
-                }
-            } finally {
-                if (requestId === requestIdRef.current) {
-                    setIsLoadingMore(false);
-                    setIsRefreshing(false);
-                }
-            }
-        },
-        [filters],
-    );
+      queryClient.setQueryData<InfiniteData<BookmarkPageResponse> | undefined>(
+        bookmarkListQueryKey,
+        (cachedData) =>
+          updateInfiniteBookmarkPages(cachedData, (bookmark) =>
+            bookmark.id === bookmarkId
+              ? { ...bookmark, note }
+              : bookmark,
+          ),
+      );
 
-    /**
-     * Initial load + reload khi filter/sort thay đổi.
-     *
-     * setTimeout giúp tránh ESLint react-hooks/set-state-in-effect
-     * vì loadPage có setState ở đầu function.
-     */
-    useEffect(() => {
-        const timeoutId = window.setTimeout(() => {
-            void loadPage(0, false);
-        }, 0);
+      return { previousBookmarks };
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: bookmarkListQueryKey });
+    },
+  });
 
-        return () => {
-            window.clearTimeout(timeoutId);
-        };
-    }, [loadPage]);
+  const items = useMemo(
+    () =>
+      (bookmarkListQuery.data?.pages || []).flatMap((page: BookmarkPageResponse) =>
+        page.items,
+      ),
+    [bookmarkListQuery.data],
+  );
+  const firstPage = bookmarkListQuery.data?.pages[0] ?? null;
+  const totalElements = firstPage?.totalElements ?? 0;
+  const hasNext = Boolean(bookmarkListQuery.hasNextPage);
+  const isLoadingMore = bookmarkListQuery.isFetchingNextPage;
+  const isRefreshing =
+    bookmarkListQuery.isPending
+    || (bookmarkListQuery.isFetching && !bookmarkListQuery.isFetchingNextPage);
 
-    /**
-     * Load metadata một lần.
-     */
-    useEffect(() => {
-        let cancelled = false;
+  useEffect(() => {
+    if (bookmarkListQuery.error) {
+      setError(mapQueryErrorToMessage(bookmarkListQuery.error));
+    } else if (!deleteBookmarkMutation.isError && !updateNoteMutation.isError) {
+      setError(null);
+    }
+  }, [
+    bookmarkListQuery.error,
+    deleteBookmarkMutation.isError,
+    updateNoteMutation.isError,
+  ]);
 
-        async function loadMetadata() {
-            const [statsResult, filterOptionsResult] = await Promise.allSettled([
-                bookmarkApi.getStats(),
-                bookmarkApi.getFilterOptions(),
-            ]);
-
-            if (cancelled) {
-                return;
-            }
-
-            if (statsResult.status === "fulfilled") {
-                setStats(statsResult.value.data);
-            }
-
-            if (filterOptionsResult.status === "fulfilled") {
-                setFilterOptions(filterOptionsResult.value.data);
-            }
-        }
-
-        void loadMetadata();
-
-        return () => {
-            cancelled = true;
-        };
-    }, []);
-
-    const loadMore = useCallback(() => {
-        if (!hasNext || isLoadingMore || isRefreshing) {
-            return;
-        }
-
-        void loadPage(page + 1, true);
-    }, [hasNext, isLoadingMore, isRefreshing, page, loadPage]);
-
-    function updateFilter<K extends keyof BookmarkFilters>(
-        key: K,
-        value: BookmarkFilters[K],
-    ) {
-        setFilters((prev) => ({
-            ...prev,
-            [key]: value,
-        }));
+  const loadMore = useCallback(() => {
+    if (!hasNext || isLoadingMore || isRefreshing) {
+      return;
     }
 
-    function resetFilters() {
-        setFilters(DEFAULT_FILTERS);
-    }
+    void bookmarkListQuery.fetchNextPage();
+  }, [bookmarkListQuery, hasNext, isLoadingMore, isRefreshing]);
 
-    async function deleteBookmark(bookmarkId: string) {
-        const previousItems = items;
-        const previousTotalElements = totalElements;
+  function updateFilter<K extends keyof BookmarkFilters>(
+    key: K,
+    value: BookmarkFilters[K],
+  ) {
+    setError(null);
+    setFilters((previousFilters) => ({
+      ...previousFilters,
+      [key]: value,
+    }));
+  }
 
-        setItems((prev) => prev.filter((bookmark) => bookmark.id !== bookmarkId));
-        setTotalElements((prev) => Math.max(0, prev - 1));
+  function resetFilters() {
+    setError(null);
+    setFilters(DEFAULT_FILTERS);
+  }
 
-        try {
-            await bookmarkApi.deleteById(bookmarkId);
-        } catch {
-            setItems(previousItems);
-            setTotalElements(previousTotalElements);
-            await loadPage(0, false);
-        }
-    }
+  async function deleteBookmark(bookmarkId: string) {
+    await deleteBookmarkMutation.mutateAsync(bookmarkId);
+  }
 
-    async function updateNote(bookmarkId: string, note: string | null) {
-        const previousItems = items;
+  async function updateNote(bookmarkId: string, note: string | null) {
+    await updateNoteMutation.mutateAsync({
+      bookmarkId,
+      note,
+    });
+  }
 
-        setItems((prev) =>
-            prev.map((bookmark) =>
-                bookmark.id === bookmarkId ? { ...bookmark, note } : bookmark,
-            ),
-        );
+  const reload = useCallback(() => {
+    void queryClient.invalidateQueries({ queryKey: bookmarkListQueryKey });
+  }, [bookmarkListQueryKey, queryClient]);
 
-        try {
-            await bookmarkApi.updateNote(bookmarkId, {
-                note: note ?? "",
-            });
-        } catch {
-            setItems(previousItems);
-            await loadPage(0, false);
-        }
-    }
-
-    const reload = useCallback(() => {
-        void loadPage(0, false);
-    }, [loadPage]);
-
-    return {
-        items,
-        totalElements,
-        hasNext,
-        isLoadingMore,
-        isRefreshing,
-        error,
-        filters,
-        stats,
-        filterOptions,
-        updateFilter,
-        resetFilters,
-        loadMore,
-        deleteBookmark,
-        updateNote,
-        reload,
-    };
+  return {
+    deleteBookmark,
+    error,
+    filterOptions: bookmarkFilterOptionsQuery.data ?? null,
+    filters,
+    hasNext,
+    isLoadingMore,
+    isRefreshing,
+    items,
+    loadMore,
+    reload,
+    resetFilters,
+    stats: bookmarkStatsQuery.data ?? null,
+    totalElements,
+    updateFilter,
+    updateNote,
+  };
 }

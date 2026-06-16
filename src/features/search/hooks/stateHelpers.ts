@@ -2,11 +2,13 @@ import { initialFilters, SEARCH_DEFAULT_PAGE } from "../constants";
 import {
   emptySearchFilterOptions,
   emptySearchOptionValueLookup,
+  normalizeSearchTabEntityType,
   normalizeSearchSortState,
 } from "../services";
 import type { SearchOptionValueLookup } from "../services";
 import type {
   RemoteOptionFilterKey,
+  SearchEntityType,
   SearchFilterOptions,
   SearchFilters,
 } from "../types";
@@ -29,6 +31,7 @@ export const remoteOptionFilterKeys: RemoteOptionFilterKey[] = [
 ];
 
 type SearchPageStateLike = {
+  activeEntityType: SearchEntityType;
   filters: SearchFilters;
   filtersOpen: boolean;
   searchQuery: string;
@@ -38,8 +41,10 @@ type SearchPageStateLike = {
 };
 
 type LegacySearchPageSnapshot = Partial<SearchPageSnapshot> & {
+  activeEntityType?: SearchEntityType;
   appliedFilters?: SearchFilters;
   appliedSearchQuery?: string;
+  entityType?: SearchEntityType;
   filterOptions?: SearchFilterOptions;
   optionValueLookup?: SearchOptionValueLookup;
   selectedSort?: string;
@@ -136,6 +141,7 @@ export function cloneSubmittedSearch(submittedSearch: SubmittedSearch | null) {
   return {
     appliedFilters: cloneSearchFilters(submittedSearch.appliedFilters),
     appliedSearchQuery: submittedSearch.appliedSearchQuery,
+    entityType: submittedSearch.entityType,
     optionValueLookup: cloneSearchOptionValueLookup(
       submittedSearch.optionValueLookup,
     ),
@@ -181,6 +187,7 @@ export function buildSearchPageSnapshot(
   scrollY: number,
 ): SearchPageSnapshot {
   return {
+    activeEntityType: searchPageState.activeEntityType,
     filters: cloneSearchFilters(searchPageState.filters),
     filtersOpen: searchPageState.filtersOpen,
     remoteFilterOptions: cloneRemoteFilterOptionsSnapshot(remoteFilterOptions),
@@ -206,6 +213,9 @@ export function restoreSubmittedSearch(snapshot: LegacySearchPageSnapshot | null
     return {
       appliedFilters: cloneSearchFilters(snapshot.submittedSearch.appliedFilters),
       appliedSearchQuery: snapshot.submittedSearch.appliedSearchQuery,
+      entityType: normalizeSearchTabEntityType(
+        snapshot.submittedSearch.entityType,
+      ),
       optionValueLookup: cloneSearchOptionValueLookup(
         snapshot.submittedSearch.optionValueLookup,
       ),
@@ -228,6 +238,11 @@ export function restoreSubmittedSearch(snapshot: LegacySearchPageSnapshot | null
   return {
     appliedFilters,
     appliedSearchQuery,
+    entityType: normalizeSearchTabEntityType(
+      snapshot.entityType
+      || snapshot.activeEntityType
+      || "works",
+    ),
     optionValueLookup: cloneSearchOptionValueLookup(
       snapshot.optionValueLookup || emptySearchOptionValueLookup,
     ),
@@ -271,6 +286,11 @@ export function readPersistedSearchPageSnapshot(): SearchPageSnapshot | null {
     );
 
     return {
+      activeEntityType: normalizeSearchTabEntityType(
+        parsedSnapshot.activeEntityType
+        || parsedSnapshot.entityType
+        || "works",
+      ),
       filters,
       filtersOpen: Boolean(parsedSnapshot.filtersOpen),
       remoteFilterOptions,

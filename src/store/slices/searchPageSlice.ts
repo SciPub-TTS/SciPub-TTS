@@ -4,8 +4,13 @@ import {
   initialFilters,
 } from "@/features/search/constants";
 import type { SearchOptionValueLookup } from "@/features/search/services";
-import { defaultSearchSortState, normalizeSearchSortState } from "@/features/search/services";
+import {
+  defaultSearchSortState,
+  normalizeSearchSortState,
+  normalizeSearchTabEntityType,
+} from "@/features/search/services";
 import type {
+  SearchEntityType,
   SearchFilters,
   SearchFilterWidgetKey,
   SearchSortState,
@@ -23,6 +28,7 @@ import { normalizeSearchFilterWidgetKeys } from "@/features/search/utils";
 import type { RootState } from "../appStore";
 
 type SearchPageState = {
+  activeEntityType: SearchEntityType;
   filters: SearchFilters;
   filtersOpen: boolean;
   searchQuery: string;
@@ -39,6 +45,7 @@ type UpdateSearchFilterPayload = {
 type SubmitSearchPayload = {
   appliedFilters: SearchFilters;
   appliedSearchQuery: string;
+  entityType: SearchEntityType;
   optionValueLookup: SearchOptionValueLookup;
   sortState: SearchSortState;
 };
@@ -54,6 +61,9 @@ const searchPageSlice = createSlice({
     },
     hydrateSearchPageState(_, action: PayloadAction<SearchPageSnapshot>) {
       return createStateFromSnapshot(action.payload);
+    },
+    setActiveEntityType(state, action: PayloadAction<SearchEntityType>) {
+      state.activeEntityType = normalizeSearchTabEntityType(action.payload);
     },
     setSearchQuery(state, action: PayloadAction<string>) {
       state.searchQuery = action.payload;
@@ -76,6 +86,7 @@ const searchPageSlice = createSlice({
       state.submittedSearch = {
         appliedFilters: cloneSearchFilters(action.payload.appliedFilters),
         appliedSearchQuery: action.payload.appliedSearchQuery,
+        entityType: normalizeSearchTabEntityType(action.payload.entityType),
         optionValueLookup: cloneSearchOptionValueLookup(
           action.payload.optionValueLookup,
         ),
@@ -114,6 +125,7 @@ export const {
   hydrateSearchPageState,
   resetSearchFilters,
   resetSearchPageState,
+  setActiveEntityType,
   setFiltersOpen,
   setSearchQuery,
   setSortState,
@@ -130,6 +142,7 @@ export function selectSearchPageState(state: RootState) {
 
 function createDefaultSearchPageState(): SearchPageState {
   return {
+    activeEntityType: "works",
     filters: cloneSearchFilters(initialFilters),
     filtersOpen: false,
     searchQuery: "",
@@ -141,6 +154,7 @@ function createDefaultSearchPageState(): SearchPageState {
 
 function createStateFromSnapshot(snapshot: SearchPageSnapshot): SearchPageState {
   return {
+    activeEntityType: normalizeSearchTabEntityType(snapshot.activeEntityType),
     filters: cloneSearchFilters(snapshot.filters),
     filtersOpen: snapshot.filtersOpen,
     searchQuery: snapshot.searchQuery,

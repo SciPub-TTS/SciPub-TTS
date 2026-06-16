@@ -1,7 +1,12 @@
 import { SEARCH_NEXT_QUERY_TRIGGER_OFFSET, SEARCH_WORKS_PER_PAGE } from "../constants";
 import { sortPaperResults } from "../services";
-import type { PaperResult, SearchSortState } from "../types";
-import type { SearchWorksState } from "../services";
+import type { SearchResultsPage } from "../services";
+import type {
+  PaperResult,
+  SearchEntityType,
+  SearchResultItem,
+  SearchSortState,
+} from "../types";
 
 export function mergeUniqueStrings(existing: string[], incoming: string[]) {
   const seen = new Set(existing);
@@ -20,28 +25,39 @@ export function mergeUniqueStrings(existing: string[], incoming: string[]) {
 }
 
 export function flattenSearchResultPages(
-  pages: SearchWorksState[],
+  pages: SearchResultsPage[],
+  entityType: SearchEntityType,
   sortState: SearchSortState,
 ) {
-  let mergedResults: PaperResult[] = [];
+  let mergedResults: SearchResultItem[] = [];
 
   for (const page of pages) {
-    mergedResults = mergeUniquePaperResults(mergedResults, page.works);
+    const pageItems = getPageItems(page);
+    mergedResults = mergeUniqueSearchResults(mergedResults, pageItems);
   }
 
-  return sortPaperResults(mergedResults, sortState);
+  if (entityType !== "works") {
+    return mergedResults;
+  }
+
+  return sortPaperResults(mergedResults as PaperResult[], sortState);
 }
 
 export function getNextSearchResultsPage(
-  lastPage: SearchWorksState,
-  allPages: SearchWorksState[],
+  lastPage: SearchResultsPage,
+  allPages: SearchResultsPage[],
 ) {
-  const loadedResultCount = allPages.reduce(
-    (totalCount, page) => totalCount + page.works.length,
-    0,
-  );
+  if (!isWorksResultsPage(lastPage)) {
+    return lastPage.hasMore ? lastPage.page + 1 : undefined;
+  }
 
-  if (lastPage.works.length === 0) {
+  const loadedResultCount = allPages.reduce((totalCount, page) => {
+    const pageItems = getPageItems(page);
+    return totalCount + pageItems.length;
+  }, 0);
+  const lastPageItems = getPageItems(lastPage);
+
+  if (lastPageItems.length === 0) {
     return undefined;
   }
 
@@ -52,7 +68,7 @@ export function getNextSearchResultsPage(
   return lastPage.page + 1;
 }
 
-export function getSearchResponseTime(pages: SearchWorksState[]) {
+export function getSearchResponseTime(pages: SearchResultsPage[]) {
   if (pages.length === 0) {
     return 0;
   }
@@ -76,24 +92,42 @@ export function getAutoLoadAnchorIndex(
   );
 }
 
-function mergeUniquePaperResults(
-  existing: PaperResult[],
-  incoming: PaperResult[],
+function mergeUniqueSearchResults(
+  existing: SearchResultItem[],
+  incoming: SearchResultItem[],
 ) {
   const seenIds = new Set<string>();
-  const merged: PaperResult[] = [];
+  const merged: SearchResultItem[] = [];
 
-  for (const paper of existing) {
-    seenIds.add(paper.id);
-    merged.push(paper);
+  for (const item of existing) {
+    seenIds.add(`${item.entityType}:${item.id}`);
+    merged.push(item);
   }
 
-  for (const paper of incoming) {
-    if (!seenIds.has(paper.id)) {
-      seenIds.add(paper.id);
-      merged.push(paper);
+  for (const item of incoming) {
+    const itemKey = `${item.entityType}:${item.id}`;
+
+    if (!seenIds.has(itemKey)) {
+      seenIds.add(itemKey);
+      merged.push(item);
     }
   }
 
   return merged;
+}
+
+function getPageItems(page: SearchResultsPage): SearchResultItem[] {
+  if ("works" in page && Array.isArray(page.works)) {
+    return page.works;
+  }
+
+  if ("items" in page && Array.isArray(page.items)) {
+    return page.items;
+  }
+
+  return [];
+}
+
+function isWorksResultsPage(page: SearchResultsPage): page is Extract<SearchResultsPage, { entityType: "works" }> {
+  return page.entityType === "works" && "works" in page && Array.isArray(page.works);
 }

@@ -10,7 +10,7 @@ import type {
     SortOption,
     UpdateBookmarkNoteRequest,
 } from "@/features/bookmarks/types/bookmark.types";
-const BASE = "/bookmarks";
+const BASE = "/api/bookmarks";
 
 export const bookmarkApi = {
     // 1. Add bookmark

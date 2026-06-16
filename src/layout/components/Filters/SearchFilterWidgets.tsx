@@ -27,7 +27,7 @@ function FilterWidgetShell({
   label: string;
 }) {
   return (
-    <section className="rounded-2xl border border-slate-300 bg-white p-4 shadow-sm">
+    <section className="relative z-0 overflow-visible rounded-2xl border border-slate-300 bg-white p-4 shadow-sm has-[details[open]]:z-40 focus-within:z-40">
       <div className="mb-3">
         <span className="block text-[10px] font-extrabold uppercase tracking-[0.28em] text-black">
           {label}
@@ -119,7 +119,7 @@ function MultiSelectFilterControl({
   return (
     <details
       ref={detailsRef}
-      className="group relative"
+      className="group relative z-20"
       data-filter-key={filterKey}
       data-search-filter-dropdown="true"
       onToggle={handleDetailsToggle}
@@ -129,7 +129,7 @@ function MultiSelectFilterControl({
         <ChevronDown className="h-4 w-4 text-black transition group-open:rotate-180" />
       </summary>
 
-      <div className="absolute left-0 top-full z-50 mt-2 w-full min-w-0 max-w-full overflow-hidden rounded-xl border border-slate-300 bg-white shadow-xl">
+      <div className="absolute left-0 top-full z-[80] mt-2 w-full min-w-0 max-w-full overflow-hidden rounded-xl border border-slate-300 bg-white shadow-xl">
         <div className="border-b border-slate-300 bg-slate-50/80 p-2">
           <div className="flex h-9 items-center gap-2 rounded-lg border border-slate-400 bg-white px-2">
             <Search className="h-4 w-4 text-black" />
@@ -429,13 +429,13 @@ function OrcidFilterControl({ value, updateFilter }: OrcidFilterProps) {
         Work
       </div>
 
-      <details className="group relative h-full">
+      <details className="group relative z-20 h-full">
         <summary className="flex h-full min-w-20 cursor-pointer list-none items-center justify-center gap-1 bg-slate-100 px-3 text-black shadow-sm">
           {value || "is"}
           <ChevronDown className="h-4 w-4 transition group-open:rotate-180" />
         </summary>
 
-        <div className="absolute left-0 z-30 mt-1 w-36 rounded-xl border border-slate-300 bg-white p-1.5 shadow-xl">
+        <div className="absolute left-0 z-[80] mt-1 w-36 rounded-xl border border-slate-300 bg-white p-1.5 shadow-xl">
           {(["is", "is not"] as const).map((condition) => (
             <button
               key={condition}
