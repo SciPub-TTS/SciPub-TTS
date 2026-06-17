@@ -84,7 +84,9 @@ export default function MainSidebar() {
             const isSearchSectionActive =
               item.path === ROUTES.SEARCH &&
               (location.pathname === ROUTES.SEARCH ||
-                location.pathname.startsWith("/papers/"));
+                location.pathname.startsWith("/papers/") ||
+                location.pathname.startsWith("/authors/") ||
+                location.pathname.startsWith("/topics/"));
 
             return (
               <NavLink

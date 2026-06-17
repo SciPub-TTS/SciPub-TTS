@@ -1,13 +1,13 @@
-import type { PaperResult } from "../types";
+import type { PaperResult, PaperResultEntityRef } from "../types";
 import type { SearchWorksApiItem } from "./types";
 
 export function mapApiWorkToPaperResult(work: SearchWorksApiItem): PaperResult {
   const title = sanitizePlainText(work.title) || "Untitled";
   const normalizedType = normalizeTypeLabel(work.type);
-  const normalizedSource =
-    sanitizePlainText(work.sourceName) || "Unknown source";
+  const normalizedSource = sanitizePlainText(work.sourceName) || "Unknown source";
+  const topicRef = mapEntityRef(work.topicRef);
   const normalizedTopic =
-    sanitizePlainText(work.topic).trim() || normalizedSource;
+    topicRef?.name || sanitizePlainText(work.topic).trim() || normalizedSource;
   const normalizedSubField =
     sanitizePlainText(work.subFieldName).trim() || "Unknown subfield";
   const currentYear = new Date().getFullYear();
@@ -22,13 +22,18 @@ export function mapApiWorkToPaperResult(work: SearchWorksApiItem): PaperResult {
       : sanitizePlainText(work.abstractText).trim();
   const summary =
     normalizedAbstract || `OpenAlex result from ${normalizedSource}.`;
-  const authors = mapAuthorNames(work.authors);
+  const authorRefs = mapAuthorRefs(work.authorRefs, work.authors);
+  const authors = authorRefs.length > 0
+    ? authorRefs.map((authorRef) => authorRef.name)
+    : mapAuthorNames(work.authors);
   const keywords = buildKeywords(work.keywords, normalizedSubField, normalizedTopic);
 
   return {
     id: extractLastSegment(work.id),
+    entityType: "works",
     title,
     authors,
+    authorRefs,
     venue: normalizedSource,
     citations: citedByCount,
     year: publicationYear,
@@ -39,6 +44,7 @@ export function mapApiWorkToPaperResult(work: SearchWorksApiItem): PaperResult {
     keywords,
     field: normalizedType,
     topic: normalizedTopic,
+    topicRef,
     subField: normalizedSubField,
     matchesTrendingKeyword: Boolean(work.matchesTrendingKeyword),
     matchesTrendingTopic: Boolean(work.matchesTrendingTopic),
@@ -146,6 +152,55 @@ function mapAuthorNames(authorNames: string[]) {
   }
 
   return result;
+}
+
+function mapAuthorRefs(
+  rawAuthorRefs: SearchWorksApiItem["authorRefs"],
+  fallbackAuthorNames: string[],
+) {
+  const authorRefs: PaperResultEntityRef[] = [];
+
+  for (const rawAuthorRef of rawAuthorRefs || []) {
+    const normalizedName = sanitizePlainText(rawAuthorRef?.displayName);
+
+    if (!normalizedName) {
+      continue;
+    }
+
+    authorRefs.push({
+      id: normalizeEntityId(rawAuthorRef?.id),
+      name: normalizedName,
+    });
+  }
+
+  if (authorRefs.length > 0) {
+    return authorRefs;
+  }
+
+  return mapAuthorNames(fallbackAuthorNames).map((authorName) => ({
+    id: null,
+    name: authorName,
+  }));
+}
+
+function mapEntityRef(
+  rawEntityRef: SearchWorksApiItem["topicRef"],
+): PaperResultEntityRef | null {
+  const normalizedName = sanitizePlainText(rawEntityRef?.displayName);
+
+  if (!normalizedName) {
+    return null;
+  }
+
+  return {
+    id: normalizeEntityId(rawEntityRef?.id),
+    name: normalizedName,
+  };
+}
+
+function normalizeEntityId(value: string | null | undefined) {
+  const normalizedValue = sanitizePlainText(value);
+  return normalizedValue || null;
 }
 
 let htmlEntityDecoder: HTMLTextAreaElement | null = null;

@@ -64,7 +64,6 @@ export function useRemoteFilterOptions(
             page,
             SEARCH_FILTER_OPTION_LIMIT,
           ),
-        staleTime: 5 * 60 * 1000,
       }),
     [queryClient],
   );

@@ -3,11 +3,14 @@ export {
   defaultSearchSortState,
   emptySearchFilterOptions,
   emptySearchOptionValueLookup,
+  getSearchEntityMetadata,
   getSearchSortOptionValue,
   hasActiveSearchSort,
   mockSearchYearRange,
+  normalizeSearchTabEntityType,
   normalizeSearchSortState,
   searchResultSortGroups,
+  searchScopeLabel,
   searchTabs,
 } from "./metadata";
 export {
@@ -26,6 +29,8 @@ export {
   getRecentSearches,
   saveSearchHistory,
 } from "./searchHistoryApi";
+export { searchEntities } from "./searchEntitiesApi";
+export { mapApiEntityToResult } from "./searchEntitiesMapper";
 export { mapApiWorkToPaperResult } from "./searchWorksMapper";
 export { sortPaperResults } from "./searchWorksSorting";
 export { searchWorks } from "./searchWorksApi";
@@ -35,11 +40,17 @@ export type {
   SearchHistoryApiItem,
   SearchOptionGroupKey,
   SearchOptionValueLookup,
+  SearchEntitiesApiResponse,
+  SearchEntitiesState,
+  SearchEntityApiItem,
+  SearchEntityRequest,
   SearchResultSortGroup,
   SearchResultSortGroupKey,
   SearchResultSortOption,
   SearchSummaryApiData,
   SearchSummaryState,
+  SearchResultsPage,
+  SearchResultState,
   SearchWorksApiItem,
   SearchWorksApiResponse,
   SearchWorksRequest,

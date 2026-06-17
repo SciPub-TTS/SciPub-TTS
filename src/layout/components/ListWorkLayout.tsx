@@ -6,18 +6,27 @@ import {
   ExternalLink,
   FileText,
   Quote,
+  Share2,
   Tags,
   Users,
 } from "lucide-react";
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { Link, useLocation, useParams } from "react-router-dom";
 
+import { routePaths } from "@/app/router";
+import { useWorkBookmark } from "@/features/bookmarks/hooks/useWorkBookmark";
+import {
+  buildNextDetailUrl,
+  getDetailContextFromRouteParams,
+} from "@/features/detail/detailTrail";
 import { markSearchPageRestorePending } from "@/features/search/utils/navigationState";
+import type { PaperResultEntityRef } from "@/features/search/types";
 import MetadataBadge from "@/layout/components/MetadataBadge";
 
 type ListWorkLayoutProps = {
   abstractText: string;
   authors: string[];
+  authorRefs?: PaperResultEntityRef[];
   citations: number;
   detailHref: string;
   doi: string;
@@ -26,10 +35,13 @@ type ListWorkLayoutProps = {
   isSaved?: boolean;
   isTrendTopic?: boolean;
   keywords: string[];
+  workId: string;
   pdfUrl: string | null;
+  preserveSearchStateOnDetailClick?: boolean;
   subField: string;
   title: string;
   topic: string;
+  topicRef?: PaperResultEntityRef | null;
   venue: string;
   year: number;
   onBookmarkClick?: () => void;
@@ -47,9 +59,58 @@ function getPreviewText(text: string, limit: number) {
   return `${text.slice(0, limit).trim()}...`;
 }
 
+function getDisplayDoi(doi: string, limit: number) {
+  if (doi.length <= limit) {
+    return doi;
+  }
+
+  if (limit <= 3) {
+    return doi.slice(0, limit);
+  }
+
+  return `${doi.slice(0, limit - 3).trim()}...`;
+}
+
+function copyTextWithFallback(value: string) {
+  if (
+    typeof navigator !== "undefined" &&
+    navigator.clipboard &&
+    typeof navigator.clipboard.writeText === "function"
+  ) {
+    return navigator.clipboard.writeText(value);
+  }
+
+  if (typeof document === "undefined") {
+    return Promise.reject(new Error("Clipboard is not available."));
+  }
+
+  const textArea = document.createElement("textarea");
+  textArea.value = value;
+  textArea.setAttribute("readonly", "");
+  textArea.style.position = "fixed";
+  textArea.style.opacity = "0";
+  document.body.appendChild(textArea);
+  textArea.select();
+
+  try {
+    const copied = document.execCommand("copy");
+    document.body.removeChild(textArea);
+
+    if (!copied) {
+      return Promise.reject(new Error("Copy command was not successful."));
+    }
+
+    return Promise.resolve();
+  } catch {
+    document.body.removeChild(textArea);
+    return Promise.reject(new Error("Copy command was not successful."));
+  }
+}
+
 export default function ListWorkLayout({
   abstractText,
   authors,
+  authorRefs = [],
   citations,
   detailHref,
   doi,
@@ -58,24 +119,53 @@ export default function ListWorkLayout({
   isSaved = false,
   isTrendTopic = false,
   keywords,
+  workId,
   pdfUrl,
+  preserveSearchStateOnDetailClick = true,
   subField,
   title,
   topic,
+  topicRef = null,
   venue,
   year,
   onBookmarkClick,
 }: ListWorkLayoutProps) {
+  const location = useLocation();
+  const currentDetailContext = getDetailContextFromRouteParams(useParams());
   const [showAllAuthors, setShowAllAuthors] = useState(false);
   const [showFullAbstract, setShowFullAbstract] = useState(false);
+  const [shareLabel, setShareLabel] = useState("Share");
+  const shareResetTimeoutRef = useRef<number | null>(null);
+  const authorItems =
+    authorRefs.length > 0
+      ? authorRefs
+      : authors.map((authorName) => ({ id: null, name: authorName }));
 
-  const bookmarkClassName = isSaved
-    ? "bg-[#14532D] text-white"
-    : "border border-slate-400 bg-white text-black hover:bg-slate-50";
+  const {
+    bookmarkButtonLabel,
+    handleBookmarkClick: handleWorkBookmarkClick,
+    isBookmarkActionPending,
+    isSaved: savedState,
+  } = useWorkBookmark({
+    authors,
+    citations,
+    initialSaved: isSaved,
+    onSuccess: onBookmarkClick,
+    openAlexId: workId,
+    source: venue,
+    title,
+    topic: topicRef?.name || topic,
+    year,
+  });
 
-  const visibleAuthors = showAllAuthors ? authors : authors.slice(0, 3);
-  const hasMoreAuthors = authors.length > 3;
+  const bookmarkClassName = savedState
+    ? "border border-[#14532D] bg-[#14532D] text-white hover:border-[#0f3d22] hover:bg-[#0f3d22] hover:text-white"
+    : "border border-black bg-white text-black hover:border-[#14532D] hover:bg-[#14532D] hover:text-white";
+
+  const visibleAuthors = showAllAuthors ? authorItems : authorItems.slice(0, 3);
+  const hasMoreAuthors = authorItems.length > 3;
   const normalizedDoi = doi.trim();
+  const displayDoi = getDisplayDoi(normalizedDoi, 30);
   const hasDoi = normalizedDoi.length > 0;
   const hasPdfUrl = Boolean(pdfUrl && pdfUrl.trim().length > 0);
   const canExpandAbstract = abstractText.length > 520;
@@ -85,11 +175,87 @@ export default function ListWorkLayout({
   const normalizedFollowedAuthors = followedAuthors.map((author) =>
     author.trim().toLocaleLowerCase(),
   );
+  const entityNavigationOnClick = preserveSearchStateOnDetailClick
+    ? markSearchPageRestorePending
+    : undefined;
+  const resolvedDetailHref = currentDetailContext
+    ? buildNextDetailUrl(
+        location.search,
+        currentDetailContext.entityType,
+        currentDetailContext.entityId,
+        "works",
+        workId,
+      )
+    : detailHref;
+
+  function buildEntityHref(
+    entityType: "authors" | "topics",
+    entityId: string,
+  ) {
+    if (!currentDetailContext) {
+      if (entityType === "authors") {
+        return routePaths.authorDetail(entityId);
+      }
+
+      return routePaths.topicDetail(entityId);
+    }
+
+    return buildNextDetailUrl(
+      location.search,
+      currentDetailContext.entityType,
+      currentDetailContext.entityId,
+      entityType,
+      entityId,
+    );
+  }
 
   function isFollowedAuthor(author: string) {
     return normalizedFollowedAuthors.includes(
       author.trim().toLocaleLowerCase(),
     );
+  }
+
+  useEffect(
+    () => () => {
+      if (
+        typeof window !== "undefined" &&
+        shareResetTimeoutRef.current !== null
+      ) {
+        window.clearTimeout(shareResetTimeoutRef.current);
+      }
+    },
+    [],
+  );
+
+  function scheduleShareLabelReset() {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    if (shareResetTimeoutRef.current !== null) {
+      window.clearTimeout(shareResetTimeoutRef.current);
+    }
+
+    shareResetTimeoutRef.current = window.setTimeout(() => {
+      setShareLabel("Share");
+      shareResetTimeoutRef.current = null;
+    }, 6000);
+  }
+
+  async function handleShareClick() {
+    const shareUrl =
+      typeof window !== "undefined"
+        ? new URL(detailHref, window.location.origin).toString()
+        : detailHref;
+
+    try {
+      await copyTextWithFallback(shareUrl);
+      setShareLabel("Copied link!");
+      scheduleShareLabelReset();
+    } catch {
+      setShareLabel("Copy failed");
+      scheduleShareLabelReset();
+    }
   }
 
   return (
@@ -98,10 +264,23 @@ export default function ListWorkLayout({
         <div className="flex flex-wrap gap-2">
           <MetadataBadge tone="accent" label={subField} />
 
-          <MetadataBadge
-            label={topic}
-            tone={isTrendTopic ? "topicTrend" : "topic"}
-          />
+          {topicRef?.id ? (
+            <Link
+              to={buildEntityHref("topics", topicRef.id)}
+              onClick={entityNavigationOnClick}
+              className="transition hover:-translate-y-0.5"
+            >
+              <MetadataBadge
+                label={topicRef.name}
+                tone={isTrendTopic ? "topicTrend" : "topic"}
+              />
+            </Link>
+          ) : (
+            <MetadataBadge
+              label={topic}
+              tone={isTrendTopic ? "topicTrend" : "topic"}
+            />
+          )}
 
           <MetadataBadge tone="default" label={field} />
         </div>
@@ -121,14 +300,31 @@ export default function ListWorkLayout({
           <Users className="h-4 w-4 text-black" />
           <span className="break-words">
             {visibleAuthors.map((author, index) => (
-              <span key={`${author}-${index}`}>
-                <span
-                  className={
-                    isFollowedAuthor(author) ? "font-bold underline" : undefined
-                  }
-                >
-                  {author}
-                </span>
+              <span key={`${author.name}-${author.id || index}`}>
+                {author.id ? (
+                  <Link
+                    to={buildEntityHref("authors", author.id)}
+                    onClick={entityNavigationOnClick}
+                    className={[
+                      "text-blue-700 transition hover:text-blue-900 hover:underline",
+                      isFollowedAuthor(author.name)
+                        ? "font-bold underline"
+                        : "font-semibold",
+                    ].join(" ")}
+                  >
+                    {author.name}
+                  </Link>
+                ) : (
+                  <span
+                    className={
+                      isFollowedAuthor(author.name)
+                        ? "font-bold underline"
+                        : undefined
+                    }
+                  >
+                    {author.name}
+                  </span>
+                )}
                 {index < visibleAuthors.length - 1 ? ", " : ""}
               </span>
             ))}
@@ -195,10 +391,11 @@ export default function ListWorkLayout({
             href={`https://${normalizedDoi}`}
             target="_blank"
             rel="noreferrer"
+            title={normalizedDoi}
             className="inline-flex min-w-0 items-center gap-2 text-xs font-bold text-blue-700 hover:text-blue-900"
           >
             <ExternalLink className="h-4 w-4 shrink-0" />
-            <span className="truncate">{normalizedDoi}</span>
+            <span>{displayDoi}</span>
           </a>
         ) : (
           <span className="inline-flex min-w-0 items-center gap-2 text-xs font-bold text-black">
@@ -210,20 +407,35 @@ export default function ListWorkLayout({
         <div className="flex flex-wrap items-center gap-2">
           <button
             type="button"
-            onClick={onBookmarkClick}
+            disabled={isBookmarkActionPending}
+            onClick={() => {
+              void handleWorkBookmarkClick();
+            }}
+            title={savedState ? "Remove bookmark" : "Save bookmark"}
             className={[
-              "inline-flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-bold transition",
+              "inline-flex items-center gap-2 rounded-lg border-black px-3 py-2 text-xs font-bold transition disabled:cursor-not-allowed disabled:opacity-70",
               bookmarkClassName,
             ].join(" ")}
           >
             <Bookmark className="h-4 w-4" />
-            {isSaved ? "Saved" : "Bookmark"}
+            {bookmarkButtonLabel}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              void handleShareClick();
+            }}
+            className="inline-flex items-center gap-2 rounded-lg border border-black bg-white px-3 py-2 text-xs font-bold text-black transition hover:border-[#14532D] hover:bg-[#14532D] hover:text-white"
+          >
+            <Share2 className="h-4 w-4" />
+            {shareLabel}
           </button>
 
           <Link
-            to={detailHref}
-            onClick={markSearchPageRestorePending}
-            className="inline-flex items-center gap-2 rounded-lg border border-[#14532D] bg-white px-3 py-2 text-xs font-bold text-[#14532D] transition hover:border-[#14532D] hover:bg-[#14532D] hover:text-white"
+            to={resolvedDetailHref}
+            onClick={entityNavigationOnClick}
+            className="inline-flex items-center gap-2 rounded-lg border border-black bg-white px-3 py-2 text-xs font-bold text-black transition hover:border-[#14532D] hover:bg-[#14532D] hover:text-white"
           >
             <Eye className="h-4 w-4" />
             View Details
@@ -234,7 +446,7 @@ export default function ListWorkLayout({
               href={pdfUrl || undefined}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center gap-2 rounded-lg border border-[#16A34A] bg-[#A3E635]/20 px-3 py-2 text-xs font-bold text-[#14532D] transition hover:bg-[#A3E635]/35"
+              className="inline-flex items-center gap-2 rounded-lg border border-black bg-white px-3 py-2 text-xs font-bold text-black transition hover:border-[#14532D] hover:bg-[#14532D] hover:text-white"
             >
               <FileText className="h-4 w-4" />
               PDF

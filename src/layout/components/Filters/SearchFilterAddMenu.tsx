@@ -19,13 +19,13 @@ export default function SearchFilterAddMenu({
   );
 
   return (
-    <details className="group relative">
+    <details className="group relative z-40">
       <summary className="inline-flex cursor-pointer list-none items-center gap-2 border border-slate-700 bg-white px-4 py-2 text-[11px] font-bold uppercase tracking-[0.22em] text-slate-900 transition hover:bg-slate-100">
         <Plus className="h-4 w-4" />
         Add Widget
       </summary>
 
-      <div className="absolute right-0 top-full z-50 mt-2 w-[320px] overflow-hidden border border-slate-700 bg-white">
+      <div className="absolute right-0 top-full z-[90] mt-2 w-[320px] overflow-hidden border border-slate-700 bg-white shadow-[0_18px_40px_rgba(15,23,42,0.18)]">
         <div className="border-b border-slate-700 bg-slate-100 px-4 py-3">
           <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-slate-700">
             Widget Library

@@ -1,4 +1,9 @@
 // Domain data types returned by the backend or mock services.
+export type SearchEntityType =
+  | "works"
+  | "authors"
+  | "topics";
+
 export type SavedSearch = {
   id: string;
   query: string;
@@ -10,10 +15,17 @@ export type SaveSearchFeedback = {
   message: string;
 };
 
+export type PaperResultEntityRef = {
+  id: string | null;
+  name: string;
+};
+
 export type PaperResult = {
   id: string;
+  entityType: "works";
   title: string;
   authors: string[];
+  authorRefs: PaperResultEntityRef[];
   venue: string;
   citations: number;
   year: number;
@@ -24,6 +36,7 @@ export type PaperResult = {
   keywords: string[];
   field: string;
   topic: string;
+  topicRef: PaperResultEntityRef | null;
   subField: string;
   matchesTrendingKeyword: boolean;
   matchesTrendingTopic: boolean;
@@ -33,6 +46,30 @@ export type PaperResult = {
   saved?: boolean;
   trend?: boolean;
 };
+
+export type AuthorResult = {
+  id: string;
+  entityType: "authors";
+  displayName: string;
+  primaryInstitutionName: string | null;
+  primaryTopicName: string | null;
+  worksCount: number;
+};
+
+export type TopicResult = {
+  id: string;
+  entityType: "topics";
+  displayName: string;
+  subfieldName: string | null;
+  fieldName: string | null;
+  domainName: string | null;
+  worksCount: number;
+};
+
+export type SearchResultItem =
+  | PaperResult
+  | AuthorResult
+  | TopicResult;
 
 export type SearchTrendingMode = "none" | "keyword" | "topic" | "both";
 
@@ -121,6 +158,7 @@ export type PaperResultCardProps = {
 };
 
 export type SearchPanelProps = {
+  activeEntityType: SearchEntityType;
   activeFilterCount: number;
   appliedFilterSummary: string[];
   canSaveSearch: boolean;
@@ -139,7 +177,10 @@ export type SearchPanelProps = {
   saveSearchNotice: string | null;
   saveSearchSuccessToken: number;
   searchQuery: string;
-  totalIndexedPapers: number;
+  searchPlaceholder: string;
+  showFilters: boolean;
+  totalIndexedCount: number;
+  isIndexedCountExact: boolean;
   visibleFilterWidgets: SearchFilterWidgetKey[];
   isClearingRecentSearches: boolean;
   isDeletingRecentSearch: boolean;
@@ -149,6 +190,7 @@ export type SearchPanelProps = {
   onFilterOptionSearch: (filterKey: RemoteOptionFilterKey, keyword: string) => void;
   onLoadMoreFilterOptions: (filterKey: RemoteOptionFilterKey) => void;
   onResetFilters: () => void;
+  onEntityTypeChange: (entityType: SearchEntityType) => void;
   onSearch: () => void;
   onSearchQueryChange: (query: string) => void;
   onSaveSearch: () => void;
@@ -159,10 +201,12 @@ export type SearchPanelProps = {
 };
 
 export type SearchInputRowProps = {
+  activeEntityType: SearchEntityType;
   isLoadingResults: boolean;
   recentSearches: SavedSearch[];
   saveSearchSuccessToken: number;
   searchQuery: string;
+  searchPlaceholder: string;
   isClearingRecentSearches: boolean;
   isDeletingRecentSearch: boolean;
   onClearSuggestions: () => void;
@@ -272,16 +316,18 @@ export type OrcidFilterProps = {
 };
 
 export type SearchResultsProps = {
+  activeEntityType: SearchEntityType;
   appliedSearchQuery: string;
   autoLoadAnchorIndex: number;
   canLoadMoreResults: boolean;
   hasSearched: boolean;
+  isTotalResultCountExact: boolean;
   isLoadingResults: boolean;
   isLoadingMoreResults: boolean;
   responseTimeSeconds: number;
   sortState: SearchSortState;
   totalResultCount: number;
-  visiblePaperResults: PaperResult[];
+  visibleResults: SearchResultItem[];
   onLoadMoreResults: () => void;
   onClearSorts: () => void;
   onSelectSort: (sortOption: string) => void;
@@ -289,6 +335,6 @@ export type SearchResultsProps = {
 
 export type ResultsListProps = {
   autoLoadAnchorIndex: number;
-  visiblePaperResults: PaperResult[];
+  visibleResults: SearchResultItem[];
 };
 

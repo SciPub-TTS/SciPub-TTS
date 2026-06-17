@@ -1,5 +1,6 @@
 import type {
   RemoteOptionFilterKey,
+  SearchEntityType,
   RemoteOptionStateMap,
   SearchFilterOptions,
   SearchFilters,
@@ -11,6 +12,7 @@ import type { SearchOptionValueLookup } from "../services";
 export type SubmittedSearch = {
   appliedFilters: SearchFilters;
   appliedSearchQuery: string;
+  entityType: SearchEntityType;
   optionValueLookup: SearchOptionValueLookup;
   sortState: SearchSortState;
 };
@@ -24,6 +26,7 @@ export type RemoteFilterOptionsSnapshot = {
 };
 
 export type SearchPageSnapshot = {
+  activeEntityType: SearchEntityType;
   filters: SearchFilters;
   filtersOpen: boolean;
   remoteFilterOptions: RemoteFilterOptionsSnapshot;

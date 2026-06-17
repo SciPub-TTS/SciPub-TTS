@@ -1,5 +1,6 @@
-import { createApiUrl, requestPublicJson } from "@/lib/api/fetchJson";
 import type {KeywordMetric} from "@/features/dashboard/keyword/types/metric.ts";
+import { publicHttp } from "@/services/http";
+import type { ApiResponse } from "@/types/common.types";
 
 const USE_MOCK = true;
 
@@ -138,8 +139,9 @@ export const MOCK_KEYWORDS: KeywordMetric[] = [
     },
 ];
 
-async function requestData<T>(url: string | URL): Promise<T> {
-    return requestPublicJson<T>(url);
+async function requestData<T>(path: string): Promise<T> {
+    const response = await publicHttp.get<ApiResponse<T>>(path);
+    return response.data.data;
 }
 
 export const keywordService = {
@@ -147,7 +149,7 @@ export const keywordService = {
         if(USE_MOCK) {
             return MOCK_KEYWORDS;
         }
-        return await requestData<KeywordMetric[]>(createApiUrl("/api/statistic/keywords"));
+        return await requestData<KeywordMetric[]>("/api/statistic/keywords");
     },
 
     getTrendList: async (): Promise<KeywordMetric[]> => {
@@ -155,8 +157,6 @@ export const keywordService = {
             return MOCK_KEYWORDS;
         }
 
-        return requestData<KeywordMetric[]>(
-            createApiUrl("/api/statistic/keyword-trends")
-        );
+        return requestData<KeywordMetric[]>("/api/statistic/keyword-trends");
     },
 }

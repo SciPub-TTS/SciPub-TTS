@@ -1,29 +1,27 @@
 import { configureStore } from "@reduxjs/toolkit";
 import {
-  paperDetailReducer,
-  persistPaperTitlesToSessionStorage,
-} from "./slices/paperDetailSlice";
-import { searchPageReducer } from "./slices/searchPageSlice";
+  detailTitleReducer,
+  persistDetailTitlesToSessionStorage,
+} from "@/features/detail/store/detailTitleSlice";
+import { searchPageReducer } from "@/features/search/store/searchPageSlice";
 
 export const store = configureStore({
   reducer: {
-    paperDetail: paperDetailReducer,
+    detailTitle: detailTitleReducer,
     searchPage: searchPageReducer,
   },
 });
 
-let lastPaperTitleVersion = store.getState().paperDetail.version;
+let lastDetailTitleVersion = store.getState().detailTitle.version;
 
 store.subscribe(() => {
   const state = store.getState();
-  const currentPaperTitleVersion = state.paperDetail.version;
+  const currentDetailTitleVersion = state.detailTitle.version;
 
-  if (currentPaperTitleVersion === lastPaperTitleVersion) {
-    return;
+  if (currentDetailTitleVersion !== lastDetailTitleVersion) {
+    lastDetailTitleVersion = currentDetailTitleVersion;
+    persistDetailTitlesToSessionStorage(state);
   }
-
-  lastPaperTitleVersion = currentPaperTitleVersion;
-  persistPaperTitlesToSessionStorage(state);
 });
 
 export type RootState = ReturnType<typeof store.getState>;

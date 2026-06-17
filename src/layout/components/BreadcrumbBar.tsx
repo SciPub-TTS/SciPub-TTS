@@ -10,7 +10,7 @@ import {
 import type { AppRouteHandle } from "@/app/router/breadcrumbs";
 import { resolveBreadcrumbItems } from "@/app/router/breadcrumbs";
 import { ROUTES } from "@/app/router";
-import { usePaperTitleStoreVersion } from "@/features/detailpapers/paperTitleStore";
+import { useDetailTitleStoreVersion } from "@/features/detail/store/detailTitleStore";
 
 type BreadcrumbBarProps = {
   homePath?: string;
@@ -34,7 +34,7 @@ export default function BreadcrumbBar({
   const location = useLocation();
   const matches = useMatches() as UIMatch<unknown, AppRouteHandle>[];
   const navigate = useNavigate();
-  usePaperTitleStoreVersion();
+  useDetailTitleStoreVersion();
 
   const breadcrumbItems = resolveBreadcrumbItems(matches, location);
 
@@ -57,7 +57,7 @@ export default function BreadcrumbBar({
       : "Home";
 
   return (
-    <div className="flex flex-1 items-center gap-4">
+    <div className="flex min-w-0 flex-1 items-center gap-4">
       <button
         type="button"
         aria-label="Go back"
@@ -69,7 +69,7 @@ export default function BreadcrumbBar({
 
       <nav
         aria-label="Breadcrumb"
-        className={`flex min-w-0 flex-1 items-center gap-3 rounded-lg border px-4 py-2.5 ${boxClass}`}
+        className={`flex min-w-0 flex-1 items-center gap-3 overflow-hidden rounded-lg border px-4 py-2.5 ${boxClass}`}
       >
         <Link
           to={homePath}
@@ -79,54 +79,56 @@ export default function BreadcrumbBar({
           <Home className="h-5 w-5" />
         </Link>
 
-        {breadcrumbItems.length > 0 && (
-          <ChevronRight className={`h-5 w-5 shrink-0 ${mutedClass}`} />
-        )}
+        <div className="hover-scrollbar flex min-w-0 flex-1 items-center gap-3 overflow-x-auto overflow-y-hidden whitespace-nowrap">
+          {breadcrumbItems.length > 0 && (
+            <ChevronRight className={`h-5 w-5 shrink-0 ${mutedClass}`} />
+          )}
 
-        {breadcrumbItems.length > 1 ? (
-          <div className="flex min-w-0 items-center gap-3">
-            {breadcrumbItems.map((item, index) => {
-              const isLast = index === breadcrumbItems.length - 1;
+          {breadcrumbItems.length > 1 ? (
+            <div className="flex min-w-0 items-center gap-3">
+              {breadcrumbItems.map((item, index) => {
+                const isLast = index === breadcrumbItems.length - 1;
 
-              return (
-                <div
-                  key={`${item.label}-${index}`}
-                  className="flex items-center gap-3"
-                >
-                  {item.to && !isLast ? (
-                    <Link
-                      to={item.to ?? homePath}
-                      onClick={item.onClick}
-                      title={item.label}
-                      className={`truncate text-sm font-bold ${homeLinkClass}`}
-                    >
-                      {formatBreadcrumbLabel(item.label)}
-                    </Link>
-                  ) : (
-                    <span
-                      title={item.label}
-                      className={`truncate text-sm font-bold ${textClass}`}
-                    >
-                      {formatBreadcrumbLabel(item.label)}
-                    </span>
-                  )}
-                  {!isLast && (
-                    <ChevronRight
-                      className={`h-5 w-5 shrink-0 ${mutedClass}`}
-                    />
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        ) : (
-          <span
-            title={currentLabel}
-            className={`truncate text-sm font-bold ${textClass}`}
-          >
-            {formatBreadcrumbLabel(currentLabel)}
-          </span>
-        )}
+                return (
+                  <div
+                    key={`${item.label}-${index}`}
+                    className="flex min-w-0 shrink-0 items-center gap-3"
+                  >
+                    {item.to && !isLast ? (
+                      <Link
+                        to={item.to ?? homePath}
+                        onClick={item.onClick}
+                        title={item.label}
+                        className={`block max-w-[18ch] truncate text-sm font-bold ${homeLinkClass}`}
+                      >
+                        {formatBreadcrumbLabel(item.label)}
+                      </Link>
+                    ) : (
+                      <span
+                        title={item.label}
+                        className={`block max-w-[18ch] truncate text-sm font-bold ${textClass}`}
+                      >
+                        {formatBreadcrumbLabel(item.label)}
+                      </span>
+                    )}
+                    {!isLast && (
+                      <ChevronRight
+                        className={`h-5 w-5 shrink-0 ${mutedClass}`}
+                      />
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <span
+              title={currentLabel}
+              className={`block max-w-[18ch] truncate text-sm font-bold ${textClass}`}
+            >
+              {formatBreadcrumbLabel(currentLabel)}
+            </span>
+          )}
+        </div>
       </nav>
     </div>
   );
