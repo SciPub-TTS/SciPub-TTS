@@ -1,7 +1,7 @@
 import { createApiUrl, requestPublicJson } from "@/lib/api/fetchJson";
 import type {KeywordMetric} from "@/features/dashboard/keyword/types/metric.ts";
 
-const USE_MOCK = import.meta.env.VITE_ENABLE_DASHBOARD_MOCKS === "true";
+const USE_MOCK = true;
 
 const generateYearly = (recentPapers: number) => [
     {

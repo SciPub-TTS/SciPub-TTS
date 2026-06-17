@@ -5,21 +5,18 @@ import {
     BarChart,
     CartesianGrid,
     LabelList,
-    Legend,
-    Line,
-    LineChart, ResponsiveContainer,
-    Tooltip,
+    Legend, ResponsiveContainer, Scatter, ScatterChart,
+    Tooltip, type TooltipContentProps,
     XAxis,
-    YAxis
+    YAxis, ZAxis
 } from "recharts";
 import {useEffect, useRef, useState} from "react";
-import {
-    topicTrend
-} from "@/features/dashboard/topic/constants/topic-data.ts";
 import {usePublicationTrend} from "@/features/dashboard/topic/hooks/usePublicationTrend.ts";
 import {ChevronDown} from "lucide-react";
 import type {YearSelectProps} from "@/features/dashboard/topic/types/publication.ts";
 import {useTopicMomentum} from "@/features/dashboard/topic/hooks/useTopicMomentum.ts";
+import type {TopicBubble} from "@/features/dashboard/topic/types/scatter.ts";
+import {useTopicScatter} from "@/features/dashboard/topic/hooks/useTopicScatter.ts";
 
 const MIN_YEAR = 2000;
 const MAX_YEAR = new Date().getFullYear();
@@ -42,7 +39,12 @@ export default function TopicGeneralChartPart({
             <GeneralPart/>
 
             <div className="grid grid-cols-2 gap-6 select-none">
-                <EmergingPart/>
+                <ScatterHotTopics
+                startDate={startDate}
+                endDate={endDate}
+                fieldId={fieldId}
+                formula={formula}
+                />
 
                 <MomentumPart
                     startDate={startDate}
@@ -211,90 +213,154 @@ function GeneralPart(){
     )
 }
 
-function EmergingPart(){
-    const [line] = useState<string | null>(null);
-    // const [showLegend, setShowLegend] = useState(true);
+type ScatterPartProps = {
+    startDate: string;
+    endDate: string;
+    fieldId: string;
+    formula: string;
+};
 
-    const topicKeys = Object.keys(topicTrend[0]).filter(
-        key => key !== "name"
-    );
-    const colors = [
-        "#22C55E",
-        "#3B82F6",
-        "#EF4444",
-        "#F59E0B",
-        "#8B5CF6",
-        "#EC4899",
-        "#06B6D4",
-        "#84CC16",
-        "#6366F1",
-        "#F97316",
-    ];
+function fmtNum(n: number): string {
+    if (n >= 1_000_000) return (n / 1_000_000).toFixed(1) + "M";
+    if (n >= 1_000) return (n / 1_000).toFixed(0) + "K";
+    return String(n);
+}
 
-    return(
-        <div className="rounded-lg border border-slate-200 bg-white p-4
-        flex flex-col gap-2">
+function ScatterTooltip({
+                            active,
+                            payload,
+                        }: TooltipContentProps) {
 
-            <div className="flex flex-row justify-between">
-                <div className="flex flex-col">
-                    <h1 className="text-xl font-bold text-slate-900">
-                        Emerging Topic Trends
-                    </h1>
-                    <h2 className="text-sm opacity-75">
-                        Temporal changes in activity across emerging topics
-                    </h2>
-                </div>
+    if (!active || !payload?.length) {
+        return null;
+    }
 
-                {/*<button*/}
-                {/*    onClick={() => setShowLegend(prev => !prev)}*/}
-                {/*    className="px-3 text-sm border rounded-md border-blue-500*/}
-                {/*    bg-blue-100 font-semibold cursor-pointer"*/}
-                {/*>*/}
-                {/*    {showLegend ? "Hide Legend" : "Show Legend"}*/}
-                {/*</button>*/}
+    const item =
+        payload[0]
+            .payload as TopicBubble;
+
+    return (
+        <div className="rounded-md border bg-white p-4 shadow">
+            <div className="mb-2 font-semibold text-sm">
+                {item.name}
             </div>
 
-            <LineChart
-                style={{ width: '100%', aspectRatio: 1.618, maxWidth: 600 }}
-                responsive
-                data={topicTrend}
-                margin={{
-                    top: 20,
-                    right: 20,
-                    bottom: 5,
-                    left: 0,
-                }}
-            >
-                <CartesianGrid stroke="#aaa" strokeDasharray="10 10" vertical={false} opacity={0.6} />
-                {
-                    topicKeys.map((topic, index) => (
-                        <Line
-                            key={topic}
-                            type="monotone"
-                            dataKey={topic}
-                            stroke={colors[index]}
-                            strokeWidth={
-                                line === null || line === topic
-                                    ? 2
-                                    : 0
-                            }
-                            dot={false}
-                        />
-                    ))
-                }
-                <XAxis dataKey="name" />
-                <Tooltip />
-                <YAxis width="auto" label={{ position: 'insideLeft', angle: -90 }} />
-                {/*{showLegend && (*/}
-                {/*    <Legend*/}
-                {/*        align="right"*/}
-                {/*        onMouseEnter={(e) => setLine(e.dataKey as string)}*/}
-                {/*        onMouseLeave={() => setLine(null)}*/}
-                {/*    />*/}
-                {/*)}*/}
-            </LineChart>
+            <div className="text-sm text-gray-600 space-y-1">
+                <div>
+                    Works:
+                    {" "}
+                    <span className="font-medium text-gray-900">
+                        {fmtNum(item.works)}
+                    </span>
+                </div>
+
+                <div>
+                    Citations:
+                    {" "}
+                    <span className="font-medium text-gray-900">
+                        {fmtNum(item.citations)}
+                    </span>
+                </div>
+
+                <div>
+                    Score:
+                    {" "}
+                    <span className="font-medium text-gray-900">
+                        {item.score}
+                    </span>
+                </div>
+            </div>
         </div>
-    )
+    );
+}
+
+interface BubbleProps {
+    cx?: number;
+    cy?: number;
+    payload?: TopicBubble;
+}
+
+function Bubble({ cx = 0, cy = 0, payload }: BubbleProps) {
+    if (!payload) return null;
+    const r = Math.sqrt(payload.score) * 3.5;
+    return (
+        <circle
+            cx={cx}
+            cy={cy}
+            r={r}
+            fill={payload.color}
+            fillOpacity={0.75}
+            stroke={payload.color}
+            strokeWidth={1.5}
+        />
+    );
+}
+
+function ScatterHotTopics({
+                                     startDate,
+                                     endDate,
+                                     fieldId,
+                                     formula
+                                 }:ScatterPartProps) {
+    const { topicList, isLoading, error } = useTopicScatter({startDate, endDate, fieldId, formula});
+
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center h-64 text-gray-400">
+                Loading...
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="flex items-center justify-center h-64 text-red-500">
+                Error: {error}
+            </div>
+        );
+    }
+
+    return (
+        <div className="rounded-lg border border-slate-200 bg-white p-4 flex flex-col gap-2">
+            <div className="flex flex-col">
+                <h2 className="text-xl font-bold text-slate-900">
+                    Research topics — works vs citations
+                </h2>
+                <p className="text-sm opacity-75">
+                    Bubble size reflects topic score. Hover for details.
+                </p>
+            </div>
+
+            <ResponsiveContainer width="100%" height={440}>
+                <ScatterChart margin={{ top: 20, right: 30, bottom: 40, left: 20 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+
+                    <XAxis
+                        dataKey="works"
+                        type="number"
+                        name="Works"
+                        tickFormatter={fmtNum}
+                        tick={{ fontSize: 12, fill: "#9ca3af" }}
+                        label={{ value: "Works", position: "insideBottom", offset: -10, fontSize: 13, fill: "#9ca3af" }}
+                    />
+
+                    <YAxis
+                        dataKey="citations"
+                        type="number"
+                        name="Citations"
+                        tickFormatter={fmtNum}
+                        tick={{ fontSize: 12, fill: "#9ca3af" }}
+                        label={{ value: "Citations", angle: -90, position: "insideLeft", offset: 10, fontSize: 13, fill: "#9ca3af" }}
+                    />
+
+                    <ZAxis range={[1, 1]} />
+                    <Tooltip content={ScatterTooltip} />
+
+                    <Scatter data={topicList} shape={(props: BubbleProps) => <Bubble {...props} />} />
+                </ScatterChart>
+            </ResponsiveContainer>
+        </div>
+    );
 }
 
 type MomentumPartProps = {
