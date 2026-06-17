@@ -4,9 +4,9 @@ import {
   selectDetailTitleStoreVersion,
   setDetailTitleEntry,
   type DetailTitleEntityType,
-} from "@/store/slices/detailTitleSlice";
+} from "./detailTitleSlice";
 
-export type { DetailTitleEntityType } from "@/store/slices/detailTitleSlice";
+export type { DetailTitleEntityType } from "./detailTitleSlice";
 
 export function useDetailTitleStoreVersion() {
   return useAppSelector(selectDetailTitleStoreVersion);

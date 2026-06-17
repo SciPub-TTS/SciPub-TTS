@@ -10,7 +10,7 @@ import {
 import type { AppRouteHandle } from "@/app/router/breadcrumbs";
 import { resolveBreadcrumbItems } from "@/app/router/breadcrumbs";
 import { ROUTES } from "@/app/router";
-import { useDetailTitleStoreVersion } from "@/store/detailTitleStore";
+import { useDetailTitleStoreVersion } from "@/features/detail/store/detailTitleStore";
 
 type BreadcrumbBarProps = {
   homePath?: string;

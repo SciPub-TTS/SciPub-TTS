@@ -1,8 +1,8 @@
 import { createBrowserRouter, Navigate } from "react-router-dom";
 import { Suspense, type ReactNode } from "react";
 
-import type { DetailTitleEntityType } from "@/store/detailTitleStore";
-import { getDetailTitle } from "@/store/detailTitleStore";
+import type { DetailTitleEntityType } from "@/features/detail/store/detailTitleStore";
+import { getDetailTitle } from "@/features/detail/store/detailTitleStore";
 
 import { ROUTES } from "./routes";
 import { ROUTE_SEGMENTS } from "./routeSegments";

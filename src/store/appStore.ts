@@ -2,8 +2,8 @@ import { configureStore } from "@reduxjs/toolkit";
 import {
   detailTitleReducer,
   persistDetailTitlesToSessionStorage,
-} from "./slices/detailTitleSlice";
-import { searchPageReducer } from "./slices/searchPageSlice";
+} from "@/features/detail/store/detailTitleSlice";
+import { searchPageReducer } from "@/features/search/store/searchPageSlice";
 
 export const store = configureStore({
   reducer: {

@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useParams } from "react-router-dom";
 
-import { setDetailTitle } from "@/store/detailTitleStore";
+import { setDetailTitle } from "@/features/detail/store/detailTitleStore";
 
 import { getAuthorDetail, getTopicDetail } from "../services/api";
 import type { EntityDetailData, EntityDetailType } from "../types";

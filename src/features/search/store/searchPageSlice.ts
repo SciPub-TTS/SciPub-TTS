@@ -25,7 +25,7 @@ import type {
   SubmittedSearch,
 } from "@/features/search/hooks/types";
 import { normalizeSearchFilterWidgetKeys } from "@/features/search/utils";
-import type { RootState } from "../appStore";
+import type { RootState } from "@/store/appStore";
 
 type SearchPageState = {
   activeEntityType: SearchEntityType;

@@ -1,5 +1,5 @@
 import { routePaths } from "@/app/router/routes";
-import type { DetailTitleEntityType } from "@/store/detailTitleStore";
+import type { DetailTitleEntityType } from "@/features/detail/store/detailTitleStore";
 
 const detailTrailSearchParam = "trail";
 const detailOriginSearchParam = "origin";

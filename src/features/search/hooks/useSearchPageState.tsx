@@ -21,7 +21,7 @@ import {
   submitSearch,
   toggleVisibleFilterWidget,
   updateSearchFilter,
-} from "@/store/slices/searchPageSlice";
+} from "@/features/search/store/searchPageSlice";
 import {
   initialFilters,
   SEARCH_DEFAULT_PAGE,

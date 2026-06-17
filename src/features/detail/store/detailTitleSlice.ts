@@ -1,6 +1,6 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
-import type { RootState } from "../appStore";
+import type { RootState } from "@/store/appStore";
 
 const storageKey = "detail-title-store";
 
