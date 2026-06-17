@@ -3,7 +3,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { SEARCH_DEFAULT_PAGE, SEARCH_FILTER_OPTION_LIMIT } from "../constants";
 import { mergeUniqueStrings } from "../services";
 import { getFilterOptionPage } from "../services";
-import type { RemoteOptionFilterKey } from "../types";
+import type { RemoteOptionFilterKey, SearchEntityType } from "../types";
 import type { SearchFilterOptions, SearchFilters } from "../types";
 import {
   cloneRemoteFilterOptionsSnapshot,
@@ -19,6 +19,7 @@ type RemoteFilterOptionsState = RemoteFilterOptionsSnapshot & {
 };
 
 export function useRemoteFilterOptions(
+  activeEntityType: SearchEntityType,
   filters: SearchFilters,
   filtersOpen: boolean,
   restoredSnapshot: RemoteFilterOptionsSnapshot | undefined,
@@ -29,12 +30,18 @@ export function useRemoteFilterOptions(
       createInitialRemoteFilterOptionsState(restoredSnapshot),
     );
   const remoteFilterOptionsStateRef = useRef(remoteFilterOptionsState);
+  const activeRemoteFilterKeys = useMemo(
+    () => getRemoteFilterKeysForEntityType(activeEntityType),
+    [activeEntityType],
+  );
   const searchTimeoutRef = useRef<Record<RemoteOptionFilterKey, number | null>>({
     type: null,
     subField: null,
     author: null,
     institution: null,
     country: null,
+    primaryTopic: null,
+    field: null,
     award: null,
     source: null,
   });
@@ -52,6 +59,7 @@ export function useRemoteFilterOptions(
       queryClient.fetchQuery({
         queryKey: [
           "searchFilterOptions",
+          activeEntityType,
           filterKey,
           keyword,
           page,
@@ -60,12 +68,13 @@ export function useRemoteFilterOptions(
         queryFn: () =>
           getFilterOptionPage(
             filterKey,
+            activeEntityType,
             keyword,
             page,
             SEARCH_FILTER_OPTION_LIMIT,
           ),
       }),
-    [queryClient],
+    [activeEntityType, queryClient],
   );
 
   const loadFirstFilterOptionPage = useCallback(
@@ -140,7 +149,7 @@ export function useRemoteFilterOptions(
       return;
     }
 
-    for (const filterKey of remoteOptionFilterKeys) {
+    for (const filterKey of activeRemoteFilterKeys) {
       const currentState = remoteFilterOptionsStateRef.current;
 
       if (
@@ -160,7 +169,7 @@ export function useRemoteFilterOptions(
       }));
       void loadFirstFilterOptionPage(filterKey, "");
     }
-  }, [filtersOpen, loadFirstFilterOptionPage]);
+  }, [activeRemoteFilterKeys, filtersOpen, loadFirstFilterOptionPage]);
 
   function handleFilterOptionSearch(
     filterKey: RemoteOptionFilterKey,
@@ -206,8 +215,7 @@ export function useRemoteFilterOptions(
     const nextPage = currentState.remoteOptionPages[filterKey] + 1;
 
     if (
-      !keyword
-      || !currentState.hasMoreFilterOptions[filterKey]
+      !currentState.hasMoreFilterOptions[filterKey]
       || currentState.isLoadingFilterOptions[filterKey]
       || currentState.isLoadingMoreFilterOptions[filterKey]
     ) {
@@ -348,5 +356,23 @@ function buildVisibleFilterOptions(
     country: mergeUniqueStrings(filters.country, filterOptions.country),
     source: mergeUniqueStrings(filters.source, filterOptions.source),
     award: mergeUniqueStrings(filters.award, filterOptions.award),
+    primaryTopic: mergeUniqueStrings(
+      filters.primaryTopic,
+      filterOptions.primaryTopic,
+    ),
+    field: mergeUniqueStrings(filters.field, filterOptions.field),
   };
+}
+
+function getRemoteFilterKeysForEntityType(
+  entityType: SearchEntityType,
+): RemoteOptionFilterKey[] {
+  switch (entityType) {
+    case "authors":
+      return ["institution", "country", "primaryTopic"];
+    case "topics":
+      return ["subField", "field"];
+    default:
+      return remoteOptionFilterKeys;
+  }
 }

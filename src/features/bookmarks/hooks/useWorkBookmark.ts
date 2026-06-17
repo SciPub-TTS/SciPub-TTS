@@ -15,19 +15,23 @@ const BOOKMARK_FEEDBACK_RESET_MS = 2600;
 
 type UseWorkBookmarkOptions = {
   authors: string[];
-  citations: number;
+  citations?: number | null;
   initialSaved?: boolean;
   openAlexId: string;
-  source: string;
-  title: string;
-  topic: string;
-  year: number;
+  source?: string | null;
+  title?: string | null;
+  topic?: string | null;
+  year?: number | null;
   onSuccess?: (isSaved: boolean) => void;
 };
 
 function normalizeSnapshotValue(value: string) {
   const normalizedValue = value.trim();
   return normalizedValue.length > 0 ? normalizedValue : undefined;
+}
+
+function normalizeOptionalSnapshotValue(value: string | null | undefined) {
+  return normalizeSnapshotValue(value || "");
 }
 
 function buildAuthorsSnapshot(authors: string[]) {
@@ -122,12 +126,16 @@ export function useWorkBookmark(options: UseWorkBookmarkOptions) {
 
       const payload: CreateBookmarkRequest = {
         authorsSnapshot: buildAuthorsSnapshot(authors),
-        citationSnapshot: citations,
+        citationSnapshot:
+          typeof citations === "number" && Number.isFinite(citations)
+            ? citations
+            : undefined,
         openAlexId: normalizedOpenAlexId,
-        publicationYear: year,
-        sourceSnapshot: normalizeSnapshotValue(source),
-        titleSnapshot: normalizeSnapshotValue(title),
-        topicSnapshot: normalizeSnapshotValue(topic),
+        publicationYear:
+          typeof year === "number" && Number.isFinite(year) ? year : undefined,
+        sourceSnapshot: normalizeOptionalSnapshotValue(source),
+        titleSnapshot: normalizeOptionalSnapshotValue(title),
+        topicSnapshot: normalizeOptionalSnapshotValue(topic),
       };
       const response = await bookmarkApi.add(payload);
 

@@ -11,12 +11,7 @@ import type {
 export async function searchEntities(
   request: SearchEntityRequest,
 ): Promise<SearchEntitiesState> {
-  const params = new URLSearchParams();
-  params.set("entityType", request.entityType);
-  params.set("page", String(request.page));
-  params.set("perPage", String(SEARCH_WORKS_PER_PAGE));
-  appendIfFilled(params, "query", request.appliedSearchQuery);
-
+  const params = buildSearchEntityParams(request);
   const response = await publicHttp.get<ApiResponse<SearchEntitiesApiResponse>>(
     "/api/search/entities",
     { params },
@@ -38,6 +33,76 @@ export async function searchEntities(
     totalCount: data.meta?.totalCount || 0,
     totalCountExact: data.meta?.totalCountExact ?? true,
   };
+}
+
+function buildSearchEntityParams(request: SearchEntityRequest) {
+  const params = new URLSearchParams();
+  const { filters, optionValueLookup, sortState } = request;
+
+  params.set("entityType", request.entityType);
+  params.set("page", String(request.page));
+  params.set("perPage", String(SEARCH_WORKS_PER_PAGE));
+  appendIfFilled(params, "query", request.appliedSearchQuery);
+
+  if (request.entityType === "authors") {
+    appendMappedValues(
+      params,
+      "institution",
+      filters.institution,
+      optionValueLookup.institution,
+    );
+    appendMappedValues(
+      params,
+      "country",
+      filters.country,
+      optionValueLookup.country,
+    );
+    appendMappedValues(
+      params,
+      "primaryTopic",
+      filters.primaryTopic,
+      optionValueLookup.primaryTopic,
+    );
+  }
+
+  if (request.entityType === "topics") {
+    appendMappedValues(
+      params,
+      "subField",
+      filters.subField,
+      optionValueLookup.subField,
+    );
+    appendMappedValues(
+      params,
+      "field",
+      filters.field,
+      optionValueLookup.field,
+    );
+  }
+
+  if (sortState.sortBy !== "relevance") {
+    appendIfFilled(params, "sortBy", sortState.sortBy);
+    appendIfFilled(params, "sortDirection", sortState.sortDirection);
+  }
+
+  return params;
+}
+
+function appendMappedValues(
+  params: URLSearchParams,
+  key: string,
+  labels: string[],
+  valueLookup: Record<string, string>,
+) {
+  for (const label of labels) {
+    const value = valueLookup[label] || label;
+
+    if (!value.trim()) {
+      continue;
+    }
+
+    params.append(key, value);
+  }
 }
 
 function appendIfFilled(params: URLSearchParams, key: string, value: string) {

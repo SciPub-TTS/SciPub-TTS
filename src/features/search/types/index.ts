@@ -73,7 +73,12 @@ export type SearchResultItem =
 
 export type SearchTrendingMode = "none" | "keyword" | "topic" | "both";
 
-export type SearchSortBy = "relevance" | "citation" | "published";
+export type SearchSortBy =
+  | "relevance"
+  | "citation"
+  | "published"
+  | "works"
+  | "alphabetical";
 
 export type SearchSortDirection = "asc" | "desc";
 
@@ -95,6 +100,8 @@ export type SearchFilters = {
   institution: string[];
   pdf: boolean;
   country: string[];
+  primaryTopic: string[];
+  field: string[];
   citationMode: "range" | "exact";
   citationMin: string;
   citationMax: string;
@@ -113,6 +120,8 @@ export type SearchFilterWidgetKey =
   | "institution"
   | "pdf"
   | "country"
+  | "primaryTopic"
+  | "field"
   | "citation"
   | "source"
   | "award"
@@ -124,6 +133,8 @@ export type RemoteOptionFilterKey =
   | "author"
   | "institution"
   | "country"
+  | "primaryTopic"
+  | "field"
   | "award"
   | "source";
 
@@ -136,6 +147,8 @@ export type SearchFilterOptions = {
   author: string[];
   institution: string[];
   country: string[];
+  primaryTopic: string[];
+  field: string[];
   source: string[];
   award: string[];
 };
@@ -182,6 +195,7 @@ export type SearchPanelProps = {
   totalIndexedCount: number;
   isIndexedCountExact: boolean;
   visibleFilterWidgets: SearchFilterWidgetKey[];
+  showFilterAddMenu: boolean;
   isClearingRecentSearches: boolean;
   isDeletingRecentSearch: boolean;
   onApplyFilters: () => void;
@@ -229,6 +243,7 @@ export type SearchFiltersPanelProps = {
   isLoadingResults: boolean;
   matchedPaperCount: number;
   visibleFilterWidgets: SearchFilterWidgetKey[];
+  showFilterAddMenu: boolean;
   onApplyFilters: () => void;
   onFilterOptionSearch: (filterKey: RemoteOptionFilterKey, keyword: string) => void;
   onLoadMoreFilterOptions: (filterKey: RemoteOptionFilterKey) => void;
@@ -281,6 +296,8 @@ export type MultiSelectFilterProps = {
     | "author"
     | "institution"
     | "country"
+    | "primaryTopic"
+    | "field"
     | "source"
     | "award";
   label: string;

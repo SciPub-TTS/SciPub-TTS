@@ -55,6 +55,7 @@ export default function SearchPageContent() {
     searchPlaceholder,
     searchQuery,
     showFilters,
+    showFilterAddMenu,
     sortState,
     totalIndexedCount,
     updateFilter,
@@ -90,6 +91,7 @@ export default function SearchPageContent() {
         searchPlaceholder={searchPlaceholder}
         searchQuery={searchQuery}
         showFilters={showFilters}
+        showFilterAddMenu={showFilterAddMenu}
         totalIndexedCount={totalIndexedCount}
         isIndexedCountExact={isIndexedCountExact}
         visibleFilterWidgets={visibleFilterWidgets}

@@ -40,7 +40,7 @@ const searchEntityMetadataMap: Record<SearchEntityType, SearchEntityMetadata> = 
     tabLabel: "Works",
   },
   authors: {
-    emptyStateMessage: "Enter an author name, then click Search.",
+    emptyStateMessage: "Enter an author name or apply filters, then click Search.",
     indexedLabel: "authors indexed",
     loadingLabel: "Searching authors...",
     noResultsLabel: "No authors matched this search.",
@@ -51,7 +51,7 @@ const searchEntityMetadataMap: Record<SearchEntityType, SearchEntityMetadata> = 
     tabLabel: "Authors",
   },
   topics: {
-    emptyStateMessage: "Enter a topic name, then click Search.",
+    emptyStateMessage: "Enter a topic name or apply filters, then click Search.",
     indexedLabel: "topics indexed",
     loadingLabel: "Searching topics...",
     noResultsLabel: "No topics matched this search.",
@@ -83,7 +83,7 @@ export const defaultSearchSortState: SearchSortState = {
   trendingMode: "none",
 };
 
-export const searchResultSortGroups: SearchResultSortGroup[] = [
+const worksSearchResultSortGroups: SearchResultSortGroup[] = [
   {
     key: "citation",
     label: "Citation",
@@ -112,12 +112,26 @@ export const searchResultSortGroups: SearchResultSortGroup[] = [
   },
 ];
 
+const entitySearchResultSortGroups: SearchResultSortGroup[] = [
+  {
+    key: "entity",
+    label: "Sort",
+    options: [
+      { value: "relevance", label: "Relevance" },
+      { value: "works_most_works", label: "Most works" },
+      { value: "alphabetical_az", label: "A-Z" },
+    ],
+  },
+];
+
 export const emptySearchFilterOptions: SearchFilterOptions = {
   type: [],
   subField: [],
   author: [],
   institution: [],
   country: [],
+  primaryTopic: [],
+  field: [],
   source: [],
   award: [],
 };
@@ -133,12 +147,22 @@ export const emptySearchOptionValueLookup: SearchOptionValueLookup = {
   author: {},
   institution: {},
   country: {},
+  primaryTopic: {},
+  field: {},
   source: {},
   award: {},
 };
 
 export function getSearchEntityMetadata(entityType: SearchEntityType) {
   return searchEntityMetadataMap[entityType];
+}
+
+export function getSearchResultSortGroups(
+  entityType: SearchEntityType,
+) {
+  return entityType === "works"
+    ? worksSearchResultSortGroups
+    : entitySearchResultSortGroups;
 }
 
 export function normalizeSearchTabEntityType(
@@ -179,9 +203,11 @@ export function createSearchSortStateFromOption(
   sortOption: string,
 ): SearchSortState {
   switch (sortOption.trim().toLowerCase()) {
-    case "citation_most_cited":
+    case "relevance":
+      return { ...defaultSearchSortState };
+    case "works_most_works":
       return {
-        sortBy: "citation",
+        sortBy: "works",
         sortDirection: "desc",
         trendingMode: "none",
       };
@@ -200,6 +226,12 @@ export function createSearchSortStateFromOption(
     case "published_oldest":
       return {
         sortBy: "published",
+        sortDirection: "asc",
+        trendingMode: "none",
+      };
+    case "alphabetical_az":
+      return {
+        sortBy: "alphabetical",
         sortDirection: "asc",
         trendingMode: "none",
       };
@@ -227,6 +259,18 @@ export function getSearchSortOptionValue(
   sortState: SearchSortState,
   groupKey: SearchResultSortGroupKey,
 ) {
+  if (groupKey === "entity") {
+    if (sortState.sortBy === "works") {
+      return "works_most_works";
+    }
+
+    if (sortState.sortBy === "alphabetical") {
+      return "alphabetical_az";
+    }
+
+    return "relevance";
+  }
+
   if (groupKey === "citation" && sortState.sortBy === "citation") {
     return sortState.sortDirection === "asc"
       ? "citation_least_cited"
@@ -273,7 +317,12 @@ function normalizeLegacySearchSortState(values: string[] | string) {
 function normalizeSortBy(value?: string | null): SearchSortBy {
   const normalizedValue = value?.trim().toLowerCase();
 
-  if (normalizedValue === "citation" || normalizedValue === "published") {
+  if (
+    normalizedValue === "citation"
+    || normalizedValue === "published"
+    || normalizedValue === "works"
+    || normalizedValue === "alphabetical"
+  ) {
     return normalizedValue;
   }
 

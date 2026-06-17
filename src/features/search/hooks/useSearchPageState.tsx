@@ -75,6 +75,15 @@ import { useRemoteFilterOptions } from "./useRemoteFilterOptions";
 
 const SEARCH_HISTORY_QUERY_DEBOUNCE_MS = 250;
 const SAVE_SEARCH_FEEDBACK_DURATION_MS = 2800;
+const authorFilterWidgets: SearchFilterWidgetKey[] = [
+  "institution",
+  "country",
+  "primaryTopic",
+];
+const topicFilterWidgets: SearchFilterWidgetKey[] = [
+  "subField",
+  "field",
+];
 
 function getMutationErrorMessage(error: unknown, fallbackMessage: string) {
   return error instanceof Error ? error.message : fallbackMessage;
@@ -109,7 +118,7 @@ export function useSearchPageState() {
     searchQuery,
     sortState,
     submittedSearch,
-    visibleFilterWidgets,
+    visibleFilterWidgets: storedVisibleFilterWidgets,
   } = searchPageState;
   const isWorksTab = activeEntityType === "works";
   const activeEntityMetadata = getSearchEntityMetadata(activeEntityType);
@@ -123,8 +132,9 @@ export function useSearchPageState() {
     optionValueLookup,
     remoteFilterOptionsSnapshot,
   } = useRemoteFilterOptions(
+    activeEntityType,
     filters,
-    filtersOpen && isWorksTab,
+    filtersOpen,
     restoredSnapshot?.remoteFilterOptions,
   );
   const searchSummaryQuery = useQuery({
@@ -227,8 +237,11 @@ export function useSearchPageState() {
 
       return searchEntities({
         appliedSearchQuery: submittedSearch.appliedSearchQuery,
+        filters: submittedSearch.appliedFilters,
         entityType: submittedSearch.entityType,
+        optionValueLookup: submittedSearch.optionValueLookup,
         page: Number(pageParam),
+        sortState: submittedSearch.sortState,
       });
     },
     queryKey: ["searchResults", submittedSearch],
@@ -321,10 +334,7 @@ export function useSearchPageState() {
 
   const appliedSearchQuery = submittedSearch?.appliedSearchQuery || "";
   const appliedEntityType = submittedSearch?.entityType || activeEntityType;
-  const appliedFilters =
-    submittedSearch?.entityType === "works"
-      ? submittedSearch.appliedFilters
-      : initialFilters;
+  const appliedFilters = submittedSearch?.appliedFilters || initialFilters;
   const visibleResults = flattenSearchResultPages(
     searchResultsQuery.data?.pages || [],
     appliedEntityType,
@@ -350,11 +360,18 @@ export function useSearchPageState() {
     hasMoreResults,
     searchResultsQuery.data?.pages.length || 0,
   );
-  const showFilters = isWorksTab;
-  const activeFilterCount = showFilters ? countActiveFilters(filters) : 0;
-  const appliedFilterSummary =
-    appliedEntityType === "works" ? buildAppliedFilterSummary(appliedFilters) : [];
-  const hasFormError = showFilters
+  const visibleFilterWidgets = getVisibleFilterWidgets(
+    activeEntityType,
+    storedVisibleFilterWidgets,
+  );
+  const showFilters = true;
+  const showFilterAddMenu = isWorksTab;
+  const activeFilterCount = countActiveFilters(activeEntityType, filters);
+  const appliedFilterSummary = buildAppliedFilterSummary(
+    appliedEntityType,
+    appliedFilters,
+  );
+  const hasFormError = isWorksTab
     ? hasInvalidYearRange(filters) || hasInvalidCitationRange(filters)
     : false;
   const recentSearches = recentSearchesQuery.data || [];
@@ -398,8 +415,12 @@ export function useSearchPageState() {
     }));
   }
 
-  function shouldClearWorkSearch(nextQuery: string, nextFilters: SearchFilters) {
-    return !nextQuery && countActiveFilters(nextFilters) === 0;
+  function shouldClearSearch(
+    nextEntityType: SearchEntityType,
+    nextQuery: string,
+    nextFilters: SearchFilters,
+  ) {
+    return !nextQuery && countActiveFilters(nextEntityType, nextFilters) === 0;
   }
 
   function handleEntityTypeChange(nextEntityType: SearchEntityType) {
@@ -409,30 +430,16 @@ export function useSearchPageState() {
 
     setSaveSearchFeedback(null);
     dispatch(setActiveEntityType(nextEntityType));
-
-    if (nextEntityType !== "works") {
-      dispatch(setFiltersOpen(false));
-    }
+    const nextSortState = getNextSortStateForEntityType(
+      activeEntityType,
+      nextEntityType,
+      sortState,
+    );
+    dispatch(setSortState(nextSortState));
 
     const normalizedQuery = searchQuery.trim();
 
-    if (nextEntityType === "works") {
-      if (shouldClearWorkSearch(normalizedQuery, filters)) {
-        dispatch(clearSearchResults());
-        return;
-      }
-
-      submitSearchRequest(
-        nextEntityType,
-        normalizedQuery,
-        filters,
-        sortState,
-        optionValueLookup,
-      );
-      return;
-    }
-
-    if (!normalizedQuery) {
+    if (shouldClearSearch(nextEntityType, normalizedQuery, filters)) {
       dispatch(clearSearchResults());
       return;
     }
@@ -441,7 +448,7 @@ export function useSearchPageState() {
       nextEntityType,
       normalizedQuery,
       filters,
-      defaultSearchSortState,
+      nextSortState,
       optionValueLookup,
     );
   }
@@ -458,13 +465,13 @@ export function useSearchPageState() {
 
     const normalizedQuery = searchQuery.trim();
 
-    if (shouldClearWorkSearch(normalizedQuery, filters)) {
+    if (shouldClearSearch(activeEntityType, normalizedQuery, filters)) {
       dispatch(clearSearchResults());
       return;
     }
 
     submitSearchRequest(
-      "works",
+      activeEntityType,
       normalizedQuery,
       filters,
       sortState,
@@ -475,23 +482,7 @@ export function useSearchPageState() {
   function handleSearch() {
     const normalizedQuery = searchQuery.trim();
 
-    if (activeEntityType === "works") {
-      if (shouldClearWorkSearch(normalizedQuery, filters)) {
-        dispatch(clearSearchResults());
-        return;
-      }
-
-      submitSearchRequest(
-        "works",
-        normalizedQuery,
-        filters,
-        sortState,
-        optionValueLookup,
-      );
-      return;
-    }
-
-    if (!normalizedQuery) {
+    if (shouldClearSearch(activeEntityType, normalizedQuery, filters)) {
       dispatch(clearSearchResults());
       return;
     }
@@ -500,7 +491,7 @@ export function useSearchPageState() {
       activeEntityType,
       normalizedQuery,
       filters,
-      defaultSearchSortState,
+      sortState,
       optionValueLookup,
     );
   }
@@ -508,22 +499,11 @@ export function useSearchPageState() {
   function handleSuggestedSearch(query: string) {
     dispatch(setSearchQuery(query));
 
-    if (activeEntityType === "works") {
-      submitSearchRequest(
-        "works",
-        query,
-        filters,
-        sortState,
-        optionValueLookup,
-      );
-      return;
-    }
-
     submitSearchRequest(
       activeEntityType,
       query,
       filters,
-      defaultSearchSortState,
+      sortState,
       optionValueLookup,
     );
   }
@@ -565,6 +545,10 @@ export function useSearchPageState() {
   }
 
   function handleToggleVisibleFilterWidget(widgetKey: SearchFilterWidgetKey) {
+    if (!showFilterAddMenu) {
+      return;
+    }
+
     dispatch(toggleVisibleFilterWidget(widgetKey));
   }
 
@@ -583,12 +567,23 @@ export function useSearchPageState() {
 
     dispatch(setSortState(nextSortState));
 
-    if (!submittedSearch || submittedSearch.entityType !== "works") {
+    if (!submittedSearch) {
+      return;
+    }
+
+    if (
+      shouldClearSearch(
+        submittedSearch.entityType,
+        appliedSearchQuery,
+        appliedFilters,
+      )
+    ) {
+      dispatch(clearSearchResults());
       return;
     }
 
     submitSearchRequest(
-      "works",
+      submittedSearch.entityType,
       appliedSearchQuery,
       appliedFilters,
       nextSortState,
@@ -599,12 +594,23 @@ export function useSearchPageState() {
   function handleClearSorts() {
     dispatch(setSortState({ ...defaultSearchSortState }));
 
-    if (!submittedSearch || submittedSearch.entityType !== "works") {
+    if (!submittedSearch) {
+      return;
+    }
+
+    if (
+      shouldClearSearch(
+        submittedSearch.entityType,
+        appliedSearchQuery,
+        appliedFilters,
+      )
+    ) {
+      dispatch(clearSearchResults());
       return;
     }
 
     submitSearchRequest(
-      "works",
+      submittedSearch.entityType,
       appliedSearchQuery,
       appliedFilters,
       defaultSearchSortState,
@@ -615,19 +621,19 @@ export function useSearchPageState() {
   function resetFilters() {
     dispatch(resetSearchFilters());
 
-    if (!hasSearched || appliedEntityType !== "works") {
+    if (!hasSearched) {
       return;
     }
 
     const resetFilterState = cloneSearchFilters(initialFilters);
 
-    if (shouldClearWorkSearch(appliedSearchQuery, resetFilterState)) {
+    if (shouldClearSearch(appliedEntityType, appliedSearchQuery, resetFilterState)) {
       dispatch(clearSearchResults());
       return;
     }
 
     submitSearchRequest(
-      "works",
+      appliedEntityType,
       appliedSearchQuery,
       resetFilterState,
       sortState,
@@ -690,10 +696,38 @@ export function useSearchPageState() {
     searchPlaceholder: activeEntityMetadata.placeholder,
     searchQuery,
     showFilters,
+    showFilterAddMenu,
     sortState,
     totalIndexedCount,
     updateFilter,
     visibleFilterWidgets,
     visibleResults,
   };
+}
+
+function getVisibleFilterWidgets(
+  entityType: SearchEntityType,
+  visibleFilterWidgets: SearchFilterWidgetKey[],
+) {
+  switch (entityType) {
+    case "authors":
+      return authorFilterWidgets;
+    case "topics":
+      return topicFilterWidgets;
+    default:
+      return visibleFilterWidgets;
+  }
+}
+
+function getNextSortStateForEntityType(
+  currentEntityType: SearchEntityType,
+  nextEntityType: SearchEntityType,
+  currentSortState: SearchPageSnapshot["sortState"],
+) {
+  const isCrossingWorkBoundary =
+    (currentEntityType === "works") !== (nextEntityType === "works");
+
+  return isCrossingWorkBoundary
+    ? { ...defaultSearchSortState }
+    : currentSortState;
 }

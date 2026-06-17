@@ -44,6 +44,7 @@ export function SearchPanel({
   searchPlaceholder,
   searchQuery,
   showFilters,
+  showFilterAddMenu,
   totalIndexedCount,
   isIndexedCountExact,
   visibleFilterWidgets,
@@ -111,6 +112,7 @@ export function SearchPanel({
           isLoadingMoreFilterOptions={isLoadingMoreFilterOptions}
           isLoadingResults={isLoadingResults}
           matchedPaperCount={matchedPaperCount}
+          showFilterAddMenu={showFilterAddMenu}
           visibleFilterWidgets={visibleFilterWidgets}
           onApplyFilters={onApplyFilters}
           onFilterOptionSearch={onFilterOptionSearch}

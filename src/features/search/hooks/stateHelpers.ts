@@ -26,6 +26,8 @@ export const remoteOptionFilterKeys: RemoteOptionFilterKey[] = [
   "author",
   "institution",
   "country",
+  "primaryTopic",
+  "field",
   "award",
   "source",
 ];
@@ -62,6 +64,8 @@ export function createRemoteOptionState<T>(value: T): Record<RemoteOptionFilterK
     author: value,
     institution: value,
     country: value,
+    primaryTopic: value,
+    field: value,
     award: value,
     source: value,
   };
@@ -82,26 +86,43 @@ export function isReloadNavigation() {
 
 export function cloneSearchFilters(filters: SearchFilters): SearchFilters {
   return {
-    ...filters,
-    author: [...filters.author],
-    award: [...filters.award],
-    country: [...filters.country],
-    institution: [...filters.institution],
-    source: [...filters.source],
-    subField: [...filters.subField],
-    type: [...filters.type],
+    yearMode: filters.yearMode === "exact" ? "exact" : "range",
+    yearFrom: filters.yearFrom || "",
+    yearTo: filters.yearTo || "",
+    yearExact: filters.yearExact || "",
+    type: [...(filters.type || [])],
+    openAccess: Boolean(filters.openAccess),
+    subField: [...(filters.subField || [])],
+    author: [...(filters.author || [])],
+    institution: [...(filters.institution || [])],
+    pdf: Boolean(filters.pdf),
+    country: [...(filters.country || [])],
+    primaryTopic: [...(filters.primaryTopic || [])],
+    field: [...(filters.field || [])],
+    citationMode: filters.citationMode === "exact" ? "exact" : "range",
+    citationMin: filters.citationMin || "",
+    citationMax: filters.citationMax || "",
+    citationExact: filters.citationExact || "",
+    source: [...(filters.source || [])],
+    award: [...(filters.award || [])],
+    indexedByOrcid:
+      filters.indexedByOrcid === "is" || filters.indexedByOrcid === "is not"
+        ? filters.indexedByOrcid
+        : "",
   };
 }
 
 export function cloneSearchFilterOptions(options: SearchFilterOptions): SearchFilterOptions {
   return {
-    type: [...options.type],
-    subField: [...options.subField],
-    author: [...options.author],
-    institution: [...options.institution],
-    country: [...options.country],
-    source: [...options.source],
-    award: [...options.award],
+    type: [...(options.type || [])],
+    subField: [...(options.subField || [])],
+    author: [...(options.author || [])],
+    institution: [...(options.institution || [])],
+    country: [...(options.country || [])],
+    primaryTopic: [...(options.primaryTopic || [])],
+    field: [...(options.field || [])],
+    source: [...(options.source || [])],
+    award: [...(options.award || [])],
   };
 }
 
@@ -110,25 +131,31 @@ export function cloneSearchOptionValueLookup(
 ): SearchOptionValueLookup {
   return {
     type: {
-      ...optionValueLookup.type,
+      ...(optionValueLookup.type || {}),
     },
     subField: {
-      ...optionValueLookup.subField,
+      ...(optionValueLookup.subField || {}),
     },
     author: {
-      ...optionValueLookup.author,
+      ...(optionValueLookup.author || {}),
     },
     institution: {
-      ...optionValueLookup.institution,
+      ...(optionValueLookup.institution || {}),
     },
     country: {
-      ...optionValueLookup.country,
+      ...(optionValueLookup.country || {}),
+    },
+    primaryTopic: {
+      ...(optionValueLookup.primaryTopic || {}),
+    },
+    field: {
+      ...(optionValueLookup.field || {}),
     },
     source: {
-      ...optionValueLookup.source,
+      ...(optionValueLookup.source || {}),
     },
     award: {
-      ...optionValueLookup.award,
+      ...(optionValueLookup.award || {}),
     },
   };
 }
@@ -230,19 +257,20 @@ export function restoreSubmittedSearch(snapshot: LegacySearchPageSnapshot | null
     ? cloneSearchFilters(snapshot.appliedFilters)
     : cloneSearchFilters(initialFilters);
   const appliedSearchQuery = snapshot.appliedSearchQuery || "";
+  const entityType = normalizeSearchTabEntityType(
+    snapshot.entityType
+    || snapshot.activeEntityType
+    || "works",
+  );
 
-  if (!appliedSearchQuery && countActiveFilters(appliedFilters) === 0) {
+  if (!appliedSearchQuery && countActiveFilters(entityType, appliedFilters) === 0) {
     return null;
   }
 
   return {
     appliedFilters,
     appliedSearchQuery,
-    entityType: normalizeSearchTabEntityType(
-      snapshot.entityType
-      || snapshot.activeEntityType
-      || "works",
-    ),
+    entityType,
     optionValueLookup: cloneSearchOptionValueLookup(
       snapshot.optionValueLookup || emptySearchOptionValueLookup,
     ),

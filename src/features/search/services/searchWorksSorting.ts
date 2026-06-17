@@ -4,7 +4,10 @@ export function sortPaperResults(
   works: PaperResult[],
   sortState: SearchSortState,
 ): PaperResult[] {
-  if (sortState.sortBy === "relevance") {
+  if (
+    sortState.sortBy === "relevance"
+    || (sortState.sortBy !== "citation" && sortState.sortBy !== "published")
+  ) {
     return [...works];
   }
 

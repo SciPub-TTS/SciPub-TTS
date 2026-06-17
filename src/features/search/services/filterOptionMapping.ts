@@ -5,6 +5,7 @@ export function shouldIncludeStableSuffix(filterKey: RemoteOptionFilterKey) {
   return (
     filterKey === "author"
     || filterKey === "institution"
+    || filterKey === "primaryTopic"
     || filterKey === "source"
     || filterKey === "award"
   );
