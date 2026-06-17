@@ -52,6 +52,10 @@ const stateStyle = {
 
 function Topic({topic, id}:
                {topic:TopicData, id:number}){
+
+    const topicId = topic.topicId.split('/').at(-1);
+    const link = "http://localhost:5173/topics/" +  topicId;
+
     return(
         <div className={`grid grid-cols-[33%_40%_27%] justify-between border-b-1
         border-slate-200 items-center px-4 py-2 ${id === 9 ? `!border-none`: null}`}>
@@ -59,7 +63,7 @@ function Topic({topic, id}:
                 <p>{id + 1}</p>
 
                 <div className="flex flex-col text-sm">
-                    <Link to={"https://i.ytimg.com/vi/3VkHPhNt9Os/maxresdefault.jpg"}
+                    <Link to={link}
                         className="text-blue-700 font-semibold text-lg"
                     >
                         {topic.name}
@@ -82,6 +86,10 @@ function Topic({topic, id}:
 
                     <span>{topic.score}</span>
                 </div>
+
+                <p className="text-green-600">
+                    {topic.change > 0 ? `+${topic.change}` : topic.change}%
+                </p>
             </div>
 
             <div className="flex flex-row items-center gap-10 justify-between">

@@ -282,7 +282,7 @@ interface BubbleProps {
 
 function Bubble({ cx = 0, cy = 0, payload }: BubbleProps) {
     if (!payload) return null;
-    const r = Math.sqrt(payload.score) * 3.5;
+    const r = Math.sqrt(payload.score) * 2.5;
     return (
         <circle
             cx={cx}
@@ -384,7 +384,7 @@ function MomentumPart({
 
     return(
         <div className="rounded-lg border border-slate-200 bg-white p-4
-        flex flex-col gap-2">
+        flex flex-col gap-2 overflow-hidden">
 
             <div className="flex flex-row justify-between">
                 <div className="flex flex-col">

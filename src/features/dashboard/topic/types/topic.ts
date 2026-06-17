@@ -1,5 +1,6 @@
 export type TopicData = {
     name: string;
+    topicId: string;
     works: number;
     citations: number;
     score: number;
