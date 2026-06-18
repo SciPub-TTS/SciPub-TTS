@@ -5,19 +5,15 @@ export const ROUTES = {
   REGISTER: "/register",
   GUIDE: "/guide",
   SEARCH: "/search",
-  DASHBOARD: "/dashboard",
-  TOPIC_DASHBOARD: "/topic_dashboard",
   TRENDING_TOPIC: "/trending-topic",
+  TRENDING_KEYWORD: "/trending-keyword",
 
   GOOGLE_REGISTER_COMPLETE: "/register/complete",
 
-  //Auth
+  // Auth
   FORGOT_PASSWORD: "/forgot-password",
   FORGOT_PASSWORD_VERIFY: "/forgot-password/verify-code",
   FORGOT_PASSWORD_RESET: "/forgot-password/reset",
-
-  VERIFY_EMAIL_SUCCESS: "/verify-email/success",
-  VERIFY_EMAIL_ERROR: "/verify-email/error",
 
   // Paper
   PAPER_DETAIL: "/papers/:paperId",
@@ -35,43 +31,17 @@ export const ROUTES = {
   ADMIN: "/admin",
   ADMIN_DASHBOARD: "/admin/dashboard",
   ADMIN_USERS: "/admin/users",
-  ADMIN_FIELDS: "/admin/fields",
-  ADMIN_SYNC: "/admin/sync",
 } as const;
 
+function encodePathSegment(value: string | number) {
+  return encodeURIComponent(String(value));
+}
+
 export const routePaths = {
-  home: () => ROUTES.HOME,
-  login: () => ROUTES.LOGIN,
-  register: () => ROUTES.REGISTER,
-  guide: () => ROUTES.GUIDE,
-  search: () => ROUTES.SEARCH,
-  trendingTopic: () => ROUTES.TRENDING_TOPIC,
-
-  googleRegisterComplete: (token: string) =>
-      `${ROUTES.GOOGLE_REGISTER_COMPLETE}?token=${encodeURIComponent(token)}`,
-
-  forgotPassword: () => ROUTES.FORGOT_PASSWORD,
-  forgotPasswordVerify: () => ROUTES.FORGOT_PASSWORD_VERIFY,
-  forgotPasswordReset: () => ROUTES.FORGOT_PASSWORD_RESET,
-
   paperDetail: (paperId: string | number) =>
-    `/papers/${encodeURIComponent(String(paperId))}`,
+    `/papers/${encodePathSegment(paperId)}`,
   authorDetail: (authorId: string | number) =>
-    `/authors/${encodeURIComponent(String(authorId))}`,
+    `/authors/${encodePathSegment(authorId)}`,
   topicDetail: (topicId: string | number) =>
-    `/topics/${encodeURIComponent(String(topicId))}`,
-
-  profile: () => ROUTES.PROFILE,
-  profileTab: (tab: "profile" | "interests" | "security" = "profile") =>
-      `${ROUTES.PROFILE}?tab=${encodeURIComponent(tab)}`,
-  profileSecurity: () => ROUTES.PROFILE_SECURITY,
-
-  bookmarks: () => ROUTES.BOOKMARKS,
-  feed: () => ROUTES.FEED,
-  report: () => ROUTES.REPORT,
-
-  adminDashboard: () => ROUTES.ADMIN_DASHBOARD,
-  adminUsers: () => ROUTES.ADMIN_USERS,
-  adminFields: () => ROUTES.ADMIN_FIELDS,
-  adminSync: () => ROUTES.ADMIN_SYNC,
+    `/topics/${encodePathSegment(topicId)}`,
 };
