@@ -3,7 +3,7 @@ import TopicGeneralChartPart from "@/features/dashboard/topic/components/TopicGe
 import TrendingPart from "@/features/dashboard/topic/components/TrendingPart.tsx";
 import TopicSpecificChartPart from "@/features/dashboard/topic/components/TopicSpecificChartPart.tsx";
 import {useNavigate} from "react-router-dom";
-import {ROUTE_SEGMENTS} from "@/app/router";
+import {ROUTES} from "@/app/router";
 import {useMemo, useState} from "react";
 import FilterPart from "@/features/dashboard/topic/components/FilterPart.tsx";
 
@@ -11,7 +11,7 @@ export default function TopicDashboardPage() {
     const navigate = useNavigate();
 
     const handleClick = () => {
-        navigate(ROUTE_SEGMENTS.TRENDING_KEYWORD);
+        navigate(ROUTES.TRENDING_KEYWORD);
     }
 
     const currentMonday = getMonday(new Date());

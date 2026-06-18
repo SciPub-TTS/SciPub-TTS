@@ -1,5 +1,5 @@
 import {useNavigate} from "react-router-dom";
-import {ROUTE_SEGMENTS} from "@/app/router";
+import {ROUTES} from "@/app/router";
 import {KeywordGeneralChartPart} from "@/features/dashboard/keyword/components/KeywordGeneralChartPart.tsx";
 import MetricPart from "@/features/dashboard/topic/components/MetricPart.tsx";
 
@@ -7,7 +7,7 @@ export function KeywordDashboardPage() {
     const navigate = useNavigate();
 
     const handleClick = () => {
-        navigate(ROUTE_SEGMENTS.TRENDING_TOPIC);
+        navigate(ROUTES.TRENDING_TOPIC);
     }
 
     return(
