@@ -36,7 +36,7 @@ export default function TopicDashboardPage() {
         date.setFullYear(date.getFullYear() - 5);
         return formatDate(date);
     }, [endDate]);
-    const [fieldId, setFieldId] = useState("22");
+    const [fieldId, setFieldId] = useState("17");
     const [topicFormula, setTopicFormula] = useState("balanced");
     const [keywordFormula, setKeywordFormula] = useState<KeywordFormulaType>("balanced");
 

@@ -30,7 +30,7 @@ export const MENU_FILTER: FilterData[] = [
 
     {
         key: "topicFormula",
-        title: "Formula",
+        title: "Topic Discovery Goal",
         className: "w-[12vw]",
         options: [
             {
@@ -54,7 +54,7 @@ export const MENU_FILTER: FilterData[] = [
 
     {
         key: "keywordFormula",
-        title: "Keyword Formula",
+        title: "Keyword Goal",
         className: "w-[12vw]",
         options: [
             {

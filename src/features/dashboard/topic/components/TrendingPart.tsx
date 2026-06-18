@@ -68,8 +68,8 @@ function Topic({topic, id}:
                     >
                         {topic.name}
                     </Link>
-                    <p className="opacity-70">{topic.works} works</p>
-                    <p className="opacity-70">{topic.citations} citations</p>
+                    <p className="opacity-70">{topic.works.toLocaleString()} works</p>
+                    <p className="opacity-70">{topic.citations.toLocaleString()} citations</p>
                 </div>
             </div>
 

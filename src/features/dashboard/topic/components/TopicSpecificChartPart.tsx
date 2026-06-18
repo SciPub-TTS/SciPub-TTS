@@ -1,5 +1,5 @@
 import {Legend, PolarAngleAxis, PolarGrid, PolarRadiusAxis, Radar, RadarChart, ResponsiveContainer} from "recharts";
-import {useEffect, useMemo, useState} from "react";
+import {useEffect, useMemo, useRef, useState} from "react";
 import {ResponsiveHeatMap} from "@nivo/heatmap";
 import type {TopicRadarData} from "@/features/dashboard/topic/types/radar.ts";
 import {useTopicRadar} from "@/features/dashboard/topic/hooks/useTopicRadar.ts";
@@ -104,17 +104,11 @@ function RadarPart({ data, selectedTopic, setSelectedTopic }: RadarPartProps
                     </p>
                 </div>
 
-                <select
-                    value={selectedTopic}
-                    onChange={(e) => setSelectedTopic(e.target.value)}
-                    className="max-w-[260px] rounded-md border border-slate-300 px-3 py-2 text-sm"
-                >
-                    {data.topics.map((topic) => (
-                        <option key={topic.name} value={topic.name}>
-                            {topic.name}
-                        </option>
-                    ))}
-                </select>
+                <TopicComboBox
+                    topics={data.topics}
+                    selectedTopic={selectedTopic}
+                    setSelectedTopic={setSelectedTopic}
+                />
             </div>
 
             <div className="h-[500px] w-full">
@@ -160,6 +154,127 @@ function RadarPart({ data, selectedTopic, setSelectedTopic }: RadarPartProps
                         />
                     </RadarChart>
                 </ResponsiveContainer>
+            </div>
+        </div>
+    );
+}
+
+function TopicComboBox({
+                           topics,
+                           selectedTopic,
+                           setSelectedTopic,
+                       }: {
+    topics: { name: string }[];
+    selectedTopic: string;
+    setSelectedTopic: (name: string) => void;
+}) {
+    const [query, setQuery] = useState(selectedTopic);
+    const [isOpen, setIsOpen] = useState(false);
+    const [highlightIndex, setHighlightIndex] = useState(0);
+    const containerRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        setQuery(selectedTopic);
+    }, [selectedTopic]);
+
+    useEffect(() => {
+        function handleClickOutside(e: MouseEvent) {
+            if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+                setIsOpen(false);
+                setQuery(selectedTopic);
+            }
+        }
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, [selectedTopic]);
+
+    const filteredTopics = useMemo(() => {
+        if (!query.trim()) return topics;
+        const lowerQuery = query.toLowerCase();
+        return topics.filter((t) => t.name.toLowerCase().includes(lowerQuery));
+    }, [topics, query]);
+
+    useEffect(() => {
+        setHighlightIndex(0);
+    }, [query]);
+
+    function handleSelect(name: string) {
+        setSelectedTopic(name);
+        setQuery(name);
+        setIsOpen(false);
+    }
+
+    function handleConfirmClick() {
+        const target = filteredTopics[highlightIndex] ?? filteredTopics[0];
+        if (target) {
+            handleSelect(target.name);
+        }
+    }
+
+    function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+        if (!isOpen) return;
+        if (e.key === "ArrowDown") {
+            e.preventDefault();
+            setHighlightIndex((prev) => Math.min(prev + 1, filteredTopics.length - 1));
+        } else if (e.key === "ArrowUp") {
+            e.preventDefault();
+            setHighlightIndex((prev) => Math.max(prev - 1, 0));
+        } else if (e.key === "Enter") {
+            e.preventDefault();
+            handleConfirmClick();
+        } else if (e.key === "Escape") {
+            setIsOpen(false);
+            setQuery(selectedTopic);
+        }
+    }
+
+    return (
+        <div ref={containerRef} className="relative flex w-full max-w-[320px] gap-2">
+            <div className="relative flex-1">
+                <input
+                    type="text"
+                    value={query}
+                    onChange={(e) => {
+                        setQuery(e.target.value);
+                        setIsOpen(true);
+                    }}
+                    onFocus={(e) => {
+                        setIsOpen(true);
+                        e.target.select();
+                    }}
+                    onKeyDown={handleKeyDown}
+                    placeholder="Tìm topic..."
+                    className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200"
+                />
+
+                {isOpen && (
+                    <div className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-slate-200 bg-white shadow-lg">
+                        {filteredTopics.length === 0 ? (
+                            <div className="px-3 py-2 text-sm text-slate-400">
+                                Không tìm thấy topic
+                            </div>
+                        ) : (
+                            filteredTopics.map((topic, index) => (
+                                <div
+                                    key={topic.name}
+                                    onMouseDown={() => handleSelect(topic.name)}
+                                    onMouseEnter={() => setHighlightIndex(index)}
+                                    className={`cursor-pointer px-3 py-2 text-sm ${
+                                        index === highlightIndex
+                                            ? "bg-blue-50"
+                                            : ""
+                                    } ${
+                                        topic.name === selectedTopic
+                                            ? "font-medium text-blue-700"
+                                            : "text-slate-700"
+                                    }`}
+                                >
+                                    {topic.name}
+                                </div>
+                            ))
+                        )}
+                    </div>
+                )}
             </div>
         </div>
     );
