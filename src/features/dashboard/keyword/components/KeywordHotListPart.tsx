@@ -5,9 +5,10 @@ import type {
 type KeywordHotListPartProps = {
     keywordList: KeywordsMetric[];
     isLoading: boolean;
+    onAdd?: (keyword: KeywordsMetric) => void;
 }
 
-export function KeywordHotListPart({keywordList, isLoading}:KeywordHotListPartProps) {
+export function KeywordHotListPart({keywordList, isLoading, onAdd}:KeywordHotListPartProps) {
 
     return (
         <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
@@ -31,6 +32,7 @@ export function KeywordHotListPart({keywordList, isLoading}:KeywordHotListPartPr
                             key={keyword.id}
                             keyword={keyword}
                             maxWorks={keyword.worksCount}
+                            onAdd={onAdd}
                         />
                     ))}
                 </ul>
@@ -43,9 +45,11 @@ export function KeywordHotListPart({keywordList, isLoading}:KeywordHotListPartPr
 function SourceRow({
                        keyword,
                        maxWorks,
+                       onAdd
                    }: {
     keyword: KeywordsMetric;
     maxWorks: number;
+    onAdd?: (keyword: KeywordsMetric) => void;
 }) {
     const widthPercent = Math.max((keyword.worksCount / maxWorks) * 100, 4);
 
@@ -59,7 +63,9 @@ function SourceRow({
 
                 <button
                     type="button"
-                    className="shrink-0 rounded-full border border-blue-200 px-2.5 py-0.5 text-xs font-semibold text-blue-600 cursor-pointer hover:bg-blue-50"
+                    onClick={() => onAdd?.(keyword)}
+                    className="shrink-0 rounded-full border border-blue-200 px-2.5 py-0.5 text-xs
+                    font-semibold text-blue-600 cursor-pointer hover:bg-blue-50"
                 >
                     Add
                 </button>

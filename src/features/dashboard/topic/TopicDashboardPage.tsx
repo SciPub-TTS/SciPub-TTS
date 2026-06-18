@@ -8,6 +8,7 @@ import {KeywordGeneralChartPart} from "@/features/dashboard/keyword/components/K
 import {KeywordHotListPart} from "@/features/dashboard/keyword/components/KeywordHotListPart.tsx";
 import {useHotKeyword} from "@/features/dashboard/keyword/hooks/useHotKeyword.ts";
 import type {KeywordFormulaType} from "@/features/dashboard/keyword/types/keyword.ts";
+import {saveSearchHistory} from "@/features/search/services";
 
 export default function TopicDashboardPage() {
 
@@ -88,6 +89,9 @@ export default function TopicDashboardPage() {
 
             <KeywordHotListPart keywordList={keywordList}
                                 isLoading={isLoading}
+                                onAdd={(keyword) => {
+                                    saveSearchHistory(keyword.name);
+                                }}
             />
         </div>
 

@@ -2,6 +2,7 @@ import {Link} from "react-router-dom";
 import {Check} from "lucide-react";
 import type {TopicData} from "@/features/dashboard/topic/types/topic.ts";
 import {useTopicRanking} from "@/features/dashboard/topic/hooks/useTopicRanking.ts";
+import {useEntityFollow} from "@/features/follows/hooks/useEntityFollow.ts";
 
 type TrendingPartProps = {
     startDate: string;
@@ -50,11 +51,26 @@ const stateStyle = {
     rising: "bg-yellow-100 text-yellow-700"
 };
 
+const apiBaseUrl = (
+    import.meta.env.VITE_APP_BASE_URL || "http://localhost:8080"
+).replace(/\/$/, "");
+
 function Topic({topic, id}:
                {topic:TopicData, id:number}){
 
     const topicId = topic.topicId.split('/').at(-1);
-    const link = "http://localhost:5173/topics/" +  topicId;
+    const link = `${apiBaseUrl}/topics/` + topicId;
+
+    const {
+        buttonLabel,
+        handleFollowClick,
+        isFollowActionPending,
+        isFollowed,
+    } = useEntityFollow({
+        displayName: topic.name,
+        targetOpenAlexId: topic.topicId,
+        targetType: "TOPIC",
+    });
 
     return(
         <div className={`grid grid-cols-[33%_40%_27%] justify-between border-b-1
@@ -101,7 +117,7 @@ function Topic({topic, id}:
                     {topic.state}
                 </div>
 
-                {topic.isFollowed ? (
+                {isFollowed ? (
                     <div className="flex flex-row items-center gap-2 font-semibold
                     bg-green-100 border-2 border-green-300 text-green-800 px-2 py-1 rounded-xl">
                         <Check/>
@@ -109,8 +125,11 @@ function Topic({topic, id}:
                     </div>
                 ):(
                     <button className="bg-green-600 text-white font-bold
-                    py-[1vh] px-2 rounded-xl cursor-pointer w-[8vw]">
-                        + Follow
+                    py-[1vh] px-2 rounded-xl cursor-pointer w-[8vw]"
+                            onClick={handleFollowClick}
+                            disabled={isFollowActionPending}
+                    >
+                        {buttonLabel}
                     </button>
                 )}
             </div>
