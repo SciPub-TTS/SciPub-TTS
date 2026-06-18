@@ -227,6 +227,7 @@ export type PaperDetailData = {
   accessItems: PaperDetailSummaryItem[];
   authors: PaperDetailAuthor[];
   awards: string[];
+  citationCount: number;
   doiHref: string | null;
   doiLabel: string;
   headerBadges: PaperDetailBadge[];
@@ -238,7 +239,9 @@ export type PaperDetailData = {
   items: PaperDetailMetric[];
   keywords: string[];
   languageLabel: string;
+  openAlexId: string;
   pdfUrl: string | null;
+  publicationYear: number | null;
   publishedLabel: string;
   quickLinks: PaperDetailQuickLink[];
   referencedWorks: PaperDetailWorkLink[];

@@ -15,10 +15,12 @@ import {
   AwardFilterWidget,
   CitationFilterWidget,
   CountryFilterWidget,
+  FieldFilterWidget,
   InstitutionFilterWidget,
   OpenAccessFilterWidget,
   OrcidFilterWidget,
   PdfFilterWidget,
+  PrimaryTopicFilterWidget,
   SearchFilterAddMenu,
   SourceFilterWidget,
   SubFieldFilterWidget,
@@ -38,6 +40,7 @@ export function SearchFiltersPanel({
   isLoadingMoreFilterOptions,
   isLoadingResults,
   matchedPaperCount,
+  showFilterAddMenu,
   visibleFilterWidgets,
   onApplyFilters,
   onFilterOptionSearch,
@@ -59,6 +62,7 @@ export function SearchFiltersPanel({
       {filtersOpen ? (
         <div className="search-filters-panel-enter relative z-10 overflow-visible">
           <FilterVisibilityToggle
+            showFilterAddMenu={showFilterAddMenu}
             visibleFilterWidgets={visibleFilterWidgets}
             onToggleVisibleFilterWidget={onToggleVisibleFilterWidget}
           />
@@ -126,9 +130,14 @@ function SearchFiltersHeader({
 }
 
 function FilterVisibilityToggle({
+  showFilterAddMenu,
   visibleFilterWidgets,
   onToggleVisibleFilterWidget,
-}: FilterVisibilityToggleProps) {
+}: FilterVisibilityToggleProps & { showFilterAddMenu: boolean }) {
+  if (!showFilterAddMenu) {
+    return null;
+  }
+
   return (
     <div className="relative z-40 flex justify-end border-b border-slate-200 px-5 py-4">
       <SearchFilterAddMenu
@@ -313,6 +322,40 @@ function renderFilterWidget(
           onLoadMoreOptions={() => onLoadMoreFilterOptions("country")}
           onSearchKeywordChange={(keyword) =>
             onFilterOptionSearch("country", keyword)
+          }
+        />
+      );
+    case "primaryTopic":
+      return (
+        <PrimaryTopicFilterWidget
+          key={widgetKey}
+          filterKey="primaryTopic"
+          hasMoreOptions={hasMoreFilterOptions.primaryTopic}
+          isLoadingOptions={isLoadingFilterOptions.primaryTopic}
+          isLoadingMoreOptions={isLoadingMoreFilterOptions.primaryTopic}
+          options={filterOptions.primaryTopic}
+          selected={filters.primaryTopic}
+          onChange={(nextSelected) => updateFilter("primaryTopic", nextSelected)}
+          onLoadMoreOptions={() => onLoadMoreFilterOptions("primaryTopic")}
+          onSearchKeywordChange={(keyword) =>
+            onFilterOptionSearch("primaryTopic", keyword)
+          }
+        />
+      );
+    case "field":
+      return (
+        <FieldFilterWidget
+          key={widgetKey}
+          filterKey="field"
+          hasMoreOptions={hasMoreFilterOptions.field}
+          isLoadingOptions={isLoadingFilterOptions.field}
+          isLoadingMoreOptions={isLoadingMoreFilterOptions.field}
+          options={filterOptions.field}
+          selected={filters.field}
+          onChange={(nextSelected) => updateFilter("field", nextSelected)}
+          onLoadMoreOptions={() => onLoadMoreFilterOptions("field")}
+          onSearchKeywordChange={(keyword) =>
+            onFilterOptionSearch("field", keyword)
           }
         />
       );

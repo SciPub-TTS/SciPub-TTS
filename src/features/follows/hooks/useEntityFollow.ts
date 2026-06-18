@@ -27,11 +27,12 @@ type UseEntityFollowOptions = {
 function createFollowStatus(
   targetType: FollowTargetType,
   targetOpenAlexId: string,
+  followed: boolean,
   followId: string | null,
 ): FollowStatusResponse {
   return {
     followId,
-    followed: true,
+    followed,
     targetOpenAlexId,
     targetType,
   };
@@ -98,10 +99,13 @@ export function useEntityFollow(options: UseEntityFollowOptions) {
       }
 
       if (isFollowed) {
+        await followApi.delete(targetType, normalizedEntityId);
+
         return createFollowStatus(
           targetType,
           normalizedEntityId,
-          followStatusQuery.data?.followId ?? null,
+          false,
+          null,
         );
       }
 
@@ -115,6 +119,7 @@ export function useEntityFollow(options: UseEntityFollowOptions) {
       return createFollowStatus(
         targetType,
         normalizedEntityId,
+        true,
         response.data.id,
       );
     },
@@ -129,8 +134,7 @@ export function useEntityFollow(options: UseEntityFollowOptions) {
       void queryClient.invalidateQueries({
         queryKey: followQueryKeys.list(),
       });
-      setFeedbackLabel("Followed");
-      scheduleFeedbackReset();
+      setFeedbackLabel(null);
     },
   });
 
@@ -143,7 +147,9 @@ export function useEntityFollow(options: UseEntityFollowOptions) {
   }
 
   const buttonLabel = followMutation.isPending
-    ? "Following..."
+    ? isFollowed
+      ? "Unfollowing..."
+      : "Following..."
     : feedbackLabel || (isFollowed ? "Following" : "+ Follow");
 
   return {

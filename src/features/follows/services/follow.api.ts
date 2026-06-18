@@ -16,6 +16,17 @@ export const followApi = {
       .then((response) => response.data);
   },
 
+  delete(targetType: FollowTargetType, targetOpenAlexId: string) {
+    return http
+      .delete<ApiResponse<null>>(BASE, {
+        params: {
+          targetOpenAlexId,
+          targetType,
+        },
+      })
+      .then((response) => response.data);
+  },
+
   getStatus(targetType: FollowTargetType, targetOpenAlexId: string) {
     return http
       .get<ApiResponse<FollowStatusResponse>>(`${BASE}/status`, {

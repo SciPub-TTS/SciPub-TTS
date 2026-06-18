@@ -10,11 +10,6 @@ import {useHotKeyword} from "@/features/dashboard/keyword/hooks/useHotKeyword.ts
 import type {KeywordFormulaType} from "@/features/dashboard/keyword/types/keyword.ts";
 
 export default function TopicDashboardPage() {
-    // const navigate = useNavigate();
-    //
-    // const handleClick = () => {
-    //     navigate(ROUTE_SEGMENTS.TRENDING_KEYWORD);
-    // }
 
     const currentMonday = getMonday(new Date());
 

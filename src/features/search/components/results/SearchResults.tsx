@@ -3,9 +3,9 @@ import { useEffect, useRef } from "react";
 
 import {
   getSearchEntityMetadata,
+  getSearchResultSortGroups,
   getSearchSortOptionValue,
   hasActiveSearchSort,
-  searchResultSortGroups,
   type SearchResultSortGroup,
 } from "@/features/search/services";
 import type { SearchResultsProps } from "@/features/search/types";
@@ -41,9 +41,9 @@ export function SearchResults({
   );
   const formattedResponseTime = formatResponseTime(responseTimeSeconds);
   const resultMetaText = `${formattedResultCount} ${entityMetadata.resultLabelPlural} - ${formattedResponseTime}.`;
+  const sortGroups = getSearchResultSortGroups(activeEntityType);
   const canSortResults =
-    activeEntityType === "works"
-    && hasSearched
+    hasSearched
     && visibleResults.length > 0
     && !isLoadingResults;
 
@@ -116,10 +116,11 @@ export function SearchResults({
             </div>
           ) : null}
 
-          {activeEntityType === "works" ? (
+          {sortGroups.length > 0 ? (
             <div className="flex shrink-0 justify-end lg:justify-start">
               <SortActions
                 canSortResults={canSortResults}
+                sortGroups={sortGroups}
                 sortState={sortState}
                 onClearSorts={onClearSorts}
                 onSelectSort={onSelectSort}
@@ -183,6 +184,7 @@ function SearchLoadingState({ loadingLabel }: SearchLoadingStateProps) {
 
 type SortActionsProps = {
   canSortResults: boolean;
+  sortGroups: SearchResultSortGroup[];
   sortState: SearchResultsProps["sortState"];
   onClearSorts: () => void;
   onSelectSort: (sortOption: string) => void;
@@ -195,12 +197,18 @@ type ResultsListProps = {
 };
 
 function SortActions(props: SortActionsProps) {
-  const { canSortResults, sortState, onClearSorts, onSelectSort } = props;
+  const {
+    canSortResults,
+    sortGroups,
+    sortState,
+    onClearSorts,
+    onSelectSort,
+  } = props;
   const hasActiveSort = hasActiveSearchSort(sortState);
 
   return (
     <div className="flex flex-wrap items-end gap-3">
-      {searchResultSortGroups.map((group) => (
+      {sortGroups.map((group) => (
         <SortDropdown
           key={group.key}
           group={group}

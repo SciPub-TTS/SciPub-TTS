@@ -36,6 +36,7 @@ export function mapWorkDetailToPaperDetail(
   work: OpenAlexWorkDetailApi,
 ): PaperDetailData {
   const normalizedTitle = work.title?.trim() || "Untitled work";
+  const normalizedOpenAlexId = extractLastSegment(work.id);
   const normalizedType = formatTypeLabel(
     work.type || work.primary_location?.raw_type || "work",
   );
@@ -88,6 +89,7 @@ export function mapWorkDetailToPaperDetail(
     accessItems,
     authors,
     awards,
+    citationCount: work.cited_by_count || 0,
     doiHref,
     doiLabel,
     headerBadges,
@@ -99,7 +101,9 @@ export function mapWorkDetailToPaperDetail(
     keywords,
     languageLabel,
     items,
+    openAlexId: normalizedOpenAlexId,
     pdfUrl,
+    publicationYear: work.publication_year,
     publishedLabel,
     quickLinks,
     referencedWorks,

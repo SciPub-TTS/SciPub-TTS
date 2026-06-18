@@ -532,6 +532,26 @@ export function CountryFilterWidget(
   );
 }
 
+export function PrimaryTopicFilterWidget(
+  props: Omit<MultiSelectFilterProps, "label">,
+) {
+  return (
+    <FilterWidgetShell label="Primary Topic">
+      <MultiSelectFilterControl {...props} label="Primary Topic" />
+    </FilterWidgetShell>
+  );
+}
+
+export function FieldFilterWidget(
+  props: Omit<MultiSelectFilterProps, "label">,
+) {
+  return (
+    <FilterWidgetShell label="Field">
+      <MultiSelectFilterControl {...props} label="Field" />
+    </FilterWidgetShell>
+  );
+}
+
 export function CitationFilterWidget(props: CitationFilterProps) {
   return (
     <FilterWidgetShell label="Citation Count">

@@ -20,6 +20,8 @@ import {
 } from "recharts";
 
 import { routePaths } from "@/app/router";
+import { useEntityFollow } from "@/features/follows/hooks/useEntityFollow";
+import type { FollowTargetType } from "@/features/follows/types/follow.types";
 import {
   buildNextDetailUrl,
   type DetailTrailEntityType,
@@ -128,11 +130,43 @@ export default function EntityDetailPage(props: EntityDetailPageProps) {
 }
 
 function EntityDetailHero({ detail }: { detail: EntityDetailData }) {
+  const followTargetType: FollowTargetType =
+    detail.entityType === "authors" ? "AUTHOR" : "TOPIC";
+  const {
+    buttonLabel: followButtonLabel,
+    handleFollowClick,
+    isFollowActionPending,
+    isFollowed,
+  } = useEntityFollow({
+    displayName: detail.displayName,
+    targetOpenAlexId: detail.id,
+    targetType: followTargetType,
+  });
+  const followButtonClassName = isFollowed
+    ? "border border-[#14532D] bg-[#14532D] text-white hover:border-[#0f3d22] hover:bg-[#0f3d22] hover:text-white"
+    : "border border-black bg-white text-black hover:border-[#14532D] hover:bg-[#14532D] hover:text-white";
+
   return (
-    <div className="px-4 py-4 text-center sm:py-6">
-      <h1 className="text-4xl font-semibold tracking-[-0.03em] text-slate-950 sm:text-5xl">
-        {detail.displayName}
-      </h1>
+    <div className="px-4 py-4 sm:py-6">
+      <div className="flex flex-wrap items-center justify-center gap-3 text-center">
+        <h1 className="text-4xl font-semibold tracking-[-0.03em] text-slate-950 sm:text-5xl">
+          {detail.displayName}
+        </h1>
+        <button
+          type="button"
+          disabled={isFollowActionPending}
+          onClick={() => {
+            void handleFollowClick();
+          }}
+          title={isFollowed ? "Unfollow this entity" : "Follow this entity"}
+          className={[
+            "inline-flex items-center gap-2 rounded-xl px-3.5 py-2 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-70",
+            followButtonClassName,
+          ].join(" ")}
+        >
+          {followButtonLabel}
+        </button>
+      </div>
     </div>
   );
 }

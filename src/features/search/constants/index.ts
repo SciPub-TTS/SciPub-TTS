@@ -36,6 +36,8 @@ export const initialFilters: SearchFilters = {
   institution: [],
   pdf: false,
   country: [],
+  primaryTopic: [],
+  field: [],
   citationMode: "range",
   citationMin: "",
   citationMax: "",

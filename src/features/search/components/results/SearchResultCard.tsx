@@ -114,13 +114,13 @@ function EntityCardLayout({
     targetType: followTargetType || "AUTHOR",
   });
   const followButtonClassName = isFollowed
-    ? "bg-[#007A41] text-white hover:bg-[#006536]"
-    : "bg-[#00A859] text-white hover:bg-[#007A41]";
+    ? "border border-[#14532D] bg-[#14532D] text-white hover:border-[#0f3d22] hover:bg-[#0f3d22] hover:text-white"
+    : "border border-black bg-white text-black hover:border-[#14532D] hover:bg-[#14532D] hover:text-white";
 
   return (
     <article className="rounded-[28px] border border-slate-200 bg-white px-5 py-4 transition-colors duration-200 hover:border-slate-300 hover:bg-slate-50/60">
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:gap-x-5">
-        <div className="min-w-0 flex items-start gap-3 lg:col-start-1 lg:row-start-1">
+        <div className="min-w-0 flex items-center gap-3 lg:col-start-1 lg:row-start-1">
           <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[18px] bg-[#EEF6FF] text-[#005CB9]">
             <div className="flex h-9 w-9 items-center justify-center rounded-[14px] bg-white">
               {heroIcon}
@@ -162,9 +162,9 @@ function EntityCardLayout({
               onClick={() => {
                 void handleFollowClick();
               }}
-              title={isFollowed ? "Already followed" : "Follow this entity"}
+              title={isFollowed ? "Unfollow this entity" : "Follow this entity"}
               className={[
-                "inline-flex items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-70",
+                "inline-flex items-center gap-2 rounded-lg px-3.5 py-2 text-xs font-bold transition disabled:cursor-not-allowed disabled:opacity-70",
                 followButtonClassName,
               ].join(" ")}
             >
@@ -175,7 +175,7 @@ function EntityCardLayout({
           <Link
             to={detailHref}
             onClick={markSearchPageRestorePending}
-            className="inline-flex items-center gap-2 rounded-xl border border-[#14532D] bg-white px-3.5 py-2 text-xs font-semibold text-[#14532D] transition hover:border-[#14532D] hover:bg-[#14532D] hover:text-white"
+            className="inline-flex items-center gap-2 rounded-xl border border-black bg-white px-3.5 py-2 text-xs font-semibold text-black transition hover:border-[#14532D] hover:bg-[#14532D] hover:text-white"
           >
             <Eye className="h-4 w-4" />
             View Details

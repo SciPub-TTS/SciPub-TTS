@@ -1,7 +1,7 @@
-import { useState } from "react";
 import { Link, useLocation, useParams } from "react-router-dom";
 
 import { routePaths } from "@/app/router";
+import { useWorkBookmark } from "@/features/bookmarks/hooks/useWorkBookmark";
 import {
   buildNextDetailUrl,
   getDetailContextFromRouteParams,
@@ -23,10 +23,26 @@ type PaperDetailHeaderProps = {
 
 export default function PaperDetailHeader(props: PaperDetailHeaderProps) {
   const { paperDetail } = props;
-  const [isBookmarked, setIsBookmarked] = useState(false);
   const location = useLocation();
   const currentDetailContext = getDetailContextFromRouteParams(useParams());
   const hasPdfUrl = Boolean(paperDetail.pdfUrl?.trim());
+  const {
+    bookmarkButtonLabel,
+    handleBookmarkClick,
+    isBookmarkActionPending,
+    isSaved,
+  } = useWorkBookmark({
+    authors: paperDetail.authors.map((author) => author.name),
+    citations: paperDetail.citationCount,
+    openAlexId: paperDetail.openAlexId,
+    source: paperDetail.sourceName,
+    title: paperDetail.title,
+    topic: paperDetail.topics[0]?.name || "",
+    year: paperDetail.publicationYear,
+  });
+  const bookmarkClassName = isSaved
+    ? "border border-[#14532D] bg-[#14532D] text-white hover:border-[#0f3d22] hover:bg-[#0f3d22] hover:text-white"
+    : "border border-black bg-white text-black hover:border-[#14532D] hover:bg-[#14532D] hover:text-white";
 
   return (
     <article className="rounded-3xl border border-black bg-white p-6 shadow-sm">
@@ -98,16 +114,18 @@ export default function PaperDetailHeader(props: PaperDetailHeaderProps) {
       <div className="mt-5 flex flex-wrap gap-3">
         <button
           type="button"
-          onClick={() => setIsBookmarked((currentState) => !currentState)}
+          disabled={isBookmarkActionPending}
+          onClick={() => {
+            void handleBookmarkClick();
+          }}
+          title={isSaved ? "Remove bookmark" : "Save bookmark"}
           className={[
-            "inline-flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold transition",
-            isBookmarked
-              ? "border-black bg-black text-white"
-              : "border-black bg-white text-slate-800 hover:bg-slate-50",
+            "inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-70",
+            bookmarkClassName,
           ].join(" ")}
         >
           <Bookmark className="h-4 w-4" />
-          {isBookmarked ? "Saved" : "Bookmark"}
+          {bookmarkButtonLabel}
         </button>
 
         {hasPdfUrl ? (

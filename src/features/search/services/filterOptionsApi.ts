@@ -36,11 +36,13 @@ export async function getSearchSummary(
 
 export async function getFilterOptionPage(
   filterKey: RemoteOptionFilterKey,
+  entityType: SearchEntityType,
   keyword: string,
   page: number,
   limit = SEARCH_FILTER_OPTION_LIMIT,
 ): Promise<RemoteFilterOptionsPage> {
   const params = new URLSearchParams();
+  params.set("entityType", entityType);
   params.set("limit", String(limit));
   params.set("page", String(page));
   appendIfFilled(params, "keyword", keyword);

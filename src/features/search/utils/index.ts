@@ -1,6 +1,10 @@
 import { SEARCH_MIN_CITATION } from "../constants";
 import { mockSearchYearRange } from "../services";
-import type { SearchFilters, SearchFilterWidgetKey } from "../types";
+import type {
+  SearchEntityType,
+  SearchFilters,
+  SearchFilterWidgetKey,
+} from "../types";
 
 const { currentYear, minimumYear } = mockSearchYearRange;
 
@@ -21,6 +25,8 @@ const searchFilterWidgetKeyMap: Record<string, SearchFilterWidgetKey> = {
   institution: "institution",
   pdf: "pdf",
   country: "country",
+  primarytopic: "primaryTopic",
+  field: "field",
   citation: "citation",
   citationcount: "citation",
   source: "source",
@@ -132,7 +138,42 @@ export function hasInvalidCitationRange(filters: SearchFilters) {
   return citationMin > citationMax;
 }
 
-export function countActiveFilters(filters: SearchFilters) {
+export function countActiveFilters(
+  entityType: SearchEntityType,
+  filters: SearchFilters,
+) {
+  if (entityType === "authors") {
+    let activeFilterCount = 0;
+
+    if (filters.institution.length > 0) {
+      activeFilterCount += 1;
+    }
+
+    if (filters.country.length > 0) {
+      activeFilterCount += 1;
+    }
+
+    if (filters.primaryTopic.length > 0) {
+      activeFilterCount += 1;
+    }
+
+    return activeFilterCount;
+  }
+
+  if (entityType === "topics") {
+    let activeFilterCount = 0;
+
+    if (filters.subField.length > 0) {
+      activeFilterCount += 1;
+    }
+
+    if (filters.field.length > 0) {
+      activeFilterCount += 1;
+    }
+
+    return activeFilterCount;
+  }
+
   let activeFilterCount = 0;
 
   if (hasYearFilter(filters)) {
@@ -186,8 +227,24 @@ export function countActiveFilters(filters: SearchFilters) {
   return activeFilterCount;
 }
 
-export function buildAppliedFilterSummary(filters: SearchFilters) {
+export function buildAppliedFilterSummary(
+  entityType: SearchEntityType,
+  filters: SearchFilters,
+) {
   const summary: string[] = [];
+
+  if (entityType === "authors") {
+    addListFilterSummary(summary, "Institution", filters.institution);
+    addListFilterSummary(summary, "Country", filters.country);
+    addListFilterSummary(summary, "Primary Topic", filters.primaryTopic);
+    return summary;
+  }
+
+  if (entityType === "topics") {
+    addListFilterSummary(summary, "SubField", filters.subField);
+    addListFilterSummary(summary, "Field", filters.field);
+    return summary;
+  }
 
   addYearSummary(summary, filters);
   addListFilterSummary(summary, "Type", filters.type);

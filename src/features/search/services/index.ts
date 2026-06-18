@@ -4,12 +4,12 @@ export {
   emptySearchFilterOptions,
   emptySearchOptionValueLookup,
   getSearchEntityMetadata,
+  getSearchResultSortGroups,
   getSearchSortOptionValue,
   hasActiveSearchSort,
   mockSearchYearRange,
   normalizeSearchTabEntityType,
   normalizeSearchSortState,
-  searchResultSortGroups,
   searchScopeLabel,
   searchTabs,
 } from "./metadata";

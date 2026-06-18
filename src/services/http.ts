@@ -1,104 +1,103 @@
 import axios, { type InternalAxiosRequestConfig } from "axios";
 
 import {
-    clearAuthStorage,
-    getAccessToken,
-    setAccessToken,
+  clearAuthStorage,
+  getAccessToken,
+  setAccessToken,
 } from "@/features/auth/utils/authStorage";
-import type {AuthResponse } from "@/features/auth/types/auth.types";
-import type {ApiResponse} from "@/types/common.types.ts";
+import type { AuthResponse } from "@/features/auth/types/auth.types";
+import type { ApiResponse } from "@/types/common.types.ts";
 
-const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
 
 export const http = axios.create({
-    baseURL: apiBaseUrl,
-    withCredentials: true,
+  baseURL: apiBaseUrl,
+  withCredentials: true,
 });
 
 const refreshClient = axios.create({
-    baseURL: apiBaseUrl,
-    withCredentials: true,
+  baseURL: apiBaseUrl,
+  withCredentials: true,
 });
 
 export const publicHttp = axios.create({
-    baseURL: apiBaseUrl,
-    withCredentials: true,
+  baseURL: apiBaseUrl,
+  withCredentials: true,
 });
 
 function shouldSkipRefresh(url?: string) {
-    if (!url) return true;
+  if (!url) return true;
 
-    return (
-        url.includes("/auth/login") ||
-        url.includes("/auth/register") ||
-        url.includes("/auth/refresh") ||
-        url.includes("/auth/forgot-password")
-    );
+  return (
+    url.includes("/auth/login") ||
+    url.includes("/auth/register") ||
+    url.includes("/auth/refresh") ||
+    url.includes("/auth/forgot-password")
+  );
 }
 
 http.interceptors.request.use((config) => {
-    const accessToken = getAccessToken();
+  const accessToken = getAccessToken();
 
-    if (accessToken) {
-        config.headers = config.headers ?? {};
-        config.headers.Authorization = `Bearer ${accessToken}`;
-    }
+  if (accessToken) {
+    config.headers = config.headers ?? {};
+    config.headers.Authorization = `Bearer ${accessToken}`;
+  }
 
-    return config;
+  return config;
 });
 
 let refreshPromise: Promise<string | null> | null = null;
 
 http.interceptors.response.use(
-    (response) => response,
-    async (error) => {
-        const originalRequest = error.config as
-            | (InternalAxiosRequestConfig & { _retry?: boolean })
-            | undefined;
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config as
+      | (InternalAxiosRequestConfig & { _retry?: boolean })
+      | undefined;
 
-        if (
-            error.response?.status !== 401 ||
-            !originalRequest ||
-            originalRequest._retry ||
-            shouldSkipRefresh(originalRequest.url)
-        ) {
-            return Promise.reject(error);
+    if (
+      error.response?.status !== 401 ||
+      !originalRequest ||
+      originalRequest._retry ||
+      shouldSkipRefresh(originalRequest.url)
+    ) {
+      return Promise.reject(error);
+    }
+
+    originalRequest._retry = true;
+
+    refreshPromise ??= refreshClient
+      .post<ApiResponse<AuthResponse>>("/auth/refresh")
+      .then((response) => {
+        const nextToken = response.data.data?.accessToken ?? null;
+
+        if (nextToken) {
+          setAccessToken(nextToken);
         }
 
-        originalRequest._retry = true;
+        return nextToken;
+      })
+      .catch((refreshError) => {
+        clearAuthStorage();
+        throw refreshError;
+      })
+      .finally(() => {
+        refreshPromise = null;
+      });
 
-        refreshPromise ??= refreshClient
-            .post<ApiResponse<AuthResponse>>("/auth/refresh")
-            .then((response) => {
-                const nextToken = response.data.data?.accessToken ?? null;
+    const nextToken = await refreshPromise;
 
-                if (nextToken) {
-                    setAccessToken(nextToken);
-                }
+    if (!nextToken) {
+      return Promise.reject(error);
+    }
 
-                return nextToken;
-            })
-            .catch((refreshError) => {
-                clearAuthStorage();
-                throw refreshError;
-            })
-            .finally(() => {
-                refreshPromise = null;
-            });
+    originalRequest.headers = originalRequest.headers ?? {};
+    originalRequest.headers.Authorization = `Bearer ${nextToken}`;
 
-        const nextToken = await refreshPromise;
-
-        if (!nextToken) {
-            return Promise.reject(error);
-        }
-
-        originalRequest.headers = originalRequest.headers ?? {};
-        originalRequest.headers.Authorization = `Bearer ${nextToken}`;
-
-        return http(originalRequest);
-    },
+    return http(originalRequest);
+  },
 );
-
 
 //User gọi API
 //     ↓

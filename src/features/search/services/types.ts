@@ -15,6 +15,8 @@ export type SearchOptionGroupKey =
   | "author"
   | "institution"
   | "country"
+  | "primaryTopic"
+  | "field"
   | "source"
   | "award";
 
@@ -134,7 +136,10 @@ export type SearchWorksRequest = {
 export type SearchEntityRequest = {
   appliedSearchQuery: string;
   entityType: Exclude<SearchEntityType, "works">;
+  filters: SearchFilters;
+  optionValueLookup: SearchOptionValueLookup;
   page: number;
+  sortState: SearchSortState;
 };
 
 export type SearchWorksState = {
@@ -188,6 +193,7 @@ export type SearchResultSortGroup = {
 };
 
 export type SearchResultSortGroupKey =
+  | "entity"
   | "citation"
   | "published"
   | "trending";
