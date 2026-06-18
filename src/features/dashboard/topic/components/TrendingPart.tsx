@@ -62,9 +62,9 @@ function Topic({topic, id}:
             <div className="flex flex-row items-center gap-6">
                 <p>{id + 1}</p>
 
-                <div className="flex flex-col text-sm">
+                <div className="flex flex-col text-xs">
                     <Link to={link}
-                        className="text-blue-700 font-semibold text-lg"
+                        className="text-blue-700 font-semibold text-base"
                     >
                         {topic.name}
                     </Link>

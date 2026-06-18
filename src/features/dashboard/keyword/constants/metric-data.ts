@@ -13,19 +13,14 @@ export const KEYWORD_COLORS = [
     "#64748b",
 ];
 
-export type KeywordMetricDisplay =
-    Partial<KeywordMetric> & {
-    keyword: string;
+export type KeywordQuadrant =
+    | "dominant"
+    | "emerging"
+    | "mature"
+    | "declining";
 
-    color: string;
-
+export interface KeywordMetricDisplay extends KeywordMetric {
     label: string;
-
     order: number;
-
-    quadrant:
-        | "dominant"
-        | "emerging"
-        | "mature"
-        | "declining";
-};
+    quadrant: KeywordQuadrant;
+}

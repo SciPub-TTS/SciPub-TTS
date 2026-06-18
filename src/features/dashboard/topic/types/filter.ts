@@ -8,7 +8,8 @@ export interface FilterData {
 export type FilterKey =
     | "endDate"
     | "fieldId"
-    | "formula";
+    | "topicFormula"
+    | "keywordFormula";
 
 export interface FilterOption {
     label: string;

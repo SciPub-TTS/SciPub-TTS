@@ -2,17 +2,19 @@ import MetricPart from "@/features/dashboard/topic/components/MetricPart.tsx";
 import TopicGeneralChartPart from "@/features/dashboard/topic/components/TopicGeneralChartPart.tsx";
 import TrendingPart from "@/features/dashboard/topic/components/TrendingPart.tsx";
 import TopicSpecificChartPart from "@/features/dashboard/topic/components/TopicSpecificChartPart.tsx";
-import {useNavigate} from "react-router-dom";
-import {ROUTE_SEGMENTS} from "@/app/router";
 import {useMemo, useState} from "react";
 import FilterPart from "@/features/dashboard/topic/components/FilterPart.tsx";
+import {KeywordGeneralChartPart} from "@/features/dashboard/keyword/components/KeywordGeneralChartPart.tsx";
+import {KeywordHotListPart} from "@/features/dashboard/keyword/components/KeywordHotListPart.tsx";
+import {useHotKeyword} from "@/features/dashboard/keyword/hooks/useHotKeyword.ts";
+import type {KeywordFormulaType} from "@/features/dashboard/keyword/types/keyword.ts";
 
 export default function TopicDashboardPage() {
-    const navigate = useNavigate();
-
-    const handleClick = () => {
-        navigate(ROUTE_SEGMENTS.TRENDING_KEYWORD);
-    }
+    // const navigate = useNavigate();
+    //
+    // const handleClick = () => {
+    //     navigate(ROUTE_SEGMENTS.TRENDING_KEYWORD);
+    // }
 
     const currentMonday = getMonday(new Date());
 
@@ -35,9 +37,17 @@ export default function TopicDashboardPage() {
         return formatDate(date);
     }, [endDate]);
     const [fieldId, setFieldId] = useState("22");
-    const [formula, setFormula] = useState("balanced");
+    const [topicFormula, setTopicFormula] = useState("balanced");
+    const [keywordFormula, setKeywordFormula] = useState<KeywordFormulaType>("balanced");
 
-    console.log(shortStartDate, longStartDate, endDate, fieldId, formula);
+    const {keywordList, isLoading} = useHotKeyword(
+        {
+            recentStart: longStartDate,
+            recentEnd: endDate,
+            fieldId,
+            formula: keywordFormula
+        }
+    )
 
   return (
     <div className="flex flex-col gap-[3vh]">
@@ -46,11 +56,11 @@ export default function TopicDashboardPage() {
                 <h1 className="text-3xl font-bold text-slate-900">
                     Research Topic Trend Dashboard
                 </h1>
-                <button onClick={handleClick}>
-                    <p className="text-ml font-bold text-blue-700 cursor-pointer">
-                        Keyword Dashboard &rarr;
-                    </p>
-                </button>
+                {/*<button onClick={handleClick}>*/}
+                {/*    <p className="text-ml font-bold text-blue-700 cursor-pointer">*/}
+                {/*        Keyword Dashboard &rarr;*/}
+                {/*    </p>*/}
+                {/*</button>*/}
             </div>
             <h2 className="text-base opacity-75">
                 Track publication growth, citation impact, trending topics, and rising keywords.
@@ -59,27 +69,40 @@ export default function TopicDashboardPage() {
 
         <FilterPart endDate={endDate}
         fieldId={fieldId}
-        formula={formula}
+        topicFormula={topicFormula}
+        keywordFormula={keywordFormula}
         setEndDate={setEndDate}
         setFieldId={setFieldId}
-        setFormula={setFormula}/>
+        setTopicFormula={setTopicFormula}
+        setKeywordFormula={setKeywordFormula}/>
 
         <MetricPart startDate={shortStartDate} endDate={endDate}/>
 
         <TopicGeneralChartPart startDate={longStartDate}
                                endDate={endDate}
                                fieldId={fieldId}
-                               formula={formula}
+                               formula={topicFormula}
         />
 
-        <TrendingPart startDate={longStartDate}
-                      endDate={endDate}
-                      fieldId={fieldId}
-                      formula={formula}/>
+        <div className="grid grid-cols-1 lg:grid-cols-[7fr_3fr] gap-6">
+            <TrendingPart startDate={longStartDate}
+                          endDate={endDate}
+                          fieldId={fieldId}
+                          formula={topicFormula}
+            />
+
+            <KeywordHotListPart keywordList={keywordList}
+                                isLoading={isLoading}
+            />
+        </div>
 
         <TopicSpecificChartPart startDate={longStartDate}
                                 endDate={endDate}
                                 fieldId={fieldId}
+        />
+
+        <KeywordGeneralChartPart keywordList={keywordList}
+                                 isLoading={isLoading}
         />
     </div>
   );

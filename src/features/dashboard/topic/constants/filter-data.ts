@@ -29,7 +29,7 @@ export const MENU_FILTER: FilterData[] = [
     },
 
     {
-        key: "formula",
+        key: "topicFormula",
         title: "Formula",
         className: "w-[12vw]",
         options: [
@@ -48,6 +48,30 @@ export const MENU_FILTER: FilterData[] = [
             {
                 label: "Impact",
                 value: "impact",
+            },
+        ],
+    },
+
+    {
+        key: "keywordFormula",
+        title: "Keyword Formula",
+        className: "w-[12vw]",
+        options: [
+            {
+                label: "Balanced",
+                value: "balanced",
+            },
+            {
+                label: "Trending",
+                value: "trending",
+            },
+            {
+                label: "Emerging",
+                value: "emerging",
+            },
+            {
+                label: "Dominant",
+                value: "dominant",
             },
         ],
     },

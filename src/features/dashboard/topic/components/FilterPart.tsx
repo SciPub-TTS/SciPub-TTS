@@ -1,33 +1,40 @@
 import {CircleQuestionMark, Cloud, Filter} from "lucide-react";
 import {MENU_FILTER} from "@/features/dashboard/topic/constants/filter-data.ts";
 import type {FilterData} from "@/features/dashboard/topic/types/filter.ts";
+import type {KeywordFormulaType} from "@/features/dashboard/keyword/types/keyword.ts";
 import {useState} from "react";
 
 type FilterPartProps = {
     endDate: string;
     fieldId: string;
-    formula: string;
+    topicFormula: string;
+    keywordFormula: KeywordFormulaType;
     setEndDate: (value: string) => void;
     setFieldId: (value: string) => void;
-    setFormula: (value: string) => void;
+    setTopicFormula: (value: string) => void;
+    setKeywordFormula: (value: KeywordFormulaType) => void;
 };
 
 export default function FilterPart({
                                        endDate,
                                        fieldId,
-                                       formula,
+                                       topicFormula,
+                                       keywordFormula,
                                        setEndDate,
                                        setFieldId,
-                                       setFormula,
+                                       setTopicFormula,
+                                       setKeywordFormula,
                                    }: FilterPartProps) {
     const [draftEndDate, setDraftEndDate] = useState(endDate);
     const [draftFieldId, setDraftFieldId] = useState(fieldId);
-    const [draftFormula, setDraftFormula] = useState(formula);
+    const [draftFormula, setDraftFormula] = useState(topicFormula);
+    const [draftKeywordFormula, setDraftKeywordFormula] = useState(keywordFormula);
 
     const handleApply = () => {
         setEndDate(draftEndDate);
         setFieldId(draftFieldId);
-        setFormula(draftFormula);
+        setTopicFormula(draftFormula);
+        setKeywordFormula(draftKeywordFormula);
     };
 
     return (
@@ -45,7 +52,8 @@ export default function FilterPart({
                     switch (filter.key) {
                         case "endDate": value = draftEndDate; break;
                         case "fieldId": value = draftFieldId; break;
-                        case "formula": value = draftFormula; break;
+                        case "topicFormula": value = draftFormula; break;
+                        case "keywordFormula": value = draftKeywordFormula; break;
                     }
 
                     return (
@@ -57,7 +65,8 @@ export default function FilterPart({
                                 switch (filter.key) {
                                     case "endDate": setDraftEndDate(val); break;
                                     case "fieldId": setDraftFieldId(val); break;
-                                    case "formula": setDraftFormula(val); break;
+                                    case "topicFormula": setDraftFormula(val); break;
+                                    case "keywordFormula": setDraftKeywordFormula(val as KeywordFormulaType); break;
                                 }
                             }}
                         />

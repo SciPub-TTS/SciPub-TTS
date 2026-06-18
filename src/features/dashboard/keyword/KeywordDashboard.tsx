@@ -1,6 +1,5 @@
 import {useNavigate} from "react-router-dom";
 import {ROUTE_SEGMENTS} from "@/app/router";
-import {KeywordGeneralChartPart} from "@/features/dashboard/keyword/components/KeywordGeneralChartPart.tsx";
 import MetricPart from "@/features/dashboard/topic/components/MetricPart.tsx";
 
 export function KeywordDashboardPage() {
@@ -30,7 +29,7 @@ export function KeywordDashboardPage() {
 
             <MetricPart/>
 
-            <KeywordGeneralChartPart/>
+            {/*<KeywordGeneralChartPart/>*/}
         </div>
     );
 }

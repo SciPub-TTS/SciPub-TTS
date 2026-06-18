@@ -2,9 +2,6 @@ import {
     Bar,
     BarChart,
     CartesianGrid,
-    Legend,
-    Line,
-    LineChart,
     ResponsiveContainer,
     Scatter,
     ScatterChart,
@@ -23,22 +20,72 @@ import type {
 } from "recharts/types/cartesian/Scatter";
 
 import { useGeneralsMetric } from "@/features/dashboard/keyword/hooks/useMetric.ts";
-import { useTrend } from "@/features/dashboard/keyword/hooks/useTrend.ts";
+import type {KeywordsMetric} from "@/features/dashboard/keyword/types/keyword.ts";
+import type {KeywordMetric} from "@/features/dashboard/keyword/types/metric.ts";
 
-import type {
-    KeywordBubble,
-} from "@/features/dashboard/keyword/types/bubble.ts";
+type KeywordGeneralChartPartProps = {
+    keywordList: KeywordsMetric[];
+    isLoading: boolean;
+};
 
-export function KeywordGeneralChartPart() {
+type HotKeywordProps = {
+    metricList: KeywordMetric[];
+    isLoading: boolean;
+};
+
+export function KeywordGeneralChartPart({
+                                            keywordList,
+                                            isLoading,
+                                        }: KeywordGeneralChartPartProps) {
+    const { metricList } = useGeneralsMetric(keywordList);
+
     return (
-        <div className="flex flex-col gap-8">
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 select-none">
+            <ChartCard
+                title="Hot Keywords — CAGR vs Publication Share"
+                description="Bubble size reflects recent paper volume; position shows growth rate against research share."
+            >
+                <ScatterHotKeywords
+                    metricList={metricList}
+                    isLoading={isLoading}
+                />
+            </ChartCard>
 
-            <ScatterHotKeywords />
+            <ChartCard
+                title="Keyword Hot Score Ranking"
+                description="Topics ranked by overall hot score, combining momentum and attention signals."
+            >
+                <KeywordHotScoreChart
+                    metricList={metricList}
+                    isLoading={isLoading}
+                />
+            </ChartCard>
+        </div>
+    );
+}
 
-            <KeywordTrendChart />
+function ChartCard({
+                       title,
+                       description,
+                       children,
+                   }: {
+    title: string;
+    description?: string;
+    children: React.ReactNode;
+}) {
+    return (
+        <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+            <h2 className="text-xl font-bold text-slate-900">
+                {title}
+            </h2>
 
-            <KeywordHotScoreChart />
+            {description && (
+                <p className="mb-3 text-sm text-slate-500">
+                    {description}
+                </p>
+            )}
 
+            {children}
         </div>
     );
 }
@@ -47,18 +94,14 @@ function ScatterTooltip({
                             active,
                             payload,
                         }: TooltipContentProps) {
-
     if (!active || !payload?.length) {
         return null;
     }
 
-    const item =
-        payload[0]
-            .payload as KeywordBubble;
+    const item = payload[0].payload as KeywordMetric;
 
     return (
         <div className="rounded-md border bg-white p-4 shadow">
-
             <div className="mb-2 font-semibold">
                 {item.keyword}
             </div>
@@ -68,17 +111,12 @@ function ScatterTooltip({
             </div>
 
             <div>
-                Publication Share:
-                {" "}
-                {item.publicationShare}%
+                Publication Share: {item.publicationShare}%
             </div>
 
             <div>
-                Recent Papers:
-                {" "}
-                {item.recentPapers}
+                Recent Papers: {item.recentPapers.toLocaleString()}
             </div>
-
         </div>
     );
 }
@@ -89,9 +127,7 @@ const Bubble: ScatterCustomizedShape = ({
                                             size = 0,
                                             payload,
                                         }) => {
-
-    const item =
-        payload as KeywordBubble;
+    const item = payload as KeywordMetric;
 
     return (
         <circle
@@ -104,28 +140,52 @@ const Bubble: ScatterCustomizedShape = ({
     );
 };
 
-function ScatterHotKeywords() {
-    const { metricList } = useGeneralsMetric();
+function ScatterHotKeywords({
+                                metricList,
+                                isLoading,
+                            }: HotKeywordProps) {
+    if (isLoading) {
+        return (
+            <div className="h-[380px] flex items-center justify-center">
+                Loading...
+            </div>
+        );
+    }
 
     return (
         <ResponsiveContainer
             width="100%"
-            height={420}
+            height={380}
         >
-            <ScatterChart>
-
+            <ScatterChart
+                margin={{
+                    top: 10,
+                    right: 20,
+                    bottom: 30,
+                    left: 30,
+                }}
+            >
                 <CartesianGrid />
 
                 <XAxis
                     dataKey="publicationShare"
                     name="Publication Share"
-                    label={{ value: "Publication Share (%)", position: "insideBottom", offset: -5 }}
+                    label={{
+                        value: "Publication Share (%)",
+                        position: "insideBottom",
+                        offset: -15,
+                    }}
                 />
 
                 <YAxis
                     dataKey="cagr"
                     name="CAGR"
-                    label={{ value: "CAGR (%)", angle: -90, position: "insideLeft", offset: 10 }}
+                    label={{
+                        value: "CAGR (%)",
+                        angle: -90,
+                        position: "insideLeft",
+                        offset: -10,
+                    }}
                 />
 
                 <ZAxis
@@ -133,133 +193,67 @@ function ScatterHotKeywords() {
                     range={[80, 400]}
                 />
 
-                <Tooltip
-                    content={ScatterTooltip}
-                />
+                <Tooltip content={ScatterTooltip} />
 
                 <Scatter
                     data={metricList}
                     shape={Bubble}
                 />
-
             </ScatterChart>
-
         </ResponsiveContainer>
     );
 }
 
-function TrendTooltip({
-                          active,
-                          payload,
-                          label,
-                      }: TooltipContentProps) {
-
-    if (!active || !payload?.length) {
-        return null;
+function KeywordHotScoreChart({
+                                  metricList,
+                                  isLoading,
+                              }: HotKeywordProps) {
+    if (isLoading) {
+        return (
+            <div className="h-[380px] flex items-center justify-center">
+                Loading...
+            </div>
+        );
     }
 
-    return (
-        <div className="rounded-md border bg-white p-4 shadow">
-
-            <div className="mb-2 font-semibold">
-                Year {label}
-            </div>
-
-            {
-                payload.map((item) => (
-                    <div key={String(item.name)}>
-
-                        {item.name}
-                        :
-                        {" "}
-                        {item.value}
-
-                    </div>
-                ))
-            }
-
-        </div>
+    const data = [...metricList].sort(
+        (a, b) => b.hotScore - a.hotScore,
     );
-}
-
-function KeywordTrendChart() {
-    const { trendList } = useTrend();
-
-    const data = trendList[0]?.yearly.map((_, index) => {
-        const row: Record<string, number | string> = {
-            year: trendList[0].yearly[index].year,
-        };
-
-        trendList.forEach((item) => {
-            row[item.keyword] =
-                item.yearly[index]?.count ?? 0;
-        });
-
-        return row;
-
-    }) ?? [];
 
     return (
         <ResponsiveContainer
             width="100%"
-            height={520}
+            height={380}
+            className="ml-[-2vw]"
         >
-            <LineChart data={data}>
-
-                <CartesianGrid />
-
-                <XAxis dataKey="year" />
-
-                <YAxis />
-
-                <Tooltip content={TrendTooltip} />
-
-                <Legend />
-
-                {
-                    trendList.map((item) => (
-                        <Line
-                            key={item.keyword}
-                            dataKey={item.keyword}
-                            stroke={item.color}
-                            strokeWidth={3}
-                            dot={false}
-                        />
-                    ))
-                }
-
-            </LineChart>
-
-        </ResponsiveContainer>
-    );
-}
-
-function KeywordHotScoreChart() {
-    const { metricList } = useGeneralsMetric();
-
-    const data = [...metricList].sort(
-        (a, b) => b.hotScore - a.hotScore
-    );
-
-    return (
-        <ResponsiveContainer width="100%" height={420}>
             <BarChart
                 data={data}
                 layout="vertical"
                 barSize={18}
+                barCategoryGap="30%"
+                margin={{
+                    top: 10,
+                    right: 10,
+                    bottom: 10,
+                    left: 10,
+                }}
             >
-
                 <CartesianGrid />
 
                 <XAxis
                     type="number"
-                    domain={[0, 100]}
+                    domain={[
+                        0,
+                        (dataMax: number) =>
+                            Math.ceil((dataMax + 5) / 5) * 5,
+                    ]}
                 />
 
                 <YAxis
                     type="category"
                     dataKey="keyword"
-                    width={150}
+                    width={160}
+                    tick={{ fontSize: 12 }}
                 />
 
                 <Tooltip />
@@ -278,7 +272,6 @@ function KeywordHotScoreChart() {
                         />
                     )}
                 />
-
             </BarChart>
         </ResponsiveContainer>
     );
