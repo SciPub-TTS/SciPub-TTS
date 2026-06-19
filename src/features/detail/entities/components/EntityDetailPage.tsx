@@ -7,7 +7,7 @@ import {
   Tags,
   UserRound,
 } from "lucide-react";
-import { Link, useLocation, useParams } from "react-router-dom";
+import { Link } from "react-router-dom";
 import {
   Bar,
   BarChart,
@@ -19,14 +19,9 @@ import {
   YAxis,
 } from "recharts";
 
-import { routePaths } from "@/app/router";
 import { useEntityFollow } from "@/features/follows/hooks/useEntityFollow";
 import type { FollowTargetType } from "@/features/follows/types/follow.types";
-import {
-  buildNextDetailUrl,
-  type DetailTrailEntityType,
-  getDetailContextFromRouteParams,
-} from "@/features/detail/detailTrail";
+import type { DetailTrailEntityType } from "@/features/detail/detailTrail";
 import {
   PaperDetailErrorState,
   PaperDetailLoadingState,
@@ -35,6 +30,7 @@ import DetailSectionCard from "@/features/detail/works/components/sections/Detai
 import { formatCompactNumber, formatFullNumber } from "@/features/search/utils";
 import ListWorkLayout from "@/layout/components/ListWorkLayout";
 
+import { useEntityDetailNavigation } from "../hooks/useEntityDetailNavigation";
 import { useEntityDetailPageState } from "../hooks/useEntityDetailPageState";
 import type {
   AuthorDetailData,
@@ -59,37 +55,13 @@ type YearChartTooltipProps = {
   payload?: Array<{ value?: number }>;
 };
 
+// Data loading and nested-detail navigation both live in hooks now, so the
+// page component can read as a simple "load, guard, render sections" flow.
 export default function EntityDetailPage(props: EntityDetailPageProps) {
   const { entityType } = props;
-  const location = useLocation();
-  const currentDetailContext = getDetailContextFromRouteParams(useParams());
+  const { buildDetailHref } = useEntityDetailNavigation();
   const { detail, errorMessage, isLoading } =
     useEntityDetailPageState(entityType);
-
-  function buildDetailHref(
-    targetEntityType: DetailTrailEntityType,
-    targetEntityId: string,
-  ) {
-    if (!currentDetailContext) {
-      if (targetEntityType === "works") {
-        return routePaths.paperDetail(targetEntityId);
-      }
-
-      if (targetEntityType === "authors") {
-        return routePaths.authorDetail(targetEntityId);
-      }
-
-      return routePaths.topicDetail(targetEntityId);
-    }
-
-    return buildNextDetailUrl(
-      location.search,
-      currentDetailContext.entityType,
-      currentDetailContext.entityId,
-      targetEntityType,
-      targetEntityId,
-    );
-  }
 
   if (isLoading) {
     return <PaperDetailLoadingState />;
