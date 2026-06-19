@@ -1,6 +1,13 @@
-import type { ResearchFeedData } from "../types";
+import { createApiUrl, requestJson } from "@/lib/api/fetchJson";
+import type {
+  FeedArticle,
+  FollowedAuthor,
+  FollowedTopic,
+  SuggestedTopic,
+  ResearchFeedData,
+} from "../types";
 
-const researchFeedData: ResearchFeedData = {
+export const fallbackResearchFeedData: ResearchFeedData = {
   articles: [
     {
       abstract:
@@ -111,6 +118,73 @@ const researchFeedData: ResearchFeedData = {
   ],
 };
 
+export const apiService = {
+  async getFollowedTopics(): Promise<FollowedTopic[]> {
+    try {
+      const url = createApiUrl("/api/feed/followed-topics");
+      return await requestJson<FollowedTopic[]>(url);
+    } catch (e) {
+      console.warn(
+        "Unable to resolve live followed topics; utilizing local cache fallback.",
+        e,
+      );
+      return fallbackResearchFeedData.followedTopics;
+    }
+  },
+
+  async getFollowedAuthors(): Promise<FollowedAuthor[]> {
+    try {
+      const url = createApiUrl("/api/feed/followed-authors");
+      return await requestJson<FollowedAuthor[]>(url);
+    } catch (e) {
+      console.warn(
+        "Unable to resolve live followed authors; utilizing local cache fallback.",
+        e,
+      );
+      return fallbackResearchFeedData.followedAuthors;
+    }
+  },
+
+  async getSuggestedTopics(): Promise<SuggestedTopic[]> {
+    try {
+      const url = createApiUrl("/api/feed/suggested-topics");
+      return await requestJson<SuggestedTopic[]>(url);
+    } catch (e) {
+      console.warn(
+        "Unable to resolve live suggested topics; utilizing local cache fallback.",
+        e,
+      );
+      return fallbackResearchFeedData.suggestedTopics;
+    }
+  },
+
+  async getFeed(tabKey: string): Promise<FeedArticle[]> {
+    const backendEnumTab = tabKey.toUpperCase().replace("-", "_");
+    try {
+      const url = createApiUrl(
+        `/api/feed?feedTab=${backendEnumTab}&page=0&pageSize=10`,
+      );
+
+      // The API endpoint resolves to the structure: { items: FeedArticle[], totalItems: number }
+      const data = await requestJson<{
+        items: FeedArticle[];
+        totalItems: number;
+      }>(url);
+
+      if (!data || !data.items || data.items.length === 0) {
+        return fallbackResearchFeedData.articles;
+      }
+      return data.items;
+    } catch (e) {
+      console.warn(
+        "Unable to fetch live feed articles; utilizing mock articles.",
+        e,
+      );
+      return fallbackResearchFeedData.articles;
+    }
+  },
+};
+
 export function getMockResearchFeed() {
-  return researchFeedData;
+  return fallbackResearchFeedData;
 }
