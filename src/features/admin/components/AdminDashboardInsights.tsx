@@ -2,34 +2,29 @@ import type { UseQueryResult } from "@tanstack/react-query";
 import type { ReactNode } from "react";
 
 import type {
-  AdminApiCallConsumerResponse,
-  AdminApiUsageDailyResponse,
-  AdminDashboardStatisticsResponse,
-  AdminUserBanSummaryResponse,
-} from "@/features/admin/types";
+  AdminApiUsagePoint,
+  AdminTopApiConsumer,
+  AdminUserBanSummary,
+} from "../types";
+
+const accountStatusChartCircumference = 270;
+const usageChartLeft = 24;
+const usageChartRight = 210;
+const usageChartTop = 24;
+const usageChartBottom = 128;
+const usageChartHeight = usageChartBottom - usageChartTop;
 
 type AdminDashboardInsightsProps = {
-  apiUsageQuery: UseQueryResult<AdminApiUsageDailyResponse[], Error>;
-  banSummaryQuery: UseQueryResult<AdminUserBanSummaryResponse, Error>;
-  statistics: AdminDashboardStatisticsResponse | null;
-  topConsumersQuery: UseQueryResult<AdminApiCallConsumerResponse[], Error>;
+  apiUsageOverTime: AdminApiUsagePoint[];
+  banSummary?: AdminUserBanSummary;
+  isApiUsageOverTimeError: boolean;
+  isApiUsageOverTimeLoading: boolean;
+  isBanSummaryError: boolean;
+  isBanSummaryLoading: boolean;
+  isTopApiConsumersError: boolean;
+  isTopApiConsumersLoading: boolean;
+  topApiConsumers: AdminTopApiConsumer[];
 };
-
-const numberFormatter = new Intl.NumberFormat("en");
-
-function formatNumber(value: number | null | undefined) {
-  return numberFormatter.format(value ?? 0);
-}
-
-function formatDayLabel(value: string) {
-  const date = new Date(`${value}T00:00:00`);
-
-  if (Number.isNaN(date.getTime())) {
-    return value;
-  }
-
-  return new Intl.DateTimeFormat("en", { weekday: "short" }).format(date);
-}
 
 function ChartCard({
   children,
@@ -65,56 +60,43 @@ function SectionTitle({
   );
 }
 
-function ChartFeedback({ label }: { label: string }) {
-  return (
-    <div className="mt-7 rounded-lg border border-slate-100 bg-slate-50 px-4 py-8 text-center text-sm font-semibold text-slate-500">
-      {label}
-    </div>
-  );
-}
-
 export default function AdminDashboardInsights({
-  apiUsageQuery,
-  banSummaryQuery,
-  statistics,
-  topConsumersQuery,
+  apiUsageOverTime,
+  banSummary,
+  isApiUsageOverTimeError,
+  isApiUsageOverTimeLoading,
+  isBanSummaryError,
+  isBanSummaryLoading,
+  isTopApiConsumersError,
+  isTopApiConsumersLoading,
+  topApiConsumers,
 }: AdminDashboardInsightsProps) {
-  const topConsumers = topConsumersQuery.data ?? [];
-  const maxConsumerCalls = Math.max(
-    1,
-    ...topConsumers.map((consumer) => consumer.callCount),
+  const activePercentage = clampPercentage(
+    banSummary?.activePercentage ?? 0,
   );
-  const usageByDay = apiUsageQuery.data ?? [];
-  const maxDailyCalls = Math.max(
+  const activeStrokeLength =
+    (activePercentage / 100) * accountStatusChartCircumference;
+  const activeCount = formatSummaryNumber(banSummary?.active);
+  const bannedCount = formatSummaryNumber(banSummary?.banned);
+  const maxConsumerCallCount = Math.max(
     1,
-    ...usageByDay.map((item) => item.callCount),
+    ...topApiConsumers.map((consumer) => Math.max(0, consumer.callCount)),
   );
-  const lineChartPoints = usageByDay
-    .map((item, index) => {
-      const x = 22 + index * 29;
-      const y = 128 - (item.callCount / maxDailyCalls) * 104;
-
-      return `${x},${y}`;
-    })
-    .join(" ");
-  const usageTotal = usageByDay.reduce(
-    (total, item) => total + item.callCount,
+  const apiConsumerTicks = buildConsumerTicks(maxConsumerCallCount);
+  const sortedUsage = sortUsagePoints(apiUsageOverTime);
+  const maxUsageCallCount = Math.max(
+    1,
+    ...sortedUsage.map((item) => Math.max(0, item.callCount)),
+  );
+  const usageChartPoints = buildUsageChartPoints(
+    sortedUsage,
+    maxUsageCallCount,
+  );
+  const usageTicks = buildConsumerTicks(maxUsageCallCount).reverse();
+  const peakUsage = getPeakUsagePoint(sortedUsage);
+  const totalUsage = sortedUsage.reduce(
+    (total, item) => total + Math.max(0, item.callCount),
     0,
-  );
-  const usagePeak = usageByDay.reduce<AdminApiUsageDailyResponse | null>(
-    (peak, item) => (!peak || item.callCount > peak.callCount ? item : peak),
-    null,
-  );
-  const flowValues = {
-    activeTrends: statistics?.activeTrends.value ?? 0,
-    totalSubfields: statistics?.totalSubfields.value ?? 0,
-    totalTopics: statistics?.totalTopics.value ?? 0,
-  };
-  const maxFlowValue = Math.max(
-    1,
-    flowValues.activeTrends,
-    flowValues.totalSubfields,
-    flowValues.totalTopics,
   );
 
   return (
@@ -125,113 +107,112 @@ export default function AdminDashboardInsights({
           subtitle="Top 5 consumers this month"
         />
 
-        {topConsumersQuery.isPending && <ChartFeedback label="Loading users..." />}
-        {topConsumersQuery.isError && (
-          <ChartFeedback label="Cannot load top API consumers." />
-        )}
-        {!topConsumersQuery.isPending
-          && !topConsumersQuery.isError
-          && topConsumers.length === 0 && (
-            <ChartFeedback label="No API consumers found." />
+        <div className="mt-7 space-y-4">
+          {isTopApiConsumersLoading && (
+            <p className="text-sm font-medium text-slate-500">
+              Loading API consumers...
+            </p>
           )}
-
-        {!topConsumersQuery.isPending
-          && !topConsumersQuery.isError
-          && topConsumers.length > 0 && (
-            <>
-              <div className="mt-7 space-y-4">
-                {topConsumers.map((consumer) => (
+          {!isTopApiConsumersLoading && isTopApiConsumersError && (
+            <p className="text-sm font-semibold text-red-600">
+              Cannot load API consumers right now.
+            </p>
+          )}
+          {!isTopApiConsumersLoading &&
+            !isTopApiConsumersError &&
+            topApiConsumers.length === 0 && (
+              <p className="text-sm font-medium text-slate-500">
+                No API usage found.
+              </p>
+            )}
+          {!isTopApiConsumersLoading &&
+            !isTopApiConsumersError &&
+            topApiConsumers.map((consumer) => (
+              <div
+                key={consumer.email}
+                className="grid items-center gap-3 sm:grid-cols-[160px_minmax(0,1fr)]"
+              >
+                <p className="truncate text-right text-xs font-medium text-slate-600">
+                  {consumer.email}
+                </p>
+                <div className="h-4 overflow-hidden rounded bg-slate-100">
                   <div
-                    key={consumer.email}
-                    className="grid items-center gap-3 sm:grid-cols-[160px_minmax(0,1fr)]"
-                  >
-                    <p className="truncate text-right text-xs font-medium text-slate-600">
-                      {consumer.email}
-                    </p>
-                    <div className="h-4 overflow-hidden rounded bg-slate-100">
-                      <div
-                        className="h-full rounded bg-indigo-600"
-                        style={{
-                          width: `${(consumer.callCount / maxConsumerCalls) * 100}%`,
-                        }}
-                      />
-                    </div>
-                  </div>
-                ))}
+                    className="h-full rounded bg-indigo-600"
+                    style={{
+                      width: `${(Math.max(0, consumer.callCount) / maxConsumerCallCount) * 100}%`,
+                    }}
+                  />
+                </div>
               </div>
+            ))}
+        </div>
 
-              <div className="mt-4 grid grid-cols-5 pl-0 text-xs font-medium text-slate-500 sm:pl-[172px]">
-                {[0, 0.25, 0.5, 0.75, 1].map((ratio) => (
-                  <span key={ratio}>
-                    {formatNumber(Math.round(maxConsumerCalls * ratio))}
-                  </span>
-                ))}
-              </div>
-            </>
-          )}
+        <div className="mt-4 flex justify-between pl-0 text-xs font-medium text-slate-500 sm:pl-[172px]">
+          {apiConsumerTicks.map((tick) => (
+            <span key={tick}>{formatSummaryNumber(tick)}</span>
+          ))}
+        </div>
       </ChartCard>
 
       <ChartCard>
         <SectionTitle title="User Account Status" subtitle="Active vs Banned" />
 
-        {banSummaryQuery.isPending && <ChartFeedback label="Loading status..." />}
-        {banSummaryQuery.isError && (
-          <ChartFeedback label="Cannot load account status." />
-        )}
+        <div className="mt-7 flex flex-col items-center gap-5 sm:flex-row xl:flex-col 2xl:flex-row">
+          <div className="relative h-36 w-36 shrink-0">
+            <svg className="h-full w-full -rotate-90" viewBox="0 0 120 120">
+              <circle
+                cx="60"
+                cy="60"
+                r="43"
+                fill="none"
+                stroke="#ef4444"
+                strokeWidth="20"
+              />
+              <circle
+                cx="60"
+                cy="60"
+                r="43"
+                fill="none"
+                stroke="#16a34a"
+                strokeDasharray={`${activeStrokeLength} ${accountStatusChartCircumference}`}
+                strokeLinecap="butt"
+                strokeWidth="20"
+              />
+            </svg>
+            <div className="absolute inset-0 m-auto h-16 w-16 rounded-full bg-white" />
+          </div>
 
-        {!banSummaryQuery.isPending
-          && !banSummaryQuery.isError
-          && banSummaryQuery.data && (
-            <div className="mt-7 flex flex-col items-center gap-5 sm:flex-row xl:flex-col 2xl:flex-row">
-              <div className="relative h-36 w-36 shrink-0">
-                <svg className="h-full w-full -rotate-90" viewBox="0 0 120 120">
-                  <circle
-                    cx="60"
-                    cy="60"
-                    r="43"
-                    fill="none"
-                    stroke="#ef4444"
-                    strokeWidth="20"
-                  />
-                  <circle
-                    cx="60"
-                    cy="60"
-                    r="43"
-                    fill="none"
-                    stroke="#16a34a"
-                    strokeDasharray={`${(banSummaryQuery.data.activePercentage / 100) * 270} 270`}
-                    strokeLinecap="butt"
-                    strokeWidth="20"
-                  />
-                </svg>
-                <div className="absolute inset-0 m-auto h-16 w-16 rounded-full bg-white" />
-              </div>
-
-              <div className="w-full space-y-3 text-xs">
-                <div className="flex items-center justify-between gap-4">
-                  <span className="flex items-center gap-2 font-medium text-slate-700">
-                    <span className="h-2.5 w-2.5 rounded-full bg-green-600" />
-                    Active
-                  </span>
-                  <strong className="text-slate-950">
-                    {formatNumber(banSummaryQuery.data.active)}
-                  </strong>
-                </div>
-                <div className="flex items-center justify-between gap-4 border-b border-slate-100 pb-3">
-                  <span className="flex items-center gap-2 font-medium text-slate-700">
-                    <span className="h-2.5 w-2.5 rounded-full bg-red-500" />
-                    Banned
-                  </span>
-                  <strong className="text-slate-950">
-                    {formatNumber(banSummaryQuery.data.banned)}
-                  </strong>
-                </div>
-                <p className="leading-5 text-slate-500">
-                  {banSummaryQuery.data.activePercentage}% active accounts
-                </p>
-              </div>
+          <div className="w-full space-y-3 text-xs">
+            <div className="flex items-center justify-between gap-4">
+              <span className="flex items-center gap-2 font-medium text-slate-700">
+                <span className="h-2.5 w-2.5 rounded-full bg-green-600" />
+                Active
+              </span>
+              <strong className="text-slate-950">
+                {isBanSummaryLoading ? "..." : activeCount}
+              </strong>
             </div>
-          )}
+            <div className="flex items-center justify-between gap-4 border-b border-slate-100 pb-3">
+              <span className="flex items-center gap-2 font-medium text-slate-700">
+                <span className="h-2.5 w-2.5 rounded-full bg-red-500" />
+                Banned
+              </span>
+              <strong className="text-slate-950">
+                {isBanSummaryLoading ? "..." : bannedCount}
+              </strong>
+            </div>
+            {isBanSummaryLoading && (
+              <p className="text-xs font-medium text-slate-500">
+                Loading account status...
+              </p>
+            )}
+            {isBanSummaryError && (
+              <p className="text-xs font-semibold text-red-600">
+                Cannot load account status right now.
+              </p>
+            )}
+          </div>
+        </div>
       </ChartCard>
 
       <ChartCard>
@@ -305,75 +286,150 @@ export default function AdminDashboardInsights({
       <ChartCard>
         <SectionTitle title="API Usage Over Time" subtitle="Last 7 days" />
 
-        {apiUsageQuery.isPending && <ChartFeedback label="Loading usage..." />}
-        {apiUsageQuery.isError && (
-          <ChartFeedback label="Cannot load API usage over time." />
-        )}
-        {!apiUsageQuery.isPending
-          && !apiUsageQuery.isError
-          && usageByDay.length === 0 && <ChartFeedback label="No usage found." />}
-
-        {!apiUsageQuery.isPending
-          && !apiUsageQuery.isError
-          && usageByDay.length > 0 && (
-            <>
-              <div className="mt-5">
-                <svg className="h-44 w-full" viewBox="0 0 220 160" role="img">
-                  {[1, 0.75, 0.5, 0.25, 0].map((ratio, index) => {
-                    const y = 24 + index * 26;
-
-                    return (
-                      <g key={ratio}>
-                        <text
-                          x="0"
-                          y={y + 4}
-                          className="fill-slate-500 text-[10px] font-medium"
-                        >
-                          {formatNumber(Math.round(maxDailyCalls * ratio))}
-                        </text>
-                      </g>
-                    );
-                  })}
-                  <polyline
-                    fill="none"
-                    points={lineChartPoints}
-                    stroke="#4f46e5"
-                    strokeLinejoin="round"
-                    strokeWidth="3"
-                  />
-                  {usageByDay.map((item, index) => {
-                    const x = 22 + index * 29;
-                    const y = 128 - (item.callCount / maxDailyCalls) * 104;
-
-                    return (
-                      <g key={item.date}>
-                        <circle cx={x} cy={y} fill="#4f46e5" r="4" />
-                        <text
-                          x={x}
-                          y="148"
-                          textAnchor="middle"
-                          className="fill-slate-500 text-[10px] font-medium"
-                        >
-                          {formatDayLabel(item.date)}
-                        </text>
-                      </g>
-                    );
-                  })}
-                </svg>
-              </div>
-
-              <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-xs font-medium text-slate-500">
-                <span>
-                  Peak: {usagePeak ? formatDayLabel(usagePeak.date) : "-"} -{" "}
-                  {formatNumber(usagePeak?.callCount ?? 0)} calls
-                </span>
-                <span>Total: {formatNumber(usageTotal)}</span>
-              </div>
-            </>
+        <div className="mt-5">
+          {isApiUsageOverTimeLoading && (
+            <p className="text-sm font-medium text-slate-500">
+              Loading API usage...
+            </p>
           )}
+          {!isApiUsageOverTimeLoading && isApiUsageOverTimeError && (
+            <p className="text-sm font-semibold text-red-600">
+              Cannot load API usage right now.
+            </p>
+          )}
+          {!isApiUsageOverTimeLoading &&
+            !isApiUsageOverTimeError &&
+            sortedUsage.length === 0 && (
+              <p className="text-sm font-medium text-slate-500">
+                No API usage found.
+              </p>
+            )}
+          {!isApiUsageOverTimeLoading &&
+            !isApiUsageOverTimeError &&
+            sortedUsage.length > 0 && (
+              <svg className="h-44 w-full" viewBox="0 0 220 160" role="img">
+                {usageTicks.map((tick, index) => {
+                  const y =
+                    usageChartTop +
+                    (index / Math.max(1, usageTicks.length - 1)) *
+                      usageChartHeight;
+
+                  return (
+                    <g key={`${tick}-${index}`}>
+                      <text
+                        x="0"
+                        y={y + 4}
+                        className="fill-slate-500 text-[10px] font-medium"
+                      >
+                        {formatSummaryNumber(tick)}
+                      </text>
+                    </g>
+                  );
+                })}
+                <polyline
+                  fill="none"
+                  points={usageChartPoints.map((point) => point.point).join(" ")}
+                  stroke="#4f46e5"
+                  strokeLinejoin="round"
+                  strokeWidth="3"
+                />
+                {usageChartPoints.map((point) => (
+                  <g key={point.date}>
+                    <circle cx={point.x} cy={point.y} fill="#4f46e5" r="4" />
+                    <text
+                      x={point.x}
+                      y="148"
+                      textAnchor="middle"
+                      className="fill-slate-500 text-[10px] font-medium"
+                    >
+                      {formatWeekday(point.date)}
+                    </text>
+                  </g>
+                ))}
+              </svg>
+            )}
+        </div>
+
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-xs font-medium text-slate-500">
+          <span>
+            Peak:{" "}
+            {peakUsage
+              ? `${formatWeekday(peakUsage.date)} - ${formatSummaryNumber(peakUsage.callCount)} calls`
+              : "Unavailable"}
+          </span>
+          <span>Total: {formatSummaryNumber(totalUsage)}</span>
+        </div>
       </ChartCard>
     </div>
   );
+}
+
+function clampPercentage(value: number) {
+  if (!Number.isFinite(value)) return 0;
+
+  return Math.min(100, Math.max(0, value));
+}
+
+function formatSummaryNumber(value: number | undefined) {
+  if (value === undefined) return "Unavailable";
+
+  return new Intl.NumberFormat("en").format(value);
+}
+
+function buildConsumerTicks(maxValue: number) {
+  return [0, 0.25, 0.5, 0.75, 1].map((ratio) =>
+    Math.round(maxValue * ratio),
+  );
+}
+
+function sortUsagePoints(points: AdminApiUsagePoint[]) {
+  return [...points].sort(
+    (left, right) =>
+      new Date(left.date).getTime() - new Date(right.date).getTime(),
+  );
+}
+
+function buildUsageChartPoints(
+  points: AdminApiUsagePoint[],
+  maxCallCount: number,
+) {
+  const horizontalRange = usageChartRight - usageChartLeft;
+  const divisor = Math.max(1, points.length - 1);
+
+  return points.map((item, index) => {
+    const normalizedCallCount = Math.max(0, item.callCount);
+    const x = usageChartLeft + (index / divisor) * horizontalRange;
+    const y =
+      usageChartBottom -
+      (normalizedCallCount / maxCallCount) * usageChartHeight;
+
+    return {
+      date: item.date,
+      point: `${x},${y}`,
+      x,
+      y,
+    };
+  });
+}
+
+function getPeakUsagePoint(points: AdminApiUsagePoint[]) {
+  return points.reduce<AdminApiUsagePoint | null>((peak, item) => {
+    if (!peak || item.callCount > peak.callCount) {
+      return item;
+    }
+
+    return peak;
+  }, null);
+}
+
+function formatWeekday(dateValue: string) {
+  const date = new Date(dateValue);
+
+  if (Number.isNaN(date.getTime())) {
+    return dateValue;
+  }
+
+  return new Intl.DateTimeFormat("en", { weekday: "short" }).format(date);
 }
 
 function FlowMetric({

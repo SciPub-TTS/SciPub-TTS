@@ -1,74 +1,71 @@
 import { http } from "@/services/http";
 import type { ApiResponse } from "@/types/common.types";
+
 import type {
-  AdminApiCallConsumerResponse,
-  AdminApiUsageDailyResponse,
-  AdminDashboardStatisticsResponse,
-  AdminUserBanSummaryResponse,
-  AdminUserPageResponse,
-  AdminUserResponse,
-  GetAdminUsersParams,
-} from "@/features/admin/types";
+  AdminApiUsagePoint,
+  AdminTopApiConsumer,
+  AdminUserBanSummary,
+  AdminUserApi,
+  AdminUsersPageData,
+  AdminUsersSort,
+} from "../types";
 
-const ADMIN_DASHBOARD_BASE = "/api/admin/dashboard";
-const ADMIN_USERS_BASE = "/api/admin/users";
-
-export const adminDashboardApi = {
-  getStatistics() {
-    return http
-      .get<ApiResponse<AdminDashboardStatisticsResponse>>(
-        `${ADMIN_DASHBOARD_BASE}/statistics`,
-      )
-      .then((res) => res.data);
-  },
-
-  getBanSummary() {
-    return http
-      .get<ApiResponse<AdminUserBanSummaryResponse>>(
-        `${ADMIN_USERS_BASE}/ban-summary`,
-      )
-      .then((res) => res.data);
-  },
-
-  getApiUsageOverTime() {
-    return http
-      .get<ApiResponse<AdminApiUsageDailyResponse[]>>(
-        `${ADMIN_DASHBOARD_BASE}/api-calls/usage-over-time`,
-      )
-      .then((res) => res.data);
-  },
-
-  getTopApiConsumers() {
-    return http
-      .get<ApiResponse<AdminApiCallConsumerResponse[]>>(
-        `${ADMIN_DASHBOARD_BASE}/api-calls/top-users`,
-      )
-      .then((res) => res.data);
-  },
+type GetAdminUsersParams = {
+  page: number;
+  size: number;
+  sort?: AdminUsersSort;
 };
 
-export const adminUsersApi = {
-  getUsers({ page, size, sort = "RECENT" }: GetAdminUsersParams) {
-    return http
-      .get<ApiResponse<AdminUserPageResponse>>(ADMIN_USERS_BASE, {
-        params: { page, size, sort },
-      })
-      .then((res) => res.data);
-  },
+export function getAdminUsers({
+  page,
+  size,
+  sort = "RECENT",
+}: GetAdminUsersParams) {
+  return http
+    .get<ApiResponse<AdminUsersPageData>>("/admin/users", {
+      params: {
+        page,
+        size,
+        sort,
+      },
+    })
+    .then((response) => response.data.data);
+}
 
-  banUser(userId: string) {
-    return http
-      .patch<ApiResponse<AdminUserResponse>>(
-        `${ADMIN_USERS_BASE}/${encodeURIComponent(userId)}/ban`,
-      )
-      .then((res) => res.data);
-  },
+export function getAdminUserBanSummary() {
+  return http
+    .get<ApiResponse<AdminUserBanSummary>>("/admin/users/ban-summary")
+    .then((response) => response.data.data);
+}
 
-  unbanUser(userId: string) {
-    return http
-      .patch<ApiResponse<AdminUserResponse>>(
-        `${ADMIN_USERS_BASE}/${encodeURIComponent(userId)}/unban`,
-      )
-      .then((res) => res.data);
-  },
-};
+export function getAdminTopApiConsumers() {
+  return http
+    .get<ApiResponse<AdminTopApiConsumer[]>>(
+      "/admin/dashboard/api-calls/top-users",
+    )
+    .then((response) => response.data.data);
+}
+
+export function getAdminApiUsageOverTime() {
+  return http
+    .get<ApiResponse<AdminApiUsagePoint[]>>(
+      "/admin/dashboard/api-calls/usage-over-time",
+    )
+    .then((response) => response.data.data);
+}
+
+export function banAdminUser(userId: string) {
+  return http
+    .patch<ApiResponse<AdminUserApi>>(
+      `/admin/users/${encodeURIComponent(userId)}/ban`,
+    )
+    .then((response) => response.data.data);
+}
+
+export function unbanAdminUser(userId: string) {
+  return http
+    .patch<ApiResponse<AdminUserApi>>(
+      `/admin/users/${encodeURIComponent(userId)}/unban`,
+    )
+    .then((response) => response.data.data);
+}
