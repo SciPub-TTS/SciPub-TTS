@@ -1,5 +1,4 @@
-import { Ban, CheckCircle2, RefreshCw, Search, X } from "lucide-react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Ban, Search, X } from "lucide-react";
 import type { ReactNode } from "react";
 
 import {
@@ -18,72 +17,6 @@ const statusClassMap: Record<UserStatus, string> = {
   Active: "bg-green-50 text-green-700 ring-green-100",
   Banned: "bg-red-50 text-red-700 ring-red-100",
 };
-
-const booleanClassMap = {
-  no: "bg-slate-100 text-slate-600 ring-slate-200",
-  yes: "bg-green-50 text-green-700 ring-green-100",
-};
-
-function getAdminUsersQueryKey(
-  page: number,
-  size: number,
-): AdminUsersQueryKey {
-  return ["adminUsers", page, size, DEFAULT_SORT] as const;
-}
-
-function buildFullName(user: AdminUserResponse) {
-  const fullName = [user.firstName, user.lastName]
-    .map((value) => value?.trim())
-    .filter(Boolean)
-    .join(" ");
-
-  return fullName || user.email;
-}
-
-function formatRole(role: string) {
-  return role.trim().toUpperCase() || "USER";
-}
-
-function formatCreatedAt(value: string) {
-  if (!value) return "Unknown";
-
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return value;
-  }
-
-  return new Intl.DateTimeFormat("en", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(date);
-}
-
-function mapUserToView(user: AdminUserResponse): AdminUserView {
-  return {
-    createdAt: formatCreatedAt(user.createdAt),
-    email: user.email,
-    emailVerified: user.emailVerified,
-    fullName: buildFullName(user),
-    googleLinked: user.googleLinked,
-    id: user.id,
-    role: formatRole(user.role),
-    status: user.banned ? "Banned" : "Active",
-  };
-}
-
-function patchUserInPage(
-  page: AdminUserPageResponse | undefined,
-  userId: string,
-  updater: (user: AdminUserResponse) => AdminUserResponse,
-) {
-  if (!page) return page;
-
-  return {
-    ...page,
-    items: page.items.map((user) => (user.id === userId ? updater(user) : user)),
-  };
-}
 
 export default function AdminUsersPage() {
   const {
@@ -129,12 +62,6 @@ export default function AdminUsersPage() {
           </label>
         </div>
 
-        {feedbackMessage && (
-          <div className="border-b border-slate-100 bg-blue-50 px-5 py-3 text-sm font-semibold text-blue-700">
-            {feedbackMessage}
-          </div>
-        )}
-
         <div className="overflow-x-auto">
           <table className="w-full min-w-[720px] border-collapse text-left">
             <thead>
@@ -143,7 +70,8 @@ export default function AdminUsersPage() {
                 <th className="px-5 py-4">Full Name</th>
                 <th className="px-5 py-4">Email</th>
                 <th className="px-5 py-4">Status</th>
-                <th className="px-5 py-4">Email Verified</th>
+                <th className="px-5 py-4">Topics</th>
+                <th className="px-5 py-4">Authors</th>
                 <th className="px-5 py-4">Created At</th>
               </tr>
             </thead>
@@ -228,135 +156,7 @@ export default function AdminUsersPage() {
           user={selectedUser}
         />
       )}
-
-      {pendingConfirmation && (
-        <ConfirmAccountStatusDialog
-          action={pendingConfirmation.action}
-          isUpdating={toggleBanMutation.isPending}
-          onCancel={() => setPendingConfirmation(null)}
-          onConfirm={handleConfirmToggleBan}
-          user={pendingConfirmation.user}
-        />
-      )}
     </>
-  );
-}
-
-function ConfirmAccountStatusDialog({
-  action,
-  isUpdating,
-  onCancel,
-  onConfirm,
-  user,
-}: {
-  action: ToggleBanVariables["action"];
-  isUpdating: boolean;
-  onCancel: () => void;
-  onConfirm: () => void;
-  user: AdminUserView;
-}) {
-  const isBanAction = action === "ban";
-  const title = isBanAction ? "Confirm account ban" : "Confirm account unban";
-  const message = isBanAction
-    ? "This account will lose access immediately and active sessions may be revoked."
-    : "This account will be allowed to access the system again.";
-  const confirmLabel = isBanAction ? "Yes, ban account" : "Yes, unban account";
-  const nextStatus = isBanAction ? "Banned" : "Active";
-
-  return (
-    <div
-      aria-modal="true"
-      className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/60 p-4"
-      role="dialog"
-    >
-      <div className="w-full max-w-xl rounded-xl bg-white shadow-2xl">
-        <div className="flex items-start justify-between gap-4 border-b border-slate-100 p-5">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-400">
-              Confirmation
-            </p>
-            <h3 className="mt-2 text-xl font-bold text-slate-950">{title}</h3>
-            <p className="mt-2 text-sm font-medium leading-6 text-slate-500">
-              {message}
-            </p>
-          </div>
-
-          <button
-            aria-label="Close confirmation"
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-60"
-            disabled={isUpdating}
-            onClick={onCancel}
-            type="button"
-          >
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-
-        <div className="grid min-h-[222px] gap-3 p-5 sm:grid-cols-2">
-          <DetailItem label="Full Name" value={user.fullName} />
-          <DetailItem
-            label="Role"
-            value={
-              <Badge className={roleClassMap[user.role] || roleClassMap.STUDENT}>
-                {user.role}
-              </Badge>
-            }
-          />
-          <DetailItem
-            label="Current Status"
-            value={
-              <Badge className={statusClassMap[user.status]}>
-                {user.status}
-              </Badge>
-            }
-          />
-          <DetailItem label="Email" value={user.email} />
-          <DetailItem
-            label="New Status"
-            value={
-              <Badge className={statusClassMap[nextStatus]}>
-                {nextStatus}
-              </Badge>
-            }
-          />
-        </div>
-
-        <div className="flex flex-col gap-3 border-t border-slate-100 p-5 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-xs font-medium text-slate-500">
-            This action will be applied immediately after confirmation.
-          </p>
-
-          <div className="flex justify-end gap-3">
-          <button
-            className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-bold text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
-            disabled={isUpdating}
-            onClick={onCancel}
-            type="button"
-          >
-            Cancel
-          </button>
-          <button
-            className={[
-              "inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-bold text-white transition disabled:cursor-not-allowed disabled:opacity-60",
-              isBanAction
-                ? "bg-red-600 hover:bg-red-700"
-                : "bg-green-600 hover:bg-green-700",
-            ].join(" ")}
-            disabled={isUpdating}
-            onClick={onConfirm}
-            type="button"
-          >
-            {isBanAction ? (
-              <Ban className="h-4 w-4" />
-            ) : (
-              <CheckCircle2 className="h-4 w-4" />
-            )}
-            {isUpdating ? "Updating..." : confirmLabel}
-          </button>
-          </div>
-        </div>
-      </div>
-    </div>
   );
 }
 

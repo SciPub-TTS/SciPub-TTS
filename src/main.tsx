@@ -5,9 +5,6 @@ import { RouterProvider } from "react-router-dom";
 
 import { router } from "@/app/router";
 import "@/app/i18n";
-import { bootstrapAuthSessionOnAppLoad } from "@/features/auth/components/AuthSessionReset";
-import { queryClient } from "@/lib/query/queryClient";
-import { store } from "@/store";
 import "@/styles/index.css";
 
 const queryClient = new QueryClient();

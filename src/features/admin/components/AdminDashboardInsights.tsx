@@ -1,4 +1,3 @@
-import type { UseQueryResult } from "@tanstack/react-query";
 import type { ReactNode } from "react";
 
 import type {
@@ -221,66 +220,46 @@ export default function AdminDashboardInsights({
           subtitle="Fields define the research scope. Topics are generated from fields. Trends are calculated from topic and keyword activity"
         />
 
-        {!statistics && <ChartFeedback label="Loading research scope..." />}
-        {statistics && (
-          <>
-            <div className="mt-7 grid items-center gap-3 md:grid-cols-[1fr_auto_1fr_auto_1fr]">
-              <FlowMetric
-                label="Fields"
-                value={formatNumber(flowValues.totalSubfields)}
-                description="Research fields"
-                tone="green"
-              />
-              <span className="hidden text-xl font-medium text-slate-400 md:block">
-                -&gt;
-              </span>
-              <FlowMetric
-                label="Topics"
-                value={formatNumber(flowValues.totalTopics)}
-                description={statistics.totalTopics.description}
-                tone="blue"
-              />
-              <span className="hidden text-xl font-medium text-slate-400 md:block">
-                -&gt;
-              </span>
-              <FlowMetric
-                label="Trends"
-                value={formatNumber(flowValues.activeTrends)}
-                description="Active signals"
-                tone="amber"
-              />
-            </div>
+        <div className="mt-7 grid items-center gap-3 md:grid-cols-[1fr_auto_1fr_auto_1fr]">
+          <FlowMetric
+            label="Fields"
+            value="12"
+            description="Research fields"
+            tone="green"
+          />
+          <span className="hidden text-xl font-medium text-slate-400 md:block">
+            -&gt;
+          </span>
+          <FlowMetric
+            label="Topics"
+            value="186"
+            description="From 12 fields"
+            tone="blue"
+          />
+          <span className="hidden text-xl font-medium text-slate-400 md:block">
+            -&gt;
+          </span>
+          <FlowMetric
+            label="Trends"
+            value="42"
+            description="Active signals"
+            tone="amber"
+          />
+        </div>
 
-            <div className="mt-7 grid grid-cols-[36px_1fr] gap-3">
-              <div className="grid h-28 grid-rows-4 text-right text-xs font-medium text-slate-500">
-                <span>{formatNumber(maxFlowValue)}</span>
-                <span>{formatNumber(Math.round(maxFlowValue * 0.5))}</span>
-                <span>{formatNumber(Math.round(maxFlowValue * 0.25))}</span>
-                <span>0</span>
-              </div>
-              <div className="grid h-28 grid-cols-3 items-end gap-8">
-                <VerticalBar
-                  label="Fields"
-                  value={flowValues.totalSubfields}
-                  maxValue={maxFlowValue}
-                  tone="green"
-                />
-                <VerticalBar
-                  label="Topics"
-                  value={flowValues.totalTopics}
-                  maxValue={maxFlowValue}
-                  tone="blue"
-                />
-                <VerticalBar
-                  label="Trends"
-                  value={flowValues.activeTrends}
-                  maxValue={maxFlowValue}
-                  tone="amber"
-                />
-              </div>
-            </div>
-          </>
-        )}
+        <div className="mt-7 grid grid-cols-[36px_1fr] gap-3">
+          <div className="grid h-28 grid-rows-4 text-right text-xs font-medium text-slate-500">
+            <span>200</span>
+            <span>100</span>
+            <span>50</span>
+            <span>0</span>
+          </div>
+          <div className="grid h-28 grid-cols-3 items-end gap-8">
+            <VerticalBar label="Fields" value={12} maxValue={200} tone="green" />
+            <VerticalBar label="Topics" value={186} maxValue={200} tone="blue" />
+            <VerticalBar label="Trends" value={42} maxValue={200} tone="amber" />
+          </div>
+        </div>
       </ChartCard>
 
       <ChartCard>
