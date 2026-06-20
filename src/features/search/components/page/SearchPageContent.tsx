@@ -5,8 +5,8 @@ import { SearchPanel } from "../panel";
 import { SearchResults } from "../results";
 
 export default function SearchPageContent() {
-  // Đây là nơi nối state trung tâm với 3 khối lớn của màn hình:
-  // header, vùng nhập/filter và danh sách kết quả.
+  // Keep the page itself thin: the hook owns state and handlers, and this
+  // component only passes that data into the main UI blocks.
   const {
     activeEntityType,
     activeFilterCount,
@@ -23,10 +23,10 @@ export default function SearchPageContent() {
     handleClearSorts,
     handleDeleteRecentSearch,
     handleEntityTypeChange,
-    handleSaveSearch,
     handleFilterOptionSearch,
     handleLoadMoreFilterOptions,
     handleLoadMoreResults,
+    handleSaveSearch,
     handleSearch,
     handleSearchQueryChange,
     handleSelectSort,
@@ -34,15 +34,15 @@ export default function SearchPageContent() {
     handleToggleFilters,
     handleToggleVisibleFilterWidget,
     hasFormError,
-    hasSearched,
     hasMoreFilterOptions,
-    isLoadingFilterOptions,
-    isLoadingMoreFilterOptions,
+    hasSearched,
     isClearingRecentSearches,
     isDeletingRecentSearch,
     isIndexedCountExact,
-    isLoadingResults,
+    isLoadingFilterOptions,
+    isLoadingMoreFilterOptions,
     isLoadingMoreResults,
+    isLoadingResults,
     isSavingSearch,
     isTotalResultCountExact,
     matchedResultCount,
@@ -54,8 +54,8 @@ export default function SearchPageContent() {
     saveSearchSuccessToken,
     searchPlaceholder,
     searchQuery,
-    showFilters,
     showFilterAddMenu,
+    showFilters,
     sortState,
     totalIndexedCount,
     updateFilter,
@@ -79,6 +79,7 @@ export default function SearchPageContent() {
         hasMoreFilterOptions={hasMoreFilterOptions}
         isClearingRecentSearches={isClearingRecentSearches}
         isDeletingRecentSearch={isDeletingRecentSearch}
+        isIndexedCountExact={isIndexedCountExact}
         isLoadingFilterOptions={isLoadingFilterOptions}
         isLoadingMoreFilterOptions={isLoadingMoreFilterOptions}
         isLoadingResults={isLoadingResults}
@@ -90,10 +91,9 @@ export default function SearchPageContent() {
         saveSearchSuccessToken={saveSearchSuccessToken}
         searchPlaceholder={searchPlaceholder}
         searchQuery={searchQuery}
-        showFilters={showFilters}
         showFilterAddMenu={showFilterAddMenu}
+        showFilters={showFilters}
         totalIndexedCount={totalIndexedCount}
-        isIndexedCountExact={isIndexedCountExact}
         visibleFilterWidgets={visibleFilterWidgets}
         onApplyFilters={handleApplyFilters}
         onClearRecentSearches={handleClearRecentSearches}
@@ -102,9 +102,9 @@ export default function SearchPageContent() {
         onFilterOptionSearch={handleFilterOptionSearch}
         onLoadMoreFilterOptions={handleLoadMoreFilterOptions}
         onResetFilters={resetFilters}
+        onSaveSearch={handleSaveSearch}
         onSearch={handleSearch}
         onSearchQueryChange={handleSearchQueryChange}
-        onSaveSearch={handleSaveSearch}
         onSuggestedSearchSelect={handleSuggestedSearch}
         onToggleFilters={handleToggleFilters}
         onToggleVisibleFilterWidget={handleToggleVisibleFilterWidget}
@@ -117,18 +117,17 @@ export default function SearchPageContent() {
         autoLoadAnchorIndex={autoLoadAnchorIndex}
         canLoadMoreResults={canLoadMoreResults}
         hasSearched={hasSearched}
-        isTotalResultCountExact={isTotalResultCountExact}
-        isLoadingResults={isLoadingResults}
         isLoadingMoreResults={isLoadingMoreResults}
+        isLoadingResults={isLoadingResults}
+        isTotalResultCountExact={isTotalResultCountExact}
         responseTimeSeconds={responseTimeSeconds}
         sortState={sortState}
         totalResultCount={matchedResultCount}
         visibleResults={visibleResults}
-        onLoadMoreResults={handleLoadMoreResults}
         onClearSorts={handleClearSorts}
+        onLoadMoreResults={handleLoadMoreResults}
         onSelectSort={handleSelectSort}
       />
     </section>
   );
 }
-

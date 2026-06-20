@@ -23,3 +23,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Local notes
+docs/search-detail-dependency-map.md
+docs/azure-revert-playbook.local.md

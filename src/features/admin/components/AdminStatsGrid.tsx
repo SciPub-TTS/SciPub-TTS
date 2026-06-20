@@ -9,83 +9,181 @@ import {
   Users,
   WalletCards,
 } from "lucide-react";
+import type { UseQueryResult } from "@tanstack/react-query";
 
-import AdminStatCard, { type AdminStatCardProps } from "./AdminStatCard";
+import type { AdminDashboardStatisticsResponse } from "@/features/admin/types";
 
-const adminStats: AdminStatCardProps[] = [
-  {
-    label: "Total Users",
-    value: "128",
-    description: "Registered accounts",
-    accent: "+6 this week",
-    tone: "blue",
-    icon: Users,
-  },
-  {
-    label: "Active Trends",
-    value: "42",
-    description: "Detected trend signals",
-    accent: "+5 this week",
-    tone: "amber",
-    icon: TrendingUp,
-  },
-  {
-    label: "Banned Users",
-    value: "16",
-    description: "Restricted accounts",
-    accent: "+2 this month",
-    tone: "red",
-    icon: UserRoundX,
-  },
-  {
-    label: "API Calls Used",
-    value: "24,580",
-    description: "This month",
-    accent: "+12% vs last month",
-    tone: "indigo",
-    icon: Activity,
-  },
-  {
-    label: "API Calls Today",
-    value: "1,240",
-    description: "Today",
-    accent: "Within daily quota",
-    tone: "purple",
-    icon: CalendarDays,
-  },
-  {
-    label: "Total API Credit",
-    value: "100,000",
-    description: "Daily usage",
-    accent: "All",
-    tone: "purple",
-    icon: WalletCards,
-  },
-  {
-    label: "Total Subfields",
-    value: "12",
-    description: "Research subfields",
-    tone: "green",
-    icon: Layers,
-  },
-  {
-    label: "Total Topics",
-    value: "186",
-    description: "Generated from 12 fields",
-    accent: "+18 after last sync",
-    tone: "emerald",
-    icon: Tags,
-  },
-  {
-    label: "Last Synchronization",
-    value: "Today, 09:30 AM",
-    description: "Latest data update",
-    tone: "teal",
-    icon: RefreshCw,
-  },
-];
+import AdminStatCard, {
+  type AdminStatCardProps,
+  type AdminStatCardTone,
+} from "./AdminStatCard";
 
-export default function AdminStatsGrid() {
+type AdminStatsGridProps = {
+  statisticsQuery: UseQueryResult<AdminDashboardStatisticsResponse, Error>;
+};
+
+const numberFormatter = new Intl.NumberFormat("en");
+
+function formatNumber(value: number | null | undefined) {
+  return numberFormatter.format(value ?? 0);
+}
+
+function formatDateTime(value: string | null | undefined) {
+  if (!value) return "No sync yet";
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  return new Intl.DateTimeFormat("en", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(date);
+}
+
+function buildStatCards(
+  statistics: AdminDashboardStatisticsResponse,
+): AdminStatCardProps[] {
+  return [
+    {
+      label: "Total Users",
+      value: formatNumber(statistics.totalUsers.value),
+      description: statistics.totalUsers.description,
+      accent: statistics.totalUsers.delta ?? undefined,
+      tone: "blue",
+      icon: Users,
+    },
+    {
+      label: "Active Trends",
+      value: formatNumber(statistics.activeTrends.value),
+      description: statistics.activeTrends.description,
+      accent: statistics.activeTrends.delta ?? undefined,
+      tone: "amber",
+      icon: TrendingUp,
+    },
+    {
+      label: "Banned Users",
+      value: formatNumber(statistics.bannedUsers.value),
+      description: statistics.bannedUsers.description,
+      accent: statistics.bannedUsers.delta ?? undefined,
+      tone: "red",
+      icon: UserRoundX,
+    },
+    {
+      label: "API Calls Used",
+      value: formatNumber(statistics.apiCallsUsed.value),
+      description: statistics.apiCallsUsed.description,
+      accent: statistics.apiCallsUsed.delta ?? undefined,
+      tone: "indigo",
+      icon: Activity,
+    },
+    {
+      label: "API Calls Today",
+      value: formatNumber(statistics.apiCallsToday.value),
+      description: statistics.apiCallsToday.description,
+      accent: statistics.apiCallsToday.delta ?? undefined,
+      tone: "purple",
+      icon: CalendarDays,
+    },
+    {
+      label: "Total API Credit",
+      value: formatNumber(statistics.totalApiCredit.value),
+      description: statistics.totalApiCredit.description,
+      accent: statistics.totalApiCredit.delta ?? undefined,
+      tone: "purple",
+      icon: WalletCards,
+    },
+    {
+      label: "Total Subfields",
+      value: formatNumber(statistics.totalSubfields.value),
+      description: statistics.totalSubfields.description,
+      accent: statistics.totalSubfields.delta ?? undefined,
+      tone: "green",
+      icon: Layers,
+    },
+    {
+      label: "Total Topics",
+      value: formatNumber(statistics.totalTopics.value),
+      description: statistics.totalTopics.description,
+      accent: statistics.totalTopics.delta ?? undefined,
+      tone: "emerald",
+      icon: Tags,
+    },
+    {
+      label: "Last Synchronization",
+      value: formatDateTime(statistics.lastSynchronization.value),
+      description: statistics.lastSynchronization.description,
+      accent: statistics.lastSynchronization.delta ?? undefined,
+      tone: "teal",
+      icon: RefreshCw,
+    },
+  ];
+}
+
+function StatCardPlaceholder({ tone }: { tone: AdminStatCardTone }) {
+  const toneClassMap: Record<AdminStatCardTone, string> = {
+    amber: "border-amber-200 bg-amber-50",
+    blue: "border-blue-200 bg-blue-50",
+    emerald: "border-emerald-200 bg-emerald-50",
+    green: "border-green-200 bg-green-50",
+    indigo: "border-indigo-200 bg-indigo-50",
+    purple: "border-purple-200 bg-purple-50",
+    red: "border-red-200 bg-red-50",
+    teal: "border-teal-200 bg-teal-50",
+  };
+
+  return (
+    <article
+      className={[
+        "min-h-36 rounded-xl border p-4 shadow-sm",
+        toneClassMap[tone],
+      ].join(" ")}
+    >
+      <div className="h-3 w-28 rounded bg-white/70" />
+      <div className="mt-8 h-7 w-24 rounded bg-white/70" />
+      <div className="mt-3 h-3 w-36 rounded bg-white/70" />
+      <div className="mt-3 h-3 w-24 rounded bg-white/70" />
+    </article>
+  );
+}
+
+export default function AdminStatsGrid({
+  statisticsQuery,
+}: AdminStatsGridProps) {
+  if (statisticsQuery.isPending) {
+    return (
+      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+        {(
+          [
+            "blue",
+            "amber",
+            "red",
+            "indigo",
+            "purple",
+            "purple",
+            "green",
+            "emerald",
+            "teal",
+          ] as AdminStatCardTone[]
+        ).map((tone, index) => (
+          <StatCardPlaceholder key={`${tone}-${index}`} tone={tone} />
+        ))}
+      </div>
+    );
+  }
+
+  if (statisticsQuery.isError || !statisticsQuery.data) {
+    return (
+      <div className="rounded-xl border border-red-100 bg-red-50 p-5 text-sm font-semibold text-red-700">
+        Cannot load dashboard statistics.
+      </div>
+    );
+  }
+
+  const adminStats = buildStatCards(statisticsQuery.data);
+
   return (
     <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
       {adminStats.map((stat) => (
