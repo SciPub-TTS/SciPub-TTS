@@ -1,7 +1,6 @@
 import { SearchPageContent } from "./page";
 
 export default function SearchPage() {
-  // Entry route của module search, chỉ giữ vai trò bọc trang chính.
+  // Thin route wrapper for the main search screen.
   return <SearchPageContent />;
 }
-

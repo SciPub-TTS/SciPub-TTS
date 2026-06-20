@@ -13,9 +13,7 @@ import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { ROUTES } from "@/app/router";
 import logoImage from "@/assets/images/logo.png";
 import { useAuthSession } from "@/features/auth/hooks/useAuthSession";
-import {
-  clearAuthStorage,
-} from "@/features/auth/utils/authStorage";
+import { clearAuthStorage } from "@/features/auth/utils/authStorage";
 
 const workspaceMenuItems = [
   { label: "Trending", path: ROUTES.TRENDING_TOPIC, icon: LayoutDashboard },
@@ -24,6 +22,7 @@ const workspaceMenuItems = [
   { label: "Bookmarks", path: ROUTES.BOOKMARKS, icon: Bookmark },
   { label: "Export Reports", path: ROUTES.REPORT, icon: FileText },
   { label: "Help Guide", path: ROUTES.GUIDE, icon: CircleHelp },
+  // { label: "Social Hub", path: ROUTES.HUB, icon: }
 ];
 
 const accountMenuItems = [
