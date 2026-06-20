@@ -2,6 +2,7 @@ import {Link} from "react-router-dom";
 import {Check} from "lucide-react";
 import type {TopicData} from "@/features/dashboard/topic/types/topic.ts";
 import {useTopicRanking} from "@/features/dashboard/topic/hooks/useTopicRanking.ts";
+import {useEntityFollow} from "@/features/follows/hooks/useEntityFollow.ts";
 
 type TrendingPartProps = {
     startDate: string;
@@ -50,22 +51,41 @@ const stateStyle = {
     rising: "bg-yellow-100 text-yellow-700"
 };
 
+const apiBaseUrl = (
+    import.meta.env.VITE_APP_BASE_URL || "http://localhost:8080"
+).replace(/\/$/, "");
+
 function Topic({topic, id}:
                {topic:TopicData, id:number}){
+
+    const topicId = topic.topicId.split('/').at(-1);
+    const link = `${apiBaseUrl}/topics/` + topicId;
+
+    const {
+        buttonLabel,
+        handleFollowClick,
+        isFollowActionPending,
+        isFollowed,
+    } = useEntityFollow({
+        displayName: topic.name,
+        targetOpenAlexId: topic.topicId,
+        targetType: "TOPIC",
+    });
+
     return(
         <div className={`grid grid-cols-[33%_40%_27%] justify-between border-b-1
         border-slate-200 items-center px-4 py-2 ${id === 9 ? `!border-none`: null}`}>
             <div className="flex flex-row items-center gap-6">
                 <p>{id + 1}</p>
 
-                <div className="flex flex-col text-sm">
-                    <Link to={"https://i.ytimg.com/vi/3VkHPhNt9Os/maxresdefault.jpg"}
-                        className="text-blue-700 font-semibold text-lg"
+                <div className="flex flex-col text-xs">
+                    <Link to={link}
+                        className="text-blue-700 font-semibold text-base"
                     >
                         {topic.name}
                     </Link>
-                    <p className="opacity-70">{topic.works} works</p>
-                    <p className="opacity-70">{topic.citations} citations</p>
+                    <p className="opacity-70">{topic.works.toLocaleString()} works</p>
+                    <p className="opacity-70">{topic.citations.toLocaleString()} citations</p>
                 </div>
             </div>
 
@@ -82,6 +102,10 @@ function Topic({topic, id}:
 
                     <span>{topic.score}</span>
                 </div>
+
+                <p className="text-green-600">
+                    {topic.change > 0 ? `+${topic.change}` : topic.change}%
+                </p>
             </div>
 
             <div className="flex flex-row items-center gap-10 justify-between">
@@ -93,7 +117,7 @@ function Topic({topic, id}:
                     {topic.state}
                 </div>
 
-                {topic.isFollowed ? (
+                {isFollowed ? (
                     <div className="flex flex-row items-center gap-2 font-semibold
                     bg-green-100 border-2 border-green-300 text-green-800 px-2 py-1 rounded-xl">
                         <Check/>
@@ -101,8 +125,11 @@ function Topic({topic, id}:
                     </div>
                 ):(
                     <button className="bg-green-600 text-white font-bold
-                    py-[1vh] px-2 rounded-xl cursor-pointer w-[8vw]">
-                        + Follow
+                    py-[1vh] px-2 rounded-xl cursor-pointer w-[8vw]"
+                            onClick={handleFollowClick}
+                            disabled={isFollowActionPending}
+                    >
+                        {buttonLabel}
                     </button>
                 )}
             </div>

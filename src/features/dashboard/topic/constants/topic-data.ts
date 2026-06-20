@@ -4,6 +4,7 @@ import type {TopicRadarMetrics} from "@/features/dashboard/topic/types/radar.ts"
 
 export const LIST_TOPICS: TopicData[] = [
     {
+        topicId: "https://i.ytimg.com/vi/3VkHPhNt9Os/maxresdefault.jpg",
         name: "Large Language Models (LLMs)",
         works: 12450,
         citations: 89400,
@@ -13,6 +14,7 @@ export const LIST_TOPICS: TopicData[] = [
         isFollowed: true
     },
     {
+        topicId: "https://i.ytimg.com/vi/3VkHPhNt9Os/maxresdefault.jpg",
         name: "Quantum Machine Learning",
         works: 1840,
         citations: 12300,
@@ -22,6 +24,7 @@ export const LIST_TOPICS: TopicData[] = [
         isFollowed: false
     },
     {
+        topicId: "https://i.ytimg.com/vi/3VkHPhNt9Os/maxresdefault.jpg",
         name: "Perovskite Solar Cells",
         works: 5620,
         citations: 34150,
@@ -31,6 +34,7 @@ export const LIST_TOPICS: TopicData[] = [
         isFollowed: false
     },
     {
+        topicId: "https://i.ytimg.com/vi/3VkHPhNt9Os/maxresdefault.jpg",
         name: "CRISPR Gene Editing",
         works: 8900,
         citations: 62400,
@@ -40,6 +44,7 @@ export const LIST_TOPICS: TopicData[] = [
         isFollowed: true
     },
     {
+        topicId: "https://i.ytimg.com/vi/3VkHPhNt9Os/maxresdefault.jpg",
         name: "Neuromorphic Computing",
         works: 2150,
         citations: 14800,
@@ -49,6 +54,7 @@ export const LIST_TOPICS: TopicData[] = [
         isFollowed: false
     },
     {
+        topicId: "https://i.ytimg.com/vi/3VkHPhNt9Os/maxresdefault.jpg",
         name: "Solid-State Batteries",
         works: 4200,
         citations: 28900,
@@ -58,6 +64,7 @@ export const LIST_TOPICS: TopicData[] = [
         isFollowed: true
     },
     {
+        topicId: "https://i.ytimg.com/vi/3VkHPhNt9Os/maxresdefault.jpg",
         name: "Graph Neural Networks",
         works: 7310,
         citations: 45200,
@@ -67,6 +74,7 @@ export const LIST_TOPICS: TopicData[] = [
         isFollowed: false
     },
     {
+        topicId: "https://i.ytimg.com/vi/3VkHPhNt9Os/maxresdefault.jpg",
         name: "Generative AI in Drug Discovery",
         works: 1120,
         citations: 9600,
@@ -76,6 +84,7 @@ export const LIST_TOPICS: TopicData[] = [
         isFollowed: true
     },
     {
+        topicId: "https://i.ytimg.com/vi/3VkHPhNt9Os/maxresdefault.jpg",
         name: "Edge Computing Architecture",
         works: 6150,
         citations: 31200,
@@ -85,6 +94,7 @@ export const LIST_TOPICS: TopicData[] = [
         isFollowed: false
     },
     {
+        topicId: "https://i.ytimg.com/vi/3VkHPhNt9Os/maxresdefault.jpg",
         name: "Autonomous Vehicle Safety",
         works: 5430,
         citations: 27600,
@@ -93,139 +103,6 @@ export const LIST_TOPICS: TopicData[] = [
         state: "rising",
         isFollowed: false
     }
-];
-
-export const topicTrend = [
-    {
-        name: "Week 01",
-        "Large Language Models (LLMs)": 52.07,
-        "Quantum Machine Learning": 0.0,
-        "CRISPR Gene Editing": 39.57,
-        "Autonomous Vehicle Safety": 17.06,
-        "Edge Computing Architecture": 42.44,
-        "Solid-State Batteries": 71.85,
-        "Neuromorphic Computing": 80.73,
-        "Graph Neural Networks": 6.9,
-        "Generative AI in Drug Discovery": 49.73,
-        "Perovskite Solar Cells": 29.48,
-    },
-    {
-        name: "Week 02",
-        "Large Language Models (LLMs)": 0.0,
-        "Quantum Machine Learning": 44.61,
-        "CRISPR Gene Editing": 0.0,
-        "Autonomous Vehicle Safety": 54.41,
-        "Edge Computing Architecture": 19.24,
-        "Solid-State Batteries": 49.74,
-        "Neuromorphic Computing": 59.17,
-        "Graph Neural Networks": 39.84,
-        "Generative AI in Drug Discovery": 77.95,
-        "Perovskite Solar Cells": 13.63,
-    },
-    {
-        name: "Week 03",
-        "Large Language Models (LLMs)": 77.73,
-        "Quantum Machine Learning": 10.02,
-        "CRISPR Gene Editing": 24.09,
-        "Autonomous Vehicle Safety": 0.0,
-        "Edge Computing Architecture": 100.0,
-        "Solid-State Batteries": 21.85,
-        "Neuromorphic Computing": 42.22,
-        "Graph Neural Networks": 68.42,
-        "Generative AI in Drug Discovery": 25.12,
-        "Perovskite Solar Cells": 54.75,
-    },
-    {
-        name: "Week 04",
-        "Large Language Models (LLMs)": 29.47,
-        "Quantum Machine Learning": 74.06,
-        "CRISPR Gene Editing": 4.92,
-        "Autonomous Vehicle Safety": 84.03,
-        "Edge Computing Architecture": 45.48,
-        "Solid-State Batteries": 0.0,
-        "Neuromorphic Computing": 63.54,
-        "Graph Neural Networks": 18.58,
-        "Generative AI in Drug Discovery": 100.0,
-        "Perovskite Solar Cells": 35.01,
-    },
-    {
-        name: "Week 05",
-        "Large Language Models (LLMs)": 100.0,
-        "Quantum Machine Learning": 29.68,
-        "CRISPR Gene Editing": 80.88,
-        "Autonomous Vehicle Safety": 11.33,
-        "Edge Computing Architecture": 53.55,
-        "Solid-State Batteries": 68.94,
-        "Neuromorphic Computing": 13.02,
-        "Graph Neural Networks": 80.63,
-        "Generative AI in Drug Discovery": 0.0,
-        "Perovskite Solar Cells": 62.12,
-    },
-    {
-        name: "Week 06",
-        "Large Language Models (LLMs)": 3.81,
-        "Quantum Machine Learning": 68.01,
-        "CRISPR Gene Editing": 65.61,
-        "Autonomous Vehicle Safety": 42.25,
-        "Edge Computing Architecture": 9.8,
-        "Solid-State Batteries": 100.0,
-        "Neuromorphic Computing": 33.39,
-        "Graph Neural Networks": 36.3,
-        "Generative AI in Drug Discovery": 62.34,
-        "Perovskite Solar Cells": 0.0,
-    },
-    {
-        name: "Week 07",
-        "Large Language Models (LLMs)": 71.29,
-        "Quantum Machine Learning": 7.14,
-        "CRISPR Gene Editing": 16.47,
-        "Autonomous Vehicle Safety": 66.77,
-        "Edge Computing Architecture": 74.38,
-        "Solid-State Batteries": 36.92,
-        "Neuromorphic Computing": 100.0,
-        "Graph Neural Networks": 0.0,
-        "Generative AI in Drug Discovery": 33.46,
-        "Perovskite Solar Cells": 100.0,
-    },
-    {
-        name: "Week 08",
-        "Large Language Models (LLMs)": 22.89,
-        "Quantum Machine Learning": 100.0,
-        "CRISPR Gene Editing": 3.39,
-        "Autonomous Vehicle Safety": 24.21,
-        "Edge Computing Architecture": 97.57,
-        "Solid-State Batteries": 57.3,
-        "Neuromorphic Computing": 0.0,
-        "Graph Neural Networks": 100.0,
-        "Generative AI in Drug Discovery": 55.01,
-        "Perovskite Solar Cells": 26.32,
-    },
-    {
-        name: "Week 09",
-        "Large Language Models (LLMs)": 90.73,
-        "Quantum Machine Learning": 38.84,
-        "CRISPR Gene Editing": 100.0,
-        "Autonomous Vehicle Safety": 38.44,
-        "Edge Computing Architecture": 0.0,
-        "Solid-State Batteries": 92.12,
-        "Neuromorphic Computing": 20.83,
-        "Graph Neural Networks": 60.45,
-        "Generative AI in Drug Discovery": 75.91,
-        "Perovskite Solar Cells": 8.89,
-    },
-    {
-        name: "Week 10",
-        "Large Language Models (LLMs)": 12.63,
-        "Quantum Machine Learning": 84.66,
-        "CRISPR Gene Editing": 32.43,
-        "Autonomous Vehicle Safety": 100.0,
-        "Edge Computing Architecture": 29.24,
-        "Solid-State Batteries": 14.25,
-        "Neuromorphic Computing": 78.62,
-        "Graph Neural Networks": 29.19,
-        "Generative AI in Drug Discovery": 44.76,
-        "Perovskite Solar Cells": 88.12,
-    },
 ];
 
 export const topicMetrics: TopicRadarMetrics[] = [

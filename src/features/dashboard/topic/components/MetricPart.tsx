@@ -41,7 +41,7 @@ function MetricField({metrics}:{metrics: MetricData}) {
             </div>
 
             <div className="absolute left-4 top-14 text-neutral-950 text-2xl font-bold">
-                {metrics.value}
+                {metrics.value.toLocaleString()}
             </div>
 
             <div className="absolute left-4 bottom-4 text-xs text-blue-700">

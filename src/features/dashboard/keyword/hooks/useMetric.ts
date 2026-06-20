@@ -1,44 +1,33 @@
-import {useEffect, useState} from "react";
-import {keywordService} from "@/features/dashboard/keyword/services/keyword-service.ts";
-import type {KeywordMetricUI} from "@/features/dashboard/keyword/types/metric.ts";
+import {useMemo} from "react";
+import type {KeywordMetric} from "@/features/dashboard/keyword/types/metric.ts";
 import {
     KEYWORD_COLORS
 } from "@/features/dashboard/keyword/constants/metric-data.ts";
+import type {KeywordsMetric} from "@/features/dashboard/keyword/types/keyword.ts";
 
-export const useGeneralsMetric = () => {
-    const [loading, setLoading] = useState(false);
-    const [metricList, setMetricList] = useState<KeywordMetricUI[]>([]);
-    const [error, setError] = useState<string | null>(null);
+export const useGeneralsMetric = (keywordList:KeywordsMetric[]) => {
+    const metricList = useMemo<KeywordMetric[]>(() => {
+        return keywordList.map((keyword, index) => ({
+            keyword: keyword.name,
 
-    useEffect(() => {
-        const fetchMetricList = async () => {
-            setLoading(true);
-            setError(null);
+            cagr: keyword.cagr,
 
-            try {
-                const data = await keywordService.getMetricList();
+            publicationShare: keyword.ps,
 
-                const mergedMetrics = data.map((item, index) => ({
-                    ...item,
-                    color:
-                        KEYWORD_COLORS[index % KEYWORD_COLORS.length],
-                }));
+            recentPapers: keyword.worksCount,
 
-                setMetricList(mergedMetrics);
+            hotScore: Number(
+                (keyword.score * 100).toFixed(1),
+            ),
 
-            } catch (err) {
-                setError(
-                    err instanceof Error
-                        ? err.message
-                        : "Failed to load metrics"
-                );
-            } finally {
-                setLoading(false);
-            }
-        };
+            color:
+                KEYWORD_COLORS[
+                index % KEYWORD_COLORS.length
+                    ],
+        }));
+    }, [keywordList]);
 
-        fetchMetricList();
-    }, []);
-
-    return { loading, metricList, error };
+    return {
+        metricList,
+    };
 };
