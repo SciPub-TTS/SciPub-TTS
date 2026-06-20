@@ -11,12 +11,7 @@ import PaperReferencesSection from "./sections/PaperReferencesSection";
 import PaperSourceAccessSection from "./sections/PaperSourceAccessSection";
 
 import { usePaperDetailPageState } from "../hooks";
-import { buildPaperContributorsSection } from "../view-models/contributorsSection";
-import { buildPaperImpactSection } from "../view-models/impactSection";
-import { buildPaperOverviewSection } from "../view-models/overviewSection";
-import { buildPaperQuickLinksSection } from "../view-models/quickLinksSection";
-import { buildPaperReferencesSection } from "../view-models/referencesSection";
-import { buildPaperSourceAccessSection } from "../view-models/sourceAccessSection";
+import { buildPaperDetailSections } from "../view-models/paperDetailSections";
 
 export default function PaperDetailPage() {
   const { errorMessage, isLoading, paperDetail } = usePaperDetailPageState();
@@ -29,12 +24,7 @@ export default function PaperDetailPage() {
     return <PaperDetailErrorState message={errorMessage} />;
   }
 
-  const overviewSection = buildPaperOverviewSection(paperDetail);
-  const contributorsSection = buildPaperContributorsSection(paperDetail);
-  const sourceAccessSection = buildPaperSourceAccessSection(paperDetail);
-  const impactSection = buildPaperImpactSection(paperDetail);
-  const quickLinksSection = buildPaperQuickLinksSection(paperDetail);
-  const referencesSection = buildPaperReferencesSection(paperDetail);
+  const sections = buildPaperDetailSections(paperDetail);
 
   return (
     <section className="space-y-6">
@@ -42,15 +32,15 @@ export default function PaperDetailPage() {
 
       <div className="grid gap-6 xl:grid-cols-3">
         <div className="space-y-6 xl:col-span-2">
-          <PaperOverviewSection section={overviewSection} />
-          <PaperContributorsSection section={contributorsSection} />
-          <PaperSourceAccessSection section={sourceAccessSection} />
+          <PaperOverviewSection section={sections.overview} />
+          <PaperContributorsSection section={sections.contributors} />
+          <PaperSourceAccessSection section={sections.sourceAccess} />
         </div>
 
         <div className="space-y-6 xl:col-span-1">
-          <PaperReferencesSection section={referencesSection} />
-          <PaperImpactSection section={impactSection} />
-          <PaperQuickLinksSection section={quickLinksSection} />
+          <PaperReferencesSection section={sections.references} />
+          <PaperImpactSection section={sections.impact} />
+          <PaperQuickLinksSection section={sections.quickLinks} />
         </div>
       </div>
     </section>

@@ -1,137 +1,108 @@
-import { Ban, Search, X } from "lucide-react";
+import { Ban, CheckCircle2, RefreshCw, Search, X } from "lucide-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { ReactNode } from "react";
-import { useMemo, useState } from "react";
 
+import {
+  getAdminUserFullName,
+  useAdminUsersPage,
+} from "@/features/admin/hooks";
+import type {
+  AdminUserApi,
+  AdminUserRole,
+} from "@/features/admin/types";
 import Pagination from "@/layout/components/Pagination";
 
-type AdminUser = {
-  authors: number;
-  createdAt: string;
-  email: string;
-  fullName: string;
-  id: string;
-  role: "Admin" | "Lecturer" | "Researcher" | "Student";
-  status: "Active" | "Banned";
-  topics: number;
-};
+type UserStatus = "Active" | "Banned";
 
-const adminUsers: AdminUser[] = [
-  {
-    id: "U-001",
-    fullName: "Nguyen An Khang",
-    email: "student01@email.com",
-    role: "Student",
-    status: "Active",
-    topics: 6,
-    authors: 3,
-    createdAt: "Today, 10:12 AM",
-  },
-  {
-    id: "U-002",
-    fullName: "Tran Thi Minh",
-    email: "researcher02@email.com",
-    role: "Researcher",
-    status: "Active",
-    topics: 12,
-    authors: 9,
-    createdAt: "Today, 08:45 AM",
-  },
-  {
-    id: "U-003",
-    fullName: "Le Van Phong",
-    email: "lecturer03@email.com",
-    role: "Lecturer",
-    status: "Active",
-    topics: 8,
-    authors: 5,
-    createdAt: "Yesterday, 06:20 PM",
-  },
-  {
-    id: "U-004",
-    fullName: "Pham Hoang Vy",
-    email: "student04@email.com",
-    role: "Student",
-    status: "Banned",
-    topics: 2,
-    authors: 1,
-    createdAt: "Apr 14, 2026",
-  },
-  {
-    id: "U-005",
-    fullName: "Heather Piwowar",
-    email: "researcher05@email.com",
-    role: "Researcher",
-    status: "Active",
-    topics: 5,
-    authors: 3,
-    createdAt: "May 22, 2026",
-  },
-  {
-    id: "U-006",
-    fullName: "Do Quang Huy",
-    email: "admin@owlreka.io",
-    role: "Admin",
-    status: "Active",
-    topics: 0,
-    authors: 0,
-    createdAt: "Today, 11:00 AM",
-  },
-];
-
-const USERS_PAGE_SIZE = 4;
-
-const roleClassMap: Record<AdminUser["role"], string> = {
-  Admin: "bg-emerald-50 text-emerald-700 ring-emerald-100",
-  Lecturer: "bg-amber-50 text-amber-700 ring-amber-100",
-  Researcher: "bg-slate-100 text-slate-600 ring-slate-200",
-  Student: "bg-blue-50 text-blue-700 ring-blue-100",
-};
-
-const statusClassMap: Record<AdminUser["status"], string> = {
+const statusClassMap: Record<UserStatus, string> = {
   Active: "bg-green-50 text-green-700 ring-green-100",
   Banned: "bg-red-50 text-red-700 ring-red-100",
 };
 
-export default function AdminUsersPage() {
-  const [users, setUsers] = useState(adminUsers);
-  const [query, setQuery] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+const booleanClassMap = {
+  no: "bg-slate-100 text-slate-600 ring-slate-200",
+  yes: "bg-green-50 text-green-700 ring-green-100",
+};
 
-  const filteredUsers = useMemo(() => {
-    const normalizedQuery = query.trim().toLowerCase();
+function getAdminUsersQueryKey(
+  page: number,
+  size: number,
+): AdminUsersQueryKey {
+  return ["adminUsers", page, size, DEFAULT_SORT] as const;
+}
 
-    if (!normalizedQuery) return users;
+function buildFullName(user: AdminUserResponse) {
+  const fullName = [user.firstName, user.lastName]
+    .map((value) => value?.trim())
+    .filter(Boolean)
+    .join(" ");
 
-    return users.filter((user) =>
-      [user.id, user.fullName, user.email, user.status]
-        .join(" ")
-        .toLowerCase()
-        .includes(normalizedQuery),
-    );
-  }, [query, users]);
+  return fullName || user.email;
+}
 
-  const selectedUser =
-    users.find((user) => user.id === selectedUserId) ?? null;
-  const totalFilteredUsers = filteredUsers.length;
-  const paginatedUsers = useMemo(() => {
-    const startIndex = (currentPage - 1) * USERS_PAGE_SIZE;
+function formatRole(role: string) {
+  return role.trim().toUpperCase() || "USER";
+}
 
-    return filteredUsers.slice(startIndex, startIndex + USERS_PAGE_SIZE);
-  }, [currentPage, filteredUsers]);
+function formatCreatedAt(value: string) {
+  if (!value) return "Unknown";
 
-  function toggleUserBan(userId: string) {
-    setUsers((currentUsers) =>
-      currentUsers.map((user) => {
-        if (user.id !== userId || user.role === "Admin") return user;
+  const date = new Date(value);
 
-        return {
-          ...user,
-          status: user.status === "Banned" ? "Active" : "Banned",
-        };
-      }),
-    );
+  if (Number.isNaN(date.getTime())) {
+    return value;
   }
+
+  return new Intl.DateTimeFormat("en", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(date);
+}
+
+function mapUserToView(user: AdminUserResponse): AdminUserView {
+  return {
+    createdAt: formatCreatedAt(user.createdAt),
+    email: user.email,
+    emailVerified: user.emailVerified,
+    fullName: buildFullName(user),
+    googleLinked: user.googleLinked,
+    id: user.id,
+    role: formatRole(user.role),
+    status: user.banned ? "Banned" : "Active",
+  };
+}
+
+function patchUserInPage(
+  page: AdminUserPageResponse | undefined,
+  userId: string,
+  updater: (user: AdminUserResponse) => AdminUserResponse,
+) {
+  if (!page) return page;
+
+  return {
+    ...page,
+    items: page.items.map((user) => (user.id === userId ? updater(user) : user)),
+  };
+}
+
+export default function AdminUsersPage() {
+  const {
+    accountStatusErrorMessage,
+    currentPage,
+    filteredUsers,
+    handleChangeSelectedAccountStatus,
+    handleCloseUserDialog,
+    handlePageChange,
+    handleSearchQueryChange,
+    handleSelectUser,
+    isLoadingUsers,
+    isSelectedUserChangingStatus,
+    listErrorMessage,
+    pageSize,
+    query,
+    selectedUser,
+    totalUsers,
+  } = useAdminUsersPage();
 
   return (
     <>
@@ -141,7 +112,6 @@ export default function AdminUsersPage() {
             <h2 className="text-lg font-bold text-slate-950">
               User Account Management
             </h2>
-            
           </div>
 
           <label className="relative block w-full max-w-sm">
@@ -149,16 +119,21 @@ export default function AdminUsersPage() {
             <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
             <input
               className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-11 pr-4 text-sm font-medium text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-blue-300 focus:ring-4 focus:ring-blue-50"
-              onChange={(event) => {
-                setQuery(event.target.value);
-                setCurrentPage(1);
-              }}
-              placeholder="Search users by name, email, or status..."
+              onChange={(event) =>
+                handleSearchQueryChange(event.target.value)
+              }
+              placeholder="Search users by name or email..."
               type="search"
               value={query}
             />
           </label>
         </div>
+
+        {feedbackMessage && (
+          <div className="border-b border-slate-100 bg-blue-50 px-5 py-3 text-sm font-semibold text-blue-700">
+            {feedbackMessage}
+          </div>
+        )}
 
         <div className="overflow-x-auto">
           <table className="w-full min-w-[720px] border-collapse text-left">
@@ -168,92 +143,240 @@ export default function AdminUsersPage() {
                 <th className="px-5 py-4">Full Name</th>
                 <th className="px-5 py-4">Email</th>
                 <th className="px-5 py-4">Status</th>
-                <th className="px-5 py-4">Topics</th>
-                <th className="px-5 py-4">Authors</th>
+                <th className="px-5 py-4">Email Verified</th>
                 <th className="px-5 py-4">Created At</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {paginatedUsers.map((user, index) => (
-                <tr
-                  key={user.id}
-                  className="cursor-pointer text-sm font-medium text-slate-700 transition hover:bg-blue-50/60 focus-within:bg-blue-50/60"
-                  onClick={() => setSelectedUserId(user.id)}
-                  onKeyDown={(event) => {
-                    if (event.key === "Enter" || event.key === " ") {
-                      event.preventDefault();
-                      setSelectedUserId(user.id);
-                    }
-                  }}
-                  tabIndex={0}
-                >
-                  <td className="whitespace-nowrap px-5 py-4 text-slate-500">
-                    {(currentPage - 1) * USERS_PAGE_SIZE + index + 1}
-                  </td>
-                  <td className="whitespace-nowrap px-5 py-4 font-semibold text-slate-700">
-                    {user.fullName}
-                  </td>
-                  <td className="whitespace-nowrap px-5 py-4">
-                    <span className="font-semibold text-blue-500">
-                      {user.email}
-                    </span>
-                  </td>
-                  <td className="whitespace-nowrap px-5 py-4">
-                    <Badge className={statusClassMap[user.status]}>
-                      {user.status}
-                    </Badge>
-                  </td>
-                  <td className="whitespace-nowrap px-5 py-4">{user.topics}</td>
-                  <td className="whitespace-nowrap px-5 py-4">
-                    {user.authors}
-                  </td>
-                  <td className="whitespace-nowrap px-5 py-4 text-slate-500">
-                    {user.createdAt}
-                  </td>
-                </tr>
-              ))}
+              {!isLoadingUsers &&
+                filteredUsers.map((user, index) => (
+                  <tr
+                    key={user.id}
+                    className="cursor-pointer text-sm font-medium text-slate-700 transition hover:bg-blue-50/60 focus-within:bg-blue-50/60"
+                    onClick={() => handleSelectUser(user.id)}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        handleSelectUser(user.id);
+                      }
+                    }}
+                    tabIndex={0}
+                  >
+                    <td className="whitespace-nowrap px-5 py-4 text-slate-500">
+                      {(currentPage - 1) * pageSize + index + 1}
+                    </td>
+                    <td className="whitespace-nowrap px-5 py-4 font-semibold text-slate-700">
+                      {getAdminUserFullName(user)}
+                    </td>
+                    <td className="whitespace-nowrap px-5 py-4">
+                      <span className="font-semibold text-blue-500">
+                        {user.email}
+                      </span>
+                    </td>
+                    <td className="whitespace-nowrap px-5 py-4">
+                      <Badge className={statusClassMap[getUserStatus(user)]}>
+                        {getUserStatus(user)}
+                      </Badge>
+                    </td>
+                    <td className="whitespace-nowrap px-5 py-4">-</td>
+                    <td className="whitespace-nowrap px-5 py-4">-</td>
+                    <td className="whitespace-nowrap px-5 py-4 text-slate-500">
+                      {formatDateTime(user.createdAt)}
+                    </td>
+                  </tr>
+                ))}
             </tbody>
           </table>
 
-          {filteredUsers.length === 0 && (
+          {isLoadingUsers && (
             <div className="border-t border-slate-100 px-5 py-10 text-center text-sm font-medium text-slate-500">
-              No users found.
+              Loading users...
             </div>
           )}
+
+          {!isLoadingUsers && listErrorMessage && (
+            <div className="border-t border-slate-100 px-5 py-10 text-center text-sm font-medium text-red-600">
+              {listErrorMessage}
+            </div>
+          )}
+
+          {!isLoadingUsers &&
+            !listErrorMessage &&
+            filteredUsers.length === 0 && (
+              <div className="border-t border-slate-100 px-5 py-10 text-center text-sm font-medium text-slate-500">
+                No users found.
+              </div>
+            )}
         </div>
 
-        {filteredUsers.length > 0 && (
+        {!isLoadingUsers && !listErrorMessage && totalUsers > 0 && (
           <Pagination
             currentPage={currentPage}
-            pageSize={USERS_PAGE_SIZE}
-            totalItems={totalFilteredUsers}
-            onPageChange={setCurrentPage}
+            pageSize={pageSize}
+            totalItems={totalUsers}
+            onPageChange={handlePageChange}
           />
         )}
       </section>
 
       {selectedUser && (
         <UserDetailDialog
-          onClose={() => setSelectedUserId(null)}
-          onToggleBan={() => toggleUserBan(selectedUser.id)}
+          accountStatusErrorMessage={accountStatusErrorMessage}
+          isChangingStatus={isSelectedUserChangingStatus}
+          onChangeAccountStatus={handleChangeSelectedAccountStatus}
+          onClose={handleCloseUserDialog}
           user={selectedUser}
+        />
+      )}
+
+      {pendingConfirmation && (
+        <ConfirmAccountStatusDialog
+          action={pendingConfirmation.action}
+          isUpdating={toggleBanMutation.isPending}
+          onCancel={() => setPendingConfirmation(null)}
+          onConfirm={handleConfirmToggleBan}
+          user={pendingConfirmation.user}
         />
       )}
     </>
   );
 }
 
-function UserDetailDialog({
-  onClose,
-  onToggleBan,
+function ConfirmAccountStatusDialog({
+  action,
+  isUpdating,
+  onCancel,
+  onConfirm,
   user,
 }: {
-  onClose: () => void;
-  onToggleBan: () => void;
-  user: AdminUser;
+  action: ToggleBanVariables["action"];
+  isUpdating: boolean;
+  onCancel: () => void;
+  onConfirm: () => void;
+  user: AdminUserView;
 }) {
-  const canBan = user.role !== "Admin";
-  const actionLabel = user.status === "Banned" ? "Unban account" : "Ban account";
+  const isBanAction = action === "ban";
+  const title = isBanAction ? "Confirm account ban" : "Confirm account unban";
+  const message = isBanAction
+    ? "This account will lose access immediately and active sessions may be revoked."
+    : "This account will be allowed to access the system again.";
+  const confirmLabel = isBanAction ? "Yes, ban account" : "Yes, unban account";
+  const nextStatus = isBanAction ? "Banned" : "Active";
+
+  return (
+    <div
+      aria-modal="true"
+      className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/60 p-4"
+      role="dialog"
+    >
+      <div className="w-full max-w-xl rounded-xl bg-white shadow-2xl">
+        <div className="flex items-start justify-between gap-4 border-b border-slate-100 p-5">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-400">
+              Confirmation
+            </p>
+            <h3 className="mt-2 text-xl font-bold text-slate-950">{title}</h3>
+            <p className="mt-2 text-sm font-medium leading-6 text-slate-500">
+              {message}
+            </p>
+          </div>
+
+          <button
+            aria-label="Close confirmation"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-60"
+            disabled={isUpdating}
+            onClick={onCancel}
+            type="button"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        <div className="grid min-h-[222px] gap-3 p-5 sm:grid-cols-2">
+          <DetailItem label="Full Name" value={user.fullName} />
+          <DetailItem
+            label="Role"
+            value={
+              <Badge className={roleClassMap[user.role] || roleClassMap.STUDENT}>
+                {user.role}
+              </Badge>
+            }
+          />
+          <DetailItem
+            label="Current Status"
+            value={
+              <Badge className={statusClassMap[user.status]}>
+                {user.status}
+              </Badge>
+            }
+          />
+          <DetailItem label="Email" value={user.email} />
+          <DetailItem
+            label="New Status"
+            value={
+              <Badge className={statusClassMap[nextStatus]}>
+                {nextStatus}
+              </Badge>
+            }
+          />
+        </div>
+
+        <div className="flex flex-col gap-3 border-t border-slate-100 p-5 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-xs font-medium text-slate-500">
+            This action will be applied immediately after confirmation.
+          </p>
+
+          <div className="flex justify-end gap-3">
+          <button
+            className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-bold text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+            disabled={isUpdating}
+            onClick={onCancel}
+            type="button"
+          >
+            Cancel
+          </button>
+          <button
+            className={[
+              "inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-bold text-white transition disabled:cursor-not-allowed disabled:opacity-60",
+              isBanAction
+                ? "bg-red-600 hover:bg-red-700"
+                : "bg-green-600 hover:bg-green-700",
+            ].join(" ")}
+            disabled={isUpdating}
+            onClick={onConfirm}
+            type="button"
+          >
+            {isBanAction ? (
+              <Ban className="h-4 w-4" />
+            ) : (
+              <CheckCircle2 className="h-4 w-4" />
+            )}
+            {isUpdating ? "Updating..." : confirmLabel}
+          </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function UserDetailDialog({
+  accountStatusErrorMessage,
+  isChangingStatus,
+  onChangeAccountStatus,
+  onClose,
+  user,
+}: {
+  accountStatusErrorMessage: string;
+  isChangingStatus: boolean;
+  onChangeAccountStatus: () => void;
+  onClose: () => void;
+  user: AdminUserApi;
+}) {
+  const status = getUserStatus(user);
+  const canChangeStatus = user.role !== "ADMIN";
+  const actionLabel = user.banned ? "Unban account" : "Ban account";
+  const pendingLabel = user.banned ? "Unbanning..." : "Banning...";
 
   return (
     <div
@@ -268,7 +391,7 @@ function UserDetailDialog({
               User Details
             </p>
             <h3 className="mt-2 text-xl font-bold text-slate-950">
-              {user.fullName}
+              {getAdminUserFullName(user)}
             </h3>
             <p className="mt-1 text-sm font-medium text-blue-500">
               {user.email}
@@ -286,30 +409,38 @@ function UserDetailDialog({
         </div>
 
         <div className="grid gap-3 p-5 sm:grid-cols-2">
-          <DetailItem label="User ID" value={user.id} />
           <DetailItem
             label="Role"
             value={
-              <Badge className={roleClassMap[user.role]}>{user.role}</Badge>
+              <Badge className={getRoleClassName(user.role)}>
+                {formatRole(user.role)}
+              </Badge>
             }
           />
           <DetailItem
             label="Status"
             value={
-              <Badge className={statusClassMap[user.status]}>
-                {user.status}
+              <Badge className={statusClassMap[status]}>
+                {status}
               </Badge>
             }
           />
-          <DetailItem label="Created At" value={user.createdAt} />
-          <DetailItem label="Followed Topics" value={user.topics.toString()} />
-          <DetailItem label="Followed Authors" value={user.authors.toString()} />
+          <DetailItem label="Created At" value={formatDateTime(user.createdAt)} />
+          <DetailItem label="Followed Topics" value="-" />
+          <DetailItem label="Followed Authors" value="-" />
         </div>
 
         <div className="flex flex-col gap-3 border-t border-slate-100 p-5 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-xs font-medium text-slate-500">
-            Admin accounts cannot be banned from this table.
-          </p>
+          <div className="space-y-2">
+            <p className="text-xs font-medium text-slate-500">
+              Admin accounts cannot be changed from this table.
+            </p>
+            {accountStatusErrorMessage && (
+              <p className="text-xs font-semibold text-red-600">
+                {accountStatusErrorMessage}
+              </p>
+            )}
+          </div>
 
           <div className="flex justify-end gap-3">
             <button
@@ -319,19 +450,20 @@ function UserDetailDialog({
             >
               Close
             </button>
-            {canBan && (
+            {canChangeStatus && (
               <button
                 className={[
-                  "inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-bold text-white transition",
-                  user.status === "Banned"
+                  "inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-bold text-white transition disabled:cursor-not-allowed disabled:opacity-60",
+                  user.banned
                     ? "bg-green-600 hover:bg-green-700"
                     : "bg-red-600 hover:bg-red-700",
                 ].join(" ")}
-                onClick={onToggleBan}
+                disabled={isChangingStatus}
+                onClick={onChangeAccountStatus}
                 type="button"
               >
                 <Ban className="h-4 w-4" />
-                {actionLabel}
+                {isChangingStatus ? pendingLabel : actionLabel}
               </button>
             )}
           </div>
@@ -362,7 +494,7 @@ function Badge({
   children,
   className,
 }: {
-  children: string;
+  children: ReactNode;
   className: string;
 }) {
   return (
@@ -375,4 +507,44 @@ function Badge({
       {children}
     </span>
   );
+}
+
+function getUserStatus(user: AdminUserApi): UserStatus {
+  return user.banned ? "Banned" : "Active";
+}
+
+function formatRole(role: AdminUserRole) {
+  return role
+    .toLowerCase()
+    .split("_")
+    .map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1))
+    .join(" ");
+}
+
+function getRoleClassName(role: AdminUserRole) {
+  switch (role) {
+    case "ADMIN":
+      return "bg-emerald-50 text-emerald-700 ring-emerald-100";
+    case "LECTURER":
+      return "bg-amber-50 text-amber-700 ring-amber-100";
+    case "RESEARCHER":
+      return "bg-slate-100 text-slate-600 ring-slate-200";
+    case "STUDENT":
+      return "bg-blue-50 text-blue-700 ring-blue-100";
+    default:
+      return "bg-slate-100 text-slate-600 ring-slate-200";
+  }
+}
+
+function formatDateTime(value: string) {
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  return new Intl.DateTimeFormat("en", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(date);
 }
