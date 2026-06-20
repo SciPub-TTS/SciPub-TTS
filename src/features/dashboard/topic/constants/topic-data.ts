@@ -4,6 +4,7 @@ import type {TopicRadarMetrics} from "@/features/dashboard/topic/types/radar.ts"
 
 export const LIST_TOPICS: TopicData[] = [
     {
+        topicId: "https://i.ytimg.com/vi/3VkHPhNt9Os/maxresdefault.jpg",
         name: "Large Language Models (LLMs)",
         works: 12450,
         citations: 89400,
@@ -13,6 +14,7 @@ export const LIST_TOPICS: TopicData[] = [
         isFollowed: true
     },
     {
+        topicId: "https://i.ytimg.com/vi/3VkHPhNt9Os/maxresdefault.jpg",
         name: "Quantum Machine Learning",
         works: 1840,
         citations: 12300,
@@ -22,6 +24,7 @@ export const LIST_TOPICS: TopicData[] = [
         isFollowed: false
     },
     {
+        topicId: "https://i.ytimg.com/vi/3VkHPhNt9Os/maxresdefault.jpg",
         name: "Perovskite Solar Cells",
         works: 5620,
         citations: 34150,
@@ -31,6 +34,7 @@ export const LIST_TOPICS: TopicData[] = [
         isFollowed: false
     },
     {
+        topicId: "https://i.ytimg.com/vi/3VkHPhNt9Os/maxresdefault.jpg",
         name: "CRISPR Gene Editing",
         works: 8900,
         citations: 62400,
@@ -40,6 +44,7 @@ export const LIST_TOPICS: TopicData[] = [
         isFollowed: true
     },
     {
+        topicId: "https://i.ytimg.com/vi/3VkHPhNt9Os/maxresdefault.jpg",
         name: "Neuromorphic Computing",
         works: 2150,
         citations: 14800,
@@ -49,6 +54,7 @@ export const LIST_TOPICS: TopicData[] = [
         isFollowed: false
     },
     {
+        topicId: "https://i.ytimg.com/vi/3VkHPhNt9Os/maxresdefault.jpg",
         name: "Solid-State Batteries",
         works: 4200,
         citations: 28900,
@@ -58,6 +64,7 @@ export const LIST_TOPICS: TopicData[] = [
         isFollowed: true
     },
     {
+        topicId: "https://i.ytimg.com/vi/3VkHPhNt9Os/maxresdefault.jpg",
         name: "Graph Neural Networks",
         works: 7310,
         citations: 45200,
@@ -67,6 +74,7 @@ export const LIST_TOPICS: TopicData[] = [
         isFollowed: false
     },
     {
+        topicId: "https://i.ytimg.com/vi/3VkHPhNt9Os/maxresdefault.jpg",
         name: "Generative AI in Drug Discovery",
         works: 1120,
         citations: 9600,
@@ -76,6 +84,7 @@ export const LIST_TOPICS: TopicData[] = [
         isFollowed: true
     },
     {
+        topicId: "https://i.ytimg.com/vi/3VkHPhNt9Os/maxresdefault.jpg",
         name: "Edge Computing Architecture",
         works: 6150,
         citations: 31200,
@@ -85,6 +94,7 @@ export const LIST_TOPICS: TopicData[] = [
         isFollowed: false
     },
     {
+        topicId: "https://i.ytimg.com/vi/3VkHPhNt9Os/maxresdefault.jpg",
         name: "Autonomous Vehicle Safety",
         works: 5430,
         citations: 27600,
