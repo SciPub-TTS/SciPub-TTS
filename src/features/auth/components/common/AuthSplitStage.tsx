@@ -10,12 +10,12 @@ export default function AuthSplitStage({
   showcase,
 }: AuthSplitStageProps) {
   return (
-    <section className="relative overflow-hidden rounded-[2.5rem] border border-black bg-[#fffdf8] shadow-[16px_18px_0_rgba(15,23,42,0.08)]">
+    <section className="relative overflow-hidden rounded-[2.5rem] border border-black bg-[#fffdf8]/92 shadow-[16px_18px_0_rgba(15,23,42,0.08)] backdrop-blur-sm">
       <div
-        className="absolute inset-0 opacity-60"
+        className="absolute inset-0 opacity-95"
         style={{
           backgroundImage:
-            "radial-gradient(circle at 20% 24%, rgba(243,112,33,0.08), transparent 18%), radial-gradient(circle at 84% 24%, rgba(0,174,239,0.09), transparent 18%), radial-gradient(circle at 74% 78%, rgba(122,193,67,0.10), transparent 20%)",
+            "radial-gradient(circle at 18% 22%, rgba(34,197,94,0.16), transparent 20%), radial-gradient(circle at 82% 18%, rgba(14,165,233,0.2), transparent 22%), radial-gradient(circle at 74% 76%, rgba(59,130,246,0.16), transparent 24%), radial-gradient(circle at 12% 86%, rgba(22,163,74,0.14), transparent 18%)",
         }}
       />
 
@@ -37,13 +37,13 @@ export default function AuthSplitStage({
       <div className="absolute left-[calc(50%-24px)] top-[8%] hidden h-[84%] w-px bg-black/18 lg:block" />
       <div className="absolute left-[calc(50%+24px)] top-[8%] hidden h-[84%] w-px bg-black/10 lg:block" />
 
-      <div className="relative z-10 grid min-h-[780px] lg:grid-cols-[minmax(0,0.96fr)_minmax(0,1.04fr)]">
+      <div className="relative z-10 grid min-h-[780px] lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
         <div className="flex items-center px-5 py-7 sm:px-7 lg:px-10 lg:py-10">
-          <div className="w-full max-w-[560px]">{panel}</div>
+          <div className="w-full max-w-[628px]">{panel}</div>
         </div>
 
         <div className="relative flex min-h-[360px] items-stretch px-5 pb-6 pt-2 sm:px-7 lg:px-8 lg:py-8">
-          <div className="w-full">{showcase}</div>
+          <div className="w-full max-w-[628px]">{showcase}</div>
         </div>
       </div>
     </section>

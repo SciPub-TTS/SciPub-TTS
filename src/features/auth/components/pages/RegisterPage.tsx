@@ -100,10 +100,10 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col overflow-hidden bg-[linear-gradient(rgba(255,254,251,0.52),rgba(247,251,255,0.5)),url('/background.png')] bg-cover bg-center bg-no-repeat">
+    <div className="flex min-h-screen flex-col overflow-hidden bg-[linear-gradient(rgba(230,255,244,0.28),rgba(226,244,255,0.22)),url('/background.png')] bg-cover bg-center bg-no-repeat">
       <AuthHeader backTo={ROUTES.HOME} backLabel="Back to home" />
 
-      <main className="mx-auto flex w-full max-w-[1292px] flex-1 px-4 py-6 sm:px-6 lg:px-8 lg:py-10">
+      <main className="mx-auto flex w-full max-w-[1360px] flex-1 px-4 py-6 sm:px-6 lg:px-8 lg:py-10">
         <AuthSplitStage
           panel={
             <RegisterFormPanel

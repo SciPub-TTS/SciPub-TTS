@@ -150,8 +150,8 @@ export function useSearchPageState() {
     async function loadWeeklyTrendSnapshot() {
       try {
         const [topicResult, keywordResult] = await Promise.allSettled([
-          getTrendingTopics("2026-06-15", 12),
-          getTrendingKeywords("2026-06-15", 16),
+          getTrendingTopics(undefined, 12),
+          getTrendingKeywords(undefined, 16),
         ]);
 
         if (isCancelled) {
