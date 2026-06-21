@@ -77,11 +77,11 @@ function PasswordField({
 }: FieldProps) {
   return (
     <div>
-      <label className="mb-1.5 block text-sm font-medium text-slate-700">
+      <label className="mb-1.5 block text-sm font-medium text-black">
         {label}
       </label>
       <div className="relative">
-        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-black/65">
           <LockIcon />
         </span>
         <input
@@ -92,12 +92,12 @@ function PasswordField({
           }}
           placeholder={placeholder}
           required
-          className="h-11 w-full rounded-lg border border-slate-200 pl-9 pr-10 text-sm text-slate-900 placeholder-slate-400 transition-all focus:border-transparent focus:outline-none focus:ring-2 focus:ring-emerald-500"
+          className="h-11 w-full rounded-lg border border-black pl-9 pr-10 text-sm text-black placeholder:text-black/35 transition-all focus:border-black focus:outline-none focus:ring-0"
         />
         <button
           type="button"
           onClick={onToggleShow}
-          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 transition-colors hover:text-slate-600"
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-black/65 transition-colors hover:text-black"
         >
           <EyeIcon open={show} />
         </button>
@@ -219,8 +219,8 @@ export default function ChangePasswordPage() {
   return (
     <div className="max-w-2xl">
       <div className="mb-6">
-        <h2 className="text-xl font-semibold text-slate-900">{title}</h2>
-        <p className="mt-1 text-sm text-slate-500">{description}</p>
+        <h2 className="text-xl font-semibold text-black">{title}</h2>
+        <p className="mt-1 text-sm text-black/65">{description}</p>
       </div>
 
       {error ? (
@@ -257,7 +257,7 @@ export default function ChangePasswordPage() {
           />
         ) : null}
 
-        {hasPassword ? <div className="h-px bg-slate-100" /> : null}
+        {hasPassword ? <div className="h-px bg-black/10" /> : null}
 
         {isGoogleOnly ? (
           <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
@@ -278,12 +278,12 @@ export default function ChangePasswordPage() {
         {form.newPassword.length > 0 ? (
           <div className="-mt-2 space-y-2">
             <div className="flex items-center gap-2">
-              <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-slate-100">
+              <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-black/10">
                 <div
                   className={`h-full rounded-full transition-all duration-500 ${strengthColor} ${strengthWidth}`}
                 />
               </div>
-              <span className="w-16 text-right text-xs text-slate-500">
+              <span className="w-16 text-right text-xs text-black/65">
                 {strengthLabel}
               </span>
             </div>
@@ -296,7 +296,7 @@ export default function ChangePasswordPage() {
               ].map((check) => (
                 <span
                   key={check.label}
-                  className={`flex items-center gap-1.5 text-xs ${check.ok ? "text-emerald-600" : "text-slate-400"}`}
+                  className={`flex items-center gap-1.5 text-xs ${check.ok ? "text-emerald-600" : "text-black/45"}`}
                 >
                   <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
                     {check.ok ? (
@@ -311,11 +311,11 @@ export default function ChangePasswordPage() {
                         />
                       </>
                     ) : (
-                      <circle
+                        <circle
                         cx="6"
                         cy="6"
                         r="5.5"
-                        stroke="#cbd5e1"
+                        stroke="rgba(0,0,0,0.28)"
                         strokeWidth="1"
                       />
                     )}
@@ -380,7 +380,7 @@ export default function ChangePasswordPage() {
           </p>
         </div>
 
-        <div className="flex items-center justify-between border-t border-slate-100 pt-2">
+        <div className="flex items-center justify-between border-t border-black/10 pt-2">
           <button
             type="button"
             onClick={() => {
@@ -390,8 +390,22 @@ export default function ChangePasswordPage() {
                 confirmNewPassword: "",
               });
             }}
-            className="text-sm text-slate-500 transition-colors hover:text-slate-700"
+            className="flex h-10 items-center gap-2 rounded-lg border border-[#991B1B] bg-[#B91C1C] px-5 text-sm font-semibold text-white transition-all hover:bg-[#991B1B]"
           >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M18 6L6 18"
+                stroke="white"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+              />
+              <path
+                d="M6 6l12 12"
+                stroke="white"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+              />
+            </svg>
             Discard changes
           </button>
 

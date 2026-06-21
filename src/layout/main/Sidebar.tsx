@@ -15,6 +15,7 @@ import { ROUTES } from "@/app/router";
 import logoImage from "@/assets/images/logo.png";
 import { useAuthSession } from "@/features/auth/hooks/useAuthSession";
 import { submitLogout } from "@/features/auth/services/authFlows";
+import { parseDetailOrigin } from "@/features/detail/detailTrail";
 
 const workspaceMenuItems = [
   { label: "Trending", path: ROUTES.TRENDING_TOPIC, icon: LayoutDashboard },
@@ -47,6 +48,11 @@ export default function MainSidebar() {
   const displayName = currentUser?.fullName ?? "Guest";
   const displayEmail = currentUser?.email ?? "Sign in to manage your profile";
   const initials = getInitials(displayName) || "G";
+  const detailOrigin = parseDetailOrigin(location.search);
+  const isDetailPage =
+    location.pathname.startsWith("/papers/") ||
+    location.pathname.startsWith("/authors/") ||
+    location.pathname.startsWith("/topics/");
 
   async function handleLogout() {
     await submitLogout();
@@ -84,9 +90,11 @@ export default function MainSidebar() {
             const isSearchSectionActive =
               item.path === ROUTES.SEARCH &&
               (location.pathname === ROUTES.SEARCH ||
-                location.pathname.startsWith("/papers/") ||
-                location.pathname.startsWith("/authors/") ||
-                location.pathname.startsWith("/topics/"));
+                (isDetailPage && detailOrigin !== "bookmarks"));
+            const isBookmarksSectionActive =
+              item.path === ROUTES.BOOKMARKS &&
+              (location.pathname === ROUTES.BOOKMARKS ||
+                (isDetailPage && detailOrigin === "bookmarks"));
 
             return (
               <NavLink
@@ -95,7 +103,7 @@ export default function MainSidebar() {
                 className={({ isActive }) =>
                   [
                     "flex items-center gap-3 rounded-lg px-3 py-2.5 text-[13px] font-semibold transition",
-                    isActive || isSearchSectionActive
+                    isActive || isSearchSectionActive || isBookmarksSectionActive
                       ? "bg-emerald-600 text-white"
                       : "text-white hover:bg-emerald-500/15 hover:text-emerald-300",
                   ].join(" ")

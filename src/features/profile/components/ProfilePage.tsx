@@ -1,4 +1,10 @@
-import { useState, type ChangeEvent, type FormEvent, type ReactNode } from "react";
+import {
+  useEffect,
+  useState,
+  type ChangeEvent,
+  type FormEvent,
+  type ReactNode,
+} from "react";
 import { useSearchParams } from "react-router-dom";
 
 import { getCurrentUser } from "@/features/auth/utils/authStorage";
@@ -75,16 +81,33 @@ function LockIcon() {
 function Avatar({
   firstName,
   lastName,
+  avatarUrl,
 }: {
   firstName: string;
   lastName: string;
+  avatarUrl?: string | null;
 }) {
   const initials = `${firstName[0] ?? ""}${lastName[0] ?? ""}`.toUpperCase();
+  const [hasImageError, setHasImageError] = useState(false);
+  const shouldShowImage = Boolean(avatarUrl) && !hasImageError;
+
+  useEffect(() => {
+    setHasImageError(false);
+  }, [avatarUrl]);
 
   return (
     <div className="shrink-0">
-      <div className="flex h-24 w-24 items-center justify-center rounded-[1.75rem] border border-black bg-white text-3xl font-bold text-black shadow-[8px_8px_0_0_rgba(0,0,0,0.08)] font-title">
-        {initials}
+      <div className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-[1.75rem] border border-black bg-white text-3xl font-bold text-black shadow-[8px_8px_0_0_rgba(0,0,0,0.08)] font-title">
+        {shouldShowImage ? (
+          <img
+            src={avatarUrl ?? ""}
+            alt={`${firstName} ${lastName}`.trim() || "User avatar"}
+            className="h-full w-full object-cover"
+            onError={() => setHasImageError(true)}
+          />
+        ) : (
+          initials
+        )}
       </div>
     </div>
   );
@@ -125,29 +148,34 @@ function SettingsNav({
   ];
 
   return (
-    <aside className="w-full rounded-[1.75rem] border border-black bg-white p-4 lg:w-64">
+    <aside className="w-full rounded-[1.25rem] border border-black bg-white p-4 lg:w-64">
       <div className="space-y-2">
-        {tabs.map((tab) => {
+        {tabs.map((tab, index) => {
           const isActive = active === tab.id;
 
           return (
-            <button
-              key={tab.id}
-              type="button"
-              onClick={() => onChange(tab.id)}
-              className={`flex w-full items-center gap-3 rounded-2xl border px-4 py-4 text-left transition-all ${
-                isActive
-                  ? "border-black bg-white text-black"
-                  : "border-transparent bg-white text-black/70 hover:border-black"
-              }`}
-            >
-              <span className={isActive ? "text-[#F27229]" : "text-[#7BBF43]"}>
-                {tab.icon}
-              </span>
-              <span className="text-lg font-semibold font-title">
-                {tab.label}
-              </span>
-            </button>
+            <div key={tab.id}>
+              <button
+                type="button"
+                onClick={() => onChange(tab.id)}
+                className={`flex w-full items-center gap-3 rounded-lg border px-4 py-4 text-left transition-all ${
+                  isActive
+                    ? "border-black bg-white text-black"
+                    : "border-transparent bg-white text-black/70 hover:border-black"
+                }`}
+              >
+                <span className={isActive ? "text-[#F27229]" : "text-[#7BBF43]"}>
+                  {tab.icon}
+                </span>
+                <span className="text-lg font-semibold font-title">
+                  {tab.label}
+                </span>
+              </button>
+
+              {index < tabs.length - 1 ? (
+                <div className="mx-3 my-3 h-[2px] bg-black/30" />
+              ) : null}
+            </div>
           );
         })}
       </div>
@@ -182,7 +210,7 @@ function Field({
         placeholder={placeholder}
         readOnly={readOnly}
         disabled={disabled}
-        className={`h-12 w-full rounded-2xl border border-black bg-white px-4 text-[15px] text-black outline-none transition-colors placeholder:text-black/35 ${
+        className={`h-12 w-full rounded-lg border border-black bg-white px-4 text-[15px] text-black outline-none transition-colors placeholder:text-black/35 ${
           disabled ? "cursor-not-allowed opacity-75" : "focus:border-black"
         }`}
       />
@@ -258,14 +286,14 @@ function ProfileTab({
         <button
           type="button"
           onClick={handleEdit}
-          className="h-11 rounded-2xl border border-black bg-white px-5 text-sm font-semibold text-black transition-colors hover:bg-[#FFF6ED]"
+          className="h-11 rounded-lg border border-black bg-white px-5 text-sm font-semibold text-black transition-colors hover:bg-[#FFF6ED]"
         >
           Edit Profile
         </button>
       </div>
 
       <form onSubmit={handleSave} className="space-y-6">
-        <div className="rounded-[1.75rem] border border-black bg-white p-5">
+        <div className="rounded-[1.25rem] border border-black bg-white p-5">
           <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
             <Field
               label="First name"
@@ -315,9 +343,13 @@ function ProfileTab({
 
         <div className="flex flex-col gap-3 border-t border-black pt-5 sm:flex-row sm:items-center sm:justify-between">
           <div className="min-h-6 text-sm font-subtext text-black/70">
-            {saving && <span className="text-[#F27229]">Saving changes...</span>}
+            {saving && (
+              <span className="text-[#F27229]">Saving changes...</span>
+            )}
             {!saving && saved && (
-              <span className="text-[#2F80ED]">Profile updated locally. Ready for DB save flow.</span>
+              <span className="text-[#2F80ED]">
+                Profile updated locally. Ready for DB save flow.
+              </span>
             )}
             {!saving && !saved && dirty && editing && (
               <span className="text-[#A66B1F]">You have unsaved changes.</span>
@@ -329,7 +361,7 @@ function ProfileTab({
               <button
                 type="button"
                 onClick={handleDiscard}
-                className="h-11 rounded-2xl border border-black bg-white px-5 text-sm font-semibold text-black transition-colors hover:bg-black hover:text-white"
+                className="h-11 rounded-lg border border-black bg-white px-5 text-sm font-semibold text-black transition-colors hover:bg-black hover:text-white"
               >
                 Discard
               </button>
@@ -337,7 +369,7 @@ function ProfileTab({
             <button
               type="submit"
               disabled={!editing || !dirty || saving}
-              className="h-11 rounded-2xl border border-black bg-black px-5 text-sm font-semibold text-white transition-colors hover:bg-[#F27229] disabled:cursor-not-allowed disabled:opacity-50"
+              className="h-11 rounded-lg border border-black bg-black px-5 text-sm font-semibold text-white transition-colors hover:bg-[#F27229] disabled:cursor-not-allowed disabled:opacity-50"
             >
               {saving ? "Saving..." : "Save changes"}
             </button>
@@ -361,15 +393,21 @@ export default function ProfilePage() {
     country: "",
   };
 
-  const [savedProfile, setSavedProfile] = useState<ProfileFormState>(initialProfile);
+  const [savedProfile, setSavedProfile] =
+    useState<ProfileFormState>(initialProfile);
 
-  const activeTab: TabId = searchParams.get("tab") === "security" ? "security" : "profile";
+  const activeTab: TabId =
+    searchParams.get("tab") === "security" ? "security" : "profile";
 
   const firstName = savedProfile.firstName || user?.firstName || "User";
   const lastName = savedProfile.lastName || user?.lastName || "";
   const fullName = `${firstName} ${lastName}`.trim();
+  const avatarUrl = user?.avatarUrl ?? null;
 
-  const summaryParts = [savedProfile.department, savedProfile.institution].filter(Boolean);
+  const summaryParts = [
+    savedProfile.department,
+    savedProfile.institution,
+  ].filter(Boolean);
   const profileSummary =
     summaryParts.length > 0
       ? summaryParts.join(" · ")
@@ -390,10 +428,10 @@ export default function ProfilePage() {
               </h1>
             </div>
 
-            <div className="overflow-hidden rounded-[2rem] border border-black bg-white">
+            <div className="overflow-hidden rounded-[5px] border border-black bg-white">
               <div className="grid min-h-[320px] grid-rows-2">
                 <div className="relative bg-[linear-gradient(135deg,rgba(242,114,41,0.14),rgba(47,128,237,0.12),rgba(123,191,67,0.10))]">
-                  <div className="absolute bottom-6 left-8 right-8 flex items-end justify-between">
+                  <div className="absolute left-8 right-8 top-8 flex items-start justify-between md:top-10">
                     <h2 className="text-left text-3xl font-bold text-black font-title md:text-5xl">
                       {fullName}
                     </h2>
@@ -402,7 +440,11 @@ export default function ProfilePage() {
 
                 <div className="relative bg-white px-8 pt-6">
                   <div className="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/2">
-                    <Avatar firstName={firstName} lastName={lastName} />
+                    <Avatar
+                      firstName={firstName}
+                      lastName={lastName}
+                      avatarUrl={avatarUrl}
+                    />
                   </div>
 
                   <div className="flex h-full items-start justify-center pt-12">
