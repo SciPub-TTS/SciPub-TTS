@@ -1,4 +1,5 @@
-import { createApiUrl, requestJson } from "@/lib/api/fetchJson";
+import { http } from "@/services/http";
+import type { ApiResponse } from "@/types/common.types";
 import type {
   FeedArticle,
   FollowedAuthor,
@@ -121,8 +122,10 @@ export const fallbackResearchFeedData: ResearchFeedData = {
 export const apiService = {
   async getFollowedTopics(): Promise<FollowedTopic[]> {
     try {
-      const url = createApiUrl("/api/feed/followed-topics");
-      return await requestJson<FollowedTopic[]>(url);
+      const response = await http.get<ApiResponse<FollowedTopic[]>>(
+        "/api/feed/followed-topics",
+      );
+      return response.data.data;
     } catch (e) {
       console.warn(
         "Unable to resolve live followed topics; utilizing local cache fallback.",
@@ -134,8 +137,10 @@ export const apiService = {
 
   async getFollowedAuthors(): Promise<FollowedAuthor[]> {
     try {
-      const url = createApiUrl("/api/feed/followed-authors");
-      return await requestJson<FollowedAuthor[]>(url);
+      const response = await http.get<ApiResponse<FollowedAuthor[]>>(
+        "/api/feed/followed-authors",
+      );
+      return response.data.data;
     } catch (e) {
       console.warn(
         "Unable to resolve live followed authors; utilizing local cache fallback.",
@@ -147,8 +152,10 @@ export const apiService = {
 
   async getSuggestedTopics(): Promise<SuggestedTopic[]> {
     try {
-      const url = createApiUrl("/api/feed/suggested-topics");
-      return await requestJson<SuggestedTopic[]>(url);
+      const response = await http.get<ApiResponse<SuggestedTopic[]>>(
+        "/api/feed/suggested-topics",
+      );
+      return response.data.data;
     } catch (e) {
       console.warn(
         "Unable to resolve live suggested topics; utilizing local cache fallback.",
@@ -161,19 +168,26 @@ export const apiService = {
   async getFeed(tabKey: string): Promise<FeedArticle[]> {
     const backendEnumTab = tabKey.toUpperCase().replace("-", "_");
     try {
-      const url = createApiUrl(
-        `/api/feed?feedTab=${backendEnumTab}&page=0&pageSize=10`,
-      );
+      const response = await http.get<
+        ApiResponse<{
+          items: FeedArticle[];
+          totalItems: number;
+        }>
+      >("/api/feed", {
+        params: {
+          feedTab: backendEnumTab,
+          page: 0,
+          pageSize: 10,
+        },
+      });
+
+      const data = response.data.data;
 
       // The API endpoint resolves to the structure: { items: FeedArticle[], totalItems: number }
-      const data = await requestJson<{
-        items: FeedArticle[];
-        totalItems: number;
-      }>(url);
-
       if (!data || !data.items || data.items.length === 0) {
         return fallbackResearchFeedData.articles;
       }
+
       return data.items;
     } catch (e) {
       console.warn(
