@@ -168,6 +168,8 @@ export type UpdateSearchFilter = (
 // Component prop types live here so JSX files stay focused on rendering.
 export type PaperResultCardProps = {
   paper: PaperResult;
+  trendingKeywordNames: string[];
+  trendingTopicNames: string[];
 };
 
 export type SearchPanelProps = {
@@ -189,6 +191,7 @@ export type SearchPanelProps = {
   saveSearchFeedback: SaveSearchFeedback | null;
   saveSearchNotice: string | null;
   saveSearchSuccessToken: number;
+  topicHotSearches: string[];
   searchQuery: string;
   searchPlaceholder: string;
   showFilters: boolean;
@@ -344,6 +347,8 @@ export type SearchResultsProps = {
   responseTimeSeconds: number;
   sortState: SearchSortState;
   totalResultCount: number;
+  trendingKeywordNames: string[];
+  trendingTopicNames: string[];
   visibleResults: SearchResultItem[];
   onLoadMoreResults: () => void;
   onClearSorts: () => void;

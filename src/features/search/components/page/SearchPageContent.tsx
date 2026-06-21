@@ -52,6 +52,9 @@ export default function SearchPageContent() {
     saveSearchFeedback,
     saveSearchNotice,
     saveSearchSuccessToken,
+    topicHotSearches,
+    trendingKeywordNames,
+    trendingTopicNames,
     searchPlaceholder,
     searchQuery,
     showFilterAddMenu,
@@ -89,6 +92,7 @@ export default function SearchPageContent() {
         saveSearchFeedback={saveSearchFeedback}
         saveSearchNotice={saveSearchNotice}
         saveSearchSuccessToken={saveSearchSuccessToken}
+        topicHotSearches={topicHotSearches}
         searchPlaceholder={searchPlaceholder}
         searchQuery={searchQuery}
         showFilterAddMenu={showFilterAddMenu}
@@ -123,6 +127,8 @@ export default function SearchPageContent() {
         responseTimeSeconds={responseTimeSeconds}
         sortState={sortState}
         totalResultCount={matchedResultCount}
+        trendingKeywordNames={trendingKeywordNames}
+        trendingTopicNames={trendingTopicNames}
         visibleResults={visibleResults}
         onClearSorts={handleClearSorts}
         onLoadMoreResults={handleLoadMoreResults}

@@ -120,6 +120,32 @@ export type SearchSummaryState = {
   totalCountExact: boolean;
 };
 
+export type HotTopicApiItem = {
+  topicId: string | null;
+  name: string;
+  fieldId: number | null;
+  works: number | null;
+  citations: number | null;
+};
+
+export type HotTopicApiResponse = {
+  snapshotDate: string;
+  topics: HotTopicApiItem[];
+};
+
+export type HotKeywordApiItem = {
+  keywordId: string | null;
+  name: string;
+  fieldId: number | null;
+  works: number | null;
+  citations: number | null;
+};
+
+export type HotKeywordApiResponse = {
+  snapshotDate: string;
+  keywords: HotKeywordApiItem[];
+};
+
 export type SearchOptionValueLookup = Record<
   SearchOptionGroupKey,
   Record<string, string>

@@ -1,6 +1,6 @@
 const vi = {
   common: {
-    appName: "Research Trend",
+    appName: "Owlreka",
     trendIntelligence: "Phân tích xu hướng",
     workspace: "Không gian làm việc",
     account: "Tài khoản",

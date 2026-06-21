@@ -26,6 +26,7 @@ export const ROUTES = {
   BOOKMARKS: "/bookmarks",
   FEED: "/feed",
   REPORT: "/report",
+  SOCIAL_HUB: "/social-hub",
 
   // Admin
   ADMIN: "/admin",

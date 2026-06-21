@@ -23,6 +23,8 @@ export {
   getFilterOptionPage,
   getSearchSummary,
 } from "./filterOptionsApi";
+export { getHotKeywords, getTrendingKeywords } from "./hotKeywordsApi";
+export { getHotTopics, getTrendingTopics } from "./hotTopicsApi";
 export {
   clearSearchHistory,
   deleteSearchHistory,
@@ -36,6 +38,10 @@ export { sortPaperResults } from "./searchWorksSorting";
 export { searchWorks } from "./searchWorksApi";
 export type {
   FilterOptionPageApiData,
+  HotKeywordApiItem,
+  HotKeywordApiResponse,
+  HotTopicApiItem,
+  HotTopicApiResponse,
   OptionItem,
   SearchHistoryApiItem,
   SearchOptionGroupKey,

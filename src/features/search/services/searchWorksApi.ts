@@ -110,10 +110,6 @@ function buildSearchWorksParams(request: SearchWorksRequest) {
   );
   appendIfFilled(params, "indexedByOrcid", filters.indexedByOrcid);
 
-  if (sortState.trendingMode !== "none") {
-    appendIfFilled(params, "trendingMode", sortState.trendingMode);
-  }
-
   if (sortState.sortBy !== "relevance") {
     appendIfFilled(params, "sortBy", sortState.sortBy);
     appendIfFilled(params, "sortDirection", sortState.sortDirection);

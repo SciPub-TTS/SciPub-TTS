@@ -4,6 +4,7 @@ import {
   FileText,
   LayoutDashboard,
   LogOut,
+  MessagesSquare,
   Rss,
   Search,
   User,
@@ -20,9 +21,9 @@ const workspaceMenuItems = [
   { label: "New Feed", path: ROUTES.FEED, icon: Rss },
   { label: "Search Papers", path: ROUTES.SEARCH, icon: Search },
   { label: "Bookmarks", path: ROUTES.BOOKMARKS, icon: Bookmark },
+  { label: "Social Hub", path: ROUTES.SOCIAL_HUB, icon: MessagesSquare },
   { label: "Export Reports", path: ROUTES.REPORT, icon: FileText },
   { label: "Help Guide", path: ROUTES.GUIDE, icon: CircleHelp },
-  // { label: "Social Hub", path: ROUTES.HUB, icon: }
 ];
 
 const accountMenuItems = [
@@ -110,8 +111,16 @@ export default function MainSidebar() {
 
       <div className="border-t-2 border-[#3c8534] px-2.5 py-4">
         <div className="mb-4 flex items-center gap-3 rounded-lg border border-white/10 bg-white/[0.08] px-2.5 py-2.5">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-sm font-bold text-white">
-            {initials}
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-emerald-600 text-sm font-bold text-white">
+            {currentUser?.avatarUrl ? (
+              <img
+                src={currentUser.avatarUrl}
+                alt={displayName}
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              initials
+            )}
           </div>
           <div className="min-w-0">
             <p className="truncate text-sm font-bold text-white">

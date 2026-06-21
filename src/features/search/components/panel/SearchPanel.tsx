@@ -41,6 +41,7 @@ export function SearchPanel({
   saveSearchFeedback,
   saveSearchNotice,
   saveSearchSuccessToken,
+  topicHotSearches,
   searchPlaceholder,
   searchQuery,
   showFilters,
@@ -97,6 +98,24 @@ export function SearchPanel({
             onSelectSuggestion={onSuggestedSearchSelect}
           />
         </div>
+
+        {activeEntityType === "topics" && topicHotSearches.length > 0 ? (
+          <div className="mt-4 flex flex-wrap items-center gap-2 rounded-xl border border-black bg-[#FFF7ED] px-4 py-3">
+            <span className="text-[11px] font-extrabold uppercase tracking-[0.24em] text-[#C2410C]">
+              Try:
+            </span>
+            {topicHotSearches.map((topic) => (
+              <button
+                key={topic}
+                type="button"
+                onClick={() => onSuggestedSearchSelect(topic)}
+                className="rounded-full border border-[#F97316]/40 bg-white px-3 py-1.5 text-sm font-semibold text-[#C2410C] transition hover:-translate-y-0.5 hover:border-[#EA580C] hover:bg-[#FED7AA]"
+              >
+                {topic}
+              </button>
+            ))}
+          </div>
+        ) : null}
       </div>
 
       {showFilters ? (
@@ -162,7 +181,7 @@ function SearchTabsHeader(props: SearchTabsHeaderProps) {
   return (
     <div className="rounded-t-2xl border-b border-black px-5 py-4">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-        <div className="flex flex-wrap gap-1">
+        <div className="flex flex-wrap gap-3.5">
           {searchTabs.map((tab) => {
             const isActive = tab.entityType === activeEntityType;
 
@@ -172,10 +191,10 @@ function SearchTabsHeader(props: SearchTabsHeaderProps) {
                 type="button"
                 onClick={() => onEntityTypeChange(tab.entityType)}
                 className={[
-                  "rounded-md px-5 py-2.5 text-sm font-bold shadow-sm transition",
+                  "rounded-md border border-black px-5 py-2.5 text-sm font-bold shadow-sm transition",
                   isActive
                     ? "bg-[#14532D] text-white"
-                    : "bg-slate-100 text-black hover:bg-[#A3E635]/30",
+                    : "bg-slate-200 text-black hover:bg-slate-300",
                 ].join(" ")}
               >
                 {tab.label}
@@ -339,90 +358,92 @@ function SearchInputRow({
   return (
     <div
       ref={containerRef}
-      className="flex w-full flex-col gap-3 md:flex-row md:items-stretch"
+      className="flex w-full flex-col gap-3"
     >
-      <div className="relative flex min-w-0 flex-1 items-center gap-3 rounded-xl bg-white px-4 py-5 shadow-sm ring-1 ring-[#2f8551]">
-        <Search className="h-5 w-5 shrink-0 font-extrabold" />
+      <div className="flex w-full flex-col gap-3 md:flex-row md:items-stretch">
+        <div className="relative flex min-w-0 flex-1 items-center gap-3 rounded-xl bg-white px-4 py-5 shadow-sm ring-1 ring-[#2f8551]">
+          <Search className="h-5 w-5 shrink-0 font-extrabold" />
 
-        <div className="min-w-0 flex-1">
-          <input
-            type="search"
-            value={searchQuery}
-            disabled={isLoadingResults}
-            onChange={handleSearchInputChange}
-            onFocus={handleInputFocus}
-            onKeyDown={handleSearchInputKeyDown}
-            aria-label={searchAriaLabel}
-            className="min-w-0 w-full bg-transparent text-base font-medium text-black outline-none placeholder:text-black disabled:cursor-not-allowed disabled:opacity-60"
-            placeholder={searchPlaceholder}
-          />
+          <div className="min-w-0 flex-1">
+            <input
+              type="search"
+              value={searchQuery}
+              disabled={isLoadingResults}
+              onChange={handleSearchInputChange}
+              onFocus={handleInputFocus}
+              onKeyDown={handleSearchInputKeyDown}
+              aria-label={searchAriaLabel}
+              className="min-w-0 w-full bg-transparent text-base font-medium text-black outline-none placeholder:text-black disabled:cursor-not-allowed disabled:opacity-60"
+              placeholder={searchPlaceholder}
+            />
 
-          {shouldShowSuggestions ? (
-            <div className="absolute left-0 right-0 top-full z-30 mt-3 overflow-hidden rounded-md border border-black bg-white shadow-[0_18px_40px_rgba(15,23,42,0.12)]">
-              <div className="flex items-center justify-between gap-3 border-b border-black bg-slate-50 px-4 py-3">
-                <div className="flex items-center gap-2">
-                  <History className="h-4 w-4 text-[#14532D]" />
-                  <span className="text-[11px] font-extrabold uppercase tracking-[0.24em] text-black">
-                    Recent searches
-                  </span>
+            {shouldShowSuggestions ? (
+              <div className="absolute left-0 right-0 top-full z-30 mt-3 overflow-hidden rounded-md border border-black bg-white shadow-[0_18px_40px_rgba(15,23,42,0.12)]">
+                <div className="flex items-center justify-between gap-3 border-b border-black bg-slate-50 px-4 py-3">
+                  <div className="flex items-center gap-2">
+                    <History className="h-4 w-4 text-[#14532D]" />
+                    <span className="text-[11px] font-extrabold uppercase tracking-[0.24em] text-black">
+                      Recent searches
+                    </span>
+                  </div>
+
+                  <button
+                    type="button"
+                    onMouseDown={handleSuggestionMouseDown}
+                    onClick={handleClearSuggestionsClick}
+                    disabled={isClearingRecentSearches}
+                    className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-black transition hover:text-[#14532D] disabled:cursor-not-allowed disabled:text-slate-400"
+                  >
+                    {isClearingRecentSearches ? "Clearing..." : "Clear all"}
+                  </button>
                 </div>
 
-                <button
-                  type="button"
-                  onMouseDown={handleSuggestionMouseDown}
-                  onClick={handleClearSuggestionsClick}
-                  disabled={isClearingRecentSearches}
-                  className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-black transition hover:text-[#14532D] disabled:cursor-not-allowed disabled:text-slate-400"
-                >
-                  {isClearingRecentSearches ? "Clearing..." : "Clear all"}
-                </button>
-              </div>
-
-              <div className="max-h-72 overflow-y-auto divide-y divide-black">
-                {recentSearches.map((savedSearch) => (
-                  <div
-                    key={savedSearch.id}
-                    className="flex items-center gap-2 pr-2 transition hover:bg-[#A3E635]/20"
-                  >
-                    <button
-                      type="button"
-                      value={savedSearch.query}
-                      onMouseDown={handleSuggestionMouseDown}
-                      onClick={handleSuggestionClick}
-                      className="flex min-w-0 flex-1 items-center px-4 py-3 text-left text-sm font-semibold text-black transition hover:text-[#15803D]"
+                <div className="max-h-72 overflow-y-auto divide-y divide-black">
+                  {recentSearches.map((savedSearch) => (
+                    <div
+                      key={savedSearch.id}
+                      className="flex items-center gap-2 pr-2 transition hover:bg-[#A3E635]/20"
                     >
-                      <Search className="mr-3 h-4 w-4 shrink-0" />
-                      <span className="truncate">{savedSearch.query}</span>
-                    </button>
+                      <button
+                        type="button"
+                        value={savedSearch.query}
+                        onMouseDown={handleSuggestionMouseDown}
+                        onClick={handleSuggestionClick}
+                        className="flex min-w-0 flex-1 items-center px-4 py-3 text-left text-sm font-semibold text-black transition hover:text-[#15803D]"
+                      >
+                        <Search className="mr-3 h-4 w-4 shrink-0" />
+                        <span className="truncate">{savedSearch.query}</span>
+                      </button>
 
-                    <button
-                      type="button"
-                      value={savedSearch.query}
-                      onMouseDown={handleDeleteSuggestionMouseDown}
-                      onClick={handleDeleteSuggestionClick}
-                      disabled={isDeletingRecentSearch}
-                      aria-label={`Delete ${savedSearch.query}`}
-                      className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-sm text-black transition hover:bg-black hover:text-white disabled:cursor-not-allowed disabled:text-slate-400"
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
-                  </div>
-                ))}
+                      <button
+                        type="button"
+                        value={savedSearch.query}
+                        onMouseDown={handleDeleteSuggestionMouseDown}
+                        onClick={handleDeleteSuggestionClick}
+                        disabled={isDeletingRecentSearch}
+                        aria-label={`Delete ${savedSearch.query}`}
+                        className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-sm text-black transition hover:bg-black hover:text-white disabled:cursor-not-allowed disabled:text-slate-400"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
-          ) : null}
+            ) : null}
+          </div>
         </div>
-      </div>
 
-      <button
-        type="button"
-        onClick={handleSearchClick}
-        disabled={isLoadingResults}
-        className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[#14532D] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#15803D] disabled:cursor-not-allowed disabled:bg-slate-400 md:w-auto md:shrink-0"
-      >
-        Search
-        <ArrowRight className="h-4 w-4" />
-      </button>
+        <button
+          type="button"
+          onClick={handleSearchClick}
+          disabled={isLoadingResults}
+          className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[#14532D] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#15803D] disabled:cursor-not-allowed disabled:bg-slate-400 md:w-auto md:shrink-0"
+        >
+          Search
+          <ArrowRight className="h-4 w-4" />
+        </button>
+      </div>
     </div>
   );
 }

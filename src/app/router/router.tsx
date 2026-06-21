@@ -44,6 +44,7 @@ import TopicDashboardPage from "@/features/dashboard/topic/TopicDashboardPage.ts
 import { KeywordDashboardPage } from "@/features/dashboard/keyword/KeywordDashboard.tsx";
 import BookmarkLibraryPage from "@/features/bookmarks/components/BookmarkLibraryPage.tsx";
 import GoogleRegisterCompletePage from "@/features/auth/components/pages/GoogleRegisterCompletePage.tsx";
+import SocialHubPage from "@/features/social/components/SocialHubPage.tsx";
 
 const ROUTER_PATHS = {
   guide: "guide",
@@ -58,6 +59,7 @@ const ROUTER_PATHS = {
   bookmarks: "bookmarks",
   feed: "feed",
   report: "report",
+  socialHub: "social-hub",
   adminDashboard: "dashboard",
   adminUsers: "users",
 } as const;
@@ -275,6 +277,13 @@ export const router = createBrowserRouter([
             element: <ReportPage />,
             handle: {
               breadcrumb: "Reports",
+            },
+          },
+          {
+            path: ROUTER_PATHS.socialHub,
+            element: <SocialHubPage />,
+            handle: {
+              breadcrumb: "Social Hub",
             },
           },
           {

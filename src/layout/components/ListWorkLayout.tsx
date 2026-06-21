@@ -35,6 +35,7 @@ type ListWorkLayoutProps = {
   isSaved?: boolean;
   isTrendTopic?: boolean;
   keywords: string[];
+  trendingKeywords?: string[];
   workId: string;
   pdfUrl: string | null;
   preserveSearchStateOnDetailClick?: boolean;
@@ -119,6 +120,7 @@ export default function ListWorkLayout({
   isSaved = false,
   isTrendTopic = false,
   keywords,
+  trendingKeywords = [],
   workId,
   pdfUrl,
   preserveSearchStateOnDetailClick = true,
@@ -174,6 +176,9 @@ export default function ListWorkLayout({
     : getPreviewText(abstractText, 520);
   const normalizedFollowedAuthors = followedAuthors.map((author) =>
     author.trim().toLocaleLowerCase(),
+  );
+  const normalizedTrendingKeywords = trendingKeywords.map((keyword) =>
+    keyword.trim().toLocaleLowerCase(),
   );
   const entityNavigationOnClick = preserveSearchStateOnDetailClick
     ? markSearchPageRestorePending
@@ -272,12 +277,14 @@ export default function ListWorkLayout({
             >
               <MetadataBadge
                 label={topicRef.name}
+                showTrendIcon={isTrendTopic}
                 tone={isTrendTopic ? "topicTrend" : "topic"}
               />
             </Link>
           ) : (
             <MetadataBadge
               label={topic}
+              showTrendIcon={isTrendTopic}
               tone={isTrendTopic ? "topicTrend" : "topic"}
             />
           )}
@@ -341,8 +348,8 @@ export default function ListWorkLayout({
           </button>
         )}
         <span className="text-black">-</span>
-        <span className="inline-flex items-center gap-1 text-blue-700">
-          <Building2 className="h-4 w-4" />
+        <span className="inline-flex items-center gap-1 text-black">
+          <Building2 className="h-4 w-4 text-black" />
           {venue}
         </span>
         <span className="text-black">-</span>
@@ -376,12 +383,20 @@ export default function ListWorkLayout({
           Keyword:
         </span>
         {keywords.map((keyword) => (
-          <span
+          <MetadataBadge
             key={keyword}
-            className="rounded-md bg-slate-100 px-2.5 py-1 text-xs font-bold text-black ring-1 ring-slate-300"
-          >
-            #{keyword}
-          </span>
+            label={`#${keyword}`}
+            showTrendIcon={normalizedTrendingKeywords.includes(
+              keyword.trim().toLocaleLowerCase(),
+            )}
+            tone={
+              normalizedTrendingKeywords.includes(
+                keyword.trim().toLocaleLowerCase(),
+              )
+                ? "keywordTrend"
+                : "keyword"
+            }
+          />
         ))}
       </div>
 

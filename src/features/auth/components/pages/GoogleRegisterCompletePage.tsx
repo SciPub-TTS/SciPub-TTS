@@ -11,21 +11,37 @@ import {
 import type { GoogleSignupPreviewResponse } from "@/features/auth/types/auth.types";
 import { getApiErrorMessage } from "@/features/auth/utils/getApiErrorMessage";
 
-function EyeIcon({open}: { open: boolean }) {
+function EyeIcon({ open }: { open: boolean }) {
     return open ? (
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
             <path
                 d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"
-                stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-            <line x1="1" y1="1" x2="23" y2="23" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+            />
+            <line
+                x1="1"
+                y1="1"
+                x2="23"
+                y2="23"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+            />
         </svg>
     ) : (
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" strokeWidth="1.5"/>
-            <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.5"/>
+            <path
+                d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"
+                stroke="currentColor"
+                strokeWidth="1.5"
+            />
+            <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.5" />
         </svg>
     );
 }
+
 export default function GoogleRegisterCompletePage() {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
@@ -136,11 +152,6 @@ export default function GoogleRegisterCompletePage() {
             <main className="flex flex-1 items-center justify-center px-6 py-16">
                 <section className="w-full max-w-[440px]">
                     <div className="mb-7">
-                        <p className="mb-3 flex items-center gap-1.5 text-[11px] uppercase tracking-[0.18em] text-slate-400">
-                            <span className="inline-block h-1 w-1 rounded-full bg-emerald-500" />
-                            Google signup · Complete account
-                        </p>
-
                         <h1 className="font-serif text-[2.35rem] leading-[1.12] text-slate-950">
                             Complete your
                         </h1>
@@ -217,7 +228,6 @@ export default function GoogleRegisterCompletePage() {
                                             <EyeIcon open={showPassword} />
                                         </button>
                                     </div>
-
                                 </div>
 
                                 <div>
@@ -267,8 +277,8 @@ export default function GoogleRegisterCompletePage() {
                                         className="h-4 w-4 rounded border-slate-300 accent-emerald-700"
                                     />
                                     <span className="text-sm text-slate-600">
-                    Keep me signed in on this device
-                  </span>
+                                        Keep me signed in on this device
+                                    </span>
                                 </label>
 
                                 <button

@@ -11,11 +11,9 @@ import {
   Flame,
   Layers3,
   Library,
-  LifeBuoy,
   Radar,
   Rss,
   Search,
-  Send,
   Sparkles,
   Tag,
   TrendingUp,
@@ -28,24 +26,31 @@ import { ROUTES } from "@/app/router";
 const quickStartCards = [
   {
     title: "Search papers",
-    description: "Start with keywords, then narrow results with the same filters used across the app.",
+    description: "Find papers fast.",
     href: ROUTES.SEARCH,
     icon: Search,
     accentClassName: "border-emerald-200 bg-emerald-50 text-emerald-700",
   },
   {
     title: "See what is rising",
-    description: "Open the trending topic dashboard when you want discovery before precision search.",
+    description: "Spot rising topics first.",
     href: ROUTES.TRENDING_TOPIC,
     icon: Flame,
     accentClassName: "border-amber-200 bg-amber-50 text-amber-700",
   },
   {
     title: "Save your trail",
-    description: "Bookmark papers and follow entities so your feed becomes more useful over time.",
+    description: "Keep your reading trail.",
     href: ROUTES.BOOKMARKS,
     icon: Bookmark,
     accentClassName: "border-sky-200 bg-sky-50 text-sky-700",
+  },
+  {
+    title: "Share on Social Hub",
+    description: "Turn bookmarks into posts.",
+    href: ROUTES.SOCIAL_HUB,
+    icon: Sparkles,
+    accentClassName: "border-violet-200 bg-violet-50 text-violet-700",
   },
 ];
 
@@ -54,12 +59,11 @@ const workflowSteps = [
     id: "01",
     eyebrow: "Start Wide",
     title: "Discover a topic or question worth exploring",
-    description:
-      "If you already know what to look for, go straight to Search. If not, use the trending topic dashboard to spot hot themes, fast-growing areas, and research signals worth chasing.",
+    description: "Begin with Search or Trending Topic.",
     checkpoints: [
-      "Use Search when you have a concrete keyword, author, or topic.",
-      "Use Trending Topic when you want discovery and market scanning first.",
-      "Pick one promising thread before going deeper.",
+      "Search for a known keyword, author, or topic.",
+      "Use Trending Topic for discovery first.",
+      "Choose one thread to explore.",
     ],
     icon: Radar,
     surfaceClassName: "from-emerald-100 via-white to-emerald-50",
@@ -68,12 +72,11 @@ const workflowSteps = [
     id: "02",
     eyebrow: "Refine",
     title: "Filter results until the list feels decision-ready",
-    description:
-      "The search page is the main workbench. Use filters for year, type, subfield, institution, country, and entity-specific options so the result list reflects the exact slice you care about.",
+    description: "Use filters to narrow the list.",
     checkpoints: [
-      "Works tab: use detailed filters for publication and metadata control.",
-      "Authors tab: refine by institution, country, and primary topic.",
-      "Topics tab: refine by subfield and field, then sort by relevance or most works.",
+      "Works: refine by year, type, field, or source.",
+      "Authors: refine by institution or country.",
+      "Topics: refine by subfield or field.",
     ],
     icon: Filter,
     surfaceClassName: "from-sky-100 via-white to-sky-50",
@@ -82,12 +85,11 @@ const workflowSteps = [
     id: "03",
     eyebrow: "Inspect",
     title: "Open detail pages to validate quality and context",
-    description:
-      "Once a result looks promising, inspect the detail page. This is where you confirm relevance, read context, inspect metadata, and decide whether to keep following the trail.",
+    description: "Validate before you save.",
     checkpoints: [
-      "Paper detail: check abstract, authors, keywords, and source.",
-      "Author detail: inspect works, institution context, and follow if useful.",
-      "Topic detail: understand scope and save the area for later tracking.",
+      "Paper detail: check abstract and metadata.",
+      "Author detail: inspect works and context.",
+      "Topic detail: understand the area quickly.",
     ],
     icon: Eye,
     surfaceClassName: "from-violet-100 via-white to-fuchsia-50",
@@ -96,26 +98,37 @@ const workflowSteps = [
     id: "04",
     eyebrow: "Personalize",
     title: "Bookmark and follow so the system starts working for you",
-    description:
-      "The product gets better when you leave signals behind. Bookmark works you may cite later and follow authors or topics you want the system to keep watching for you.",
+    description: "Save useful works and follow useful entities.",
     checkpoints: [
-      "Bookmark works directly from result cards or detail pages.",
-      "Follow authors and topics from result cards and entity detail pages.",
-      "Build a durable reading trail instead of re-searching from scratch.",
+      "Bookmark from cards or detail pages.",
+      "Follow authors and topics you care about.",
+      "Build a reusable reading trail.",
     ],
     icon: Sparkles,
     surfaceClassName: "from-amber-100 via-white to-orange-50",
   },
   {
     id: "05",
+    eyebrow: "Share",
+    title: "Create a blog from your saved papers in Social Hub",
+    description: "Turn bookmarks into public notes.",
+    checkpoints: [
+      "Create a blog post in Social Hub.",
+      "Attach papers from your Bookmark Library.",
+      "Publish so others can read and like it.",
+    ],
+    icon: Library,
+    surfaceClassName: "from-rose-100 via-white to-orange-50",
+  },
+  {
+    id: "06",
     eyebrow: "Monitor",
     title: "Use Feed and reports to stay current after the first search",
-    description:
-      "After you have a set of interests, let the platform surface updates for you. Feed helps with ongoing monitoring, while reports help package findings into something you can reuse or share.",
+    description: "Let the system help after the first pass.",
     checkpoints: [
-      "Feed: check what is new around followed topics and saved interests.",
-      "Bookmarks: return to your saved works library quickly.",
-      "Report: summarize a topic or time range when you need a polished output.",
+      "Feed for ongoing updates.",
+      "Bookmarks to revisit saved works.",
+      "Reports for summary output.",
     ],
     icon: Rss,
     surfaceClassName: "from-slate-200 via-white to-slate-100",
@@ -126,75 +139,82 @@ const routeMapCards = [
   {
     title: "Search",
     subtitle: "Main research workbench",
-    description: "Best when you already know the keyword, topic, author, or field you want to investigate.",
+    description: "Best for direct queries.",
     href: ROUTES.SEARCH,
     icon: FileSearch,
   },
   {
     title: "Trending Topic",
     subtitle: "Discovery dashboard",
-    description: "Best for spotting emerging themes, publication momentum, and research directions worth entering.",
+    description: "Best for discovery first.",
     href: ROUTES.TRENDING_TOPIC,
     icon: TrendingUp,
   },
   {
     title: "Paper Detail",
     subtitle: "Validation layer",
-    description: "Use it to inspect metadata, context, and decide whether the work deserves a bookmark.",
+    description: "Inspect before saving.",
     href: ROUTES.SEARCH,
     icon: BookOpen,
   },
   {
     title: "Author Detail",
     subtitle: "People tracking",
-    description: "Follow an author when they consistently publish in an area you care about.",
+    description: "Track useful researchers.",
     href: ROUTES.SEARCH,
     icon: UserRound,
   },
   {
     title: "Topic Detail",
     subtitle: "Area tracking",
-    description: "Follow a topic when you want the system to keep watching that research space for you.",
+    description: "Track a research area.",
     href: ROUTES.SEARCH,
     icon: Layers3,
   },
   {
     title: "Bookmarks",
     subtitle: "Personal library",
-    description: "Return to saved works without rebuilding the same search trail every time.",
+    description: "Revisit saved works.",
     href: ROUTES.BOOKMARKS,
     icon: Library,
   },
   {
     title: "Feed",
     subtitle: "Continuous monitoring",
-    description: "A better starting point after you already followed entities and saved relevant items.",
+    description: "Check updates quickly.",
     href: ROUTES.FEED,
     icon: Rss,
   },
   {
     title: "Report",
     subtitle: "Output and sharing",
-    description: "Turn exploration into a reusable summary when you need to present findings.",
+    description: "Turn findings into output.",
     href: ROUTES.REPORT,
     icon: FileBarChart2,
+  },
+  {
+    title: "Social Hub",
+    subtitle: "Public sharing",
+    description: "Write blogs and attach bookmarked papers.",
+    href: ROUTES.SOCIAL_HUB,
+    icon: BellRing,
   },
 ];
 
 const habitCards = [
   {
     title: "Search -> inspect -> bookmark",
-    description: "Use this when building a reading list for a paper, thesis, or literature review.",
+    description: "Best for building a reading list.",
     icon: Bookmark,
   },
   {
     title: "Trending -> search -> follow",
-    description: "Use this when you want to move from discovery into long-term monitoring.",
+    description: "Best for discovery into monitoring.",
     icon: Tag,
   },
   {
-    title: "Follow -> feed -> report",
-    description: "Use this when your goal is to stay current and package updates for others.",
+    title: "Bookmark -> Social Hub -> like",
+    description: "Best for sharing notes with others.",
     icon: BellRing,
   },
 ];
@@ -217,12 +237,6 @@ export default function GuideHelpPage() {
                   {" "}
                   like a real research workflow.
                 </h1>
-                <p className="mt-5 max-w-3xl text-[16px] leading-8 text-slate-700 md:text-[18px]">
-                  This guide is not just a feature list. It mirrors how the site
-                  actually works best: discover a signal, refine with search,
-                  inspect detail pages, save what matters, then let feed and
-                  reports carry the work forward.
-                </p>
 
                 <div className="mt-8 flex flex-wrap gap-3">
                   <Link
@@ -276,7 +290,7 @@ export default function GuideHelpPage() {
             </div>
           </section>
 
-          <section className="grid gap-4 lg:grid-cols-3">
+          <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             {habitCards.map((card) => {
               const Icon = card.icon;
 
@@ -309,11 +323,6 @@ export default function GuideHelpPage() {
                   The recommended path through the product
                 </h2>
               </div>
-
-              <p className="max-w-xl text-sm leading-7 text-slate-600">
-                If you follow these steps in order, the platform feels much more
-                coherent and useful than jumping randomly between pages.
-              </p>
             </div>
 
             <div className="mt-8 space-y-4">
@@ -382,11 +391,6 @@ export default function GuideHelpPage() {
                   Which page should you open next?
                 </h2>
               </div>
-
-              <p className="max-w-xl text-sm leading-7 text-slate-600">
-                Think of each screen as a role in the research process, not just
-                a menu item.
-              </p>
             </div>
 
             <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -432,11 +436,9 @@ export default function GuideHelpPage() {
 
               <div className="mt-6 grid gap-3">
                 {[
-                  "Search first with a broad keyword, then tighten with filters after you see the shape of results.",
-                  "Open detail pages before bookmarking so your library stays meaningful instead of noisy.",
-                  "Follow topics for area monitoring and follow authors for person-based tracking.",
-                  "Use feed after you already created signals; it becomes more valuable once you follow and save things.",
-                  "Generate reports only after you have narrowed the topic enough that the output tells a coherent story.",
+                  "Search broad first, then narrow with filters.",
+                  "Open detail pages before bookmarking.",
+                  "Use Social Hub to turn saved papers into public notes.",
                 ].map((tip) => (
                   <div
                     key={tip}
@@ -496,27 +498,11 @@ export default function GuideHelpPage() {
                 The strongest product loop is:
                 {" "}
                 <span className="font-semibold text-white">
-                  Search {"->"} Detail {"->"} Bookmark/Follow {"->"} Feed {"->"} Report
+                  Search {"->"} Detail {"->"} Bookmark {"->"} Social Hub {"->"} Feed/Report
                 </span>
                 .
               </div>
 
-              <div className="mt-6 flex flex-wrap gap-3 text-sm">
-                <a
-                  href="mailto:support@owlreka.local"
-                  className="inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/10 px-4 py-2.5 font-semibold transition hover:bg-white/15"
-                >
-                  <LifeBuoy className="h-4 w-4" />
-                  Contact support
-                </a>
-                <a
-                  href="mailto:feedback@owlreka.local"
-                  className="inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/10 px-4 py-2.5 font-semibold transition hover:bg-white/15"
-                >
-                  <Send className="h-4 w-4" />
-                  Send feedback
-                </a>
-              </div>
             </article>
           </section>
         </section>
