@@ -56,7 +56,7 @@ export const authApi = {
   },
 
   logout() {
-    return http
+    return publicHttp
       .post<ApiResponse<null>>(`${AUTH_BASE}/logout`)
       .then((res) => res.data);
   },

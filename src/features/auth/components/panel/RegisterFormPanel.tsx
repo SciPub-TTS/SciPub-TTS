@@ -31,7 +31,7 @@ export default function RegisterFormPanel({
   onGoogleLogin,
 }: RegisterFormPanelProps) {
   return (
-    <section className="rounded-[2rem] border border-black bg-white/94 p-6 shadow-[12px_14px_0_rgba(15,23,42,0.08)] backdrop-blur-md sm:p-8">
+    <section className="w-full rounded-[2rem] border border-black bg-white/94 p-6 shadow-[12px_14px_0_rgba(15,23,42,0.08)] backdrop-blur-md sm:p-8">
       <div className="mb-7">
         <p className="mb-2 font-subtext text-xs font-semibold uppercase tracking-[0.28em] text-[#8B5E34]">
           Join Owlreka

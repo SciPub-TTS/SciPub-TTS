@@ -38,12 +38,12 @@ export default function AuthSplitStage({
       <div className="absolute left-[calc(50%+24px)] top-[8%] hidden h-[84%] w-px bg-black/10 lg:block" />
 
       <div className="relative z-10 grid min-h-[780px] lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-        <div className="flex items-center px-5 py-7 sm:px-7 lg:px-10 lg:py-10">
-          <div className="w-full max-w-[628px]">{panel}</div>
+        <div className="flex items-center justify-center px-5 py-7 sm:px-7 lg:px-10 lg:py-10">
+          <div className="w-full max-w-[617px] lg:w-[617px]">{panel}</div>
         </div>
 
-        <div className="relative flex min-h-[360px] items-stretch px-5 pb-6 pt-2 sm:px-7 lg:px-8 lg:py-8">
-          <div className="w-full max-w-[628px]">{showcase}</div>
+        <div className="relative flex min-h-[360px] items-stretch justify-center px-5 pb-6 pt-2 sm:px-7 lg:px-8 lg:py-8">
+          <div className="w-full max-w-[617px] lg:w-[617px]">{showcase}</div>
         </div>
       </div>
     </section>

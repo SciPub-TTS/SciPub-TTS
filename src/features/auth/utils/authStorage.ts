@@ -48,6 +48,7 @@ const ACCESS_TOKEN_KEY = "owlreka.access_token";
 const CURRENT_USER_KEY = "owlreka.current_user";
 const PASSWORD_RECOVERY_EMAIL_KEY = "owlreka.password_recovery.email";
 const PASSWORD_RECOVERY_GRANT_TOKEN_KEY = "owlreka.password_recovery.grant_token";
+const LOGOUT_MARKER_KEY = "owlreka.logged_out";
 const AUTH_STATE_EVENT = "owlreka-auth-state";
 const DICEBEAR_ADVENTURER_BASE_URL = "https://api.dicebear.com/9.x/adventurer/svg";
 
@@ -149,6 +150,7 @@ export function getCurrentUser(): UserPrincipal | null {
 }
 
 export function setAuthSession(data: AuthResponse) {
+  clearLogoutMarker();
   if (data.accessToken) setAccessToken(data.accessToken);
   if (data.user) setCurrentUser(data.user);
 }
@@ -157,6 +159,18 @@ export function clearAuthStorage() {
   localStorage.removeItem(ACCESS_TOKEN_KEY);
   localStorage.removeItem(CURRENT_USER_KEY);
   notifyAuthStateChanged();
+}
+
+export function markLoggedOut() {
+  localStorage.setItem(LOGOUT_MARKER_KEY, "1");
+}
+
+export function clearLogoutMarker() {
+  localStorage.removeItem(LOGOUT_MARKER_KEY);
+}
+
+export function hasLogoutMarker() {
+  return localStorage.getItem(LOGOUT_MARKER_KEY) === "1";
 }
 
 export function isAuthenticated() {

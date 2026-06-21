@@ -14,7 +14,7 @@ import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { ROUTES } from "@/app/router";
 import logoImage from "@/assets/images/logo.png";
 import { useAuthSession } from "@/features/auth/hooks/useAuthSession";
-import { clearAuthStorage } from "@/features/auth/utils/authStorage";
+import { submitLogout } from "@/features/auth/services/authFlows";
 
 const workspaceMenuItems = [
   { label: "Trending", path: ROUTES.TRENDING_TOPIC, icon: LayoutDashboard },
@@ -48,9 +48,9 @@ export default function MainSidebar() {
   const displayEmail = currentUser?.email ?? "Sign in to manage your profile";
   const initials = getInitials(displayName) || "G";
 
-  function handleLogout() {
-    clearAuthStorage();
-    navigate(ROUTES.LOGIN);
+  async function handleLogout() {
+    await submitLogout();
+    navigate(ROUTES.LOGIN, { replace: true });
   }
 
   return (
@@ -163,7 +163,7 @@ export default function MainSidebar() {
           {loggedIn && (
             <button
               type="button"
-              onClick={handleLogout}
+              onClick={() => void handleLogout()}
               className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-semibold text-slate-300 transition hover:bg-rose-500/15 hover:text-rose-100"
             >
               <LogOut className="h-5 w-5 shrink-0" />

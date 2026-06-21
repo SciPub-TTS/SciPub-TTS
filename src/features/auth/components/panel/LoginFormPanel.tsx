@@ -31,7 +31,7 @@ export default function LoginFormPanel({
   const [showPassword, setShowPassword] = useState(false);
 
   return (
-    <section className="min-h-[640px] rounded-[2rem] border border-black bg-white/94 p-7 shadow-[12px_14px_0_rgba(15,23,42,0.08)] backdrop-blur-md sm:p-8">
+    <section className="w-full rounded-[2rem] border border-black bg-white/94 p-7 shadow-[12px_14px_0_rgba(15,23,42,0.08)] backdrop-blur-md sm:p-8">
       <div className="mb-7">
         <p className="mb-2 font-subtext text-xs font-semibold uppercase tracking-[0.28em] text-[#8B5E34]">
           Sign in
@@ -43,7 +43,9 @@ export default function LoginFormPanel({
         </h2>
       </div>
 
-      {successMessage && <AuthMessage type="success" message={successMessage} />}
+      {successMessage && (
+        <AuthMessage type="success" message={successMessage} />
+      )}
       <AuthMessage type="error" message={error} />
 
       <GoogleLoginButton onClick={onGoogleLogin} label="Google" />
@@ -93,7 +95,9 @@ export default function LoginFormPanel({
 
         <div>
           <div className="mb-1.5 flex items-center justify-between">
-            <label className="font-subtext text-sm font-semibold text-black">Password</label>
+            <label className="font-subtext text-sm font-semibold text-black">
+              Password
+            </label>
             <Link
               to={ROUTES.FORGOT_PASSWORD}
               className="font-subtext text-xs text-black/60 transition-colors hover:text-[#14532D]"

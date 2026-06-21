@@ -1,6 +1,7 @@
 import { authApi } from "@/features/auth/services/auth.api";
 import {
   clearAuthStorage,
+  hasLogoutMarker,
   setAccessToken,
   setCurrentUser,
 } from "@/features/auth/utils/authStorage";
@@ -20,6 +21,11 @@ export async function bootstrapAuthSessionOnAppLoad() {
   }
 
   if (shouldSkipBootstrap(window.location.pathname)) {
+    return;
+  }
+
+  if (hasLogoutMarker()) {
+    clearAuthStorage();
     return;
   }
 
