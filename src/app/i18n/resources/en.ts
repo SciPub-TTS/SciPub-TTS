@@ -1,6 +1,6 @@
 const en = {
   common: {
-    appName: "Research Trend",
+    appName: "Owlreka",
     trendIntelligence: "Trend Intelligence",
     workspace: "Workspace",
     account: "Account",

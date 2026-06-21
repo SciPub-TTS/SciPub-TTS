@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigationType } from "react-router-dom";
 
 import { useAuthSession } from "@/features/auth/hooks/useAuthSession";
@@ -19,6 +19,8 @@ import { initialFilters } from "../constants";
 import {
   defaultSearchSortState,
   getSearchEntityMetadata,
+  getTrendingKeywords,
+  getTrendingTopics,
   normalizeSearchSortState,
 } from "../services";
 import type {
@@ -73,6 +75,9 @@ export function useSearchPageState() {
   } = searchPageState;
   const isWorksTab = activeEntityType === "works";
   const activeEntityMetadata = getSearchEntityMetadata(activeEntityType);
+  const [topicHotSearches, setTopicHotSearches] = useState<string[]>([]);
+  const [trendingTopicNames, setTrendingTopicNames] = useState<string[]>([]);
+  const [trendingKeywordNames, setTrendingKeywordNames] = useState<string[]>([]);
   const {
     filterOptions,
     handleFilterOptionSearch,
@@ -134,6 +139,53 @@ export function useSearchPageState() {
     searchPageState,
     visibleResultCount: visibleResults.length,
   });
+
+  useEffect(() => {
+    if (trendingTopicNames.length > 0 && trendingKeywordNames.length > 0) {
+      return;
+    }
+
+    let isCancelled = false;
+
+    async function loadWeeklyTrendSnapshot() {
+      try {
+        const [topicResult, keywordResult] = await Promise.allSettled([
+          getTrendingTopics(undefined, 12),
+          getTrendingKeywords(undefined, 16),
+        ]);
+
+        if (isCancelled) {
+          return;
+        }
+
+        const topicResponse =
+          topicResult.status === "fulfilled" ? topicResult.value : null;
+        const keywordResponse =
+          keywordResult.status === "fulfilled" ? keywordResult.value : null;
+
+        const nextTrendingTopics = (topicResponse?.topics || [])
+          .map((item) => item.name.trim())
+          .filter((label, index, array) => label.length > 0 && array.indexOf(label) === index);
+        const nextTrendingKeywords = (keywordResponse?.keywords || [])
+          .map((item) => item.name.trim())
+          .filter((label, index, array) => label.length > 0 && array.indexOf(label) === index);
+
+        setTrendingTopicNames(nextTrendingTopics);
+        setTrendingKeywordNames(nextTrendingKeywords);
+        setTopicHotSearches(nextTrendingTopics.slice(0, 8));
+      } catch (error) {
+        if (!isCancelled) {
+          console.error("Cannot load weekly trend snapshot:", error);
+        }
+      }
+    }
+
+    void loadWeeklyTrendSnapshot();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [trendingKeywordNames.length, trendingTopicNames.length]);
 
   // Centralize how a search request is submitted so every user action
   // eventually funnels through one readable path.
@@ -354,6 +406,9 @@ export function useSearchPageState() {
     saveSearchFeedback: searchHistory.saveSearchFeedback,
     saveSearchNotice: searchHistory.saveSearchNotice,
     saveSearchSuccessToken: searchHistory.saveSearchSuccessToken,
+    topicHotSearches,
+    trendingKeywordNames,
+    trendingTopicNames,
     searchPlaceholder: activeEntityMetadata.placeholder,
     searchQuery,
     showFilters,

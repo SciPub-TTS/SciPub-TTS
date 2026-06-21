@@ -48,7 +48,9 @@ const ACCESS_TOKEN_KEY = "owlreka.access_token";
 const CURRENT_USER_KEY = "owlreka.current_user";
 const PASSWORD_RECOVERY_EMAIL_KEY = "owlreka.password_recovery.email";
 const PASSWORD_RECOVERY_GRANT_TOKEN_KEY = "owlreka.password_recovery.grant_token";
+const LOGOUT_MARKER_KEY = "owlreka.logged_out";
 const AUTH_STATE_EVENT = "owlreka-auth-state";
+const DICEBEAR_ADVENTURER_BASE_URL = "https://api.dicebear.com/9.x/adventurer/svg";
 
 function notifyAuthStateChanged() {
   window.dispatchEvent(new Event(AUTH_STATE_EVENT));
@@ -82,6 +84,16 @@ function normalizeAuthorities(value: unknown): string[] {
       .filter(Boolean);
 }
 
+function buildDefaultAvatarUrl(userId: string | number | null | undefined) {
+  if (userId === null || userId === undefined) return null;
+
+  const seed = String(userId).trim();
+
+  if (!seed) return null;
+
+  return `${DICEBEAR_ADVENTURER_BASE_URL}?seed=${encodeURIComponent(seed)}`;
+}
+
 function resolveRole(source: Record<string, unknown>): AuthRole {
   const authorities = normalizeAuthorities(source.authorities);
   return (
@@ -94,20 +106,25 @@ function resolveRole(source: Record<string, unknown>): AuthRole {
 
 export function normalizeCurrentUser(input: unknown): UserPrincipal {
   const source = (input ?? {}) as Record<string, unknown>;
+  const userId = (source.id ?? source.userId ?? "") as string | number;
   const firstName = typeof source.firstName === "string" ? source.firstName : "";
   const lastName = typeof source.lastName === "string" ? source.lastName : "";
   const fullName =
       (typeof source.fullName === "string" && source.fullName) ||
       [firstName, lastName].filter(Boolean).join(" ").trim() ||
       (typeof source.email === "string" ? source.email : "User");
+  const avatarUrl =
+    typeof source.avatarUrl === "string" && source.avatarUrl.trim()
+      ? source.avatarUrl
+      : buildDefaultAvatarUrl(userId);
 
   return {
-    id: (source.id ?? source.userId ?? "") as string | number,
+    id: userId,
     email: typeof source.email === "string" ? source.email : "",
     firstName,
     lastName,
     fullName,
-    avatarUrl: typeof source.avatarUrl === "string" ? source.avatarUrl : null,
+    avatarUrl,
     role: resolveRole(source),
     authorities: normalizeAuthorities(source.authorities),
   };
@@ -133,6 +150,7 @@ export function getCurrentUser(): UserPrincipal | null {
 }
 
 export function setAuthSession(data: AuthResponse) {
+  clearLogoutMarker();
   if (data.accessToken) setAccessToken(data.accessToken);
   if (data.user) setCurrentUser(data.user);
 }
@@ -141,6 +159,18 @@ export function clearAuthStorage() {
   localStorage.removeItem(ACCESS_TOKEN_KEY);
   localStorage.removeItem(CURRENT_USER_KEY);
   notifyAuthStateChanged();
+}
+
+export function markLoggedOut() {
+  localStorage.setItem(LOGOUT_MARKER_KEY, "1");
+}
+
+export function clearLogoutMarker() {
+  localStorage.removeItem(LOGOUT_MARKER_KEY);
+}
+
+export function hasLogoutMarker() {
+  return localStorage.getItem(LOGOUT_MARKER_KEY) === "1";
 }
 
 export function isAuthenticated() {

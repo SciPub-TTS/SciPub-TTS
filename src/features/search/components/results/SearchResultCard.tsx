@@ -22,12 +22,24 @@ import { PaperResultCard } from "./PaperResultCard";
 
 type SearchResultCardProps = {
   item: SearchResultItem;
+  trendingKeywordNames: string[];
+  trendingTopicNames: string[];
 };
 
-export function SearchResultCard({ item }: SearchResultCardProps) {
+export function SearchResultCard({
+  item,
+  trendingKeywordNames,
+  trendingTopicNames,
+}: SearchResultCardProps) {
   switch (item.entityType) {
     case "works":
-      return <PaperResultCard paper={item} />;
+      return (
+        <PaperResultCard
+          paper={item}
+          trendingKeywordNames={trendingKeywordNames}
+          trendingTopicNames={trendingTopicNames}
+        />
+      );
     case "authors":
       return (
         <EntityCardLayout
@@ -118,31 +130,31 @@ function EntityCardLayout({
     : "border border-black bg-white text-black hover:border-[#14532D] hover:bg-[#14532D] hover:text-white";
 
   return (
-    <article className="rounded-[28px] border border-slate-200 bg-white px-5 py-4 transition-colors duration-200 hover:border-slate-300 hover:bg-slate-50/60">
+    <article className="rounded-[28px] border border-black bg-white px-5 py-4 transition-colors duration-200 hover:bg-[#FFF9F4]">
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:gap-x-5">
         <div className="min-w-0 flex items-center gap-3 lg:col-start-1 lg:row-start-1">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[18px] bg-[#EEF6FF] text-[#005CB9]">
-            <div className="flex h-9 w-9 items-center justify-center rounded-[14px] bg-white">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[18px] border border-black bg-[#FFF4EC] text-[#F37021]">
+            <div className="flex h-9 w-9 items-center justify-center rounded-[14px] bg-white text-[#F37021]">
               {heroIcon}
             </div>
           </div>
 
           <div className="min-w-0">
-            <h3 className="break-words text-[24px] font-semibold leading-tight text-slate-950">
+            <h3 className="break-words text-[24px] font-semibold leading-tight text-black">
               {title}
             </h3>
           </div>
         </div>
 
         <div className="flex justify-start lg:col-start-2 lg:row-start-1 lg:justify-end">
-          <span className="inline-flex shrink-0 items-center gap-2 rounded-full border border-[#005CB9] bg-[#EEF6FF] px-3 py-1.5 text-[11px] font-extrabold uppercase tracking-[0.22em] text-[#005CB9]">
-            <FileText className="h-3.5 w-3.5 tracking-normal" />
+          <span className="inline-flex shrink-0 items-center gap-2.5 rounded-full border border-black bg-[#EFFBFF] px-4 py-2 text-[12px] font-extrabold uppercase tracking-[0.24em] text-[#1D9BF0]">
+            <FileText className="h-4 w-4 tracking-normal text-[#1D9BF0]" />
             {formatFullNumber(worksCount)} works
           </span>
         </div>
 
-        <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 lg:col-start-1 lg:row-start-2">
-          <p className="flex flex-wrap items-center text-sm font-semibold leading-6 text-slate-800">
+        <div className="rounded-2xl border border-black bg-[#FFFCF7] px-4 py-3 lg:col-start-1 lg:row-start-2">
+          <p className="flex flex-wrap items-center text-sm font-semibold leading-6 text-black">
             {metadataItems.map((item, index) => (
               <MetadataItem
                 key={`${item.text}-${index}`}
@@ -196,12 +208,12 @@ function MetadataItem({ icon, isFirst, value }: MetadataItemProps) {
   return (
     <>
       {isFirst ? null : (
-        <span className="mx-2 text-slate-400" aria-hidden="true">
+        <span className="mx-2 text-black/35" aria-hidden="true">
           &bull;
         </span>
       )}
       <span className="inline-flex min-w-0 items-center gap-2 align-middle">
-        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600">
+        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-black bg-white text-[#7AC143]">
           {icon}
         </span>
         <span className="break-words">{value}</span>

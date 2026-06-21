@@ -69,6 +69,23 @@ export function normalizeSearchFilterWidgetKeys(values: string[]) {
   return normalizedValues;
 }
 
+export function normalizeTrendLabel(value: string) {
+  return value
+    .trim()
+    .toLocaleLowerCase()
+    .replace(/^#/, "")
+    .replace(/[()]/g, "")
+    .replace(/\s+/g, " ");
+}
+
+export function buildNormalizedTrendLabelSet(values: string[]) {
+  return new Set(values.map(normalizeTrendLabel));
+}
+
+export function isExactTrendMatch(value: string, normalizedTrendLabels: Set<string>) {
+  return normalizedTrendLabels.has(normalizeTrendLabel(value));
+}
+
 export function formatLatestUpdate(minutesAgo: number) {
   if (minutesAgo < 1) {
     return "just now";

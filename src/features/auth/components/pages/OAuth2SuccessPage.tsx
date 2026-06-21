@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { AUTH_ROLES } from "@/features/auth/constants/roles.ts";
+import logoImage from "@/assets/images/logo.png";
 import { useReloadOnHistoryRestore } from "@/features/auth/hooks/useReloadOnHistoryRestore";
 import { authApi } from "@/features/auth/services/auth.api.ts";
 import {
@@ -29,24 +30,16 @@ const ERROR_MESSAGES: Record<string, string> = {
 function BrandLockup() {
   return (
     <div className="flex items-center gap-2.5">
-      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-800 shadow-[0_8px_20px_rgba(5,150,105,0.22)]">
-        <svg width="16" height="16" viewBox="0 0 14 14" fill="none">
-          <path
-            d="M2 10 Q7 2 12 10"
-            stroke="#fff"
-            strokeWidth="1.8"
-            strokeLinecap="round"
-            fill="none"
-          />
-          <circle cx="7" cy="5.5" r="1.2" fill="#6ee7b7" />
-        </svg>
+      <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-lg bg-white shadow-[0_8px_20px_rgba(5,150,105,0.22)]">
+        <img
+          src={logoImage}
+          alt="Owlreka logo"
+          className="h-full w-full object-cover"
+        />
       </div>
       <div>
-        <div className="font-title text-sm font-semibold leading-none text-slate-900">
-          Research Trend Tracker
-        </div>
-        <div className="font-subtext mt-0.5 text-[10px] leading-none tracking-widest text-slate-400">
-          RTT · V2.4
+        <div className="font-brand text-2xl font-normal leading-none text-slate-900">
+          Owlreka
         </div>
       </div>
     </div>
@@ -174,7 +167,7 @@ export default function OAuth2SuccessPage() {
           <div className="w-full max-w-[420px] rounded-[28px] border border-slate-200/80 bg-white p-8 text-center shadow-[0_22px_56px_rgba(15,23,42,0.08)]">
             <p className="font-subtext mb-3 flex items-center justify-center gap-2 text-[11px] uppercase tracking-[0.18em] text-red-500">
               <span className="inline-block h-1.5 w-1.5 rounded-full bg-red-500" />
-              OAuth Callback
+              Owlreka Access
             </p>
 
             <div className="mx-auto mb-6 flex h-14 w-14 items-center justify-center rounded-2xl border border-red-100 bg-red-50">
@@ -185,12 +178,15 @@ export default function OAuth2SuccessPage() {
               </svg>
             </div>
 
-            <h1 className="font-title mb-1 text-[1.95rem] leading-tight text-slate-950">
-              Authentication
-            </h1>
-            <h1 className="font-title mb-4 text-[1.95rem] leading-tight italic text-red-600">
-              Failed.
-            </h1>
+            <div className="mb-4 flex flex-col items-center gap-2">
+              <BrandLockup />
+              <h1 className="font-title text-[1.95rem] leading-tight text-slate-950">
+                Authentication
+              </h1>
+              <h1 className="font-title text-[1.95rem] leading-tight italic text-red-600">
+                Failed.
+              </h1>
+            </div>
 
             <p className="font-subtext mx-auto mb-8 max-w-xs text-sm leading-relaxed text-slate-500">
               {errorMessage}

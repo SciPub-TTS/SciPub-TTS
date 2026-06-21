@@ -34,8 +34,16 @@ export default function AdminHeader() {
         <div className="flex items-center gap-10">
           <LanguageSwitcher />
 
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-600 text-sm font-bold text-white">
-            {initials}
+          <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-emerald-600 text-sm font-bold text-white">
+            {user?.avatarUrl ? (
+              <img
+                src={user.avatarUrl}
+                alt={displayName}
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              initials
+            )}
           </div>
         </div>
       </div>

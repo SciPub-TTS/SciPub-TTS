@@ -4,9 +4,7 @@ import { Link, NavLink, useNavigate } from "react-router-dom";
 import { ROUTES } from "@/app/router";
 import logoImage from "@/assets/images/logo.png";
 import { useAuthSession } from "@/features/auth/hooks/useAuthSession";
-import {
-  clearAuthStorage,
-} from "@/features/auth/utils/authStorage";
+import { submitLogout } from "@/features/auth/services/authFlows";
 
 const adminMenuItems = [
   {
@@ -37,9 +35,9 @@ export default function AdminSidebar() {
   const displayName = currentUser?.fullName ?? "Admin";
   const initials = getInitials(displayName) || "AD";
 
-  function handleLogout() {
-    clearAuthStorage();
-    navigate(ROUTES.LOGIN);
+  async function handleLogout() {
+    await submitLogout();
+    navigate(ROUTES.LOGIN, { replace: true });
   }
 
   return (
@@ -98,8 +96,16 @@ export default function AdminSidebar() {
       {currentUser && (
         <div className="border-t border-emerald-400/20 px-2.5 py-4">
           <div className="mb-4 flex items-center gap-3 rounded-lg border border-white/10 bg-white/[0.08] px-2.5 py-2.5">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-xs font-bold text-white">
-              {initials}
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-emerald-600 text-xs font-bold text-white">
+              {currentUser.avatarUrl ? (
+                <img
+                  src={currentUser.avatarUrl}
+                  alt={displayName}
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                initials
+              )}
             </div>
             <div className="min-w-0">
               <p className="truncate text-xs font-bold text-white">
@@ -113,7 +119,7 @@ export default function AdminSidebar() {
 
           <button
             type="button"
-            onClick={handleLogout}
+            onClick={() => void handleLogout()}
             className="flex w-full items-center gap-3 rounded-lg px-2.5 py-2 text-left text-xs font-medium text-slate-300 transition hover:bg-rose-500/15 hover:text-rose-100"
           >
             <LogOut className="h-4 w-4 shrink-0" />

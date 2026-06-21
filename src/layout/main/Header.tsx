@@ -1,6 +1,5 @@
 import BreadcrumbBar from "../components/BreadcrumbBar";
 import LanguageSwitcher from "../components/LanguageSwitcher";
-import MainHeaderAccount from "./HeaderAccount";
 
 export default function MainHeader() {
   return (
@@ -10,7 +9,6 @@ export default function MainHeader() {
 
         <div className="flex items-center gap-3">
           <LanguageSwitcher />
-          <MainHeaderAccount />
         </div>
       </div>
     </header>

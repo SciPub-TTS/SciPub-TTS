@@ -25,6 +25,8 @@ export function SearchResults({
   responseTimeSeconds,
   sortState,
   totalResultCount,
+  trendingKeywordNames,
+  trendingTopicNames,
   visibleResults,
   onLoadMoreResults,
   onClearSorts,
@@ -147,6 +149,8 @@ export function SearchResults({
           <ResultsList
             autoLoadAnchorIndex={autoLoadAnchorIndex}
             lazyLoadAnchorRef={lazyLoadAnchorRef}
+            trendingKeywordNames={trendingKeywordNames}
+            trendingTopicNames={trendingTopicNames}
             visibleResults={visibleResults}
           />
         )}
@@ -193,6 +197,8 @@ type SortActionsProps = {
 type ResultsListProps = {
   autoLoadAnchorIndex: number;
   lazyLoadAnchorRef: { current: HTMLDivElement | null };
+  trendingKeywordNames: SearchResultsProps["trendingKeywordNames"];
+  trendingTopicNames: SearchResultsProps["trendingTopicNames"];
   visibleResults: SearchResultsProps["visibleResults"];
 };
 
@@ -346,7 +352,13 @@ function SortDropdown(props: SortDropdownProps) {
 }
 
 function ResultsList(props: ResultsListProps) {
-  const { autoLoadAnchorIndex, lazyLoadAnchorRef, visibleResults } = props;
+  const {
+    autoLoadAnchorIndex,
+    lazyLoadAnchorRef,
+    trendingKeywordNames,
+    trendingTopicNames,
+    visibleResults,
+  } = props;
   const resultItems = [];
 
   for (let index = 0; index < visibleResults.length; index += 1) {
@@ -366,6 +378,8 @@ function ResultsList(props: ResultsListProps) {
       <SearchResultCard
         key={`${item.entityType}:${item.id}`}
         item={item}
+        trendingKeywordNames={trendingKeywordNames}
+        trendingTopicNames={trendingTopicNames}
       />,
     );
   }

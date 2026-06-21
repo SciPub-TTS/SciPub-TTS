@@ -38,7 +38,7 @@ const projectItems = [
   },
   {
     icon: BarChart3,
-    text: "Research Trend Analysis",
+    text: "Owlreka Intelligence",
   },
 ];
 
@@ -48,7 +48,7 @@ export default function MainFooter() {
       <div className="mx-auto grid max-w-7xl gap-10 py-8 md:grid-cols-[1.6fr_1fr_1fr]">
         <section>
           <h2 className="text-sm font-bold text-black">
-            Scientific Journal Publication Trend Tracking System
+            Owlreka Research Observatory
           </h2>
           <p className="mt-3 max-w-md leading-5 text-black">
             A publication trend intelligence platform for researchers,

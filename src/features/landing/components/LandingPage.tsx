@@ -58,6 +58,22 @@ const floatCards = [
   },
 ];
 
+const landingSections = [
+  { id: "overview", number: "01", title: "Overview" },
+  {
+    id: "research-tool-modules",
+    number: "02",
+    title: "Research Tool Modules",
+  },
+  { id: "live-trends", number: "03", title: "Live Trends" },
+  { id: "the-argument", number: "04", title: "The Argument" },
+  { id: "command-center", number: "05", title: "Command Center" },
+  { id: "knowledge-graph", number: "06", title: "Knowledge Graph" },
+  { id: "method", number: "07", title: "Method" },
+  { id: "audience", number: "08", title: "Audience" },
+  { id: "invitation", number: "09", title: "The Invitation" },
+] as const;
+
 export default function LandingPage() {
   const [isSectionMenuOpen, setIsSectionMenuOpen] = useState(false);
   const { currentUser, isAuthenticated: loggedIn } = useAuthSession();
@@ -157,7 +173,7 @@ export default function LandingPage() {
           <Link to={ROUTES.HOME} className="flex items-center gap-3">
             <img
               src={logoImage}
-              alt="Research Trend"
+              alt="Owlreka logo"
               className="h-10 w-10 rounded-lg object-cover"
             />
             <span className="font-brand text-3xl font-normal">Owlreka</span>
@@ -178,21 +194,18 @@ export default function LandingPage() {
               </button>
 
               {isSectionMenuOpen && (
-                <div className="absolute left-0 top-8 w-56 rounded-lg border border-slate-200 bg-white p-1.5 shadow-lg">
-                  <button
-                    type="button"
-                    onClick={() => handleSectionSelect("overview")}
-                    className="block w-full rounded-md px-3 py-2 text-left text-sm font-medium text-slate-600 hover:bg-emerald-50 hover:text-emerald-700"
-                  >
-                    Overview
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleSectionSelect("trending-topic-preview")}
-                    className="block w-full rounded-md px-3 py-2 text-left text-sm font-medium text-slate-600 hover:bg-emerald-50 hover:text-emerald-700"
-                  >
-                    Trending Topic Preview
-                  </button>
+                <div className="absolute left-0 top-8 z-30 w-80 rounded-[28px] border border-black bg-[#fcfdfb] p-3 shadow-[0_18px_38px_rgba(15,23,42,0.16)]">
+                  {landingSections.map((section) => (
+                    <button
+                      key={section.id}
+                      type="button"
+                      onClick={() => handleSectionSelect(section.id)}
+                      className="mb-1.5 flex w-full items-center gap-3 border-b border-black px-3 py-2.5 text-left text-sm font-semibold text-slate-700 transition hover:bg-emerald-50 hover:text-emerald-700 last:mb-0 last:border-b-0"
+                    >
+                      <span className="min-w-7 text-black">{section.number}</span>
+                      <span>{section.title}</span>
+                    </button>
+                  ))}
                 </div>
               )}
             </div>
@@ -267,13 +280,13 @@ export default function LandingPage() {
                     The Manifesto
                   </p>
                   <h1 className="max-w-[860px] text-[46px] font-semibold leading-[0.94] tracking-[-0.02em] md:text-[72px] lg:text-[86px]">
-                    See the{" "}
-                    <span className="font-serif italic text-emerald-600">signal</span>
+                    Read the{" "}
+                    <span className="font-serif italic text-emerald-600">literature</span>
                     <br />
-                    behind every
+                    as a living
                     <br />
                     <span className="relative inline-block font-serif italic">
-                      paper
+                      conversation
                       <svg
                         viewBox="0 0 420 24"
                         aria-hidden="true"
@@ -407,7 +420,10 @@ export default function LandingPage() {
 
           </div>
 
-          <section className="mt-16 rounded-[28px] border border-slate-200/80 bg-[#f2f4f3] px-6 py-12 md:px-10 md:py-16">
+          <section
+            id="research-tool-modules"
+            className="mt-16 rounded-[28px] border border-slate-200/80 bg-[#f2f4f3] px-6 py-12 md:px-10 md:py-16"
+          >
             <div className="mb-7 flex items-center gap-4">
               <span className="font-serif text-[36px] italic text-emerald-600">
                 §02
@@ -602,7 +618,10 @@ export default function LandingPage() {
             </div>
           </section>
 
-          <section className="mt-16 rounded-[28px] border border-slate-200/80 bg-[#f2f4f3] px-6 py-12 md:px-10 md:py-16">
+          <section
+            id="live-trends"
+            className="mt-16 rounded-[28px] border border-slate-200/80 bg-[#f2f4f3] px-6 py-12 md:px-10 md:py-16"
+          >
             <div className="mb-7 flex items-center gap-4">
               <span className="font-serif text-[36px] italic text-emerald-600">
                 §03
@@ -815,7 +834,10 @@ export default function LandingPage() {
             </div>
           </section>
 
-          <section className="mt-16 overflow-hidden rounded-[28px] border border-slate-200/80 bg-[#f2f4f3]">
+          <section
+            id="the-argument"
+            className="mt-16 overflow-hidden rounded-[28px] border border-slate-200/80 bg-[#f2f4f3]"
+          >
             <div className="relative px-6 pb-8 pt-8 md:px-10 md:pt-10">
               <div
                 aria-hidden="true"
@@ -838,9 +860,9 @@ export default function LandingPage() {
               </div>
 
               <h2 className="relative z-10 max-w-[980px] text-[58px] font-semibold leading-[0.95] tracking-[-0.02em] text-[#0b0f0e] md:text-[72px]">
-                See the{" "}
-                <span className="font-serif italic text-emerald-600">signal</span>{" "}
-                behind scientific publications.
+                Trace the{" "}
+                <span className="font-serif italic text-emerald-600">argument</span>{" "}
+                across scientific literature.
               </h2>
 
               <div className="relative z-10 mt-10 grid gap-4 lg:grid-cols-3">
@@ -878,7 +900,7 @@ export default function LandingPage() {
                   <div className="mb-12 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-950/70 text-emerald-400">
                     <TrendingUp className="h-6 w-6" />
                   </div>
-                  <h3 className="text-[16px] font-semibold">Research Trend Tracker</h3>
+                  <h3 className="text-[16px] font-semibold">Owlreka</h3>
                   <ul className="mt-6 space-y-3 text-[16px] text-emerald-50">
                     <li className="flex items-center gap-3">
                       <Check className="h-5 w-5 text-emerald-400" />
@@ -929,7 +951,10 @@ export default function LandingPage() {
             </div>
           </section>
 
-          <section className="mt-16 rounded-[28px] border border-slate-200/80 bg-[#f2f4f3] px-6 py-10 md:px-10 md:py-12">
+          <section
+            id="command-center"
+            className="mt-16 rounded-[28px] border border-slate-200/80 bg-[#f2f4f3] px-6 py-10 md:px-10 md:py-12"
+          >
             <div className="mb-7 flex items-center gap-4">
               <span className="font-serif text-[36px] italic text-emerald-600">
                 §05
@@ -993,7 +1018,10 @@ export default function LandingPage() {
             </div>
           </section>
 
-          <section className="mt-16 overflow-hidden rounded-[28px] border border-slate-200/80 bg-[#f2f4f3] px-6 py-10 md:px-10 md:py-12">
+          <section
+            id="knowledge-graph"
+            className="mt-16 overflow-hidden rounded-[28px] border border-slate-200/80 bg-[#f2f4f3] px-6 py-10 md:px-10 md:py-12"
+          >
             <div className="grid gap-8 lg:grid-cols-[0.9fr_1.5fr] lg:items-start">
               <div>
                 <div className="mb-7 flex items-center gap-4">
@@ -1255,7 +1283,10 @@ export default function LandingPage() {
             </div>
           </section>
 
-          <section className="mt-16 overflow-hidden rounded-[28px] border border-slate-200/80 bg-[#f2f4f3] px-6 py-10 md:px-10 md:py-12">
+          <section
+            id="method"
+            className="mt-16 overflow-hidden rounded-[28px] border border-slate-200/80 bg-[#f2f4f3] px-6 py-10 md:px-10 md:py-12"
+          >
             <div className="reveal-on-scroll mb-6 flex items-center gap-4">
               <span className="font-serif text-[42px] italic text-emerald-600">
                 §07
@@ -1353,7 +1384,10 @@ export default function LandingPage() {
             </div>
           </section>
 
-          <section className="mt-16 rounded-[28px] border border-slate-200/80 bg-[#f2f4f3] px-6 py-10 md:px-10 md:py-12">
+          <section
+            id="audience"
+            className="mt-16 rounded-[28px] border border-slate-200/80 bg-[#f2f4f3] px-6 py-10 md:px-10 md:py-12"
+          >
             <div className="mb-6 flex items-center gap-4">
               <span className="font-serif text-[42px] italic text-emerald-600">
                 §08
@@ -1418,7 +1452,10 @@ export default function LandingPage() {
             </div>
           </section>
 
-          <section className="relative mt-16 overflow-hidden rounded-[28px] border border-emerald-900/30 bg-[#04170f] px-6 py-14 text-white md:px-10 md:py-16">
+          <section
+            id="invitation"
+            className="relative mt-16 overflow-hidden rounded-[28px] border border-emerald-900/30 bg-[#04170f] px-6 py-14 text-white md:px-10 md:py-16"
+          >
             <div
               aria-hidden="true"
               className="pointer-events-none absolute inset-0 opacity-30"

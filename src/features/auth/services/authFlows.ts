@@ -12,6 +12,7 @@ import type {
 } from "@/features/auth/types/auth.types";
 import {
     clearAuthStorage,
+    markLoggedOut,
     clearPasswordRecoveryState,
     getPasswordRecoveryEmail,
     getPasswordRecoveryGrantToken,
@@ -81,6 +82,7 @@ export async function submitLogout() {
     try {
         await authApi.logout();
     } finally {
+        markLoggedOut();
         clearAuthStorage();
         clearPasswordRecoveryState();
     }

@@ -110,7 +110,7 @@ function buildKeywords(
       keywords.push(normalizedKeyword);
     }
 
-    if (keywords.length === 3) {
+    if (keywords.length === 8) {
       return keywords;
     }
   }
@@ -122,7 +122,7 @@ function buildKeywords(
       keywords.push(value);
     }
 
-    if (keywords.length === 3) {
+    if (keywords.length === 8) {
       break;
     }
   }

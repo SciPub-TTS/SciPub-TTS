@@ -5,7 +5,6 @@ import type {
   SearchSortDirection,
   SearchSortState,
   SearchSortBy,
-  SearchTrendingMode,
   SearchYearRange,
 } from "../types";
 import type {
@@ -100,16 +99,6 @@ const worksSearchResultSortGroups: SearchResultSortGroup[] = [
       { value: "published_oldest", label: "Oldest" },
     ],
   },
-  {
-    key: "trending",
-    label: "Trending",
-    disabled: true,
-    options: [
-      { value: "trending_keyword", label: "By keyword" },
-      { value: "trending_topic", label: "By topic" },
-      { value: "trending_both", label: "Both" },
-    ],
-  },
 ];
 
 const entitySearchResultSortGroups: SearchResultSortGroup[] = [
@@ -175,8 +164,7 @@ export function normalizeSearchTabEntityType(
 
 export function hasActiveSearchSort(sortState: SearchSortState) {
   return (
-    sortState.trendingMode !== "none"
-    || sortState.sortBy !== defaultSearchSortState.sortBy
+    sortState.sortBy !== defaultSearchSortState.sortBy
     || sortState.sortDirection !== defaultSearchSortState.sortDirection
   );
 }
@@ -195,7 +183,7 @@ export function normalizeSearchSortState(
   return {
     sortBy: normalizeSortBy(value.sortBy),
     sortDirection: normalizeSortDirection(value.sortDirection),
-    trendingMode: normalizeTrendingMode(value.trendingMode),
+    trendingMode: "none",
   };
 }
 
@@ -208,6 +196,12 @@ export function createSearchSortStateFromOption(
     case "works_most_works":
       return {
         sortBy: "works",
+        sortDirection: "desc",
+        trendingMode: "none",
+      };
+    case "citation_most_cited":
+      return {
+        sortBy: "citation",
         sortDirection: "desc",
         trendingMode: "none",
       };
@@ -234,21 +228,6 @@ export function createSearchSortStateFromOption(
         sortBy: "alphabetical",
         sortDirection: "asc",
         trendingMode: "none",
-      };
-    case "trending_keyword":
-      return {
-        ...defaultSearchSortState,
-        trendingMode: "keyword",
-      };
-    case "trending_topic":
-      return {
-        ...defaultSearchSortState,
-        trendingMode: "topic",
-      };
-    case "trending_both":
-      return {
-        ...defaultSearchSortState,
-        trendingMode: "both",
       };
     default:
       return { ...defaultSearchSortState };
@@ -282,21 +261,6 @@ export function getSearchSortOptionValue(
       ? "published_oldest"
       : "published_latest";
   }
-
-  if (groupKey === "trending") {
-    if (sortState.trendingMode === "keyword") {
-      return "trending_keyword";
-    }
-
-    if (sortState.trendingMode === "topic") {
-      return "trending_topic";
-    }
-
-    if (sortState.trendingMode === "both") {
-      return "trending_both";
-    }
-  }
-
   return "";
 }
 
@@ -333,16 +297,3 @@ function normalizeSortDirection(value?: string | null): SearchSortDirection {
   return value?.trim().toLowerCase() === "asc" ? "asc" : "desc";
 }
 
-function normalizeTrendingMode(value?: string | null): SearchTrendingMode {
-  const normalizedValue = value?.trim().toLowerCase();
-
-  if (
-    normalizedValue === "keyword"
-    || normalizedValue === "topic"
-    || normalizedValue === "both"
-  ) {
-    return normalizedValue;
-  }
-
-  return "none";
-}
