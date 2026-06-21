@@ -88,20 +88,20 @@ export function BookmarkCard({
         </button>
       </div>
 
-      <h3 className="font-title line-clamp-3 text-sm font-semibold leading-snug text-black">
+      <h3 className="font-title line-clamp-3 text-base font-bold leading-snug text-black">
         {bookmark.title}
       </h3>
 
-      <p className="font-subtext text-xs leading-relaxed text-[#8B5E34]">
+      <p className="font-subtext text-sm font-medium leading-relaxed text-[#8B5E34]">
         {formatAuthors(bookmark.authors)}
       </p>
 
-      <div className="font-subtext flex items-center gap-3 text-xs">
+      <div className="font-subtext flex items-center gap-3 text-sm font-medium">
         {bookmark.publicationYear && (
-          <span className="text-black/45">{bookmark.publicationYear}</span>
+          <span className="text-black">{bookmark.publicationYear}</span>
         )}
         {bookmark.citationCount != null && (
-          <span className="ml-auto shrink-0 text-black/45">
+          <span className="ml-auto shrink-0 text-black">
             {formatCitationCount(bookmark.citationCount)} citations
           </span>
         )}
@@ -109,7 +109,7 @@ export function BookmarkCard({
 
       {!editingNote && bookmark.note && (
         <div className="rounded-lg border border-black bg-white px-3 py-2">
-          <p className="font-subtext line-clamp-2 text-xs text-[#8B5E34]">{bookmark.note}</p>
+          <p className="font-subtext line-clamp-2 text-sm font-medium text-[#8B5E34]">{bookmark.note}</p>
         </div>
       )}
 
@@ -141,14 +141,14 @@ export function BookmarkCard({
       )}
 
       <div className="mt-auto flex items-center justify-between border-t border-black/10 pt-1">
-        <span className="font-subtext text-[10px] text-black/45">
+        <span className="font-subtext text-xs font-medium text-black">
           {formatSavedAt(bookmark.createdAt)}
         </span>
 
         <div className="flex items-center gap-1">
           <Link
             to={buildDetailTrailUrl("works", bookmark.openAlexId, [], "bookmarks")}
-            className="inline-flex h-7 items-center gap-1 rounded-lg border border-black bg-white px-2.5 text-[11px] font-semibold text-[#00AEEF] transition-all hover:bg-white hover:text-[#00AEEF]"
+            className="inline-flex h-7 items-center gap-1 rounded-lg border border-black bg-white px-2.5 text-[11px] font-semibold text-black transition-all hover:bg-white hover:text-black"
             title="View detail"
           >
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
@@ -165,7 +165,7 @@ export function BookmarkCard({
           </Link>
 
           <button
-            className="flex h-7 w-7 items-center justify-center rounded-lg text-black/45 transition-all hover:bg-white hover:text-[#F37021]"
+            className="flex h-7 w-7 items-center justify-center rounded-lg text-black transition-all hover:bg-white hover:text-black"
             title="Share"
           >
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
@@ -193,7 +193,7 @@ export function BookmarkCard({
 
           <button
             onClick={() => setEditingNote(true)}
-            className="flex h-7 w-7 items-center justify-center rounded-lg text-black/45 transition-all hover:bg-white hover:text-[#7AC143]"
+            className="flex h-7 w-7 items-center justify-center rounded-lg text-black transition-all hover:bg-white hover:text-black"
             title="Add note"
           >
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
@@ -209,7 +209,7 @@ export function BookmarkCard({
           <div className="relative">
             <button
               onClick={() => setShowMenu((v) => !v)}
-              className="flex h-7 w-7 items-center justify-center rounded-lg text-black/45 transition-all hover:bg-white hover:text-[#00AEEF]"
+              className="flex h-7 w-7 items-center justify-center rounded-lg text-black transition-all hover:bg-white hover:text-black"
             >
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
                 <circle cx="12" cy="5" r="1.5" fill="currentColor" />
