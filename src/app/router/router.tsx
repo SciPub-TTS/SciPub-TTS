@@ -31,7 +31,7 @@ import PaperDetailPage from "@/features/detail/works/components/PaperDetailPage"
 import AuthorDetailPage from "@/features/detail/entities/components/AuthorDetailPage";
 import TopicDetailPage from "@/features/detail/entities/components/TopicDetailPage";
 import ProfilePage from "@/features/profile/components/ProfilePage";
-import FeedPage from "@/features/newfeeds/components/FeedPage";
+import FeedPage from "@/features/newfeeds/pages/FeedPage";
 import ReportPage from "@/features/reports/components/ReportPage";
 import AdminDashboardPage from "@/features/admin/components/AdminDashboardPage.tsx";
 import AdminUsersPage from "@/features/admin/pages/AdminUsersPage.tsx";
