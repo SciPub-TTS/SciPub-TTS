@@ -18,13 +18,13 @@ import { submitLogout } from "@/features/auth/services/authFlows";
 import { parseDetailOrigin } from "@/features/detail/detailTrail";
 
 const workspaceMenuItems = [
+  { label: "Discovery", path: ROUTES.SEARCH, icon: Search },
   { label: "Trending", path: ROUTES.TRENDING_TOPIC, icon: LayoutDashboard },
-  { label: "New Feed", path: ROUTES.FEED, icon: Rss },
-  { label: "Search Papers", path: ROUTES.SEARCH, icon: Search },
   { label: "Bookmarks", path: ROUTES.BOOKMARKS, icon: Bookmark },
+  { label: "New Feed", path: ROUTES.FEED, icon: Rss },
   { label: "Social Hub", path: ROUTES.SOCIAL_HUB, icon: MessagesSquare },
-  { label: "Export Reports", path: ROUTES.REPORT, icon: FileText },
-  { label: "Help Guide", path: ROUTES.GUIDE, icon: CircleHelp },
+  { label: "Report", path: ROUTES.REPORT, icon: FileText },
+  { label: "Guide & Help", path: ROUTES.GUIDE, icon: CircleHelp },
 ];
 
 const accountMenuItems = [
