@@ -61,6 +61,10 @@ export interface UserPrincipal {
   lastName?: string;
   fullName?: string;
   avatarUrl?: string | null;
+  institution?: string | null;
+  department?: string | null;
+  country?: string | null;
+  googleLinked?: boolean;
   role: AuthRole;
   authorities?: string[] | Array<{ authority: string }>;
 }

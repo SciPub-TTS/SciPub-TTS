@@ -127,6 +127,10 @@ export function normalizeCurrentUser(input: unknown): UserPrincipal {
     avatarUrl,
     role: resolveRole(source),
     authorities: normalizeAuthorities(source.authorities),
+    institution: typeof source.institution === "string" ? source.institution : "",
+    department: typeof source.department === "string" ? source.department : "",
+    country: typeof source.country === "string" ? source.country : "",
+    googleLinked: typeof source.googleLinked === "boolean" ? source.googleLinked : false,
   };
 }
 
