@@ -2,6 +2,7 @@ import type { BookmarkFilters } from "@/features/bookmarks/types/bookmark.types"
 
 export const bookmarkQueryKeys = {
   all: ["bookmarks"] as const,
+  collections: () => [...bookmarkQueryKeys.all, "collections"] as const,
   filterOptions: () => [...bookmarkQueryKeys.all, "filter-options"] as const,
   list: (filters: BookmarkFilters) =>
     [...bookmarkQueryKeys.lists(), filters] as const,

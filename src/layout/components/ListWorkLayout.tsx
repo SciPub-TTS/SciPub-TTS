@@ -150,6 +150,7 @@ export default function ListWorkLayout({
     isSaved: savedState,
   } = useWorkBookmark({
     authors,
+    authorOpenAlexIds: authorItems.map((author) => author.id),
     citations,
     initialSaved: isSaved,
     onSuccess: onBookmarkClick,
@@ -157,6 +158,7 @@ export default function ListWorkLayout({
     source: venue,
     title,
     topic: topicRef?.name || topic,
+    topicOpenAlexId: topicRef?.id ?? null,
     year,
   });
 

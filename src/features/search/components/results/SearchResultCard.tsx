@@ -130,7 +130,7 @@ function EntityCardLayout({
     : "border border-black bg-white text-black hover:border-[#14532D] hover:bg-[#14532D] hover:text-white";
 
   return (
-    <article className="rounded-[28px] border border-black bg-white px-5 py-4 transition-colors duration-200 hover:bg-[#FFF9F4]">
+    <article className="rounded-[28px] border border-black bg-white px-5 py-4">
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:gap-x-5">
         <div className="min-w-0 flex items-center gap-3 lg:col-start-1 lg:row-start-1">
           <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[18px] border border-black bg-[#FFF4EC] text-[#F37021]">

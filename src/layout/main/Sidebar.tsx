@@ -90,11 +90,15 @@ export default function MainSidebar() {
             const isSearchSectionActive =
               item.path === ROUTES.SEARCH &&
               (location.pathname === ROUTES.SEARCH ||
-                (isDetailPage && detailOrigin !== "bookmarks"));
+                (isDetailPage && detailOrigin === "search"));
             const isBookmarksSectionActive =
               item.path === ROUTES.BOOKMARKS &&
               (location.pathname === ROUTES.BOOKMARKS ||
                 (isDetailPage && detailOrigin === "bookmarks"));
+            const isSocialHubSectionActive =
+              item.path === ROUTES.SOCIAL_HUB &&
+              (location.pathname === ROUTES.SOCIAL_HUB ||
+                (isDetailPage && detailOrigin === "social-hub"));
 
             return (
               <NavLink
@@ -103,7 +107,10 @@ export default function MainSidebar() {
                 className={({ isActive }) =>
                   [
                     "flex items-center gap-3 rounded-lg px-3 py-2.5 text-[13px] font-semibold transition",
-                    isActive || isSearchSectionActive || isBookmarksSectionActive
+                    isActive ||
+                    isSearchSectionActive ||
+                    isBookmarksSectionActive ||
+                    isSocialHubSectionActive
                       ? "bg-emerald-600 text-white"
                       : "text-white hover:bg-emerald-500/15 hover:text-emerald-300",
                   ].join(" ")
