@@ -1,4 +1,5 @@
 import { LayoutDashboard, LogOut, Users } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 
 import { ROUTES } from "@/app/router";
@@ -8,12 +9,12 @@ import { submitLogout } from "@/features/auth/services/authFlows";
 
 const adminMenuItems = [
   {
-    label: "Admin Dashboard",
+    labelKey: "admin.dashboard",
     path: ROUTES.ADMIN_DASHBOARD,
     icon: LayoutDashboard,
   },
   {
-    label: "User Management",
+    labelKey: "admin.userManagement",
     path: ROUTES.ADMIN_USERS,
     icon: Users,
   },
@@ -30,9 +31,10 @@ function getInitials(name: string) {
 }
 
 export default function AdminSidebar() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { currentUser } = useAuthSession();
-  const displayName = currentUser?.fullName ?? "Admin";
+  const displayName = currentUser?.fullName ?? t("admin.admin");
   const initials = getInitials(displayName) || "AD";
 
   async function handleLogout() {
@@ -58,14 +60,14 @@ export default function AdminSidebar() {
             Owlreka
           </h1>
           <p className="mt-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-400">
-            Admin Console
+            {t("admin.console")}
           </p>
         </div>
       </Link>
 
       <div className="flex-1 px-2.5 py-5">
         <p className="mb-2 px-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">
-          Admin
+          {t("admin.admin")}
         </p>
 
         <nav className="space-y-1">
@@ -86,7 +88,7 @@ export default function AdminSidebar() {
                 }
               >
                 <Icon className="h-4 w-4 shrink-0" />
-                <span className="truncate">{item.label}</span>
+                <span className="truncate">{t(item.labelKey)}</span>
               </NavLink>
             );
           })}
@@ -112,7 +114,7 @@ export default function AdminSidebar() {
                 {displayName}
               </p>
               <p className="mt-0.5 truncate text-[10px] text-slate-400">
-                Admin
+                {t("admin.admin")}
               </p>
             </div>
           </div>
@@ -123,7 +125,7 @@ export default function AdminSidebar() {
             className="flex w-full items-center gap-3 rounded-lg px-2.5 py-2 text-left text-xs font-medium text-slate-300 transition hover:bg-rose-500/15 hover:text-rose-100"
           >
             <LogOut className="h-4 w-4 shrink-0" />
-            <span className="truncate">Log out</span>
+            <span className="truncate">{t("common.logout")}</span>
           </button>
         </div>
       )}
