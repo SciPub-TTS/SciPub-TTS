@@ -33,11 +33,13 @@ export default function PaperDetailHeader(props: PaperDetailHeaderProps) {
     isSaved,
   } = useWorkBookmark({
     authors: paperDetail.authors.map((author) => author.name),
+    authorOpenAlexIds: paperDetail.authors.map((author) => author.entityId),
     citations: paperDetail.citationCount,
     openAlexId: paperDetail.openAlexId,
     source: paperDetail.sourceName,
     title: paperDetail.title,
     topic: paperDetail.topics[0]?.name || "",
+    topicOpenAlexId: paperDetail.topics[0]?.id ?? null,
     year: paperDetail.publicationYear,
   });
   const bookmarkClassName = isSaved

@@ -5,7 +5,7 @@ const detailTrailSearchParam = "trail";
 const detailOriginSearchParam = "origin";
 
 export type DetailTrailEntityType = DetailTitleEntityType;
-export type DetailOrigin = "bookmarks" | "search";
+export type DetailOrigin = "bookmarks" | "search" | "social-hub";
 
 export type DetailTrailEntry = {
   entityId: string;
@@ -23,7 +23,17 @@ function normalizeEntityId(entityId: string) {
 }
 
 function normalizeDetailOrigin(origin: string | null | undefined): DetailOrigin {
-  return origin?.trim().toLowerCase() === "bookmarks" ? "bookmarks" : "search";
+  const normalizedOrigin = origin?.trim().toLowerCase();
+
+  if (normalizedOrigin === "bookmarks") {
+    return "bookmarks";
+  }
+
+  if (normalizedOrigin === "social-hub") {
+    return "social-hub";
+  }
+
+  return "search";
 }
 
 function normalizeEntityType(entityType: string) {

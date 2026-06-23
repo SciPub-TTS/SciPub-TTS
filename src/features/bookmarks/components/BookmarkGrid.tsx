@@ -1,16 +1,32 @@
 import { BookmarkCard } from "@/features/bookmarks/components/BookmarkCard";
 import { useInfiniteScroll } from "@/features/bookmarks/hooks/UseInfiniteScroll.ts";
-import type { BookmarkResponse } from "@/features/bookmarks/types/bookmark.types";
+import type {
+  BookmarkCollectionResponse,
+  BookmarkResponse,
+} from "@/features/bookmarks/types/bookmark.types";
 
 interface BookmarkGridProps {
+  availableCollections: BookmarkCollectionResponse[];
   items: BookmarkResponse[];
   hasNext: boolean;
   isLoadingMore: boolean;
   isRefreshing: boolean;
+  isCollectionMutating: boolean;
   error: string | null;
   onLoadMore: () => void;
   onDelete: (id: string) => void | Promise<void>;
+  onAddToCollection: (
+    bookmarkId: string,
+    collectionId: string,
+  ) => Promise<void>;
+  onRemoveFromCollection: (
+    bookmarkId: string,
+    collectionId: string,
+  ) => Promise<void>;
   onUpdateNote: (id: string, note: string | null) => void | Promise<void>;
+  searchQuery: string;
+  selectedCollectionId: string | null;
+  selectedCollectionName: string | null;
 }
 
 function SkeletonCard() {
@@ -40,14 +56,21 @@ function SkeletonCard() {
 }
 
 export function BookmarkGrid({
+  availableCollections,
   items,
   hasNext,
   isLoadingMore,
   isRefreshing,
+  isCollectionMutating,
   error,
   onLoadMore,
   onDelete,
+  onAddToCollection,
+  onRemoveFromCollection,
   onUpdateNote,
+  searchQuery,
+  selectedCollectionId,
+  selectedCollectionName,
 }: BookmarkGridProps) {
   const sentinelRef = useInfiniteScroll(
     onLoadMore,
@@ -86,6 +109,9 @@ export function BookmarkGrid({
   }
 
   if (!isRefreshing && items.length === 0) {
+    const hasCollectionFilter = Boolean(selectedCollectionId);
+    const hasSearchQuery = searchQuery.trim().length > 0;
+
     return (
       <div className="flex flex-col items-center justify-center py-24 text-center">
         <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-2xl border border-black bg-white">
@@ -98,10 +124,17 @@ export function BookmarkGrid({
             />
           </svg>
         </div>
-        <h3 className="font-title text-lg text-[#00AEEF]">No bookmarks yet</h3>
-        <p className="font-subtext max-w-xs text-sm leading-relaxed text-black/55">
-          Save papers while reading to build a colorful, searchable personal
-          research library.
+        <h3 className="font-title text-lg text-[#00AEEF]">
+          {hasCollectionFilter || hasSearchQuery
+            ? "No works matched this view"
+            : "No bookmarks yet"}
+        </h3>
+        <p className="font-subtext max-w-sm text-sm leading-relaxed text-black/55">
+          {hasCollectionFilter || hasSearchQuery
+            ? `Try another title search or switch collections${
+                selectedCollectionName ? ` from ${selectedCollectionName}` : ""
+              }.`
+            : "Save papers while reading to build a colorful, searchable personal research library."}
         </p>
       </div>
     );
@@ -113,9 +146,14 @@ export function BookmarkGrid({
         {items.map((bookmark) => (
           <BookmarkCard
             key={bookmark.id}
+            availableCollections={availableCollections}
             bookmark={bookmark}
+            isCollectionMutating={isCollectionMutating}
+            onAddToCollection={onAddToCollection}
             onDelete={onDelete}
+            onRemoveFromCollection={onRemoveFromCollection}
             onUpdateNote={onUpdateNote}
+            selectedCollectionId={selectedCollectionId}
           />
         ))}
 

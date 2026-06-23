@@ -1,7 +1,22 @@
-import { useState } from "react";
+import {
+  CalendarDays,
+  Check,
+  Eye,
+  FolderTree,
+  MoreHorizontal,
+  NotebookPen,
+  Quote,
+  Share2,
+  Trash2,
+  Users,
+} from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 
-import type { BookmarkResponse } from "@/features/bookmarks/types/bookmark.types";
+import type {
+  BookmarkCollectionResponse,
+  BookmarkResponse,
+} from "@/features/bookmarks/types/bookmark.types";
 import {
   formatAuthors,
   formatCitationCount,
@@ -10,9 +25,17 @@ import {
 import { buildDetailTrailUrl } from "@/features/detail/detailTrail";
 
 interface BookmarkCardProps {
+  availableCollections: BookmarkCollectionResponse[];
   bookmark: BookmarkResponse;
+  isCollectionMutating: boolean;
+  onAddToCollection: (bookmarkId: string, collectionId: string) => Promise<void>;
   onDelete: (id: string) => void;
-  onUpdateNote: (id: string, note: string | null) => void;
+  onRemoveFromCollection: (
+    bookmarkId: string,
+    collectionId: string,
+  ) => Promise<void>;
+  onUpdateNote: (id: string, note: string | null) => void | Promise<void>;
+  selectedCollectionId: string | null;
 }
 
 const TOPIC_COLORS: Record<string, string> = {
@@ -28,256 +51,391 @@ const TOPIC_COLORS: Record<string, string> = {
 };
 
 function getTopicColor(topic: string): string {
-  const colorClassName = TOPIC_COLORS[topic] ?? "bg-[#FFF6E8] text-[#8B5E34]";
-  return colorClassName.replace(/bg-\[[^\]]+\]/g, "bg-white");
+  return TOPIC_COLORS[topic] ?? "bg-[#FFF6E8] text-[#8B5E34]";
+}
+
+async function copyText(value: string) {
+  if (
+    typeof navigator !== "undefined" &&
+    navigator.clipboard &&
+    typeof navigator.clipboard.writeText === "function"
+  ) {
+    await navigator.clipboard.writeText(value);
+  }
 }
 
 export function BookmarkCard({
+  availableCollections,
   bookmark,
+  isCollectionMutating,
+  onAddToCollection,
   onDelete,
+  onRemoveFromCollection,
   onUpdateNote,
+  selectedCollectionId,
 }: BookmarkCardProps) {
   const [showMenu, setShowMenu] = useState(false);
+  const [showCollectionMenu, setShowCollectionMenu] = useState(false);
   const [editingNote, setEditingNote] = useState(false);
   const [noteValue, setNoteValue] = useState(bookmark.note ?? "");
+  const [pendingCollectionId, setPendingCollectionId] = useState<string | null>(
+    null,
+  );
+  const [shareLabel, setShareLabel] = useState("Share");
+  const shareResetTimer = useRef<number | null>(null);
+  const detailPath = useMemo(
+    () => buildDetailTrailUrl("works", bookmark.openAlexId, [], "bookmarks"),
+    [bookmark.openAlexId],
+  );
+
+  useEffect(() => {
+    setNoteValue(bookmark.note ?? "");
+  }, [bookmark.note]);
+
+  useEffect(
+    () => () => {
+      if (typeof window !== "undefined" && shareResetTimer.current !== null) {
+        window.clearTimeout(shareResetTimer.current);
+      }
+    },
+    [],
+  );
 
   async function handleSaveNote() {
     await onUpdateNote(bookmark.id, noteValue.trim() || null);
     setEditingNote(false);
   }
 
+  async function handleShare() {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    try {
+      await copyText(new URL(detailPath, window.location.origin).toString());
+      setShareLabel("Copied");
+    } catch {
+      setShareLabel("Copy failed");
+    }
+
+    if (shareResetTimer.current !== null) {
+      window.clearTimeout(shareResetTimer.current);
+    }
+
+    shareResetTimer.current = window.setTimeout(() => {
+      setShareLabel("Share");
+      shareResetTimer.current = null;
+    }, 2400);
+  }
+
+  async function handleCollectionToggle(
+    collectionId: string,
+    isMember: boolean,
+  ) {
+    setPendingCollectionId(collectionId);
+
+    try {
+      if (isMember) {
+        await onRemoveFromCollection(bookmark.id, collectionId);
+      } else {
+        await onAddToCollection(bookmark.id, collectionId);
+      }
+    } finally {
+      setPendingCollectionId(null);
+    }
+  }
+
   return (
-    <div className="group relative flex flex-col gap-3 rounded-2xl border border-black bg-white p-5 transition-all hover:-translate-y-0.5 hover:shadow-[0_18px_40px_rgba(0,0,0,0.08)]">
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex flex-wrap items-center gap-1.5">
-          <span className="flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-medium text-[#8B5E34] border border-black">
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="none">
-              <path
-                d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"
-                stroke="currentColor"
-                strokeWidth="1.5"
-              />
-              <polyline
-                points="14,2 14,8 20,8"
-                stroke="currentColor"
-                strokeWidth="1.5"
-              />
-            </svg>
+    <div className="group relative flex h-full flex-col gap-4 rounded-[1.8rem] border border-black bg-[radial-gradient(circle_at_top_left,_rgba(243,112,33,0.08),_transparent_34%),white] p-5 transition-all hover:-translate-y-0.5 hover:shadow-[0_20px_44px_rgba(0,0,0,0.08)]">
+      {(showMenu || showCollectionMenu) && (
+        <button
+          type="button"
+          aria-label="Close card menus"
+          className="fixed inset-0 z-10"
+          onClick={() => {
+            setShowMenu(false);
+            setShowCollectionMenu(false);
+          }}
+        />
+      )}
+
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="inline-flex items-center gap-1 rounded-full border border-black bg-white px-2.5 py-1 text-[11px] font-semibold text-[#8B5E34]">
             Paper
           </span>
 
-          {bookmark.topic && (
+          {bookmark.topic ? (
             <span
-              className={`rounded px-1.5 py-0.5 text-[10px] font-medium ${getTopicColor(
+              className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold ${getTopicColor(
                 bookmark.topic,
               )}`}
             >
               {bookmark.topic}
             </span>
-          )}
+          ) : null}
+
+          {bookmark.collections.map((collection) => {
+            const isActiveCollection = collection.id === selectedCollectionId;
+
+            return (
+              <span
+                key={collection.id}
+                className={[
+                  "inline-flex items-center rounded-full border border-black bg-black px-2.5 py-1 text-[11px] font-semibold text-white shadow-[0_8px_18px_rgba(0,0,0,0.16)]",
+                  isActiveCollection
+                    ? "ring-2 ring-[#F37021]/30"
+                    : "",
+                ].join(" ")}
+              >
+                {collection.name}
+              </span>
+            );
+          })}
         </div>
 
         <button
+          type="button"
           onClick={() => onDelete(bookmark.id)}
-          className="shrink-0 text-[#7AC143] transition-colors hover:text-red-500"
+          className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-black bg-white text-[#14532D] transition hover:border-red-500 hover:text-red-500"
           title="Remove bookmark"
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z" />
-          </svg>
+          <Trash2 className="h-4.5 w-4.5" />
         </button>
       </div>
 
-      <h3 className="font-title line-clamp-3 text-base font-bold leading-snug text-black">
+      <h3 className="font-title line-clamp-3 text-[1.28rem] font-bold leading-snug text-black">
         {bookmark.title}
       </h3>
 
-      <p className="font-subtext text-sm font-medium leading-relaxed text-[#8B5E34]">
-        {formatAuthors(bookmark.authors)}
+      <p className="font-subtext text-[15px] font-semibold leading-7 text-[#6F4B2A]">
+        {formatAuthors(bookmark.authors, 82)}
       </p>
 
-      <div className="font-subtext flex items-center gap-3 text-sm font-medium">
-        {bookmark.publicationYear && (
-          <span className="text-black">{bookmark.publicationYear}</span>
-        )}
-        {bookmark.citationCount != null && (
-          <span className="ml-auto shrink-0 text-black">
+      <div className="font-subtext flex flex-wrap items-center gap-x-4 gap-y-2 text-[15px] font-semibold text-black">
+        {bookmark.publicationYear ? (
+          <span className="inline-flex items-center gap-2">
+            <CalendarDays className="h-[17px] w-[17px] text-[#F37021]" />
+            {bookmark.publicationYear}
+          </span>
+        ) : null}
+
+        {bookmark.authors ? (
+          <span className="inline-flex items-center gap-2 text-black/75">
+            <Users className="h-[17px] w-[17px] text-[#00AEEF]" />
+            {bookmark.authors.split(",").filter(Boolean).length || 1} authors
+          </span>
+        ) : null}
+
+        {bookmark.citationCount != null ? (
+          <span className="inline-flex items-center gap-2 text-black/85">
+            <Quote className="h-[17px] w-[17px] text-[#7AC143]" />
             {formatCitationCount(bookmark.citationCount)} citations
           </span>
-        )}
+        ) : null}
       </div>
 
-      {!editingNote && bookmark.note && (
-        <div className="rounded-lg border border-black bg-white px-3 py-2">
-          <p className="font-subtext line-clamp-2 text-sm font-medium text-[#8B5E34]">{bookmark.note}</p>
+      {!editingNote && bookmark.note ? (
+        <div className="rounded-[1.35rem] border border-black bg-white px-4 py-3">
+          <p className="font-subtext line-clamp-3 text-[15px] leading-7 text-[#6F4B2A]">
+            {bookmark.note}
+          </p>
         </div>
-      )}
+      ) : null}
 
-      {editingNote && (
-        <div className="space-y-2">
+      {editingNote ? (
+        <div className="space-y-3 rounded-[1.35rem] border border-black bg-white p-3">
           <textarea
             value={noteValue}
-            onChange={(e) => setNoteValue(e.target.value)}
-            placeholder="Add a note..."
-            rows={3}
+            onChange={(event) => setNoteValue(event.target.value)}
+            placeholder="Add a note about this work..."
+            rows={4}
             autoFocus
-            className="w-full resize-none rounded-lg border border-black px-3 py-2 text-xs text-black placeholder:text-black/45 focus:outline-none focus:ring-2 focus:ring-[#7AC143]/25"
+            className="w-full resize-none rounded-2xl border border-black px-3 py-3 text-sm text-black placeholder:text-black/45 focus:outline-none focus:ring-2 focus:ring-[#7AC143]/25"
           />
           <div className="flex items-center justify-end gap-2">
             <button
-              onClick={() => setEditingNote(false)}
-              className="text-xs text-black/60 hover:text-black"
+              type="button"
+              onClick={() => {
+                setEditingNote(false);
+                setNoteValue(bookmark.note ?? "");
+              }}
+              className="inline-flex h-10 items-center rounded-2xl border border-black bg-white px-4 text-sm font-semibold text-black transition hover:bg-black hover:text-white"
             >
               Cancel
             </button>
             <button
-              onClick={handleSaveNote}
-              className="rounded-lg bg-[#00AEEF] px-3 py-1 text-xs font-medium text-white transition-all hover:bg-[#0095cc]"
+              type="button"
+              onClick={() => {
+                void handleSaveNote();
+              }}
+              className="inline-flex h-10 items-center rounded-2xl border border-black bg-[#00AEEF] px-4 text-sm font-semibold text-white transition hover:bg-[#0095CC]"
             >
-              Save
+              Save note
             </button>
           </div>
         </div>
-      )}
+      ) : null}
 
-      <div className="mt-auto flex items-center justify-between border-t border-black/10 pt-1">
-        <span className="font-subtext text-xs font-medium text-black">
+      <div className="mt-auto flex items-center justify-between border-t border-black/10 pt-3">
+        <span className="font-subtext text-[13px] font-semibold text-black/65">
           {formatSavedAt(bookmark.createdAt)}
         </span>
 
-        <div className="flex items-center gap-1">
+        <div className="flex flex-wrap items-center justify-end gap-2">
           <Link
-            to={buildDetailTrailUrl("works", bookmark.openAlexId, [], "bookmarks")}
-            className="inline-flex h-7 items-center gap-1 rounded-lg border border-black bg-white px-2.5 text-[11px] font-semibold text-black transition-all hover:bg-white hover:text-black"
+            to={detailPath}
+            className="inline-flex h-10 items-center gap-2 rounded-2xl border border-black bg-white px-3.5 text-[13px] font-semibold text-black transition hover:bg-black hover:text-white"
             title="View detail"
           >
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
-              <path
-                d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.5" />
-            </svg>
+            <Eye className="h-4 w-4" />
             View Detail
           </Link>
 
           <button
-            className="flex h-7 w-7 items-center justify-center rounded-lg text-black transition-all hover:bg-white hover:text-black"
+            type="button"
+            onClick={() => {
+              void handleShare();
+            }}
+            className="inline-flex h-10 items-center gap-2 rounded-2xl border border-black bg-white px-3.5 text-[13px] font-semibold text-black transition hover:bg-black hover:text-white"
             title="Share"
           >
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
-              <circle cx="18" cy="5" r="3" stroke="currentColor" strokeWidth="1.5" />
-              <circle cx="6" cy="12" r="3" stroke="currentColor" strokeWidth="1.5" />
-              <circle cx="18" cy="19" r="3" stroke="currentColor" strokeWidth="1.5" />
-              <line
-                x1="8.59"
-                y1="13.51"
-                x2="15.42"
-                y2="17.49"
-                stroke="currentColor"
-                strokeWidth="1.5"
-              />
-              <line
-                x1="15.41"
-                y1="6.51"
-                x2="8.59"
-                y2="10.49"
-                stroke="currentColor"
-                strokeWidth="1.5"
-              />
-            </svg>
+            <Share2 className="h-4 w-4" />
+            {shareLabel}
           </button>
 
           <button
+            type="button"
             onClick={() => setEditingNote(true)}
-            className="flex h-7 w-7 items-center justify-center rounded-lg text-black transition-all hover:bg-white hover:text-black"
-            title="Add note"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-black bg-white text-black transition hover:bg-black hover:text-white"
+            title="Edit note"
           >
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
-              <path
-                d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinejoin="round"
-              />
-            </svg>
+            <NotebookPen className="h-4.5 w-4.5" />
           </button>
 
-          <div className="relative">
+          <div className="relative z-20">
             <button
-              onClick={() => setShowMenu((v) => !v)}
-              className="flex h-7 w-7 items-center justify-center rounded-lg text-black transition-all hover:bg-white hover:text-black"
+              type="button"
+              onClick={() => {
+                setShowCollectionMenu((value) => !value);
+                setShowMenu(false);
+              }}
+              className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-black bg-white text-black transition hover:bg-black hover:text-white"
+              title="Manage collections"
             >
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
-                <circle cx="12" cy="5" r="1.5" fill="currentColor" />
-                <circle cx="12" cy="12" r="1.5" fill="currentColor" />
-                <circle cx="12" cy="19" r="1.5" fill="currentColor" />
-              </svg>
+              <FolderTree className="h-4.5 w-4.5" />
             </button>
 
-            {showMenu && (
-              <>
-                <div
-                  className="fixed inset-0 z-10"
-                  onClick={() => setShowMenu(false)}
-                />
-                <div className="absolute bottom-8 right-0 z-20 w-36 rounded-xl border border-black bg-white py-1 shadow-lg">
-                  <button
-                    onClick={() => {
-                      setEditingNote(true);
-                      setShowMenu(false);
-                    }}
-                    className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-black hover:bg-white"
-                  >
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
-                      <path
-                        d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"
-                        stroke="currentColor"
-                        strokeWidth="1.5"
-                      />
-                      <path
-                        d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"
-                        stroke="currentColor"
-                        strokeWidth="1.5"
-                      />
-                    </svg>
-                    Edit note
-                  </button>
-                  <button
-                    onClick={() => {
-                      onDelete(bookmark.id);
-                      setShowMenu(false);
-                    }}
-                    className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-red-600 hover:bg-red-50"
-                  >
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
-                      <polyline
-                        points="3,6 5,6 21,6"
-                        stroke="currentColor"
-                        strokeWidth="1.5"
-                        strokeLinecap="round"
-                      />
-                      <path
-                        d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"
-                        stroke="currentColor"
-                        strokeWidth="1.5"
-                        strokeLinecap="round"
-                      />
-                      <path
-                        d="M10 11v6M14 11v6"
-                        stroke="currentColor"
-                        strokeWidth="1.5"
-                        strokeLinecap="round"
-                      />
-                    </svg>
-                    Remove
-                  </button>
+            {showCollectionMenu ? (
+              <div className="absolute bottom-12 right-0 z-30 w-72 rounded-[1.4rem] border border-black bg-white p-3 shadow-[0_18px_40px_rgba(0,0,0,0.12)]">
+                <div className="mb-2">
+                  <p className="font-subtext text-[11px] font-semibold uppercase tracking-[0.22em] text-[#00AEEF]">
+                    Collections
+                  </p>
+                  <p className="font-subtext mt-1 text-sm text-black/65">
+                    Add or remove this work from your saved collections.
+                  </p>
                 </div>
-              </>
-            )}
+
+                {availableCollections.length === 0 ? (
+                  <div className="rounded-2xl border border-dashed border-black/30 bg-[#FFF6E8] px-4 py-3">
+                    <p className="font-subtext text-sm text-[#8B5E34]">
+                      Create your first collection from the toolbar above, then
+                      come back here to sort this work.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {availableCollections.map((collection) => {
+                      const isMember = bookmark.collections.some(
+                        (item) => item.id === collection.id,
+                      );
+                      const isPending =
+                        pendingCollectionId === collection.id ||
+                        isCollectionMutating;
+
+                      return (
+                        <button
+                          key={collection.id}
+                          type="button"
+                          disabled={isPending}
+                          onClick={() => {
+                            void handleCollectionToggle(collection.id, isMember);
+                          }}
+                          className={[
+                            "flex w-full items-center justify-between gap-3 rounded-2xl border px-3 py-3 text-left transition",
+                            isMember
+                              ? "border-black bg-[#EEF9EC]"
+                              : "border-black/20 bg-white hover:border-black hover:bg-[#E8F8FF]",
+                            isPending ? "cursor-not-allowed opacity-60" : "",
+                          ].join(" ")}
+                        >
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-semibold text-black">
+                              {collection.name}
+                            </p>
+                            <p className="font-subtext text-xs text-black/55">
+                              {collection.workCount} works
+                            </p>
+                          </div>
+                          <span
+                            className={[
+                              "inline-flex h-7 w-7 items-center justify-center rounded-full border",
+                              isMember
+                                ? "border-[#14532D] bg-[#14532D] text-white"
+                                : "border-black/20 bg-white text-black/35",
+                            ].join(" ")}
+                          >
+                            <Check className="h-4 w-4" />
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            ) : null}
+          </div>
+
+          <div className="relative z-20">
+            <button
+              type="button"
+              onClick={() => {
+                setShowMenu((value) => !value);
+                setShowCollectionMenu(false);
+              }}
+              className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-black bg-white text-black transition hover:bg-black hover:text-white"
+              title="More actions"
+            >
+              <MoreHorizontal className="h-4.5 w-4.5" />
+            </button>
+
+            {showMenu ? (
+              <div className="absolute bottom-12 right-0 z-30 w-44 rounded-[1.4rem] border border-black bg-white p-2 shadow-[0_18px_40px_rgba(0,0,0,0.12)]">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditingNote(true);
+                    setShowMenu(false);
+                  }}
+                  className="flex w-full items-center gap-2 rounded-2xl px-3 py-2.5 text-left text-sm font-semibold text-black transition hover:bg-[#E8F8FF]"
+                >
+                  <NotebookPen className="h-4 w-4" />
+                  Edit note
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    onDelete(bookmark.id);
+                    setShowMenu(false);
+                  }}
+                  className="flex w-full items-center gap-2 rounded-2xl px-3 py-2.5 text-left text-sm font-semibold text-red-600 transition hover:bg-red-50"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  Remove
+                </button>
+              </div>
+            ) : null}
           </div>
         </div>
       </div>

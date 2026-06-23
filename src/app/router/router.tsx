@@ -127,6 +127,11 @@ function getDetailBreadcrumb(
           label: "Bookmarks",
           to: ROUTES.BOOKMARKS,
         }
+      : detailOrigin === "social-hub"
+        ? {
+            label: "Social Hub",
+            to: ROUTES.SOCIAL_HUB,
+          }
       : {
           label: "Search",
           to: ROUTES.SEARCH,
