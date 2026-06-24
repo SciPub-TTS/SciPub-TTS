@@ -1,9 +1,11 @@
 import { LayoutDashboard, LogOut, Users } from "lucide-react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 
 import { ROUTES } from "@/app/router";
 import logoImage from "@/assets/images/logo.png";
+import { SafeActionDialog } from "@/components/SafeActionDialog";
 import { useAuthSession } from "@/features/auth/hooks/useAuthSession";
 import { submitLogout } from "@/features/auth/services/authFlows";
 
@@ -34,101 +36,133 @@ export default function AdminSidebar() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { currentUser } = useAuthSession();
+  const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const displayName = currentUser?.fullName ?? t("admin.admin");
   const initials = getInitials(displayName) || "AD";
 
-  async function handleLogout() {
-    await submitLogout();
-    navigate(ROUTES.LOGIN, { replace: true });
+  async function handleConfirmLogout() {
+    if (isLoggingOut) {
+      return;
+    }
+
+    setIsLoggingOut(true);
+
+    try {
+      await submitLogout();
+    } finally {
+      navigate(ROUTES.LOGIN, { replace: true });
+    }
   }
 
   return (
-    <aside className="fixed inset-y-0 left-0 z-50 flex h-screen w-56 flex-col bg-[#03120a] text-slate-200">
-      <Link
-        to={ROUTES.HOME}
-        className="flex min-h-[76px] items-center gap-3 border-b border-emerald-400/20 px-4 transition hover:bg-emerald-500/10"
-      >
-        <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-lg bg-white shadow-sm">
-          <img
-            src={logoImage}
-            alt="Owlreka logo"
-            className="h-full w-full object-cover"
-          />
-        </div>
-        <div className="min-w-0">
-          <h1 className="font-brand truncate text-lg font-normal text-white">
-            Owlreka
-          </h1>
-          <p className="mt-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-400">
-            {t("admin.console")}
-          </p>
-        </div>
-      </Link>
-
-      <div className="flex-1 px-2.5 py-5">
-        <p className="mb-2 px-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">
-          {t("admin.admin")}
-        </p>
-
-        <nav className="space-y-1">
-          {adminMenuItems.map((item) => {
-            const Icon = item.icon;
-
-            return (
-              <NavLink
-                key={item.path}
-                to={item.path}
-                className={({ isActive }) =>
-                  [
-                    "flex items-center gap-3 rounded-lg px-2.5 py-2 text-xs font-medium transition",
-                    isActive
-                      ? "bg-emerald-600 text-white shadow-sm ring-1 ring-emerald-300/40"
-                      : "text-slate-300 hover:bg-emerald-500/15 hover:text-emerald-100",
-                  ].join(" ")
-                }
-              >
-                <Icon className="h-4 w-4 shrink-0" />
-                <span className="truncate">{t(item.labelKey)}</span>
-              </NavLink>
-            );
-          })}
-        </nav>
-      </div>
-
-      {currentUser && (
-        <div className="border-t border-emerald-400/20 px-2.5 py-4">
-          <div className="mb-4 flex items-center gap-3 rounded-lg border border-white/10 bg-white/[0.08] px-2.5 py-2.5">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-emerald-600 text-xs font-bold text-white">
-              {currentUser.avatarUrl ? (
-                <img
-                  src={currentUser.avatarUrl}
-                  alt={displayName}
-                  className="h-full w-full object-cover"
-                />
-              ) : (
-                initials
-              )}
-            </div>
-            <div className="min-w-0">
-              <p className="truncate text-xs font-bold text-white">
-                {displayName}
-              </p>
-              <p className="mt-0.5 truncate text-[10px] text-slate-400">
-                {t("admin.admin")}
-              </p>
-            </div>
+    <>
+      <aside className="fixed inset-y-0 left-0 z-50 flex h-screen w-56 flex-col bg-[#03120a] text-slate-200">
+        <Link
+          to={ROUTES.HOME}
+          className="flex min-h-[76px] items-center gap-3 border-b border-emerald-400/20 px-4 transition hover:bg-emerald-500/10"
+        >
+          <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-lg bg-white shadow-sm">
+            <img
+              src={logoImage}
+              alt="Owlreka logo"
+              className="h-full w-full object-cover"
+            />
           </div>
+          <div className="min-w-0">
+            <h1 className="font-brand truncate text-lg font-normal text-white">
+              Owlreka
+            </h1>
+            <p className="mt-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-400">
+              {t("admin.console")}
+            </p>
+          </div>
+        </Link>
 
-          <button
-            type="button"
-            onClick={() => void handleLogout()}
-            className="flex w-full items-center gap-3 rounded-lg px-2.5 py-2 text-left text-xs font-medium text-slate-300 transition hover:bg-rose-500/15 hover:text-rose-100"
-          >
-            <LogOut className="h-4 w-4 shrink-0" />
-            <span className="truncate">{t("common.logout")}</span>
-          </button>
+        <div className="flex-1 px-2.5 py-5">
+          <p className="mb-2 px-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+            {t("admin.admin")}
+          </p>
+
+          <nav className="space-y-1">
+            {adminMenuItems.map((item) => {
+              const Icon = item.icon;
+
+              return (
+                <NavLink
+                  key={item.path}
+                  to={item.path}
+                  className={({ isActive }) =>
+                    [
+                      "flex items-center gap-3 rounded-lg px-2.5 py-2 text-xs font-medium transition",
+                      isActive
+                        ? "bg-emerald-600 text-white shadow-sm ring-1 ring-emerald-300/40"
+                        : "text-slate-300 hover:bg-emerald-500/15 hover:text-emerald-100",
+                    ].join(" ")
+                  }
+                >
+                  <Icon className="h-4 w-4 shrink-0" />
+                  <span className="truncate">{t(item.labelKey)}</span>
+                </NavLink>
+              );
+            })}
+          </nav>
         </div>
-      )}
-    </aside>
+
+        {currentUser && (
+          <div className="border-t border-emerald-400/20 px-2.5 py-4">
+            <div className="mb-4 flex items-center gap-3 rounded-lg border border-white/10 bg-white/[0.08] px-2.5 py-2.5">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-emerald-600 text-xs font-bold text-white">
+                {currentUser.avatarUrl ? (
+                  <img
+                    src={currentUser.avatarUrl}
+                    alt={displayName}
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  initials
+                )}
+              </div>
+              <div className="min-w-0">
+                <p className="truncate text-xs font-bold text-white">
+                  {displayName}
+                </p>
+                <p className="mt-0.5 truncate text-[10px] text-slate-400">
+                  {t("admin.admin")}
+                </p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setIsLogoutDialogOpen(true)}
+              className="flex w-full items-center gap-3 rounded-lg px-2.5 py-2 text-left text-xs font-medium text-slate-300 transition hover:bg-rose-500/15 hover:text-rose-100"
+            >
+              <LogOut className="h-4 w-4 shrink-0" />
+              <span className="truncate">{t("common.logout")}</span>
+            </button>
+          </div>
+        )}
+      </aside>
+
+      <SafeActionDialog
+        confirmLabel={t("common.logout")}
+        description="You will be signed out from the admin console and returned to the login page."
+        eyebrow="Session check"
+        isPending={isLoggingOut}
+        onClose={() => {
+          if (!isLoggingOut) {
+            setIsLogoutDialogOpen(false);
+          }
+        }}
+        onConfirm={() => {
+          void handleConfirmLogout();
+        }}
+        open={isLogoutDialogOpen}
+        pendingLabel="Logging out..."
+        title="Log out of the admin console?"
+        variant="logout"
+      />
+    </>
   );
 }

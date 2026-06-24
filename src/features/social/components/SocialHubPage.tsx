@@ -21,6 +21,7 @@ import {
   X,
 } from "lucide-react";
 
+import { SafeActionDialog } from "@/components/SafeActionDialog";
 import { useAuthSession } from "@/features/auth/hooks/useAuthSession";
 import { getApiErrorMessage } from "@/features/auth/utils/getApiErrorMessage";
 import { bookmarkApi } from "@/features/bookmarks/services/bookmark.api";
@@ -881,6 +882,7 @@ export default function SocialHubPage() {
   const [editingPostId, setEditingPostId] = useState<string | null>(null);
   const [blogForm, setBlogForm] = useState<BlogFormState>(initialBlogForm);
   const [blogError, setBlogError] = useState<string | null>(null);
+  const [deleteDialogPostId, setDeleteDialogPostId] = useState<string | null>(null);
   const [pendingLikePostIds, setPendingLikePostIds] = useState<string[]>([]);
   const [pendingDeletePostId, setPendingDeletePostId] = useState<string | null>(null);
   const pendingLikePostIdsRef = useRef<Set<string>>(new Set());
@@ -996,6 +998,7 @@ export default function SocialHubPage() {
       );
     },
     onSettled: () => {
+      setDeleteDialogPostId(null);
       setPendingDeletePostId(null);
     },
   });
@@ -1114,6 +1117,17 @@ export default function SocialHubPage() {
   }, [activeTab, currentUserId, enrichedNewestPosts, searchQuery, sortMode]);
 
   const topLikedPosts = useMemo(() => enrichedTopPosts.slice(0, 5), [enrichedTopPosts]);
+  const postPendingDelete = useMemo(() => {
+    if (!deleteDialogPostId) {
+      return null;
+    }
+
+    return (
+      feedPosts.find((post) => post.id === deleteDialogPostId)
+      ?? enrichedTopPosts.find((post) => post.id === deleteDialogPostId)
+      ?? (featuredPost?.id === deleteDialogPostId ? featuredPost : null)
+    );
+  }, [deleteDialogPostId, enrichedTopPosts, featuredPost, feedPosts]);
 
   function resetBlogModal() {
     setIsBlogModalOpen(false);
@@ -1262,16 +1276,24 @@ export default function SocialHubPage() {
       return;
     }
 
-    const shouldDelete = window.confirm(
-      "Delete this post? This action cannot be undone.",
-    );
+    setDeleteDialogPostId(postId);
+  }
 
-    if (!shouldDelete) {
+  function closeDeletePostDialog() {
+    if (deletePostMutation.isPending) {
+      return;
+    }
+
+    setDeleteDialogPostId(null);
+  }
+
+  function handleConfirmDeletePost() {
+    if (!deleteDialogPostId || deletePostMutation.isPending) {
       return;
     }
 
     setBlogError(null);
-    deletePostMutation.mutate(postId);
+    deletePostMutation.mutate(deleteDialogPostId);
   }
 
   function handleBlogModalKeyDown(event: KeyboardEvent<HTMLInputElement>) {
@@ -1631,6 +1653,23 @@ export default function SocialHubPage() {
         onClose={closeBlogModal}
         onSubmit={handleBlogSubmit}
         onToggleBookmark={toggleBookmarkSelection}
+      />
+
+      <SafeActionDialog
+        confirmLabel="Delete post"
+        description={
+          postPendingDelete
+            ? `Delete "${postPendingDelete.title}" from Social Hub? This action cannot be undone.`
+            : "Delete this post from Social Hub? This action cannot be undone."
+        }
+        eyebrow="Safe delete"
+        isPending={deletePostMutation.isPending}
+        onClose={closeDeletePostDialog}
+        onConfirm={handleConfirmDeletePost}
+        open={deleteDialogPostId !== null}
+        pendingLabel="Deleting post..."
+        title="Delete this post?"
+        variant="danger"
       />
     </div>
   );
