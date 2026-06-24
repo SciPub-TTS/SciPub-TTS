@@ -3,7 +3,7 @@ const vi = {
     appName: "Owlreka",
     guest: "Kh\u00e1ch",
     trendIntelligence: "Ph\u00e2n t\u00edch xu h\u01b0\u1edbng",
-    workspace: "Kh\u00f4ng gian l\u00e0m vi\u1ec7c",
+    workspace: "Kh\u00f4ng gian",
     account: "T\u00e0i kho\u1ea3n",
     signInToManageProfile:
       "\u0110\u0103ng nh\u1eadp \u0111\u1ec3 qu\u1ea3n l\u00fd h\u1ed3 s\u01a1",
@@ -14,14 +14,14 @@ const vi = {
   },
 
   navigation: {
-    discovery: "Kh\u00e1m ph\u00e1",
-    trending: "Xu h\u01b0\u1edbng",
-    newFeed: "B\u1ea3ng tin",
-    bookmarks: "\u0110\u00e3 l\u01b0u",
-    socialHub: "Social Hub",
-    report: "B\u00e1o c\u00e1o",
-    guideHelp: "H\u01b0\u1edbng d\u1eabn",
-    userProfile: "H\u1ed3 s\u01a1 c\u00e1 nh\u00e2n",
+    discovery: "Khám phá",
+    trending: "Xu hướng",
+    newFeed: "Bảng tin",
+    bookmarks: "Đã lưu",
+    socialHub: "Cộng đồng",
+    report: "Báo cáo",
+    guideHelp: "Hướng dẫn",
+    userProfile: "Tài khoản",
   },
 
   admin: {
