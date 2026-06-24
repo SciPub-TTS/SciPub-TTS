@@ -9,15 +9,11 @@ export function BookmarkPageHeader() {
               <span className="text-[#00AEEF]">library</span>,
             </h1>
             <h1 className="font-title text-[2rem] leading-tight text-black sm:text-[2.2rem]">
-              organized into <span className="text-[#7AC143]">collections</span>.
+              organized into <span className="text-[#7AC143]">collections</span>
+              .
             </h1>
           </div>
         </div>
-
-        <p className="font-subtext mt-4 max-w-2xl text-[15px] leading-7 text-black/70">
-          Search faster, group papers into named collections, and scan work
-          metadata with a roomier reading rhythm.
-        </p>
       </div>
     </div>
   );
