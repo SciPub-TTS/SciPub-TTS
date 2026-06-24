@@ -40,10 +40,14 @@ export async function submitLogin(payload: LoginRequest, requestedPath?: string)
     setCurrentUser(meResponse.data);
 
     const role = meResponse.data.role;
-
-    const redirectTo =
-        requestedPath ??
-        (role === AUTH_ROLES.ADMIN ? ROUTES.ADMIN_DASHBOARD : ROUTES.HOME);
+    const isAdmin = role === AUTH_ROLES.ADMIN;
+    const redirectTo = isAdmin
+        ? requestedPath?.startsWith(ROUTES.ADMIN)
+            ? requestedPath
+            : ROUTES.ADMIN_DASHBOARD
+        : requestedPath?.startsWith(ROUTES.ADMIN)
+            ? ROUTES.HOME
+            : requestedPath ?? ROUTES.HOME;
 
     return {
         redirectTo,

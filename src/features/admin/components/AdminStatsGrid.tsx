@@ -1,13 +1,10 @@
 import {
   Activity,
-  CalendarDays,
   Layers,
-  RefreshCw,
   Tags,
   TrendingUp,
   UserRoundX,
   Users,
-  WalletCards,
 } from "lucide-react";
 
 import type { AdminApiUsagePoint, AdminUserBanSummary } from "../types";
@@ -55,14 +52,8 @@ function buildAdminStats({
     (total, item) => total + Math.max(0, item.callCount),
     0,
   );
-  const latestUsagePoint = getLatestUsagePoint(apiUsageOverTime);
   const apiCallsUsedValue = getSummaryValue(
     totalApiCalls,
-    isApiUsageOverTimeLoading,
-    isApiUsageOverTimeError,
-  );
-  const apiCallsTodayValue = getSummaryValue(
-    latestUsagePoint?.callCount,
     isApiUsageOverTimeLoading,
     isApiUsageOverTimeError,
   );
@@ -105,24 +96,6 @@ function buildAdminStats({
     icon: Activity,
   },
   {
-    label: "API Calls Today",
-    value: apiCallsTodayValue,
-    description: latestUsagePoint
-      ? formatUsageDate(latestUsagePoint.date)
-      : "Today",
-    accent: isApiUsageOverTimeError ? undefined : "Latest reported day",
-    tone: "purple",
-    icon: CalendarDays,
-  },
-  {
-    label: "Total API Credit",
-    value: "100,000",
-    description: "Daily usage",
-    accent: "All",
-    tone: "purple",
-    icon: WalletCards,
-  },
-  {
     label: "Total Subfields",
     value: "12",
     description: "Research subfields",
@@ -137,34 +110,7 @@ function buildAdminStats({
     tone: "emerald",
     icon: Tags,
   },
-  {
-    label: "Last Synchronization",
-    value: "Today, 09:30 AM",
-    description: "Latest data update",
-    tone: "teal",
-    icon: RefreshCw,
-  },
   ];
-}
-
-function getLatestUsagePoint(points: AdminApiUsagePoint[]) {
-  return points.reduce<AdminApiUsagePoint | null>((latest, item) => {
-    if (!latest) return item;
-
-    return new Date(item.date).getTime() > new Date(latest.date).getTime()
-      ? item
-      : latest;
-  }, null);
-}
-
-function formatUsageDate(value: string) {
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) return "Today";
-
-  return new Intl.DateTimeFormat("en", {
-    dateStyle: "medium",
-  }).format(date);
 }
 
 export default function AdminStatsGrid(props: AdminStatsGridProps) {
