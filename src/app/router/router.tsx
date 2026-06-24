@@ -32,6 +32,7 @@ import PaperDetailPage from "@/features/detail/works/components/PaperDetailPage"
 import AuthorDetailPage from "@/features/detail/entities/components/AuthorDetailPage";
 import TopicDetailPage from "@/features/detail/entities/components/TopicDetailPage";
 import ProfilePage from "@/features/profile/components/ProfilePage";
+import ChangePasswordPage from "@/features/profile/components/ChangePasswordPage.tsx";
 import FeedPage from "@/features/newfeeds/pages/FeedPage";
 import ReportPage from "@/features/reports/components/ReportPage";
 import AdminDashboardPage from "@/features/admin/components/AdminDashboardPage.tsx";
@@ -40,7 +41,6 @@ import AdminUsersPage from "@/features/admin/pages/AdminUsersPage.tsx";
 import ForgotPasswordPage from "@/features/auth/components/pages/ForgotPasswordPage.tsx";
 import VerifyResetCodePage from "@/features/auth/components/pages/VerifyResetCodePage.tsx";
 import ResetPasswordPage from "@/features/auth/components/pages/ResetPasswordPage.tsx";
-import ChangePasswordPage from "@/features/profile/components/ge.tsx";
 import OAuth2SuccessPage from "@/features/auth/components/pages/OAuth2SuccessPage.tsx";
 import TopicDashboardPage from "@/features/dashboard/topic/TopicDashboardPage.tsx";
 import { KeywordDashboardPage } from "@/features/dashboard/keyword/KeywordDashboard.tsx";
