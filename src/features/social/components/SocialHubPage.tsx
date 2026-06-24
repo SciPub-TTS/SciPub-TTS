@@ -7,7 +7,7 @@ import {
   type KeyboardEvent,
 } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import {
   Check,
   Clock3,
@@ -16,6 +16,7 @@ import {
   Pencil,
   Plus,
   Search,
+  Trash2,
   Trophy,
   X,
 } from "lucide-react";
@@ -25,7 +26,6 @@ import { getApiErrorMessage } from "@/features/auth/utils/getApiErrorMessage";
 import { bookmarkApi } from "@/features/bookmarks/services/bookmark.api";
 import type { BookmarkResponse } from "@/features/bookmarks/types/bookmark.types";
 import { buildDetailTrailUrl } from "@/features/detail/detailTrail";
-import { getPaperDetail } from "@/features/detail/works/services";
 import { socialApi } from "@/features/social/services/social.api";
 import {
   decodeJwtSubject,
@@ -218,10 +218,6 @@ function buildReferenceAuthorEntries(reference: SocialPostReferenceInfo) {
   }));
 }
 
-function normalizeReferenceAuthorName(value: string) {
-  return value.trim().replace(/\s+/g, " ").toLowerCase();
-}
-
 function buildSocialDetailHref(
   entityType: "authors" | "topics" | "works",
   entityId: string,
@@ -236,83 +232,18 @@ function SocialReferenceCard({
   reference: SocialPostReferenceInfo;
   titleClassName: string;
 }) {
-  const navigate = useNavigate();
   const [showAllAuthors, setShowAllAuthors] = useState(false);
   const authorEntries = buildReferenceAuthorEntries(reference);
-  const hasMissingAuthorIds = authorEntries.some((author) => !author.id);
-  const referencePaperDetailQuery = useQuery({
-    queryFn: () => getPaperDetail(reference.openalexId),
-    queryKey: ["social", "reference-paper-detail", reference.openalexId],
-    enabled: hasMissingAuthorIds && Boolean(reference.openalexId),
-    staleTime: 5 * 60 * 1000,
-  });
-  const resolvedAuthorIds = useMemo(() => {
-    if (!referencePaperDetailQuery.data) {
-      return {};
-    }
-
-    return referencePaperDetailQuery.data.authors.reduce<
-      Record<string, string>
-    >((accumulator, author) => {
-      if (!author.entityId) {
-        return accumulator;
-      }
-
-      accumulator[normalizeReferenceAuthorName(author.name)] = author.entityId;
-      return accumulator;
-    }, {});
-  }, [referencePaperDetailQuery.data]);
-  const enrichedAuthorEntries = authorEntries.map((author) => ({
-    ...author,
-    id:
-      author.id ??
-      resolvedAuthorIds[normalizeReferenceAuthorName(author.name)] ??
-      null,
-  }));
-  const hasAuthors = enrichedAuthorEntries.length > 0;
+  const hasAuthors = authorEntries.length > 0;
   const visibleAuthors = showAllAuthors
-    ? enrichedAuthorEntries
-    : enrichedAuthorEntries.slice(0, 3);
-  const hasMoreAuthors = enrichedAuthorEntries.length > 3;
+    ? authorEntries
+    : authorEntries.slice(0, 3);
+  const hasMoreAuthors = authorEntries.length > 3;
   const topicLabel = reference.topicSnapshot?.trim() || null;
   const topicId = normalizeReferenceEntityId(reference.topicOpenAlexIdSnapshot);
   const workTitle = reference.titleSnapshot?.trim() || reference.openalexId;
   const topicBadgeClassName =
     "inline-flex items-center rounded-full border border-[#D6B37A] bg-[#FFF7ED] px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-[#A16207] transition hover:border-[#B45309] hover:text-[#92400E]";
-
-  async function handleAuthorClick(authorName: string, fallbackAuthorId?: string | null) {
-    const normalizedAuthorName = normalizeReferenceAuthorName(authorName);
-    const directAuthorId = fallbackAuthorId || resolvedAuthorIds[normalizedAuthorName];
-
-    if (directAuthorId) {
-      void navigate(buildSocialDetailHref("authors", directAuthorId));
-      return;
-    }
-
-    try {
-      const paperDetail =
-        referencePaperDetailQuery.data ??
-        (await referencePaperDetailQuery.refetch()).data;
-
-      if (!paperDetail) {
-        return;
-      }
-
-      const matchedAuthor = paperDetail.authors.find(
-        (author) =>
-          author.entityId &&
-          normalizeReferenceAuthorName(author.name) === normalizedAuthorName,
-      );
-
-      if (!matchedAuthor?.entityId) {
-        return;
-      }
-
-      void navigate(buildSocialDetailHref("authors", matchedAuthor.entityId));
-    } catch {
-      // Leave the label visible even when an old reference cannot resolve an author id.
-    }
-  }
 
   return (
     <div className="rounded-[1rem] bg-white px-4 py-3">
@@ -350,15 +281,9 @@ function SocialReferenceCard({
                     {author.name}
                   </Link>
                 ) : (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      void handleAuthorClick(author.name, author.id);
-                    }}
-                    className="cursor-pointer bg-transparent p-0 text-left text-inherit transition hover:text-[#92400E] hover:underline"
-                  >
+                  <span className="text-inherit">
                     {author.name}
-                  </button>
+                  </span>
                 )}
                 {index < visibleAuthors.length - 1 ? ", " : ""}
               </span>
@@ -820,21 +745,25 @@ function BlogEditorModal(props: BlogModalProps) {
 
 function PostCard({
   currentUserId,
+  isDeleteLoading,
   isLikeLoading,
   isOpeningEdit,
+  onDelete,
   onEdit,
   onToggleLike,
   post,
 }: {
   currentUserId?: string;
+  isDeleteLoading: boolean;
   isLikeLoading: boolean;
   isOpeningEdit: boolean;
+  onDelete: (postId: string) => void;
   onEdit: (postId: string) => void;
   onToggleLike: (post: SocialPostSummary) => void;
   post: SocialPostSummary;
 }) {
   const tags = normalizeTags(post.topicTag);
-  const canEdit =
+  const canManagePost =
     normalizeIdentityValue(currentUserId) === normalizeIdentityValue(post.author.id);
   const references = post.references ?? [];
 
@@ -905,18 +834,34 @@ function PostCard({
           </button>
         </div>
 
-        {canEdit ? (
-          <button
-            type="button"
-            onClick={() => onEdit(post.id)}
-            disabled={isOpeningEdit}
-            className={`${SECONDARY_BUTTON_CLASS} ${
-              isOpeningEdit ? "cursor-not-allowed opacity-60" : ""
-            }`}
-          >
-            <Pencil className="h-4 w-4" />
-            Edit
-          </button>
+        {canManagePost ? (
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => onEdit(post.id)}
+              disabled={isOpeningEdit || isDeleteLoading}
+              className={`${SECONDARY_BUTTON_CLASS} ${
+                isOpeningEdit || isDeleteLoading
+                  ? "cursor-not-allowed opacity-60"
+                  : ""
+              }`}
+            >
+              <Pencil className="h-4 w-4" />
+              Edit
+            </button>
+
+            <button
+              type="button"
+              onClick={() => onDelete(post.id)}
+              disabled={isDeleteLoading}
+              className={`inline-flex items-center justify-center gap-2 rounded-lg border border-[#DC2626] bg-white px-4 py-3 text-sm font-semibold text-[#DC2626] transition hover:bg-[#DC2626] hover:text-white disabled:cursor-not-allowed disabled:opacity-60 ${
+                isDeleteLoading ? "cursor-not-allowed opacity-60" : ""
+              }`}
+            >
+              <Trash2 className="h-4 w-4" />
+              Delete
+            </button>
+          </div>
         ) : null}
       </div>
     </article>
@@ -937,6 +882,7 @@ export default function SocialHubPage() {
   const [blogForm, setBlogForm] = useState<BlogFormState>(initialBlogForm);
   const [blogError, setBlogError] = useState<string | null>(null);
   const [pendingLikePostIds, setPendingLikePostIds] = useState<string[]>([]);
+  const [pendingDeletePostId, setPendingDeletePostId] = useState<string | null>(null);
   const pendingLikePostIdsRef = useRef<Set<string>>(new Set());
 
   const newestPostsQuery = useQuery({
@@ -1026,6 +972,31 @@ export default function SocialHubPage() {
           "Cannot save blog changes right now. Please try again.",
         ),
       );
+    },
+  });
+
+  const deletePostMutation = useMutation({
+    mutationFn: (postId: string) => socialApi.deletePost(postId),
+    onMutate: (postId: string) => {
+      setPendingDeletePostId(postId);
+    },
+    onSuccess: (_response, postId) => {
+      if (editingPostId === postId) {
+        resetBlogModal();
+      }
+
+      void queryClient.invalidateQueries({ queryKey: ["social"] });
+    },
+    onError: (error) => {
+      setBlogError(
+        getApiErrorMessage(
+          error,
+          "Cannot delete this post right now. Please try again.",
+        ),
+      );
+    },
+    onSettled: () => {
+      setPendingDeletePostId(null);
     },
   });
 
@@ -1286,6 +1257,23 @@ export default function SocialHubPage() {
     });
   }
 
+  function handleDeletePost(postId: string) {
+    if (deletePostMutation.isPending) {
+      return;
+    }
+
+    const shouldDelete = window.confirm(
+      "Delete this post? This action cannot be undone.",
+    );
+
+    if (!shouldDelete) {
+      return;
+    }
+
+    setBlogError(null);
+    deletePostMutation.mutate(postId);
+  }
+
   function handleBlogModalKeyDown(event: KeyboardEvent<HTMLInputElement>) {
     if (event.key === "Enter") {
       event.preventDefault();
@@ -1437,19 +1425,39 @@ export default function SocialHubPage() {
                     </div>
 
                     {normalizeIdentityValue(currentUserId) === normalizeIdentityValue(featuredPost.author.id) ? (
-                      <button
-                        type="button"
-                        onClick={() => openEditBlogModal(featuredPost.id)}
-                        disabled={openEditPostMutation.isPending}
-                        className={`${SECONDARY_BUTTON_CLASS} ${
-                          openEditPostMutation.isPending
-                            ? "cursor-not-allowed opacity-60"
-                            : ""
-                        }`}
-                      >
-                        <Pencil className="h-4 w-4" />
-                        Edit
-                      </button>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => openEditBlogModal(featuredPost.id)}
+                          disabled={
+                            openEditPostMutation.isPending
+                            || pendingDeletePostId === featuredPost.id
+                          }
+                          className={`${SECONDARY_BUTTON_CLASS} ${
+                            openEditPostMutation.isPending
+                            || pendingDeletePostId === featuredPost.id
+                              ? "cursor-not-allowed opacity-60"
+                              : ""
+                          }`}
+                        >
+                          <Pencil className="h-4 w-4" />
+                          Edit
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => handleDeletePost(featuredPost.id)}
+                          disabled={pendingDeletePostId === featuredPost.id}
+                          className={`inline-flex items-center justify-center gap-2 rounded-lg border border-[#DC2626] bg-white px-4 py-3 text-sm font-semibold text-[#DC2626] transition hover:bg-[#DC2626] hover:text-white disabled:cursor-not-allowed disabled:opacity-60 ${
+                            pendingDeletePostId === featuredPost.id
+                              ? "cursor-not-allowed opacity-60"
+                              : ""
+                          }`}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                          Delete
+                        </button>
+                      </div>
                     ) : null}
                   </div>
                 </>
@@ -1588,8 +1596,10 @@ export default function SocialHubPage() {
                   <PostCard
                     key={post.id}
                     currentUserId={currentUserId}
+                    isDeleteLoading={pendingDeletePostId === post.id}
                     isLikeLoading={pendingLikePostIds.includes(post.id)}
                     isOpeningEdit={openEditPostMutation.isPending}
+                    onDelete={handleDeletePost}
                     onEdit={openEditBlogModal}
                     onToggleLike={handleToggleLike}
                     post={post}
