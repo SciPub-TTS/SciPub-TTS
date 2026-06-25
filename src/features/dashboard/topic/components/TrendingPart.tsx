@@ -73,7 +73,7 @@ function Topic({topic, id}:
     });
 
     return(
-        <div className={`grid grid-cols-[33%_40%_27%] justify-between border-b-1
+        <div className={`grid grid-cols-[33%_38%_29%] justify-between border-b-1
         border-slate-200 items-center px-4 py-2 ${id === 9 ? `!border-none`: null}`}>
             <div className="flex flex-row items-center gap-6">
                 <p>{id + 1}</p>
@@ -108,24 +108,29 @@ function Topic({topic, id}:
                 </p>
             </div>
 
-            <div className="flex flex-row items-center gap-10 justify-between">
+            <div className="flex flex-row items-center gap-10 justify-between ml-[-2vw]">
                 <div
-                    className={`w-24 text-center px-3 py-1 rounded-xl text-sm font-medium
-                        ${stateStyle[topic.state as keyof typeof stateStyle]}
-                    `}
+                    className={`w-24 text-center px-3 py-1 rounded-xl text-sm font-medium capitalize
+            ${stateStyle[topic.state as keyof typeof stateStyle]}
+        `}
                 >
                     {topic.state}
                 </div>
 
                 {isFollowed ? (
-                    <div className="flex flex-row items-center gap-2 font-semibold
-                    bg-green-100 border-2 border-green-300 text-green-800 px-2 py-1 rounded-xl">
+                    <button
+                        className="flex flex-row items-center gap-2 font-semibold
+            bg-green-100 border-2 border-green-300 text-green-800 px-2 py-1 rounded-xl
+            cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+                        onClick={handleFollowClick}
+                        disabled={isFollowActionPending}
+                    >
                         <Check/>
-                        Following
-                    </div>
-                ):(
+                        {buttonLabel}
+                    </button>
+                ) : (
                     <button className="bg-green-600 text-white font-bold
-                    py-[1vh] px-2 rounded-xl cursor-pointer w-[8vw]"
+        py-[1vh] px-2 rounded-xl cursor-pointer w-[8vw]"
                             onClick={handleFollowClick}
                             disabled={isFollowActionPending}
                     >
