@@ -16,5 +16,3 @@ export async function getTrendingKeywords(snapshotDate?: string, limit = 12) {
 
   return response.data.data;
 }
-
-export const getHotKeywords = getTrendingKeywords;

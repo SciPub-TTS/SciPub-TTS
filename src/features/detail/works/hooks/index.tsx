@@ -1,1 +1,0 @@
-export { usePaperDetailPageState } from "./usePaperDetailPageState";

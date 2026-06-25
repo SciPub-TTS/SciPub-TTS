@@ -1,8 +1,8 @@
 import { useSearchPageState } from "@/features/search/hooks";
 
 import { SearchPageHeader } from "./SearchPageHeader";
-import { SearchPanel } from "../panel";
-import { SearchResults } from "../results";
+import { SearchPanel } from "../panel/SearchPanel";
+import { SearchResults } from "../results/SearchResults";
 
 export default function SearchPageContent() {
   // Keep the page itself thin: the hook owns state and handlers, and this

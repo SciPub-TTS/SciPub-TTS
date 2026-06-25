@@ -16,5 +16,3 @@ export async function getTrendingTopics(snapshotDate?: string, limit = 8) {
 
   return response.data.data;
 }
-
-export const getHotTopics = getTrendingTopics;
