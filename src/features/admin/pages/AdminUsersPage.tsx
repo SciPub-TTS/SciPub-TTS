@@ -9,7 +9,7 @@ import type {
   AdminUserApi,
   AdminUserRole,
 } from "@/features/admin/types";
-import Pagination from "@/layout/components/Pagination";
+import Pagination from "@/layout/global/Pagination";
 
 type UserStatus = "Active" | "Banned";
 

@@ -25,7 +25,7 @@ import { ROUTES } from "@/app/router";
 import logoImage from "@/assets/images/logo.png";
 import { AUTH_ROLES } from "@/features/auth/constants/roles";
 import { useAuthSession } from "@/features/auth/hooks/useAuthSession";
-import MainFooter from "@/layout/main/Footer";
+import MainFooter from "@/layout/user/Footer";
 
 const floatCards = [
   {

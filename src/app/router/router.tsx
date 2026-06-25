@@ -6,7 +6,7 @@ import { getDetailTitle } from "@/features/detail/store/detailTitleStore";
 import { ROUTES } from "./routes";
 import type {AppRouteHandle} from "@/app/router/breadcrumbs.ts";
 
-import MainLayout from "@/layout/main/MainLayout";
+import MainLayout from "@/layout/user/MainLayout";
 import AdminLayout from "@/layout/admin/AdminLayout";
 
 import GuestOnlyRoute from "@/features/auth/components/GuestOnlyRoute";

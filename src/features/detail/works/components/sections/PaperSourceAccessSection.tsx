@@ -7,7 +7,7 @@ import {
   buildNextDetailUrl,
   getDetailContextFromRouteParams,
 } from "@/features/detail/detailTrail";
-import MetadataBadge from "@/layout/components/MetadataBadge";
+import MetadataBadge from "@/layout/global/MetadataBadge";
 
 import type {
   PaperDetailEntityRef,

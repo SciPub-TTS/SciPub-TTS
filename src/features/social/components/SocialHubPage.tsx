@@ -21,7 +21,7 @@ import {
   X,
 } from "lucide-react";
 
-import { SafeActionDialog } from "@/components/SafeActionDialog";
+import { SafeActionDialog } from "@/layout/global/SafeActionDialog";
 import { useAuthSession } from "@/features/auth/hooks/useAuthSession";
 import { getApiErrorMessage } from "@/features/auth/utils/getApiErrorMessage";
 import { bookmarkApi } from "@/features/bookmarks/services/bookmark.api";

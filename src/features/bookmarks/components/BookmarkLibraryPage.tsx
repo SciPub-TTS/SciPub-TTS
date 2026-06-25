@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 
-import { SafeActionDialog } from "@/components/SafeActionDialog";
+import { SafeActionDialog } from "@/layout/global/SafeActionDialog";
 import { BookmarkGrid } from "@/features/bookmarks/components/BookmarkGrid";
 import { BookmarkPageHeader } from "@/features/bookmarks/components/BookmarkPageHeader";
 import { BookmarkTopBar } from "@/features/bookmarks/components/BookmarkTopBar";

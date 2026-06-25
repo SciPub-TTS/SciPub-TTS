@@ -13,7 +13,7 @@ import {
   FileText,
   Globe2,
 } from "lucide-react";
-import MetadataBadge from "@/layout/components/MetadataBadge";
+import MetadataBadge from "@/layout/global/MetadataBadge";
 
 import type { PaperDetailData } from "../types";
 
