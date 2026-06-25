@@ -56,11 +56,23 @@ export default function FilterPart({
 
             <div className="flex flex-row justify-between items-end w-full">
                 <div className="relative group">
-                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 flex flex-col items-center animate-bounce pointer-events-none">
-                        <span className="bg-slate-800 text-white text-xs px-2 py-1 rounded shadow-md whitespace-nowrap font-medium">
-                            This is button
-                        </span>
-                        <div className="w-0 h-0 border-l-[5px] border-l-transparent border-r-[5px] border-r-transparent border-t-[6px] border-t-slate-800"></div>
+                    <div className="absolute animate-bounce bottom-full left-1/2 -translate-x-1/2 mb-2 flex flex-col items-center pointer-events-none">
+
+                        {/* Phần thân chứa chữ và Hào quang phía sau */}
+                        <div className="relative flex items-center justify-center min-w-max">
+
+                            {/* Lớp Hào Quang (Glow Effect) tỏa ra đằng sau */}
+                            <div className="absolute inset-0 bg-gradient-to-r from-teal-400 via-cyan-400 via-blue-500 to-purple-500 rounded blur-md opacity-75 animate-ping duration-1000 scale-105"></div>
+                            <div className="absolute inset-0 bg-gradient-to-r from-teal-400 via-cyan-400 via-blue-500 to-purple-500 rounded blur-sm opacity-100 animate-pulse"></div>
+
+                            {/* Thẻ chứa chữ chính - Nền cầu vồng màu lạnh */}
+                            <span className="relative bg-gradient-to-r from-teal-400 via-cyan-500 via-blue-500 via-indigo-500 to-purple-500 text-white text-xs px-2.5 py-1 rounded shadow-[0_0_15px_rgba(6,182,212,0.5)] whitespace-nowrap font-bold tracking-wide border border-cyan-300/30">
+            This is button
+        </span>
+                        </div>
+
+                        {/* Mũi tên trỏ xuống - Đồng bộ màu tím của điểm cuối dải màu */}
+                        <div className="w-0 h-0 border-l-[5px] border-l-transparent border-r-[5px] border-r-transparent border-t-[6px] border-t-purple-500 filter drop-shadow-[0_4px_6px_rgba(168,85,247,0.4)] animate-pulse mt-[-1px]"></div>
                     </div>
 
                     <div className="rounded-lg border border-slate-200 bg-gray-50 flex flex-row gap-2 w-fit px-2 py-1 h-fit cursor-pointer hover:bg-gray-100 transition-colors"
