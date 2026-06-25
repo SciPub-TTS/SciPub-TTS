@@ -20,10 +20,8 @@ export function KeywordHotListPart({ keywordList, isLoading, onAdd }: KeywordHot
 
             // Only mark as added (hide the button) when onAdd succeeds
             setAddedIds((prev) => [...prev, keyword.id]);
-            alert(`Successfully added keyword: ${keyword.name}`);
         } catch (error) {
             // On failure, button stays visible because addedIds is not updated
-            alert(`Failed to add keyword: ${keyword.name}. Please try again.`);
             console.error("Failed to add keyword:", error);
         }
     };

@@ -55,33 +55,6 @@ export default function FilterPart({
             />
 
             <div className="flex flex-row justify-between items-end w-full">
-                <div className="relative group">
-                    <div className="absolute animate-bounce bottom-full left-1/2 -translate-x-1/2 mb-2 flex flex-col items-center pointer-events-none">
-
-                        {/* Phần thân chứa chữ và Hào quang phía sau */}
-                        <div className="relative flex items-center justify-center min-w-max">
-
-                            {/* Lớp Hào Quang (Glow Effect) tỏa ra đằng sau */}
-                            <div className="absolute inset-0 bg-gradient-to-r from-teal-400 via-cyan-400 via-blue-500 to-purple-500 rounded blur-md opacity-75 animate-ping duration-1000 scale-105"></div>
-                            <div className="absolute inset-0 bg-gradient-to-r from-teal-400 via-cyan-400 via-blue-500 to-purple-500 rounded blur-sm opacity-100 animate-pulse"></div>
-
-                            {/* Thẻ chứa chữ chính - Nền cầu vồng màu lạnh */}
-                            <span className="relative bg-gradient-to-r from-teal-400 via-cyan-500 via-blue-500 via-indigo-500 to-purple-500 text-white text-xs px-2.5 py-1 rounded shadow-[0_0_15px_rgba(6,182,212,0.5)] whitespace-nowrap font-bold tracking-wide border border-cyan-300/30">
-            This is button
-        </span>
-                        </div>
-
-                        {/* Mũi tên trỏ xuống - Đồng bộ màu tím của điểm cuối dải màu */}
-                        <div className="w-0 h-0 border-l-[5px] border-l-transparent border-r-[5px] border-r-transparent border-t-[6px] border-t-purple-500 filter drop-shadow-[0_4px_6px_rgba(168,85,247,0.4)] animate-pulse mt-[-1px]"></div>
-                    </div>
-
-                    <div className="rounded-lg border border-slate-200 bg-gray-50 flex flex-row gap-2 w-fit px-2 py-1 h-fit cursor-pointer hover:bg-gray-100 transition-colors"
-                         onClick={() => handleApply()}
-                    >
-                        <Filter width={16} />
-                        Filters
-                    </div>
-                </div>
 
                 {MENU_FILTER.map((filter) => {
                     let value = "";
@@ -108,6 +81,14 @@ export default function FilterPart({
                         />
                     );
                 })}
+
+
+                <div className="rounded-lg border border-emerald-800 bg-white text-emerald-800 font-bold text-sm flex flex-row gap-2 w-fit px-4 py-2 h-fit cursor-pointer shadow-sm transition-all duration-200 ease-in-out hover:bg-emerald-800 hover:text-white hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 active:shadow-sm"
+                     onClick={() => handleApply()}
+                >
+                    <Filter width={16} />
+                    <span>Filters</span>
+                </div>
             </div>
 
             <div className="flex flex-row gap-2 w-fit px-2 py-1 h-fit rounded-lg bg-green-100 text-green-800 scale-80">
@@ -129,13 +110,13 @@ type FilterFieldProps = {
 export function FilterField({ filter, value, onChange }: FilterFieldProps) {
     return (
         <div className={filter.className}>
-            <div className="flex flex-col gap-1 text-base opacity-75">
+            <div className="flex flex-col gap-1 text-base opacity-85">
                 {filter.title}
 
                 <select
                     value={value}
                     onChange={(e) => onChange(e.target.value)}
-                    className="rounded-lg border border-slate-200 h-[4.5vh] w-full px-2"
+                    className="rounded-lg border border-slate-200 h-[4.5vh] w-full px-2 opacity-75"
                 >
                     {filter.options.map((option) => (
                         <option key={option.value} value={option.value}>
