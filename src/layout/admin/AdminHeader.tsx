@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { ROUTES } from "@/app/router";
 import { useAuthSession } from "@/features/auth/hooks/useAuthSession";
 import BreadcrumbBar from "../components/BreadcrumbBar";
@@ -14,8 +16,9 @@ function getInitials(name: string) {
 }
 
 export default function AdminHeader() {
+  const { t } = useTranslation();
   const { currentUser: user } = useAuthSession();
-  const displayName = user?.fullName ?? "Admin";
+  const displayName = user?.fullName ?? t("admin.admin");
   const initials = getInitials(displayName) || "AD";
 
   return (
@@ -23,7 +26,7 @@ export default function AdminHeader() {
       <div className="flex min-h-[76px] items-center justify-between gap-6">
         <div className="min-w-0 flex-1">
           <h1 className="text-2xl font-bold text-slate-950">
-            Admin Control Panel
+            {t("admin.controlPanel")}
           </h1>
           
           <div className="mt-4 max-w-2xl">

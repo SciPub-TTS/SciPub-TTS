@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getApiErrorMessage } from "@/features/auth/utils/getApiErrorMessage";
 import { useAuthSession } from "@/features/auth/hooks/useAuthSession";
 import { bookmarkApi } from "@/features/bookmarks/services/bookmark.api";
+import { invalidateBookmarkLibraryQueries } from "@/features/bookmarks/services/bookmarkQueryHelpers";
 import { bookmarkQueryKeys } from "@/features/bookmarks/services/bookmarkQueryKeys";
 import type {
   BookmarkStatusResponse,
@@ -15,12 +16,14 @@ const BOOKMARK_FEEDBACK_RESET_MS = 2600;
 
 type UseWorkBookmarkOptions = {
   authors: string[];
+  authorOpenAlexIds?: Array<string | null>;
   citations?: number | null;
   initialSaved?: boolean;
   openAlexId: string;
   source?: string | null;
   title?: string | null;
   topic?: string | null;
+  topicOpenAlexId?: string | null;
   year?: number | null;
   onSuccess?: (isSaved: boolean) => void;
 };
@@ -34,14 +37,86 @@ function normalizeOptionalSnapshotValue(value: string | null | undefined) {
   return normalizeSnapshotValue(value || "");
 }
 
-function buildAuthorsSnapshot(authors: string[]) {
-  const normalizedAuthors = authors
-    .map((author) => author.trim())
-    .filter((author) => author.length > 0);
+function normalizeOpenAlexSnapshotId(value: string | null | undefined) {
+  const normalizedValue = normalizeOptionalSnapshotValue(value);
 
-  return normalizedAuthors.length > 0
-    ? normalizedAuthors.join(", ")
-    : undefined;
+  if (!normalizedValue) {
+    return undefined;
+  }
+
+  const segments = normalizedValue.split("/");
+  return segments[segments.length - 1].toUpperCase();
+}
+
+function buildAuthorSnapshotPayload(
+  authors: string[],
+  authorOpenAlexIds: Array<string | null> = [],
+) {
+  const normalizedAuthors: string[] = [];
+  const normalizedAuthorIds: Array<string | null> = [];
+
+  authors.forEach((author, index) => {
+    const normalizedAuthor = author.trim();
+
+    if (normalizedAuthor.length === 0) {
+      return;
+    }
+
+    normalizedAuthors.push(normalizedAuthor);
+    normalizedAuthorIds.push(
+      normalizeOpenAlexSnapshotId(authorOpenAlexIds[index]) ?? null,
+    );
+  });
+
+  return {
+    authorOpenAlexIdsSnapshot: normalizedAuthorIds.some((id) => Boolean(id))
+      ? normalizedAuthorIds
+      : undefined,
+    authorsSnapshot:
+      normalizedAuthors.length > 0
+        ? normalizedAuthors.join(", ")
+        : undefined,
+  };
+}
+
+function buildCreateBookmarkPayload(
+  options: Pick<
+    UseWorkBookmarkOptions,
+    | "authors"
+    | "authorOpenAlexIds"
+    | "citations"
+    | "openAlexId"
+    | "source"
+    | "title"
+    | "topic"
+    | "topicOpenAlexId"
+    | "year"
+  >,
+): CreateBookmarkRequest {
+  const authorSnapshotPayload = buildAuthorSnapshotPayload(
+    options.authors,
+    options.authorOpenAlexIds,
+  );
+
+  return {
+    authorOpenAlexIdsSnapshot: authorSnapshotPayload.authorOpenAlexIdsSnapshot,
+    authorsSnapshot: authorSnapshotPayload.authorsSnapshot,
+    citationSnapshot:
+      typeof options.citations === "number" && Number.isFinite(options.citations)
+        ? options.citations
+        : undefined,
+    openAlexId: options.openAlexId.trim(),
+    publicationYear:
+      typeof options.year === "number" && Number.isFinite(options.year)
+        ? options.year
+        : undefined,
+    sourceSnapshot: normalizeOptionalSnapshotValue(options.source),
+    titleSnapshot: normalizeOptionalSnapshotValue(options.title),
+    topicSnapshot: normalizeOptionalSnapshotValue(options.topic),
+    topicOpenAlexIdSnapshot: normalizeOpenAlexSnapshotId(
+      options.topicOpenAlexId,
+    ),
+  };
 }
 
 function createBookmarkStatus(
@@ -59,6 +134,7 @@ function createBookmarkStatus(
 export function useWorkBookmark(options: UseWorkBookmarkOptions) {
   const {
     authors,
+    authorOpenAlexIds,
     citations,
     initialSaved = false,
     openAlexId,
@@ -66,6 +142,7 @@ export function useWorkBookmark(options: UseWorkBookmarkOptions) {
     source,
     title,
     topic,
+    topicOpenAlexId,
     year,
   } = options;
   const { accessToken } = useAuthSession();
@@ -124,19 +201,17 @@ export function useWorkBookmark(options: UseWorkBookmarkOptions) {
         return createBookmarkStatus(normalizedOpenAlexId, false, null);
       }
 
-      const payload: CreateBookmarkRequest = {
-        authorsSnapshot: buildAuthorsSnapshot(authors),
-        citationSnapshot:
-          typeof citations === "number" && Number.isFinite(citations)
-            ? citations
-            : undefined,
+      const payload = buildCreateBookmarkPayload({
+        authorOpenAlexIds,
+        authors,
+        citations,
         openAlexId: normalizedOpenAlexId,
-        publicationYear:
-          typeof year === "number" && Number.isFinite(year) ? year : undefined,
-        sourceSnapshot: normalizeOptionalSnapshotValue(source),
-        titleSnapshot: normalizeOptionalSnapshotValue(title),
-        topicSnapshot: normalizeOptionalSnapshotValue(topic),
-      };
+        source,
+        title,
+        topic,
+        topicOpenAlexId,
+        year,
+      });
       const response = await bookmarkApi.add(payload);
 
       return createBookmarkStatus(
@@ -159,15 +234,7 @@ export function useWorkBookmark(options: UseWorkBookmarkOptions) {
     },
     onSuccess: (nextStatus) => {
       queryClient.setQueryData(bookmarkStatusQueryKey, nextStatus);
-      void queryClient.invalidateQueries({
-        queryKey: bookmarkQueryKeys.lists(),
-      });
-      void queryClient.invalidateQueries({
-        queryKey: bookmarkQueryKeys.stats(),
-      });
-      void queryClient.invalidateQueries({
-        queryKey: bookmarkQueryKeys.filterOptions(),
-      });
+      void invalidateBookmarkLibraryQueries(queryClient);
       setFeedbackLabel(null);
       onSuccess?.(nextStatus.bookmarked);
     },

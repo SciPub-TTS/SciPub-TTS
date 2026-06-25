@@ -1,41 +1,54 @@
 const en = {
   common: {
     appName: "Owlreka",
+    guest: "Guest",
     trendIntelligence: "Trend Intelligence",
     workspace: "Workspace",
     account: "Account",
+    signInToManageProfile: "Sign in to manage your profile",
     login: "Login",
     register: "Register",
-    logout: "Logout",
+    logout: "Log out",
     home: "Home",
   },
 
   navigation: {
-    trendingTopic: "Trending Topic",
+    discovery: "Discovery",
+    trending: "Trending",
     newFeed: "New Feed",
-    searchPapers: "Search Papers",
     bookmarks: "Bookmarks",
-    exportReports: "Export Reports",
-    helpGuide: "Help Guide",
+    socialHub: "Social Hub",
+    report: "Report",
+    guideHelp: "Guide & Help",
     userProfile: "User Profile",
-    settings: "Settings",
   },
 
   admin: {
     appName: "Owlreka",
     console: "Admin Console",
+    controlPanel: "Admin Control Panel",
+    admin: "Admin",
     dashboard: "Admin Dashboard",
-    users: "Users",
-    fields: "Fields",
-    synchronization: "Synchronization",
+    userManagement: "User Management",
   },
 
   footer: {
+    title: "Owlreka Research Observatory",
     description:
-      "A publication trend intelligence platform for researchers, lecturers, and students.",
+      "A publication trend intelligence platform for researchers, lecturers, and students. Built in Vietnam, FPT University",
+    systemStatus: "System Status",
+    project: "Project",
+    dataSourceLabel: "Data Source:",
+    syncLabel: "Sync:",
+    updateTrendsLabel: "Update Trends:",
+    dataSourceValue: "OpenAlex",
+    syncValue: "Admin and System",
+    updateTrendsValue: "Weekly",
+    academicProject: "Academic Project",
+    version: "Version 1.0",
+    intelligence: "Owlreka Intelligence",
     copyright:
-      "© 2026 SJPTTS — For academic review and demonstration purposes.",
-    operational: "All systems operational",
+      "© 2026 Owlreka — For academic review and demonstration purposes.",
   },
 };
 

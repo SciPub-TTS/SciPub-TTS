@@ -5,7 +5,7 @@ import { LANGUAGE_STORAGE_KEY, LANGUAGES, type Language } from "@/app/i18n";
 export default function LanguageSwitcher() {
   const { i18n } = useTranslation();
 
-  const currentLanguage = i18n.language as Language;
+  const currentLanguage = (i18n.resolvedLanguage ?? i18n.language) as Language;
 
   function handleChangeLanguage(language: Language) {
     void i18n.changeLanguage(language);

@@ -1,4 +1,5 @@
 import {
+  useRef,
   useMemo,
   useState,
   type ChangeEvent,
@@ -6,8 +7,8 @@ import {
   type KeyboardEvent,
 } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Link } from "react-router-dom";
 import {
-  ArrowRight,
   Check,
   Clock3,
   FileText,
@@ -15,18 +16,30 @@ import {
   Pencil,
   Plus,
   Search,
+  Trash2,
   Trophy,
   X,
 } from "lucide-react";
 
+import { SafeActionDialog } from "@/components/SafeActionDialog";
 import { useAuthSession } from "@/features/auth/hooks/useAuthSession";
 import { getApiErrorMessage } from "@/features/auth/utils/getApiErrorMessage";
 import { bookmarkApi } from "@/features/bookmarks/services/bookmark.api";
 import type { BookmarkResponse } from "@/features/bookmarks/types/bookmark.types";
+import { buildDetailTrailUrl } from "@/features/detail/detailTrail";
 import { socialApi } from "@/features/social/services/social.api";
+import {
+  decodeJwtSubject,
+  findSocialPostInPage,
+  normalizeIdentityValue,
+  updateSocialPostPageLikeState,
+} from "@/features/social/utils/socialQueryUtils";
 import type {
   CreateSocialPostRequest,
+  LikeToggleResponse,
   SocialPostDetail,
+  SocialPostPageResponse,
+  SocialPostReferenceInfo,
   SocialPostSummary,
   UpdateSocialPostRequest,
 } from "@/features/social/types/social.types";
@@ -39,6 +52,17 @@ type BlogFormState = {
   title: string;
   body: string;
   selectedOpenAlexIds: string[];
+};
+
+type ToggleLikeMutationVariables = {
+  fallbackLikeCount: number;
+  fallbackLiked: boolean;
+  postId: string;
+};
+
+type ToggleLikeMutationContext = {
+  previousNewestPosts?: SocialPostPageResponse;
+  previousTopPosts?: SocialPostPageResponse;
 };
 
 type BlogModalProps = {
@@ -58,7 +82,22 @@ type BlogModalProps = {
 };
 
 const HERO_GRADIENT =
-  "bg-[radial-gradient(circle_at_top_right,_rgba(17,211,164,0.14),_transparent_24%),radial-gradient(circle_at_bottom_right,_rgba(31,175,255,0.12),_transparent_28%),linear-gradient(180deg,#FFFFFF_0%,#FCFFFE_100%)]";
+  "bg-[radial-gradient(circle_at_top_right,_rgba(163,230,53,0.18),_transparent_24%),radial-gradient(circle_at_bottom_right,_rgba(0,92,185,0.12),_transparent_30%),linear-gradient(180deg,#FFFFFF_0%,#F8FCFA_100%)]";
+
+const SURFACE_CARD_CLASS =
+  "rounded-[2rem] border border-black bg-white shadow-[0_18px_55px_rgba(15,23,42,0.06)]";
+
+const PRIMARY_BUTTON_CLASS =
+  "inline-flex items-center justify-center gap-2 rounded-lg bg-[#14532D] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#15803D] disabled:cursor-not-allowed disabled:bg-slate-400";
+
+const SECONDARY_BUTTON_CLASS =
+  "inline-flex items-center justify-center gap-2 rounded-lg border border-black bg-white px-4 py-3 text-sm font-semibold text-black transition hover:border-[#14532D] hover:bg-[#14532D] hover:text-white disabled:cursor-not-allowed disabled:opacity-60";
+
+const TAG_PILL_CLASS =
+  "rounded-full bg-[#A3E635]/20 px-3 py-1.5 font-subtext text-sm text-[#14532D] ring-1 ring-[#059669]/40";
+
+const INPUT_CLASS =
+  "w-full rounded-xl border border-black bg-slate-50/60 px-4 text-base text-black outline-none placeholder:text-slate-400 focus:border-[#14532D] focus:bg-white";
 
 const tabs: { label: string; value: FeedTab }[] = [
   { label: "All Posts", value: "all" },
@@ -72,6 +111,9 @@ const initialBlogForm: BlogFormState = {
   body: "",
   selectedOpenAlexIds: [],
 };
+
+const SOCIAL_NEWEST_QUERY_KEY = ["social", "newest"] as const;
+const SOCIAL_TOP_QUERY_KEY = ["social", "top"] as const;
 
 function getAuthorInitials(fullName?: string | null) {
   if (!fullName) {
@@ -154,6 +196,164 @@ function formatReferenceMetadata(authors: string, year: number | null) {
   return "Bookmarked paper";
 }
 
+function normalizeReferenceEntityId(value: string | null | undefined) {
+  const normalizedValue = value?.trim();
+
+  if (!normalizedValue) {
+    return null;
+  }
+
+  const segments = normalizedValue.split("/");
+  return segments[segments.length - 1].toUpperCase();
+}
+
+function buildReferenceAuthorEntries(reference: SocialPostReferenceInfo) {
+  const authorNames = reference.authorsSnapshot
+    .split(",")
+    .map((author) => author.trim())
+    .filter((author) => author.length > 0);
+
+  return authorNames.map((name, index) => ({
+    id: normalizeReferenceEntityId(reference.authorOpenAlexIdsSnapshot[index]),
+    name,
+  }));
+}
+
+function buildSocialDetailHref(
+  entityType: "authors" | "topics" | "works",
+  entityId: string,
+) {
+  return buildDetailTrailUrl(entityType, entityId, [], "social-hub");
+}
+
+function SocialReferenceCard({
+  reference,
+  titleClassName,
+}: {
+  reference: SocialPostReferenceInfo;
+  titleClassName: string;
+}) {
+  const [showAllAuthors, setShowAllAuthors] = useState(false);
+  const authorEntries = buildReferenceAuthorEntries(reference);
+  const hasAuthors = authorEntries.length > 0;
+  const visibleAuthors = showAllAuthors
+    ? authorEntries
+    : authorEntries.slice(0, 3);
+  const hasMoreAuthors = authorEntries.length > 3;
+  const topicLabel = reference.topicSnapshot?.trim() || null;
+  const topicId = normalizeReferenceEntityId(reference.topicOpenAlexIdSnapshot);
+  const workTitle = reference.titleSnapshot?.trim() || reference.openalexId;
+  const topicBadgeClassName =
+    "inline-flex items-center rounded-full border border-[#D6B37A] bg-[#FFF7ED] px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-[#A16207] transition hover:border-[#B45309] hover:text-[#92400E]";
+
+  return (
+    <div className="rounded-[1rem] bg-white px-4 py-3">
+      {topicLabel ? (
+        topicId ? (
+          <Link
+            to={buildSocialDetailHref("topics", topicId)}
+            className={topicBadgeClassName}
+          >
+            {topicLabel}
+          </Link>
+        ) : (
+          <span className={topicBadgeClassName}>{topicLabel}</span>
+        )
+      ) : null}
+
+      <p className={`${topicLabel ? "mt-2" : ""} ${titleClassName}`}>
+        <Link
+          to={buildSocialDetailHref("works", reference.openalexId)}
+          className="transition hover:text-[#0EA5E9] hover:underline"
+        >
+          {workTitle}
+        </Link>
+      </p>
+
+      <div className="font-subtext mt-1 flex flex-wrap items-center gap-x-1 gap-y-1 text-sm text-[#A16207]">
+        {hasAuthors
+          ? visibleAuthors.map((author, index) => (
+              <span key={`${reference.id}-author-${author.name}-${index}`}>
+                {author.id ? (
+                  <Link
+                    to={buildSocialDetailHref("authors", author.id)}
+                    className="transition hover:text-[#92400E] hover:underline"
+                  >
+                    {author.name}
+                  </Link>
+                ) : (
+                  <span className="text-inherit">
+                    {author.name}
+                  </span>
+                )}
+                {index < visibleAuthors.length - 1 ? ", " : ""}
+              </span>
+            ))
+          : null}
+
+        {hasMoreAuthors ? (
+          <button
+            type="button"
+            onClick={() => setShowAllAuthors((previous) => !previous)}
+            className="ml-1 inline-flex items-center text-xs font-bold text-[#14532D] underline-offset-2 hover:text-[#15803D] hover:underline"
+          >
+            {showAllAuthors ? "Show less" : "Show more"}
+          </button>
+        ) : null}
+
+        {hasAuthors && reference.yearSnapshot ? <span>•</span> : null}
+        {hasAuthors && reference.yearSnapshot ? (
+          <span>{reference.yearSnapshot}</span>
+        ) : null}
+        {!hasAuthors ? (
+          <span>
+            {formatReferenceMetadata(
+              reference.authorsSnapshot,
+              reference.yearSnapshot,
+            )}
+          </span>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+function SocialReferenceList({
+  references,
+  titleClassName,
+  wrapperClassName,
+}: {
+  references: SocialPostReferenceInfo[];
+  titleClassName: string;
+  wrapperClassName: string;
+}) {
+  if (references.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className={wrapperClassName}>
+      <p className="text-[11px] font-extrabold uppercase tracking-[0.24em] text-[#005CB9]">
+        Papers added
+      </p>
+      <div className="mt-3">
+        {references.map((reference, index) => (
+          <div key={reference.id}>
+            <SocialReferenceCard
+              reference={reference}
+              titleClassName={titleClassName}
+            />
+
+            {index < references.length - 1 ? (
+              <div className="mx-3 my-3 h-px bg-gradient-to-r from-transparent via-[#D6B37A] to-transparent" />
+            ) : null}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function normalizeSocialPost(post: SocialPostSummary): SocialPostSummary {
   const fallbackId = post.id || crypto.randomUUID();
   const authorId = post.author?.id ? String(post.author.id) : fallbackId;
@@ -169,26 +369,20 @@ function normalizeSocialPost(post: SocialPostSummary): SocialPostSummary {
       fullName: authorName,
     },
     createdAt: post.createdAt || new Date().toISOString(),
-    references: Array.isArray(post.references) ? post.references : [],
+    references: Array.isArray(post.references)
+      ? post.references.map((reference) => ({
+          ...reference,
+          authorOpenAlexIdsSnapshot: Array.isArray(
+            reference.authorOpenAlexIdsSnapshot,
+          )
+            ? reference.authorOpenAlexIdsSnapshot
+            : [],
+          topicOpenAlexIdSnapshot: reference.topicOpenAlexIdSnapshot ?? null,
+          topicSnapshot: reference.topicSnapshot ?? null,
+        }))
+      : [],
     topicTag: Array.isArray(post.topicTag) ? post.topicTag : [],
     updatedAt: post.updatedAt ?? null,
-  };
-}
-
-function mergeSummaryWithDetail(
-  post: SocialPostSummary,
-  detail?: SocialPostDetail,
-): SocialPostSummary {
-  if (!detail) {
-    return post;
-  }
-
-  return {
-    ...post,
-    references:
-      post.references.length > 0 ? post.references : (detail.references ?? []),
-    topicTag: post.topicTag.length > 0 ? post.topicTag : (detail.topicTag ?? []),
-    updatedAt: detail.updatedAt ?? post.updatedAt,
   };
 }
 
@@ -207,7 +401,7 @@ function SocialAvatar({
   if (!avatarUrl) {
     return (
       <div
-        className={`flex items-center justify-center rounded-full bg-emerald-600 text-sm font-semibold text-white ${sizeClassName}`}
+        className={`flex items-center justify-center rounded-full bg-[#14532D] text-sm font-semibold text-white ${sizeClassName}`}
       >
         {initials}
       </div>
@@ -215,7 +409,7 @@ function SocialAvatar({
   }
 
   return (
-    <div className={`overflow-hidden rounded-full bg-emerald-50 ${sizeClassName}`}>
+    <div className={`overflow-hidden rounded-full bg-[#EEF6FF] ${sizeClassName}`}>
       <img
         src={avatarUrl}
         alt={fullName}
@@ -230,7 +424,7 @@ function SocialAvatar({
         }}
       />
       <span
-        className="hidden h-full w-full items-center justify-center bg-emerald-600 text-sm font-semibold text-white"
+        className="hidden h-full w-full items-center justify-center bg-[#14532D] text-sm font-semibold text-white"
       >
         {initials}
       </span>
@@ -277,7 +471,20 @@ function sortPosts(posts: SocialPostSummary[], sortMode: SortMode) {
   const nextPosts = [...posts];
 
   if (sortMode === "most-liked") {
-    nextPosts.sort((left, right) => right.likeCount - left.likeCount);
+    nextPosts.sort((left, right) => {
+      if (right.likeCount !== left.likeCount) {
+        return right.likeCount - left.likeCount;
+      }
+
+      const rightTime = new Date(
+        getDisplayTime(right.createdAt, right.updatedAt),
+      ).getTime();
+      const leftTime = new Date(
+        getDisplayTime(left.createdAt, left.updatedAt),
+      ).getTime();
+
+      return rightTime - leftTime;
+    });
     return nextPosts;
   }
 
@@ -302,11 +509,17 @@ function filterPosts(
   currentUserId?: string,
 ) {
   const normalizedQuery = query.trim().toLowerCase();
+  const normalizedCurrentUserId = normalizeIdentityValue(currentUserId);
 
   return posts.filter((post) => {
     const matchesTab =
       tab === "all" ||
-      (tab === "my-posts" && currentUserId ? post.author.id === currentUserId : false);
+      (
+        tab === "my-posts"
+        && normalizedCurrentUserId
+          ? normalizeIdentityValue(post.author.id) === normalizedCurrentUserId
+          : false
+      );
 
     const tags = normalizeTags(post.topicTag);
     const matchesQuery =
@@ -347,16 +560,21 @@ function BlogEditorModal(props: BlogModalProps) {
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/30 px-4 py-8 backdrop-blur-sm">
-      <div className="flex max-h-[88vh] w-full max-w-[760px] flex-col overflow-hidden rounded-[1.65rem] border border-black/12 bg-white shadow-[0_30px_90px_rgba(15,23,42,0.18)]">
-        <div className="flex items-center justify-between border-b border-black/8 px-6 py-5">
-          <h2 className="font-search-title text-[2rem] leading-none text-black">
-            {modalTitle}
-          </h2>
+      <div className="flex max-h-[88vh] w-full max-w-[760px] flex-col overflow-hidden rounded-[1.65rem] border border-black bg-white shadow-[0_30px_90px_rgba(15,23,42,0.18)]">
+        <div className="flex items-center justify-between border-b border-black px-6 py-5">
+          <div>
+            <p className="text-[11px] font-extrabold uppercase tracking-[0.28em] text-[#14532D]">
+              Research community
+            </p>
+            <h2 className="font-search-title mt-2 text-[2rem] leading-none text-[#059669]">
+              {modalTitle}
+            </h2>
+          </div>
 
           <button
             type="button"
             onClick={onClose}
-            className="flex h-10 w-10 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-black"
+            className="flex h-10 w-10 items-center justify-center rounded-full text-slate-500 transition hover:bg-[#EEF6FF] hover:text-[#005CB9]"
             aria-label="Close social blog modal"
           >
             <X className="h-5 w-5" />
@@ -366,7 +584,7 @@ function BlogEditorModal(props: BlogModalProps) {
         <form onSubmit={onSubmit} className="flex min-h-0 flex-1 flex-col">
           <div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-6 py-5">
             <div>
-              <label className="font-text mb-2 block text-[1.05rem] font-semibold text-black">
+              <label className="mb-2 block text-sm font-extrabold uppercase tracking-[0.22em] text-[#14532D]">
                 Blog title
               </label>
               <input
@@ -374,27 +592,30 @@ function BlogEditorModal(props: BlogModalProps) {
                 value={form.title}
                 onChange={onChangeTitle}
                 placeholder="e.g. What I learned re-reading the Transformer paper"
-                className="h-12 w-full rounded-[1rem] border border-black/12 bg-[#FBFBFD] px-4 text-base text-black outline-none placeholder:text-slate-400"
+                className={`h-12 ${INPUT_CLASS}`}
               />
             </div>
 
             <div>
-              <label className="font-text mb-2 block text-[1.05rem] font-semibold text-black">
-                Write your insight...
+              <label className="mb-2 block text-sm font-extrabold uppercase tracking-[0.22em] text-[#14532D]">
+                Write your insight
               </label>
               <textarea
                 rows={5}
                 value={form.body}
                 onChange={onChangeBody}
                 placeholder="Share your notes, takeaways, or open questions for the community..."
-                className="w-full resize-none rounded-[1rem] border border-black/12 bg-[#FBFBFD] px-4 py-4 text-base text-black outline-none placeholder:text-slate-400"
+                className={`${INPUT_CLASS} resize-none py-4`}
               />
             </div>
 
-            <div className="rounded-[1.2rem] border border-black/10 bg-[#FBFBFD] p-4">
+            <div className="rounded-[1.2rem] border border-black bg-slate-50/60 p-4">
               <div className="flex items-center justify-between gap-3">
                 <div>
-                  <p className="font-text text-[1.05rem] font-semibold text-black">
+                  <p className="text-[11px] font-extrabold uppercase tracking-[0.28em] text-[#005CB9]">
+                    Bookmarks
+                  </p>
+                  <p className="mt-2 text-[1.05rem] font-semibold text-black">
                     Add papers from Bookmarks
                   </p>
                   <p className="font-subtext mt-1 text-sm text-slate-500">
@@ -405,18 +626,18 @@ function BlogEditorModal(props: BlogModalProps) {
                   </p>
                 </div>
 
-                <div className="rounded-full bg-[#E8FBF4] px-3 py-1 text-sm font-semibold text-[#0AAA6E]">
+                <div className="rounded-full bg-[#EEF6FF] px-3 py-1 text-sm font-semibold text-[#005CB9] ring-1 ring-[#005CB9]/20">
                   {form.selectedOpenAlexIds.length} selected
                 </div>
               </div>
 
               <div className="mt-4 max-h-[220px] space-y-3 overflow-y-auto pr-1">
                 {isLoadingBookmarks ? (
-                  <div className="rounded-[1rem] border border-dashed border-black/10 bg-white px-4 py-6 text-center text-slate-500">
+                  <div className="rounded-[1rem] border border-dashed border-black bg-white px-4 py-6 text-center text-slate-500">
                     Loading bookmarked papers...
                   </div>
                 ) : bookmarks.length === 0 ? (
-                  <div className="rounded-[1rem] border border-dashed border-black/10 bg-white px-4 py-6 text-center text-slate-500">
+                  <div className="rounded-[1rem] border border-dashed border-black bg-white px-4 py-6 text-center text-slate-500">
                     No bookmarked papers yet.
                   </div>
                 ) : (
@@ -432,14 +653,14 @@ function BlogEditorModal(props: BlogModalProps) {
                         onClick={() => onToggleBookmark(bookmark.openAlexId)}
                         className={`flex w-full items-start gap-3 rounded-[1rem] border px-4 py-3 text-left transition ${
                           isSelected
-                            ? "border-[#0AAA6E] bg-[#F2FFF9]"
-                            : "border-black/10 bg-white"
+                            ? "border-[#14532D] bg-[#A3E635]/15"
+                            : "border-black bg-white hover:border-[#14532D] hover:bg-[#EEF6FF]/60"
                         }`}
                       >
                         <div
                           className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border ${
                             isSelected
-                              ? "border-[#0AAA6E] bg-[#08C67B] text-black"
+                              ? "border-[#14532D] bg-[#14532D] text-white"
                               : "border-black/20 bg-white text-transparent"
                           }`}
                         >
@@ -447,7 +668,7 @@ function BlogEditorModal(props: BlogModalProps) {
                         </div>
 
                         <div className="min-w-0">
-                          <p className="font-text text-sm font-semibold text-black">
+                          <p className="text-sm font-semibold text-black">
                             {bookmark.title}
                           </p>
                           <p className="font-subtext mt-1 text-sm text-slate-500">
@@ -457,7 +678,7 @@ function BlogEditorModal(props: BlogModalProps) {
                             {extractKeywordsFromTopic(bookmark.topic).map((keyword) => (
                               <span
                                 key={`${bookmark.id}-${keyword}`}
-                                className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-black"
+                                className={TAG_PILL_CLASS}
                               >
                                 {keyword}
                               </span>
@@ -472,15 +693,15 @@ function BlogEditorModal(props: BlogModalProps) {
             </div>
 
             <div>
-              <label className="font-text mb-2 block text-[1.05rem] font-semibold text-black">
+              <label className="mb-2 block text-sm font-extrabold uppercase tracking-[0.22em] text-[#14532D]">
                 Keywords from selected papers
               </label>
-              <div className="flex min-h-12 flex-wrap items-center gap-2 rounded-[1rem] border border-black/12 bg-[#FBFBFD] px-3 py-3">
+              <div className="flex min-h-12 flex-wrap items-center gap-2 rounded-[1rem] border border-black bg-slate-50/60 px-3 py-3">
                 {selectedKeywords.length > 0 ? (
                   selectedKeywords.map((keyword) => (
                     <span
                       key={keyword}
-                      className="inline-flex items-center rounded-full bg-[#DDF8EE] px-3 py-1 text-sm font-medium text-[#0A9D74]"
+                      className={TAG_PILL_CLASS}
                     >
                       {keyword}
                     </span>
@@ -500,11 +721,11 @@ function BlogEditorModal(props: BlogModalProps) {
             ) : null}
           </div>
 
-          <div className="flex shrink-0 items-center gap-3 border-t border-black/8 bg-white px-6 py-5">
+          <div className="flex shrink-0 items-center gap-3 border-t border-black bg-white px-6 py-5">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 rounded-[1rem] border border-black/12 bg-white px-5 py-3.5 text-base font-semibold text-black"
+              className={`flex-1 ${SECONDARY_BUTTON_CLASS}`}
             >
               Cancel
             </button>
@@ -512,9 +733,7 @@ function BlogEditorModal(props: BlogModalProps) {
             <button
               type="submit"
               disabled={isSubmitting}
-              className={`flex-1 rounded-[1rem] bg-[#08C67B] px-5 py-3.5 text-base font-semibold text-black shadow-[0_14px_28px_rgba(8,198,123,0.2)] ${
-                isSubmitting ? "cursor-not-allowed opacity-60" : ""
-              }`}
+              className={`flex-1 ${PRIMARY_BUTTON_CLASS}`}
             >
               {isSubmitting ? "Saving..." : submitLabel}
             </button>
@@ -527,25 +746,30 @@ function BlogEditorModal(props: BlogModalProps) {
 
 function PostCard({
   currentUserId,
+  isDeleteLoading,
   isLikeLoading,
   isOpeningEdit,
+  onDelete,
   onEdit,
   onToggleLike,
   post,
 }: {
   currentUserId?: string;
+  isDeleteLoading: boolean;
   isLikeLoading: boolean;
   isOpeningEdit: boolean;
+  onDelete: (postId: string) => void;
   onEdit: (postId: string) => void;
-  onToggleLike: (postId: string) => void;
+  onToggleLike: (post: SocialPostSummary) => void;
   post: SocialPostSummary;
 }) {
   const tags = normalizeTags(post.topicTag);
-  const canEdit = currentUserId === post.author.id;
+  const canManagePost =
+    normalizeIdentityValue(currentUserId) === normalizeIdentityValue(post.author.id);
   const references = post.references ?? [];
 
   return (
-    <article className="rounded-[1.85rem] border border-black/10 bg-white p-6 shadow-[0_18px_45px_rgba(15,23,42,0.05)]">
+    <article className="rounded-[1.85rem] border border-black bg-white p-6 shadow-[0_18px_45px_rgba(15,23,42,0.05)]">
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-center gap-3">
           <SocialAvatar
@@ -555,11 +779,8 @@ function PostCard({
           />
 
           <div>
-            <p className="font-text text-[1.08rem] font-semibold text-black">
+            <p className="text-[1.08rem] font-semibold text-black">
               {post.author.fullName}
-            </p>
-            <p className="font-subtext text-sm text-slate-500">
-              Research community member
             </p>
           </div>
         </div>
@@ -570,7 +791,7 @@ function PostCard({
         </div>
       </div>
 
-      <h3 className="font-search-title mt-6 text-[2.45rem] leading-[1.08] text-black">
+      <h3 className="font-search-title mt-6 text-[2.35rem] leading-[1.08] text-[#14532D]">
         {post.title}
       </h3>
 
@@ -583,7 +804,7 @@ function PostCard({
           {tags.map((tag) => (
             <span
               key={`${post.id}-${tag}`}
-              className="rounded-full bg-slate-100 px-3 py-1.5 font-subtext text-sm text-slate-600"
+              className={TAG_PILL_CLASS}
             >
               {tag.startsWith("#") ? tag : `#${tag}`}
             </span>
@@ -591,67 +812,58 @@ function PostCard({
         </div>
       ) : null}
 
-      {references.length > 0 ? (
-        <div className="mt-5 rounded-[1.25rem] border border-black/8 bg-slate-50 px-4 py-4">
-          <p className="font-text text-sm font-semibold uppercase tracking-[0.16em] text-black/70">
-            Papers added
-          </p>
-          <div className="mt-3 space-y-3">
-            {references.map((reference) => (
-              <div key={reference.id} className="rounded-[1rem] bg-white px-4 py-3">
-                <p className="font-text text-sm font-semibold text-black">
-                  {reference.titleSnapshot}
-                </p>
-                <p className="font-subtext mt-1 text-sm text-slate-500">
-                  {formatReferenceMetadata(
-                    reference.authorsSnapshot,
-                    reference.yearSnapshot,
-                  )}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      ) : null}
+      <SocialReferenceList
+        references={references}
+        titleClassName="text-sm font-semibold text-black"
+        wrapperClassName="mt-5 rounded-[1.25rem] border border-black bg-slate-50/60 px-4 py-4"
+      />
 
       <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-black/8 pt-5">
         <div className="flex items-center gap-3">
           <button
             type="button"
-            onClick={() => onToggleLike(post.id)}
+            onClick={() => onToggleLike(post)}
             disabled={isLikeLoading}
-            className={`flex items-center gap-2 rounded-full border px-4 py-2 text-base transition ${
+            className={`inline-flex items-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-semibold transition ${
               post.liked
-                ? "border-rose-200 bg-rose-50 text-rose-600"
-                : "border-black/10 bg-white text-slate-600"
+                ? "border-[#F33E58] bg-[#FDECEF] text-[#F33E58]"
+                : "border-black bg-white text-black hover:border-[#F33E58] hover:bg-[#F33E58] hover:text-white"
             } ${isLikeLoading ? "cursor-not-allowed opacity-60" : ""}`}
           >
             <Heart className={`h-4 w-4 ${post.liked ? "fill-current" : ""}`} />
             {post.likeCount}
           </button>
+        </div>
 
-          {canEdit ? (
+        {canManagePost ? (
+          <div className="flex flex-wrap items-center gap-2">
             <button
               type="button"
               onClick={() => onEdit(post.id)}
-              disabled={isOpeningEdit}
-              className={`inline-flex items-center gap-2 rounded-full border border-black/10 bg-white px-4 py-2 text-base font-semibold text-black ${
-                isOpeningEdit ? "cursor-not-allowed opacity-60" : ""
+              disabled={isOpeningEdit || isDeleteLoading}
+              className={`${SECONDARY_BUTTON_CLASS} ${
+                isOpeningEdit || isDeleteLoading
+                  ? "cursor-not-allowed opacity-60"
+                  : ""
               }`}
             >
               <Pencil className="h-4 w-4" />
               Edit
             </button>
-          ) : null}
-        </div>
 
-        <button
-          type="button"
-          className="inline-flex items-center gap-2 rounded-[1rem] bg-black px-6 py-3 text-base font-semibold text-white"
-        >
-          Read post
-          <ArrowRight className="h-4 w-4" />
-        </button>
+            <button
+              type="button"
+              onClick={() => onDelete(post.id)}
+              disabled={isDeleteLoading}
+              className={`inline-flex items-center justify-center gap-2 rounded-lg border border-[#DC2626] bg-white px-4 py-3 text-sm font-semibold text-[#DC2626] transition hover:bg-[#DC2626] hover:text-white disabled:cursor-not-allowed disabled:opacity-60 ${
+                isDeleteLoading ? "cursor-not-allowed opacity-60" : ""
+              }`}
+            >
+              <Trash2 className="h-4 w-4" />
+              Delete
+            </button>
+          </div>
+        ) : null}
       </div>
     </article>
   );
@@ -659,7 +871,7 @@ function PostCard({
 
 export default function SocialHubPage() {
   const queryClient = useQueryClient();
-  const { currentUser } = useAuthSession();
+  const { accessToken, currentUser } = useAuthSession();
 
   const [activeTab, setActiveTab] = useState<FeedTab>("all");
   const [searchQuery, setSearchQuery] = useState("");
@@ -670,16 +882,20 @@ export default function SocialHubPage() {
   const [editingPostId, setEditingPostId] = useState<string | null>(null);
   const [blogForm, setBlogForm] = useState<BlogFormState>(initialBlogForm);
   const [blogError, setBlogError] = useState<string | null>(null);
+  const [deleteDialogPostId, setDeleteDialogPostId] = useState<string | null>(null);
+  const [pendingLikePostIds, setPendingLikePostIds] = useState<string[]>([]);
+  const [pendingDeletePostId, setPendingDeletePostId] = useState<string | null>(null);
+  const pendingLikePostIdsRef = useRef<Set<string>>(new Set());
 
   const newestPostsQuery = useQuery({
     queryFn: () => socialApi.getNewest(0, 20),
-    queryKey: ["social", "newest"],
+    queryKey: SOCIAL_NEWEST_QUERY_KEY,
     retry: false,
   });
 
   const topPostsQuery = useQuery({
     queryFn: () => socialApi.getTop(0, 5),
-    queryKey: ["social", "top"],
+    queryKey: SOCIAL_TOP_QUERY_KEY,
     retry: false,
   });
 
@@ -723,13 +939,6 @@ export default function SocialHubPage() {
     },
   });
 
-  const toggleLikeMutation = useMutation({
-    mutationFn: (postId: string) => socialApi.toggleLike(postId),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ["social"] });
-    },
-  });
-
   const createPostMutation = useMutation({
     mutationFn: (payload: CreateSocialPostRequest) => socialApi.createPost(payload),
     onSuccess: () => {
@@ -768,54 +977,123 @@ export default function SocialHubPage() {
     },
   });
 
+  const deletePostMutation = useMutation({
+    mutationFn: (postId: string) => socialApi.deletePost(postId),
+    onMutate: (postId: string) => {
+      setPendingDeletePostId(postId);
+    },
+    onSuccess: (_response, postId) => {
+      if (editingPostId === postId) {
+        resetBlogModal();
+      }
+
+      void queryClient.invalidateQueries({ queryKey: ["social"] });
+    },
+    onError: (error) => {
+      setBlogError(
+        getApiErrorMessage(
+          error,
+          "Cannot delete this post right now. Please try again.",
+        ),
+      );
+    },
+    onSettled: () => {
+      setDeleteDialogPostId(null);
+      setPendingDeletePostId(null);
+    },
+  });
+
   const newestPosts = newestPostsQuery.data?.content ?? [];
   const normalizedNewestPosts = newestPosts.map(normalizeSocialPost);
   const topPosts = (topPostsQuery.data?.content ?? []).map(normalizeSocialPost);
   const bookmarkOptions = bookmarksQuery.data ?? [];
 
-  const visiblePostIds = useMemo(() => {
-    const ids = new Set<string>();
+  const toggleLikeMutation = useMutation<
+    LikeToggleResponse,
+    Error,
+    ToggleLikeMutationVariables,
+    ToggleLikeMutationContext
+  >({
+    mutationFn: ({ postId }) => socialApi.toggleLike(postId),
+    onMutate: async ({ fallbackLikeCount, fallbackLiked, postId }) => {
+      await Promise.all([
+        queryClient.cancelQueries({ queryKey: SOCIAL_NEWEST_QUERY_KEY }),
+        queryClient.cancelQueries({ queryKey: SOCIAL_TOP_QUERY_KEY }),
+      ]);
 
-    for (const post of normalizedNewestPosts) {
-      ids.add(post.id);
-    }
-
-    for (const post of topPosts) {
-      ids.add(post.id);
-    }
-
-    return Array.from(ids);
-  }, [normalizedNewestPosts, topPosts]);
-
-  const postDetailsQuery = useQuery({
-    enabled: visiblePostIds.length > 0,
-    queryFn: async () => {
-      const detailEntries = await Promise.all(
-        visiblePostIds.map(async (postId) => {
-          const detail = await socialApi.getPostDetail(postId);
-          return [postId, detail] as const;
-        }),
+      const previousNewestPosts = queryClient.getQueryData<SocialPostPageResponse>(
+        SOCIAL_NEWEST_QUERY_KEY,
+      );
+      const previousTopPosts = queryClient.getQueryData<SocialPostPageResponse>(
+        SOCIAL_TOP_QUERY_KEY,
       );
 
-      return Object.fromEntries(detailEntries) as Record<string, SocialPostDetail>;
+      const currentPost =
+        findSocialPostInPage(previousNewestPosts, postId)
+        ?? findSocialPostInPage(previousTopPosts, postId);
+      const currentLikeCount = currentPost?.likeCount ?? fallbackLikeCount;
+      const currentLiked = currentPost?.liked ?? fallbackLiked;
+      const optimisticState: LikeToggleResponse = {
+        liked: !currentLiked,
+        likeCount: Math.max(0, currentLikeCount + (currentLiked ? -1 : 1)),
+      };
+
+      queryClient.setQueryData<SocialPostPageResponse | undefined>(
+        SOCIAL_NEWEST_QUERY_KEY,
+        (current) => updateSocialPostPageLikeState(current, postId, optimisticState),
+      );
+      queryClient.setQueryData<SocialPostPageResponse | undefined>(
+        SOCIAL_TOP_QUERY_KEY,
+        (current) => updateSocialPostPageLikeState(current, postId, optimisticState),
+      );
+      return {
+        previousNewestPosts,
+        previousTopPosts,
+      };
     },
-    queryKey: ["social", "details", visiblePostIds],
-    retry: false,
+    onError: (_error, _variables, context) => {
+      if (context?.previousNewestPosts) {
+        queryClient.setQueryData(SOCIAL_NEWEST_QUERY_KEY, context.previousNewestPosts);
+      }
+
+      if (context?.previousTopPosts) {
+        queryClient.setQueryData(SOCIAL_TOP_QUERY_KEY, context.previousTopPosts);
+      }
+
+    },
+    onSuccess: (response, { postId }) => {
+      queryClient.setQueryData<SocialPostPageResponse | undefined>(
+        SOCIAL_NEWEST_QUERY_KEY,
+        (current) => updateSocialPostPageLikeState(current, postId, response),
+      );
+      queryClient.setQueryData<SocialPostPageResponse | undefined>(
+        SOCIAL_TOP_QUERY_KEY,
+        (current) => updateSocialPostPageLikeState(current, postId, response),
+      );
+    },
+    onSettled: (_response, _error, variables) => {
+      if (!variables) {
+        return;
+      }
+
+      pendingLikePostIdsRef.current.delete(variables.postId);
+      setPendingLikePostIds((previous) =>
+        previous.filter((currentPostId) => currentPostId !== variables.postId),
+      );
+      void queryClient.invalidateQueries({ queryKey: SOCIAL_NEWEST_QUERY_KEY });
+      void queryClient.invalidateQueries({ queryKey: SOCIAL_TOP_QUERY_KEY });
+    },
   });
 
-  const postDetailsMap = postDetailsQuery.data ?? {};
-  const enrichedNewestPosts = normalizedNewestPosts.map((post) =>
-    mergeSummaryWithDetail(post, postDetailsMap[post.id]),
-  );
-  const enrichedTopPosts = topPosts.map((post) =>
-    mergeSummaryWithDetail(post, postDetailsMap[post.id]),
-  );
+  const enrichedNewestPosts = normalizedNewestPosts;
+  const enrichedTopPosts = topPosts;
   const featuredPost = enrichedTopPosts[0] ?? enrichedNewestPosts[0] ?? null;
 
-  const currentUserId =
-    currentUser?.id !== undefined && currentUser?.id !== null
-      ? String(currentUser.id)
-      : undefined;
+  const currentUserId = (
+    normalizeIdentityValue(currentUser?.id)
+    ?? decodeJwtSubject(accessToken)
+    ?? undefined
+  );
 
   const selectedBookmarks = useMemo(() => {
     return bookmarkOptions.filter((bookmark) =>
@@ -839,6 +1117,17 @@ export default function SocialHubPage() {
   }, [activeTab, currentUserId, enrichedNewestPosts, searchQuery, sortMode]);
 
   const topLikedPosts = useMemo(() => enrichedTopPosts.slice(0, 5), [enrichedTopPosts]);
+  const postPendingDelete = useMemo(() => {
+    if (!deleteDialogPostId) {
+      return null;
+    }
+
+    return (
+      feedPosts.find((post) => post.id === deleteDialogPostId)
+      ?? enrichedTopPosts.find((post) => post.id === deleteDialogPostId)
+      ?? (featuredPost?.id === deleteDialogPostId ? featuredPost : null)
+    );
+  }, [deleteDialogPostId, enrichedTopPosts, featuredPost, feedPosts]);
 
   function resetBlogModal() {
     setIsBlogModalOpen(false);
@@ -965,12 +1254,46 @@ export default function SocialHubPage() {
     createPostMutation.mutate(payload);
   }
 
-  function handleToggleLike(postId: string) {
-    if (toggleLikeMutation.isPending) {
+  function handleToggleLike(post: SocialPostSummary) {
+    if (pendingLikePostIdsRef.current.has(post.id)) {
       return;
     }
 
-    toggleLikeMutation.mutate(postId);
+    pendingLikePostIdsRef.current.add(post.id);
+    setPendingLikePostIds((previous) =>
+      previous.includes(post.id) ? previous : [...previous, post.id],
+    );
+
+    toggleLikeMutation.mutate({
+      fallbackLikeCount: post.likeCount,
+      fallbackLiked: post.liked,
+      postId: post.id,
+    });
+  }
+
+  function handleDeletePost(postId: string) {
+    if (deletePostMutation.isPending) {
+      return;
+    }
+
+    setDeleteDialogPostId(postId);
+  }
+
+  function closeDeletePostDialog() {
+    if (deletePostMutation.isPending) {
+      return;
+    }
+
+    setDeleteDialogPostId(null);
+  }
+
+  function handleConfirmDeletePost() {
+    if (!deleteDialogPostId || deletePostMutation.isPending) {
+      return;
+    }
+
+    setBlogError(null);
+    deletePostMutation.mutate(deleteDialogPostId);
   }
 
   function handleBlogModalKeyDown(event: KeyboardEvent<HTMLInputElement>) {
@@ -997,18 +1320,21 @@ export default function SocialHubPage() {
       : null;
 
   return (
-    <div className="min-h-screen bg-[#F8FBFA] px-6 py-8">
+    <div className="min-h-screen bg-white px-6 py-8">
       <div className="min-h-screen">
         <div className="mx-auto flex w-full max-w-[1180px] flex-col gap-10">
           <section
-            className={`rounded-[2rem] border border-black/10 px-8 py-8 shadow-[0_24px_70px_rgba(15,23,42,0.06)] ${HERO_GRADIENT}`}
+            className={`rounded-[2rem] border border-black px-8 py-8 shadow-[0_24px_70px_rgba(15,23,42,0.06)] ${HERO_GRADIENT}`}
           >
             <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
               <div className="max-w-[640px]">
-                <h1 className="font-search-title text-[4.5rem] leading-[0.95] text-black">
-                  Share Research. <span className="text-[#08B978]">Spark</span>
+                <p className="text-xs font-extrabold uppercase tracking-[0.32em] text-[#14532D]">
+                  Explore - Community Research Notes
+                </p>
+                <h1 className="font-search-title mt-3 text-[4.5rem] leading-[0.95] text-[#059669]">
+                  Share Research. <span className="text-[#14532D]">Spark</span>
                   <br />
-                  <span className="text-[#08B978]">Discussion.</span>
+                  <span className="text-[#14532D]">Discussion.</span>
                 </h1>
 
                 <p className="font-subtext mt-6 max-w-[520px] text-[1.1rem] leading-9 text-slate-500">
@@ -1016,26 +1342,12 @@ export default function SocialHubPage() {
                   what others are reading.
                 </p>
 
-                <div className="mt-8 inline-flex items-center gap-4 rounded-[1.45rem] border border-black/10 bg-white px-5 py-4 shadow-[0_12px_28px_rgba(15,23,42,0.05)]">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#E8FBF4] text-[#0AAA6E]">
-                    <FileText className="h-5 w-5" />
-                  </div>
-
-                  <div>
-                    <p className="font-search-title text-3xl leading-none text-black">
-                      {newestPostsQuery.data?.totalElements ?? 0}
-                    </p>
-                    <p className="font-subtext mt-1 text-sm text-slate-500">
-                      Posts
-                    </p>
-                  </div>
-                </div>
               </div>
 
               <button
                 type="button"
                 onClick={openCreateBlogModal}
-                className="inline-flex h-12 items-center gap-3 rounded-[1.05rem] border border-[#0AAA6E] bg-[#08C67B] px-6 text-base font-semibold text-black shadow-[0_16px_30px_rgba(8,198,123,0.24)]"
+                className="inline-flex h-12 items-center gap-3 rounded-lg bg-[#14532D] px-6 text-base font-semibold text-white transition hover:bg-[#15803D]"
               >
                 <Plus className="h-5 w-5" />
                 Create Blog
@@ -1050,8 +1362,8 @@ export default function SocialHubPage() {
           ) : null}
 
           <section className="grid gap-6 xl:grid-cols-[minmax(0,1.7fr)_minmax(320px,0.95fr)]">
-            <div className="rounded-[2rem] border border-black/10 bg-white p-7 shadow-[0_18px_55px_rgba(15,23,42,0.06)]">
-              <div className="inline-flex items-center gap-2 rounded-full bg-[#E9FBF5] px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#0AAA6E]">
+            <div className={`${SURFACE_CARD_CLASS} p-7`}>
+              <div className="inline-flex items-center gap-2 rounded-full bg-[#A3E635]/20 px-4 py-2 text-xs font-bold uppercase tracking-[0.2em] text-[#14532D] ring-1 ring-[#059669]/40">
                 <Heart className="h-3.5 w-3.5" />
                 Most liked this week
               </div>
@@ -1067,11 +1379,8 @@ export default function SocialHubPage() {
                       />
 
                       <div>
-                        <p className="font-text text-[1.1rem] font-semibold text-black">
+                        <p className="text-[1.1rem] font-semibold text-black">
                           {featuredPost.author.fullName}
-                        </p>
-                        <p className="font-subtext text-sm text-slate-500">
-                          Research community member
                         </p>
                       </div>
                     </div>
@@ -1087,7 +1396,7 @@ export default function SocialHubPage() {
                     </div>
                   </div>
 
-                  <h2 className="font-search-title mt-7 max-w-4xl text-[3rem] leading-[1.02] text-black">
+                  <h2 className="font-search-title mt-7 max-w-4xl text-[3rem] leading-[1.02] text-[#14532D]">
                     {featuredPost.title}
                   </h2>
 
@@ -1100,7 +1409,7 @@ export default function SocialHubPage() {
                       {normalizeTags(featuredPost.topicTag).map((tag) => (
                         <span
                           key={`featured-${tag}`}
-                          className="rounded-full bg-slate-100 px-3 py-1.5 font-subtext text-sm text-slate-600"
+                          className={TAG_PILL_CLASS}
                         >
                           {tag.startsWith("#") ? tag : `#${tag}`}
                         </span>
@@ -1108,42 +1417,26 @@ export default function SocialHubPage() {
                     </div>
                   ) : null}
 
-                  {featuredPost.references.length > 0 ? (
-                    <div className="mt-6 rounded-[1.4rem] border border-black/8 bg-slate-50 px-5 py-5">
-                      <p className="font-text text-sm font-semibold uppercase tracking-[0.16em] text-black/70">
-                        Papers added
-                      </p>
-                      <div className="mt-4 space-y-3">
-                        {featuredPost.references.map((reference) => (
-                          <div
-                            key={reference.id}
-                            className="rounded-[1rem] bg-white px-4 py-3"
-                          >
-                            <p className="font-text text-base font-semibold text-black">
-                              {reference.titleSnapshot}
-                            </p>
-                            <p className="font-subtext mt-1 text-sm text-slate-500">
-                              {formatReferenceMetadata(
-                                reference.authorsSnapshot,
-                                reference.yearSnapshot,
-                              )}
-                            </p>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  ) : null}
+                  <SocialReferenceList
+                    references={featuredPost.references}
+                    titleClassName="text-base font-semibold text-black"
+                    wrapperClassName="mt-6 rounded-[1.4rem] border border-black bg-slate-50/60 px-5 py-5"
+                  />
 
                   <div className="mt-8 flex flex-wrap items-center justify-between gap-4">
                     <div className="flex items-center gap-3">
                       <button
                         type="button"
-                        onClick={() => handleToggleLike(featuredPost.id)}
-                        disabled={toggleLikeMutation.isPending}
-                        className={`flex items-center gap-2 rounded-full border px-4 py-2 text-base ${
+                        onClick={() => handleToggleLike(featuredPost)}
+                        disabled={pendingLikePostIds.includes(featuredPost.id)}
+                        className={`inline-flex items-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-semibold transition ${
                           featuredPost.liked
-                            ? "border-rose-200 bg-rose-50 text-rose-600"
-                            : "border-black/10 bg-white text-slate-600"
+                            ? "border-[#F33E58] bg-[#FDECEF] text-[#F33E58]"
+                            : "border-black bg-white text-black hover:border-[#F33E58] hover:bg-[#F33E58] hover:text-white"
+                        } ${
+                          pendingLikePostIds.includes(featuredPost.id)
+                            ? "cursor-not-allowed opacity-60"
+                            : ""
                         }`}
                       >
                         <Heart
@@ -1151,14 +1444,20 @@ export default function SocialHubPage() {
                         />
                         {featuredPost.likeCount}
                       </button>
+                    </div>
 
-                      {currentUserId === featuredPost.author.id ? (
+                    {normalizeIdentityValue(currentUserId) === normalizeIdentityValue(featuredPost.author.id) ? (
+                      <div className="flex flex-wrap items-center gap-2">
                         <button
                           type="button"
                           onClick={() => openEditBlogModal(featuredPost.id)}
-                          disabled={openEditPostMutation.isPending}
-                          className={`inline-flex items-center gap-2 rounded-full border border-black/10 bg-white px-4 py-2 text-base font-semibold text-black ${
+                          disabled={
                             openEditPostMutation.isPending
+                            || pendingDeletePostId === featuredPost.id
+                          }
+                          className={`${SECONDARY_BUTTON_CLASS} ${
+                            openEditPostMutation.isPending
+                            || pendingDeletePostId === featuredPost.id
                               ? "cursor-not-allowed opacity-60"
                               : ""
                           }`}
@@ -1166,16 +1465,22 @@ export default function SocialHubPage() {
                           <Pencil className="h-4 w-4" />
                           Edit
                         </button>
-                      ) : null}
-                    </div>
 
-                    <button
-                      type="button"
-                      className="inline-flex items-center gap-2 rounded-[1rem] bg-black px-6 py-3 text-base font-semibold text-white"
-                    >
-                      Read post
-                      <ArrowRight className="h-4 w-4" />
-                    </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDeletePost(featuredPost.id)}
+                          disabled={pendingDeletePostId === featuredPost.id}
+                          className={`inline-flex items-center justify-center gap-2 rounded-lg border border-[#DC2626] bg-white px-4 py-3 text-sm font-semibold text-[#DC2626] transition hover:bg-[#DC2626] hover:text-white disabled:cursor-not-allowed disabled:opacity-60 ${
+                            pendingDeletePostId === featuredPost.id
+                              ? "cursor-not-allowed opacity-60"
+                              : ""
+                          }`}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                          Delete
+                        </button>
+                      </div>
+                    ) : null}
                   </div>
                 </>
               ) : (
@@ -1185,13 +1490,13 @@ export default function SocialHubPage() {
               )}
             </div>
 
-            <aside className="rounded-[2rem] border border-black/10 bg-white p-7 shadow-[0_18px_55px_rgba(15,23,42,0.06)]">
+            <aside className={`${SURFACE_CARD_CLASS} p-7`}>
               <div className="flex items-center gap-3">
-                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#FFF1D9] text-[#F59E0B]">
+                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#FFF7E8] text-[#D4A017]">
                   <Trophy className="h-5 w-5" />
                 </div>
 
-                <h2 className="font-search-title text-[2rem] leading-none text-black">
+                <h2 className="font-search-title text-[2rem] leading-none text-[#059669]">
                   Top liked this week
                 </h2>
               </div>
@@ -1200,7 +1505,7 @@ export default function SocialHubPage() {
                 {topLikedPosts.length > 0 ? (
                   topLikedPosts.map((entry, index) => (
                     <div key={entry.id} className="flex items-center gap-4">
-                      <div className="font-title w-6 text-right text-xl text-[#F59E0B]">
+                      <div className="font-title w-6 text-right text-xl text-[#14532D]">
                         {index + 1}
                       </div>
 
@@ -1211,7 +1516,7 @@ export default function SocialHubPage() {
                       />
 
                       <div className="min-w-0 flex-1">
-                        <p className="font-text truncate text-base font-semibold text-black">
+                        <p className="truncate text-base font-semibold text-black">
                           {entry.title}
                         </p>
                         <p className="font-subtext text-sm text-slate-500">
@@ -1219,14 +1524,14 @@ export default function SocialHubPage() {
                         </p>
                       </div>
 
-                      <div className="font-subtext flex items-center gap-1 text-sm text-rose-500">
-                        <Heart className="h-3.5 w-3.5 fill-current" />
+                      <div className="font-subtext flex items-center gap-1 text-sm text-[#F33E58]">
+                        <Heart className="h-3.5 w-3.5 fill-current text-[#F33E58]" />
                         {entry.likeCount}
                       </div>
                     </div>
                   ))
                 ) : (
-                  <div className="rounded-[1.2rem] border border-dashed border-black/10 bg-slate-50 px-5 py-8 text-center text-slate-500">
+                  <div className="rounded-[1.2rem] border border-dashed border-black bg-slate-50/60 px-5 py-8 text-center text-slate-500">
                     {isLoading ? "Loading top liked posts..." : "No liked posts yet."}
                   </div>
                 )}
@@ -1235,17 +1540,34 @@ export default function SocialHubPage() {
           </section>
 
           <section>
-            <div>
-              <h2 className="font-search-title text-[2.5rem] leading-none text-black">
-                Community Sharing
-              </h2>
-              <p className="font-subtext mt-3 text-[1.05rem] text-slate-500">
-                Insights from the Owlreka research community
-              </p>
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+              <div>
+                <p className="text-xs font-extrabold uppercase tracking-[0.32em] text-[#14532D]">
+                  Community feed
+                </p>
+                <h2 className="font-search-title mt-3 text-[2.5rem] leading-none text-[#059669]">
+                  Community Sharing
+                </h2>
+              </div>
+
+              <div className="inline-flex items-center gap-4 self-start rounded-[1.45rem] border border-black bg-white px-5 py-4 shadow-[0_12px_28px_rgba(15,23,42,0.05)] lg:self-auto">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#FFF7E8] text-[#D4A017]">
+                  <FileText className="h-5 w-5" />
+                </div>
+
+                <div>
+                  <p className="font-search-title text-3xl leading-none text-black">
+                    {newestPostsQuery.data?.totalElements ?? 0}
+                  </p>
+                  <p className="font-subtext mt-1 text-sm text-slate-500">
+                    Posts
+                  </p>
+                </div>
+              </div>
             </div>
 
-            <div className="mt-6 flex flex-col gap-4 rounded-[1.8rem] border border-black/10 bg-white px-4 py-3 shadow-[0_14px_45px_rgba(15,23,42,0.05)] lg:flex-row lg:items-center lg:justify-between">
-              <div className="flex flex-wrap gap-2 rounded-[1.15rem] bg-slate-50 p-2">
+            <div className="mt-6 flex flex-col gap-4 rounded-[1.8rem] border border-black bg-white px-4 py-3 shadow-[0_14px_45px_rgba(15,23,42,0.05)] lg:flex-row lg:items-center lg:justify-between">
+              <div className="flex flex-wrap gap-2">
                 {tabs.map((tab) => {
                   const isActive = activeTab === tab.value;
 
@@ -1255,10 +1577,10 @@ export default function SocialHubPage() {
                       type="button"
                       onClick={() => setActiveTab(tab.value)}
                       className={[
-                        "rounded-[0.95rem] px-4 py-2 text-sm font-semibold transition",
+                        "rounded-[0.95rem] border border-black px-4 py-2 text-sm font-semibold transition",
                         isActive
-                          ? "bg-white text-black shadow-[0_8px_20px_rgba(15,23,42,0.08)]"
-                          : "text-slate-500",
+                          ? "bg-[#14532D] text-white"
+                          : "bg-slate-200 text-black hover:bg-slate-300",
                       ].join(" ")}
                     >
                       {tab.label}
@@ -1268,21 +1590,21 @@ export default function SocialHubPage() {
               </div>
 
               <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
-                <label className="flex min-w-[320px] items-center gap-3 rounded-[1rem] border border-black/10 bg-white px-4 py-3 text-slate-400">
+                <label className="flex min-w-[320px] items-center gap-3 rounded-xl bg-white px-4 py-3 text-slate-400 shadow-sm ring-1 ring-[#2f8551]">
                   <Search className="h-4 w-4" />
                   <input
                     value={searchQuery}
                     onChange={(event) => setSearchQuery(event.target.value)}
                     onKeyDown={handleBlogModalKeyDown}
                     placeholder="Search posts, tags, or authors..."
-                    className="w-full border-0 bg-transparent text-sm text-black outline-none"
+                    className="w-full border-0 bg-transparent text-sm font-medium text-black outline-none placeholder:text-black"
                   />
                 </label>
 
                 <select
                   value={sortMode}
                   onChange={(event) => setSortMode(event.target.value as SortMode)}
-                  className="rounded-[1rem] border border-black/10 bg-white px-4 py-3 text-sm text-black outline-none"
+                  className="h-10 rounded-sm border border-black bg-white px-4 text-sm font-semibold text-black outline-none"
                 >
                   <option value="newest">Newest first</option>
                   <option value="most-liked">Most liked</option>
@@ -1296,15 +1618,17 @@ export default function SocialHubPage() {
                   <PostCard
                     key={post.id}
                     currentUserId={currentUserId}
-                    isLikeLoading={toggleLikeMutation.isPending}
+                    isDeleteLoading={pendingDeletePostId === post.id}
+                    isLikeLoading={pendingLikePostIds.includes(post.id)}
                     isOpeningEdit={openEditPostMutation.isPending}
+                    onDelete={handleDeletePost}
                     onEdit={openEditBlogModal}
                     onToggleLike={handleToggleLike}
                     post={post}
                   />
                 ))
               ) : (
-                <div className="rounded-[1.7rem] border border-dashed border-black/10 bg-white px-6 py-12 text-center text-slate-500 shadow-[0_14px_45px_rgba(15,23,42,0.05)]">
+                <div className="rounded-[1.7rem] border border-dashed border-black bg-slate-50/60 px-6 py-12 text-center text-slate-500 shadow-[0_14px_45px_rgba(15,23,42,0.05)]">
                   {isLoading
                     ? "Loading community posts..."
                     : "No posts match this filter yet."}
@@ -1329,6 +1653,23 @@ export default function SocialHubPage() {
         onClose={closeBlogModal}
         onSubmit={handleBlogSubmit}
         onToggleBookmark={toggleBookmarkSelection}
+      />
+
+      <SafeActionDialog
+        confirmLabel="Delete post"
+        description={
+          postPendingDelete
+            ? `Delete "${postPendingDelete.title}" from Social Hub? This action cannot be undone.`
+            : "Delete this post from Social Hub? This action cannot be undone."
+        }
+        eyebrow="Safe delete"
+        isPending={deletePostMutation.isPending}
+        onClose={closeDeletePostDialog}
+        onConfirm={handleConfirmDeletePost}
+        open={deleteDialogPostId !== null}
+        pendingLabel="Deleting post..."
+        title="Delete this post?"
+        variant="danger"
       />
     </div>
   );

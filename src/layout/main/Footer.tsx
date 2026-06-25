@@ -6,59 +6,57 @@ import {
   RefreshCcw,
   ShieldCheck,
 } from "lucide-react";
-
-const systemStatusItems = [
-  {
-    icon: Database,
-    label: "Data Source:",
-    value: "OpenAlex",
-    href: "https://docs.openalex.org",
-    labelClassName: "text-blue-600",
-  },
-  {
-    icon: RefreshCcw,
-    label: "Sync:",
-    value: "Admin and System",
-  },
-  {
-    icon: CalendarClock,
-    label: "Update Trends:",
-    value: "Weekly",
-  },
-];
-
-const projectItems = [
-  {
-    icon: GraduationCap,
-    text: "Academic Project",
-  },
-  {
-    icon: ShieldCheck,
-    text: "Version 1.0",
-  },
-  {
-    icon: BarChart3,
-    text: "Owlreka Intelligence",
-  },
-];
+import { useTranslation } from "react-i18next";
 
 export default function MainFooter() {
+  const { t } = useTranslation();
+  const systemStatusItems = [
+    {
+      icon: Database,
+      label: t("footer.dataSourceLabel"),
+      value: t("footer.dataSourceValue"),
+      href: "https://docs.openalex.org",
+      labelClassName: "text-blue-600",
+    },
+    {
+      icon: RefreshCcw,
+      label: t("footer.syncLabel"),
+      value: t("footer.syncValue"),
+    },
+    {
+      icon: CalendarClock,
+      label: t("footer.updateTrendsLabel"),
+      value: t("footer.updateTrendsValue"),
+    },
+  ];
+  const projectItems = [
+    {
+      icon: GraduationCap,
+      text: t("footer.academicProject"),
+    },
+    {
+      icon: ShieldCheck,
+      text: t("footer.version"),
+    },
+    {
+      icon: BarChart3,
+      text: t("footer.intelligence"),
+    },
+  ];
+
   return (
     <footer className="dynamic-divider-top border-t border-slate-200 bg-slate-50 px-6 text-xs text-slate-500 shadow-[0_-10px_30px_rgba(15,23,42,0.04)]">
       <div className="mx-auto grid max-w-7xl gap-10 py-8 md:grid-cols-[1.6fr_1fr_1fr]">
         <section>
-          <h2 className="text-sm font-bold text-black">
-            Owlreka Research Observatory
-          </h2>
+          <h2 className="text-sm font-bold text-black">{t("footer.title")}</h2>
           <p className="mt-3 max-w-md leading-5 text-black">
-            A publication trend intelligence platform for researchers,
-            lecturers, and students. Built in Vietnam, FPT University
+            {t("footer.description")}
           </p>
         </section>
 
         <section>
           <h3 className="mb-4 text-[11px] font-bold uppercase tracking-wider text-black">
-            System Status
+            {t("footer.systemStatus")}
           </h3>
           <div className="space-y-3">
             {systemStatusItems.map((item) => {
@@ -96,7 +94,7 @@ export default function MainFooter() {
 
         <section>
           <h3 className="mb-4 text-[11px] font-bold uppercase tracking-wider text-black">
-            Project
+            {t("footer.project")}
           </h3>
           <div className="space-y-3">
             {projectItems.map((item) => {
@@ -116,8 +114,7 @@ export default function MainFooter() {
       <div className="dynamic-divider-top border-t border-slate-200 py-4">
         <div className="mx-auto flex max-w-7xl flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <p className="text-black font-extrabold text-[14px]">
-            &copy; 2026 Owlreka &mdash; For academic review and demonstration
-            purposes.
+            {t("footer.copyright")}
           </p>
         </div>
       </div>

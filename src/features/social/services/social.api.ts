@@ -62,6 +62,12 @@ export const socialApi = {
     return response.data.data;
   },
 
+  async deletePost(postId: string) {
+    const response = await http.delete<ApiResponse<null>>(`${BASE}/${postId}`);
+
+    return response.data.data;
+  },
+
   async toggleLike(postId: string) {
     const response = await http.post<ApiResponse<LikeToggleResponse>>(
       `${BASE}/${postId}/like`,

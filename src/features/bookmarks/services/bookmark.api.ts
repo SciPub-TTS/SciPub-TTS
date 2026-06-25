@@ -1,96 +1,134 @@
 import { http } from "@/services/http";
 import type { ApiResponse } from "@/types/common.types";
 import type {
-    BookmarkPageResponse,
-    BookmarkResponse,
-    BookmarkStatsResponse,
-    BookmarkStatusResponse,
-    CreateBookmarkRequest,
-    FilterOptionsResponse,
-    SortOption,
-    UpdateBookmarkNoteRequest,
+  BookmarkCollectionResponse,
+  BookmarkPageResponse,
+  BookmarkResponse,
+  BookmarkStatsResponse,
+  BookmarkStatusResponse,
+  CreateBookmarkCollectionRequest,
+  CreateBookmarkRequest,
+  FilterOptionsResponse,
+  SortOption,
+  UpdateBookmarkCollectionItemsRequest,
+  UpdateBookmarkNoteRequest,
 } from "@/features/bookmarks/types/bookmark.types";
+
 const BASE = "/api/bookmarks";
+const DEFAULT_PAGE_SIZE = 12;
+
+type BookmarkListParams = {
+  page: number;
+  size?: number;
+  keyword?: string;
+  topic?: string;
+  source?: string;
+  author?: string;
+  year?: number | null;
+  sort?: SortOption;
+  collectionId?: string | null;
+};
+
+function normalizeQueryText(value?: string) {
+  const normalizedValue = value?.trim();
+  return normalizedValue ? normalizedValue : undefined;
+}
 
 export const bookmarkApi = {
-    // 1. Add bookmark
-    add(payload: CreateBookmarkRequest) {
-        return http
-            .post<ApiResponse<BookmarkResponse>>(BASE, payload)
-            .then((res) => res.data);
-    },
+  add(payload: CreateBookmarkRequest) {
+    return http
+      .post<ApiResponse<BookmarkResponse>>(BASE, payload)
+      .then((res) => res.data);
+  },
 
-    // 2. Get paginated bookmark list
-    getList(params: {
-        page: number;
-        size?: number;
-        keyword?: string;
-        topic?: string;
-        source?: string;
-        author?: string;
-        year?: number | null;
-        sort?: SortOption;
-    }) {
-        return http
-            .get<ApiResponse<BookmarkPageResponse>>(BASE, {
-                params: {
-                    page: params.page,
-                    size: params.size ?? 12,
-                    keyword: params.keyword || undefined,
-                    topic: params.topic || undefined,
-                    source: params.source || undefined,
-                    author: params.author || undefined,
-                    year: params.year ?? undefined,
-                    sort: params.sort ?? "RECENT",
-                },
-            })
-            .then((res) => res.data);
-    },
+  getList(params: BookmarkListParams) {
+    return http
+      .get<ApiResponse<BookmarkPageResponse>>(BASE, {
+        params: {
+          author: normalizeQueryText(params.author),
+          collectionId: params.collectionId ?? undefined,
+          keyword: normalizeQueryText(params.keyword),
+          page: params.page,
+          size: params.size ?? DEFAULT_PAGE_SIZE,
+          sort: params.sort ?? "RECENT",
+          source: normalizeQueryText(params.source),
+          topic: normalizeQueryText(params.topic),
+          year: params.year ?? undefined,
+        },
+      })
+      .then((res) => res.data);
+  },
 
-    // 3. Check bookmark status by openAlexId
-    getStatus(openAlexId: string) {
-        return http
-            .get<ApiResponse<BookmarkStatusResponse>>(`${BASE}/status`, {
-                params: { openAlexId },
-            })
-            .then((res) => res.data);
-    },
+  getStatus(openAlexId: string) {
+    return http
+      .get<ApiResponse<BookmarkStatusResponse>>(`${BASE}/status`, {
+        params: { openAlexId },
+      })
+      .then((res) => res.data);
+  },
 
-    // 4. Get stats
-    getStats() {
-        return http
-            .get<ApiResponse<BookmarkStatsResponse>>(`${BASE}/stats`)
-            .then((res) => res.data);
-    },
+  getStats() {
+    return http
+      .get<ApiResponse<BookmarkStatsResponse>>(`${BASE}/stats`)
+      .then((res) => res.data);
+  },
 
-    // 5. Get filter options
-    getFilterOptions() {
-        return http
-            .get<ApiResponse<FilterOptionsResponse>>(`${BASE}/filter-options`)
-            .then((res) => res.data);
-    },
+  getFilterOptions() {
+    return http
+      .get<ApiResponse<FilterOptionsResponse>>(`${BASE}/filter-options`)
+      .then((res) => res.data);
+  },
 
-    // 6. Update note
-    updateNote(bookmarkId: string, payload: UpdateBookmarkNoteRequest) {
-        return http
-            .patch<ApiResponse<BookmarkResponse>>(
-                `${BASE}/${bookmarkId}/note`,
-                payload,
-            )
-            .then((res) => res.data);
-    },
+  getCollections() {
+    return http
+      .get<ApiResponse<BookmarkCollectionResponse[]>>(`${BASE}/collections`)
+      .then((res) => res.data);
+  },
 
-    // 7. Delete by bookmark ID
-    deleteById(bookmarkId: string) {
-        return http
-            .delete<ApiResponse<null>>(`${BASE}/${bookmarkId}`)
-            .then((res) => res.data);
-    },
+  createCollection(payload: CreateBookmarkCollectionRequest) {
+    return http
+      .post<ApiResponse<BookmarkCollectionResponse>>(
+        `${BASE}/collections`,
+        payload,
+      )
+      .then((res) => res.data);
+  },
 
-    // 8. Delete by openAlexId
-    deleteByOpenAlexId(openAlexId: string) {
-        return http
-            .delete<ApiResponse<null>>(`${BASE}/by-openalex/${openAlexId}`)
-            .then((res) => res.data);
-    },
+  addToCollection(
+    collectionId: string,
+    payload: UpdateBookmarkCollectionItemsRequest,
+  ) {
+    return http
+      .post<ApiResponse<null>>(
+        `${BASE}/collections/${collectionId}/items`,
+        payload,
+      )
+      .then((res) => res.data);
+  },
+
+  removeFromCollection(collectionId: string, bookmarkId: string) {
+    return http
+      .delete<ApiResponse<null>>(
+        `${BASE}/collections/${collectionId}/items/${bookmarkId}`,
+      )
+      .then((res) => res.data);
+  },
+
+  updateNote(bookmarkId: string, payload: UpdateBookmarkNoteRequest) {
+    return http
+      .patch<ApiResponse<BookmarkResponse>>(`${BASE}/${bookmarkId}/note`, payload)
+      .then((res) => res.data);
+  },
+
+  deleteById(bookmarkId: string) {
+    return http
+      .delete<ApiResponse<null>>(`${BASE}/${bookmarkId}`)
+      .then((res) => res.data);
+  },
+
+  deleteByOpenAlexId(openAlexId: string) {
+    return http
+      .delete<ApiResponse<null>>(`${BASE}/by-openalex/${openAlexId}`)
+      .then((res) => res.data);
+  },
 };
