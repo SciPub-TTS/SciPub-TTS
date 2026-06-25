@@ -1,4 +1,4 @@
-# React + TypeScript + Vite
+﻿# React + TypeScript + Vite
 
 ## Typography Guideline
 
@@ -22,204 +22,66 @@ Implementation note:
 - `h1` to `h6` and `.font-title` use `Space Grotesk`.
 - `p`, `small`, captions, and `.font-subtext` use `Manrope`.
 - The Owlreka sidebar wordmark intentionally keeps `Agbalumo`.
-
-# 🌐 i18n Guideline
-
-Project hỗ trợ chuyển đổi ngôn ngữ giữa **VI** và **EN**. Khi code UI, team cần tuân thủ các rule sau để tránh hard-code text và giúp việc dịch/ngôn ngữ dễ maintain hơn.
-
-## 1. Không hard-code text trực tiếp trong JSX
-
-Không nên viết:
-
-```tsx
-<button>Login</button>
-<h1>Trending Topic</h1>
-```
-
-Nên viết:
-
-```tsx
-<button>{t("common.login")}</button>
-<h1>{t("navigation.trendingTopic")}</h1>
-```
-
-## 2. Mọi text hiển thị trên UI phải được khai báo trong file i18n
-
-Khi thêm text mới, cần thêm vào cả 2 file:
-
-```txt
-src/app/i18n/resources/en.ts
-src/app/i18n/resources/vi.ts
-```
-
-Ví dụ:
-
-```ts
-// en.ts
-const en = {
-  common: {
-    login: "Login",
-  },
-};
-
-export default en;
-```
-
-```ts
-// vi.ts
-const vi = {
-  common: {
-    login: "Đăng nhập",
-  },
-};
-
-export default vi;
-```
-
-## 3. Sử dụng `useTranslation` trong component
-
-```tsx
-import { useTranslation } from "react-i18next";
-
-export default function LoginButton() {
-  const { t } = useTranslation();
-
-  return <button>{t("common.login")}</button>;
-}
-```
-
-## 4. Quy tắc đặt key
-
-Key nên đặt theo nhóm chức năng hoặc khu vực UI:
-
-```txt
-common.login
-common.logout
-common.save
-common.cancel
-
-navigation.trendingTopic
-navigation.searchPapers
-navigation.bookmarks
-
-admin.users
-admin.fields
-admin.synchronization
-
-paper.title
-paper.abstract
-paper.authors
-
-profile.fullName
-profile.email
-```
-
-Không nên đặt key quá chung chung như:
-
-```txt
-text1
-button2
-title
-label
-```
-
-## 5. Khi thêm page/component mới
-
-Checklist trước khi tạo pull request:
-
-- Không hard-code text hiển thị trực tiếp trong JSX.
-- Thêm key tương ứng vào `en.ts`.
-- Thêm key tương ứng vào `vi.ts`.
-- Dùng `t("key")` để render text.
-- Test nhanh nút đổi ngôn ngữ `VI | EN`.
-- Đảm bảo key đặt tên rõ nghĩa và đúng nhóm chức năng.
-
-## 6. Text nào không cần đưa vào i18n?
-
-Các text động lấy từ API không cần đưa vào i18n, ví dụ:
-
-- Tên bài báo.
-- Tên tác giả.
-- Tên institution.
-- Tên funder.
-- Abstract.
-- Keyword/topic lấy từ dữ liệu thật.
-
-Chỉ cần i18n cho text thuộc giao diện hệ thống, ví dụ:
-
-- Button.
-- Menu.
-- Label.
-- Placeholder.
-- Page title.
-- Empty state.
-- Error message.
-- Confirmation message.
-
-## 7. Lưu ý khi code chung
-
-Nếu component có text hiển thị cho user, hãy kiểm tra trước trong `en.ts` và `vi.ts` đã có key phù hợp chưa. Nếu chưa có thì thêm key mới, tránh tự hard-code text trong component.
-
 ## `api`
 
-Chứa cấu hình và các hàm liên quan đến việc kết nối với máy chủ, ví dụ như cấu hình đường dẫn, phương thức gửi yêu cầu, xử lý phản hồi hoặc lỗi từ máy chủ.
+Chá»©a cáº¥u hÃ¬nh vÃ  cÃ¡c hÃ m liÃªn quan Ä‘áº¿n viá»‡c káº¿t ná»‘i vá»›i mÃ¡y chá»§, vÃ­ dá»¥ nhÆ° cáº¥u hÃ¬nh Ä‘Æ°á»ng dáº«n, phÆ°Æ¡ng thá»©c gá»­i yÃªu cáº§u, xá»­ lÃ½ pháº£n há»“i hoáº·c lá»—i tá»« mÃ¡y chá»§.
 
 ## `app`
 
-Chứa phần khởi tạo chính của ứng dụng, thường là nơi cấu hình tổng thể như định tuyến, bố cục chính, nhà cung cấp trạng thái hoặc các thiết lập toàn cục.
+Chá»©a pháº§n khá»Ÿi táº¡o chÃ­nh cá»§a á»©ng dá»¥ng, thÆ°á»ng lÃ  nÆ¡i cáº¥u hÃ¬nh tá»•ng thá»ƒ nhÆ° Ä‘á»‹nh tuyáº¿n, bá»‘ cá»¥c chÃ­nh, nhÃ  cung cáº¥p tráº¡ng thÃ¡i hoáº·c cÃ¡c thiáº¿t láº­p toÃ n cá»¥c.
 
 ## `assets`
 
-Chứa tài nguyên tĩnh của dự án như hình ảnh, biểu tượng, phông chữ, âm thanh hoặc các tệp dùng chung trong giao diện.
+Chá»©a tÃ i nguyÃªn tÄ©nh cá»§a dá»± Ã¡n nhÆ° hÃ¬nh áº£nh, biá»ƒu tÆ°á»£ng, phÃ´ng chá»¯, Ã¢m thanh hoáº·c cÃ¡c tá»‡p dÃ¹ng chung trong giao diá»‡n.
 
 ## `components`
 
-Chứa các thành phần giao diện dùng lại nhiều nơi trong ứng dụng như nút bấm, ô nhập liệu, bảng, hộp thoại, thẻ hiển thị thông tin.
+Chá»©a cÃ¡c thÃ nh pháº§n giao diá»‡n dÃ¹ng láº¡i nhiá»u nÆ¡i trong á»©ng dá»¥ng nhÆ° nÃºt báº¥m, Ã´ nháº­p liá»‡u, báº£ng, há»™p thoáº¡i, tháº» hiá»ƒn thá»‹ thÃ´ng tin.
 
 ## `constants`
 
-Chứa các giá trị cố định được dùng trong toàn dự án, giúp tránh viết lặp lại và dễ thay đổi khi cần.
+Chá»©a cÃ¡c giÃ¡ trá»‹ cá»‘ Ä‘á»‹nh Ä‘Æ°á»£c dÃ¹ng trong toÃ n dá»± Ã¡n, giÃºp trÃ¡nh viáº¿t láº·p láº¡i vÃ  dá»… thay Ä‘á»•i khi cáº§n.
 
 ## `features`
 
-Chứa các chức năng lớn của hệ thống, được chia theo từng nghiệp vụ cụ thể như đăng nhập, quản lý người dùng, quản lý sản phẩm, đơn hàng.
+Chá»©a cÃ¡c chá»©c nÄƒng lá»›n cá»§a há»‡ thá»‘ng, Ä‘Æ°á»£c chia theo tá»«ng nghiá»‡p vá»¥ cá»¥ thá»ƒ nhÆ° Ä‘Äƒng nháº­p, quáº£n lÃ½ ngÆ°á»i dÃ¹ng, quáº£n lÃ½ sáº£n pháº©m, Ä‘Æ¡n hÃ ng.
 
 ## `hooks`
 
-Chứa các hàm xử lý logic dùng lại trong React, giúp tách phần xử lý ra khỏi giao diện và làm mã nguồn gọn hơn.
+Chá»©a cÃ¡c hÃ m xá»­ lÃ½ logic dÃ¹ng láº¡i trong React, giÃºp tÃ¡ch pháº§n xá»­ lÃ½ ra khá»i giao diá»‡n vÃ  lÃ m mÃ£ nguá»“n gá»n hÆ¡n.
 
 ## `layout`
 
-Chứa các bố cục chung của trang như khung trang chính, thanh bên, thanh điều hướng, phần đầu trang, phần chân trang.
+Chá»©a cÃ¡c bá»‘ cá»¥c chung cá»§a trang nhÆ° khung trang chÃ­nh, thanh bÃªn, thanh Ä‘iá»u hÆ°á»›ng, pháº§n Ä‘áº§u trang, pháº§n chÃ¢n trang.
 
 ## `lib`
 
-Chứa các thư viện tự viết, cấu hình công cụ, hàm hỗ trợ nâng cao hoặc phần kết nối với thư viện bên ngoài.
+Chá»©a cÃ¡c thÆ° viá»‡n tá»± viáº¿t, cáº¥u hÃ¬nh cÃ´ng cá»¥, hÃ m há»— trá»£ nÃ¢ng cao hoáº·c pháº§n káº¿t ná»‘i vá»›i thÆ° viá»‡n bÃªn ngoÃ i.
 
 ## `pages`
 
-Chứa các trang chính của ứng dụng, mỗi tệp thường tương ứng với một màn hình hoặc một đường dẫn trên trang web.
+Chá»©a cÃ¡c trang chÃ­nh cá»§a á»©ng dá»¥ng, má»—i tá»‡p thÆ°á»ng tÆ°Æ¡ng á»©ng vá»›i má»™t mÃ n hÃ¬nh hoáº·c má»™t Ä‘Æ°á»ng dáº«n trÃªn trang web.
 
 ## `services`
 
-Chứa các hàm xử lý nghiệp vụ và giao tiếp với máy chủ, thường dùng để gọi dữ liệu, gửi dữ liệu, cập nhật hoặc xóa dữ liệu.
+Chá»©a cÃ¡c hÃ m xá»­ lÃ½ nghiá»‡p vá»¥ vÃ  giao tiáº¿p vá»›i mÃ¡y chá»§, thÆ°á»ng dÃ¹ng Ä‘á»ƒ gá»i dá»¯ liá»‡u, gá»­i dá»¯ liá»‡u, cáº­p nháº­t hoáº·c xÃ³a dá»¯ liá»‡u.
 
 ## `store`
 
-Chứa phần quản lý trạng thái chung của ứng dụng, ví dụ như thông tin người dùng, giỏ hàng, trạng thái đăng nhập hoặc dữ liệu dùng ở nhiều màn hình.
+Chá»©a pháº§n quáº£n lÃ½ tráº¡ng thÃ¡i chung cá»§a á»©ng dá»¥ng, vÃ­ dá»¥ nhÆ° thÃ´ng tin ngÆ°á»i dÃ¹ng, giá» hÃ ng, tráº¡ng thÃ¡i Ä‘Äƒng nháº­p hoáº·c dá»¯ liá»‡u dÃ¹ng á»Ÿ nhiá»u mÃ n hÃ¬nh.
 
 ## `styles`
 
-Chứa các tệp định dạng giao diện như màu sắc, khoảng cách, kiểu chữ, bố cục, hiệu ứng và các thiết lập giao diện dùng chung.
+Chá»©a cÃ¡c tá»‡p Ä‘á»‹nh dáº¡ng giao diá»‡n nhÆ° mÃ u sáº¯c, khoáº£ng cÃ¡ch, kiá»ƒu chá»¯, bá»‘ cá»¥c, hiá»‡u á»©ng vÃ  cÃ¡c thiáº¿t láº­p giao diá»‡n dÃ¹ng chung.
 
 ## `types`
 
-Chứa các kiểu dữ liệu dùng trong TypeScript, giúp kiểm soát cấu trúc dữ liệu và hạn chế lỗi khi lập trình.
+Chá»©a cÃ¡c kiá»ƒu dá»¯ liá»‡u dÃ¹ng trong TypeScript, giÃºp kiá»ƒm soÃ¡t cáº¥u trÃºc dá»¯ liá»‡u vÃ  háº¡n cháº¿ lá»—i khi láº­p trÃ¬nh.
 
 ## `utils`
 
-Chứa các hàm tiện ích dùng chung trong nhiều nơi, thường là các hàm xử lý dữ liệu, định dạng ngày tháng, định dạng tiền tệ hoặc kiểm tra dữ liệu đơn giản.
+Chá»©a cÃ¡c hÃ m tiá»‡n Ã­ch dÃ¹ng chung trong nhiá»u nÆ¡i, thÆ°á»ng lÃ  cÃ¡c hÃ m xá»­ lÃ½ dá»¯ liá»‡u, Ä‘á»‹nh dáº¡ng ngÃ y thÃ¡ng, Ä‘á»‹nh dáº¡ng tiá»n tá»‡ hoáº·c kiá»ƒm tra dá»¯ liá»‡u Ä‘Æ¡n giáº£n.
 
 ## `validators`
 
-Chứa các hàm hoặc quy tắc kiểm tra dữ liệu đầu vào, ví dụ như kiểm tra email, mật khẩu, số điện thoại, biểu mẫu đăng nhập hoặc đăng ký.
+Chá»©a cÃ¡c hÃ m hoáº·c quy táº¯c kiá»ƒm tra dá»¯ liá»‡u Ä‘áº§u vÃ o, vÃ­ dá»¥ nhÆ° kiá»ƒm tra email, máº­t kháº©u, sá»‘ Ä‘iá»‡n thoáº¡i, biá»ƒu máº«u Ä‘Äƒng nháº­p hoáº·c Ä‘Äƒng kÃ½.
