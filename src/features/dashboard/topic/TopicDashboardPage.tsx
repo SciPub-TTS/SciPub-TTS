@@ -89,8 +89,8 @@ export default function TopicDashboardPage() {
 
             <KeywordHotListPart keywordList={keywordList}
                                 isLoading={isLoading}
-                                onAdd={(keyword) => {
-                                    saveSearchHistory(keyword.name);
+                                onAdd={async (keyword) => {
+                                    return saveSearchHistory(keyword.name);
                                 }}
             />
         </div>

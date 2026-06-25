@@ -260,6 +260,7 @@ function KeywordHotScoreChart({
 
                 <Bar
                     dataKey="hotScore"
+                    name="Hot Score"
                     radius={[0, 0, 0, 0]}
                     shape={(props) => (
                         <rect

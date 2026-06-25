@@ -29,3 +29,12 @@ export type TopicAnalystApiRequestBody = {
     endDate: string;
     fieldId: string | number;
 }
+
+export type TopicMetadata = {
+    id: string;
+    name: string;
+}
+
+export type TopicState = {
+    topicList: TopicMetadata[];
+}
