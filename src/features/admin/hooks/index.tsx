@@ -11,22 +11,37 @@ import {
   getAdminApiUsageOverTime,
   getAdminTopApiConsumers,
   getAdminUserBanSummary,
+  getAdminUserDetail,
   getAdminUsers,
+  getAdminUserSearchHistory,
   unbanAdminUser,
 } from "../services";
 import type {
   AdminUserApi,
+  AdminUserDetail,
   AdminUsersPageData,
+  AdminUsersSort,
 } from "../types";
 
 const ADMIN_USERS_PAGE_SIZE = 10;
-const ADMIN_USERS_SORT = "RECENT";
+const ADMIN_USER_SEARCH_HISTORY_PAGE_SIZE = 10;
+const DEFAULT_ADMIN_USERS_SORT: AdminUsersSort = "RECENT";
 
 type AccountStatusAction = "ban" | "unban";
 type AccountStatusMutationPayload = {
   action: AccountStatusAction;
   userId: string;
 };
+
+export const adminUsersSortOptions: Array<{
+  label: string;
+  value: AdminUsersSort;
+}> = [
+  { label: "Newest first", value: "RECENT" },
+  { label: "Oldest first", value: "OLDEST" },
+  { label: "Email A-Z", value: "EMAIL_ASC" },
+  { label: "Email Z-A", value: "EMAIL_DESC" },
+];
 
 export function useAdminDashboardData() {
   const banSummaryQuery = useQuery({
@@ -59,12 +74,12 @@ export function useAdminUsersPage() {
   const queryClient = useQueryClient();
   const [query, setQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [sort, setSort] = useState<AdminUsersSort>(DEFAULT_ADMIN_USERS_SORT);
   const adminUsersQueryKey = [
     "admin-users",
     currentPage,
     ADMIN_USERS_PAGE_SIZE,
-    ADMIN_USERS_SORT,
+    sort,
   ] as const;
   const adminUsersQuery = useQuery({
     queryKey: adminUsersQueryKey,
@@ -72,32 +87,15 @@ export function useAdminUsersPage() {
       getAdminUsers({
         page: currentPage - 1,
         size: ADMIN_USERS_PAGE_SIZE,
-        sort: ADMIN_USERS_SORT,
+        sort,
       }),
     placeholderData: keepPreviousData,
   });
-  const accountStatusMutation = useMutation({
-    mutationFn: ({ action, userId }: AccountStatusMutationPayload) =>
-      action === "ban" ? banAdminUser(userId) : unbanAdminUser(userId),
-    onSuccess: (updatedUser) => {
-      queryClient.setQueryData<AdminUsersPageData>(
-        adminUsersQueryKey,
-        (currentData) => {
-          if (!currentData) {
-            return currentData;
-          }
-
-          return {
-            ...currentData,
-            items: currentData.items.map((user) =>
-              user.id === updatedUser.id ? updatedUser : user,
-            ),
-          };
-        },
-      );
-    },
-  });
-  const users = adminUsersQuery.data?.items ?? [];
+  const accountStatusMutation = useAccountStatusMutation();
+  const users = useMemo(
+    () => adminUsersQuery.data?.items ?? [],
+    [adminUsersQuery.data?.items],
+  );
   const totalUsers = adminUsersQuery.data?.totalElements ?? 0;
   const filteredUsers = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
@@ -111,8 +109,6 @@ export function useAdminUsersPage() {
         .includes(normalizedQuery),
     );
   }, [query, users]);
-  const selectedUser =
-    users.find((user) => user.id === selectedUserId) ?? null;
   const isLoadingUsers =
     adminUsersQuery.isLoading ||
     (adminUsersQuery.isFetching && !adminUsersQuery.data);
@@ -128,73 +124,178 @@ export function useAdminUsersPage() {
         getAccountStatusErrorFallback(accountStatusMutation.variables?.action),
       )
     : "";
-  const isSelectedUserChangingStatus = Boolean(
-    selectedUser &&
-      accountStatusMutation.isPending &&
-      accountStatusMutation.variables?.userId === selectedUser.id,
-  );
 
   function handleSearchQueryChange(nextQuery: string) {
     setQuery(nextQuery);
     setCurrentPage(1);
   }
 
-  function handleSelectUser(userId: string) {
-    accountStatusMutation.reset();
-    setSelectedUserId(userId);
+  function handleSortChange(nextSort: AdminUsersSort) {
+    setSort(nextSort);
+    setCurrentPage(1);
   }
 
-  function handleCloseUserDialog() {
-    accountStatusMutation.reset();
-    setSelectedUserId(null);
-  }
-
-  function handleChangeSelectedAccountStatus() {
-    if (
-      !selectedUser ||
-      selectedUser.role === "ADMIN" ||
-      accountStatusMutation.isPending
-    ) {
+  function handleChangeAccountStatus(user: AdminUserApi) {
+    if (user.role === "ADMIN" || accountStatusMutation.isPending) {
       return;
     }
 
-    accountStatusMutation.mutate({
-      action: selectedUser.banned ? "unban" : "ban",
-      userId: selectedUser.id,
-    });
+    if (!window.confirm(getAccountStatusConfirmationMessage(user))) {
+      return;
+    }
+
+    accountStatusMutation.mutate(
+      {
+        action: user.banned ? "unban" : "ban",
+        userId: user.id,
+      },
+      {
+        onSuccess: (updatedUser) => {
+          queryClient.setQueryData<AdminUsersPageData>(
+            adminUsersQueryKey,
+            (currentData) => {
+              if (!currentData) {
+                return currentData;
+              }
+
+              return {
+                ...currentData,
+                items: currentData.items.map((item) =>
+                  item.id === updatedUser.id ? updatedUser : item,
+                ),
+              };
+            },
+          );
+        },
+      },
+    );
   }
 
   return {
     accountStatusErrorMessage,
+    changingUserId: accountStatusMutation.variables?.userId ?? null,
     currentPage,
     filteredUsers,
-    handleChangeSelectedAccountStatus,
-    handleCloseUserDialog,
+    handleChangeAccountStatus,
     handlePageChange: setCurrentPage,
     handleSearchQueryChange,
-    handleSelectUser,
+    handleSortChange,
+    isChangingAccountStatus: accountStatusMutation.isPending,
     isLoadingUsers,
-    isSelectedUserChangingStatus,
     listErrorMessage,
     pageSize: ADMIN_USERS_PAGE_SIZE,
     query,
-    selectedUser,
+    sort,
     totalUsers,
   };
 }
 
-export function getAdminUserFullName(user: AdminUserApi) {
-  const fullName = [user.firstName, user.lastName].filter(Boolean).join(" ");
+export function useAdminUserDetailPage(userId: string | undefined) {
+  const queryClient = useQueryClient();
+  const [searchHistoryPage, setSearchHistoryPage] = useState(1);
+  const userDetailQuery = useQuery({
+    enabled: Boolean(userId),
+    queryKey: ["admin-user-detail", userId],
+    queryFn: () => getAdminUserDetail(userId ?? ""),
+  });
+  const searchHistoryQuery = useQuery({
+    enabled: Boolean(userId),
+    queryKey: [
+      "admin-user-search-history",
+      userId,
+      searchHistoryPage,
+      ADMIN_USER_SEARCH_HISTORY_PAGE_SIZE,
+    ],
+    queryFn: () =>
+      getAdminUserSearchHistory({
+        page: searchHistoryPage - 1,
+        size: ADMIN_USER_SEARCH_HISTORY_PAGE_SIZE,
+        userId: userId ?? "",
+      }),
+    placeholderData: keepPreviousData,
+  });
+  const accountStatusMutation = useAccountStatusMutation();
+  const detail = userDetailQuery.data;
+  const detailUser = detail?.user ?? null;
+  const detailErrorMessage = userDetailQuery.isError
+    ? getErrorMessage(userDetailQuery.error, "Cannot load this user right now.")
+    : "";
+  const searchHistoryErrorMessage = searchHistoryQuery.isError
+    ? getErrorMessage(
+        searchHistoryQuery.error,
+        "Cannot load search history right now.",
+      )
+    : "";
+  const isUserNotFound =
+    userDetailQuery.isError && isNotFoundError(userDetailQuery.error);
 
-  return fullName || user.email;
+  function handleChangeAccountStatus() {
+    if (!detailUser || detailUser.role === "ADMIN" || accountStatusMutation.isPending) {
+      return;
+    }
+
+    accountStatusMutation.mutate(
+      {
+        action: detailUser.banned ? "unban" : "ban",
+        userId: detailUser.id,
+      },
+      {
+        onSuccess: () => {
+          void queryClient.invalidateQueries({
+            queryKey: ["admin-user-detail", userId],
+          });
+          void queryClient.invalidateQueries({ queryKey: ["admin-users"] });
+        },
+      },
+    );
+  }
+
+  return {
+    accountStatusErrorMessage: accountStatusMutation.isError
+      ? getErrorMessage(
+          accountStatusMutation.error,
+          getAccountStatusErrorFallback(accountStatusMutation.variables?.action),
+        )
+      : "",
+    detail,
+    detailErrorMessage,
+    handleChangeAccountStatus,
+    handleSearchHistoryPageChange: setSearchHistoryPage,
+    isChangingAccountStatus: accountStatusMutation.isPending,
+    isLoadingDetail: userDetailQuery.isLoading,
+    isLoadingSearchHistory:
+      searchHistoryQuery.isLoading ||
+      (searchHistoryQuery.isFetching && !searchHistoryQuery.data),
+    isUserNotFound,
+    searchHistory: searchHistoryQuery.data,
+    searchHistoryErrorMessage,
+    searchHistoryPage,
+    searchHistoryPageSize: ADMIN_USER_SEARCH_HISTORY_PAGE_SIZE,
+  };
+}
+
+export function getAdminUserFullName(user: AdminUserApi | AdminUserDetail["user"]) {
+  const fullName = [user.firstName, user.lastName].filter(Boolean).join(" ");
+  const username = "username" in user ? user.username : null;
+
+  return fullName || username || user.email;
+}
+
+function useAccountStatusMutation() {
+  return useMutation({
+    mutationFn: ({ action, userId }: AccountStatusMutationPayload) =>
+      action === "ban" ? banAdminUser(userId) : unbanAdminUser(userId),
+  });
 }
 
 type ApiErrorLike = {
   message?: unknown;
   response?: {
     data?: {
+      code?: unknown;
       message?: unknown;
     };
+    status?: number;
   };
 };
 
@@ -215,8 +316,29 @@ function getErrorMessage(error: unknown, fallback: string) {
   return fallback;
 }
 
+function isNotFoundError(error: unknown) {
+  if (!error || typeof error !== "object") {
+    return false;
+  }
+
+  const apiError = error as ApiErrorLike;
+  const code = apiError.response?.data?.code;
+
+  return apiError.response?.status === 404 || code === "USER_NOT_FOUND";
+}
+
 function getAccountStatusErrorFallback(action?: AccountStatusAction) {
   return action === "unban"
     ? "Cannot unban this account right now."
     : "Cannot ban this account right now.";
+}
+
+function getAccountStatusConfirmationMessage(
+  user: AdminUserApi | AdminUserDetail["user"],
+) {
+  const fullName = getAdminUserFullName(user);
+
+  return user.banned
+    ? `Are you sure you want to unban ${fullName}?`
+    : `Are you sure you want to ban ${fullName}?`;
 }

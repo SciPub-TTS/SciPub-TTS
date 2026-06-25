@@ -32,6 +32,7 @@ export const ROUTES = {
   ADMIN: "/admin",
   ADMIN_DASHBOARD: "/admin/dashboard",
   ADMIN_USERS: "/admin/users",
+  ADMIN_USER_DETAIL: "/admin/users/:userId",
 } as const;
 
 function encodePathSegment(value: string | number) {
@@ -39,6 +40,8 @@ function encodePathSegment(value: string | number) {
 }
 
 export const routePaths = {
+  adminUserDetail: (userId: string | number) =>
+    `/admin/users/${encodePathSegment(userId)}`,
   paperDetail: (paperId: string | number) =>
     `/papers/${encodePathSegment(paperId)}`,
   authorDetail: (authorId: string | number) =>
