@@ -16,7 +16,7 @@ import type {
   SearchInputRowProps,
   SearchPanelProps,
 } from "@/features/search/types";
-import { formatCompactNumber } from "@/features/search/utils";
+import { formatFullNumber } from "@/features/search/utils";
 
 import { SearchFiltersPanel } from "./SearchFiltersPanel";
 
@@ -175,7 +175,7 @@ function SearchTabsHeader(props: SearchTabsHeaderProps) {
     !isIndexedCountExact
       ? `Scoped ${activeEntityMetadata.resultLabelPlural}`
       : totalIndexedCount > 0
-      ? `${formatCompactNumber(totalIndexedCount)} ${activeEntityMetadata.indexedLabel}`
+      ? `${formatFullNumber(totalIndexedCount)} ${activeEntityMetadata.indexedLabel}`
       : `Loading ${activeEntityMetadata.resultLabelPlural}...`;
 
   return (
