@@ -4,11 +4,13 @@ import {
   persistDetailTitlesToSessionStorage,
 } from "@/features/detail/store/detailTitleSlice";
 import { searchPageReducer } from "@/features/search/store/searchPageSlice";
+import {topicReducer} from "@/features/dashboard/topic/store/storeTopicList.tsx";
 
 export const store = configureStore({
   reducer: {
     detailTitle: detailTitleReducer,
     searchPage: searchPageReducer,
+    topic: topicReducer,
   },
 });
 

@@ -6,6 +6,8 @@ import type {
   AdminTopApiConsumer,
   AdminUserBanSummary,
   AdminUserApi,
+  AdminUserDetail,
+  AdminUserSearchHistoryPage,
   AdminUsersPageData,
   AdminUsersSort,
 } from "../types";
@@ -16,13 +18,15 @@ type GetAdminUsersParams = {
   sort?: AdminUsersSort;
 };
 
+const ADMIN_API_BASE = "/api/admin";
+
 export function getAdminUsers({
   page,
   size,
   sort = "RECENT",
 }: GetAdminUsersParams) {
   return http
-    .get<ApiResponse<AdminUsersPageData>>("/admin/users", {
+    .get<ApiResponse<AdminUsersPageData>>(`${ADMIN_API_BASE}/users`, {
       params: {
         page,
         size,
@@ -34,14 +38,16 @@ export function getAdminUsers({
 
 export function getAdminUserBanSummary() {
   return http
-    .get<ApiResponse<AdminUserBanSummary>>("/admin/users/ban-summary")
+    .get<ApiResponse<AdminUserBanSummary>>(
+      `${ADMIN_API_BASE}/users/ban-summary`,
+    )
     .then((response) => response.data.data);
 }
 
 export function getAdminTopApiConsumers() {
   return http
     .get<ApiResponse<AdminTopApiConsumer[]>>(
-      "/admin/dashboard/api-calls/top-users",
+      `${ADMIN_API_BASE}/dashboard/api-calls/top-users`,
     )
     .then((response) => response.data.data);
 }
@@ -49,7 +55,37 @@ export function getAdminTopApiConsumers() {
 export function getAdminApiUsageOverTime() {
   return http
     .get<ApiResponse<AdminApiUsagePoint[]>>(
-      "/admin/dashboard/api-calls/usage-over-time",
+      `${ADMIN_API_BASE}/dashboard/api-calls/usage-over-time`,
+    )
+    .then((response) => response.data.data);
+}
+
+export function getAdminUserDetail(userId: string) {
+  return http
+    .get<ApiResponse<AdminUserDetail>>(
+      `${ADMIN_API_BASE}/users/${encodeURIComponent(userId)}`,
+    )
+    .then((response) => response.data.data);
+}
+
+export function getAdminUserSearchHistory({
+  page,
+  size,
+  userId,
+}: {
+  page: number;
+  size: number;
+  userId: string;
+}) {
+  return http
+    .get<ApiResponse<AdminUserSearchHistoryPage>>(
+      `${ADMIN_API_BASE}/users/${encodeURIComponent(userId)}/search-history`,
+      {
+        params: {
+          page,
+          size,
+        },
+      },
     )
     .then((response) => response.data.data);
 }
@@ -57,7 +93,7 @@ export function getAdminApiUsageOverTime() {
 export function banAdminUser(userId: string) {
   return http
     .patch<ApiResponse<AdminUserApi>>(
-      `/admin/users/${encodeURIComponent(userId)}/ban`,
+      `${ADMIN_API_BASE}/users/${encodeURIComponent(userId)}/ban`,
     )
     .then((response) => response.data.data);
 }
@@ -65,7 +101,7 @@ export function banAdminUser(userId: string) {
 export function unbanAdminUser(userId: string) {
   return http
     .patch<ApiResponse<AdminUserApi>>(
-      `/admin/users/${encodeURIComponent(userId)}/unban`,
+      `${ADMIN_API_BASE}/users/${encodeURIComponent(userId)}/unban`,
     )
     .then((response) => response.data.data);
 }

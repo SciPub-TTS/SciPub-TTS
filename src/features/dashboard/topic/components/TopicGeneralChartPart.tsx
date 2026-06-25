@@ -191,6 +191,7 @@ function GeneralPart(){
                     <Area
                         type="monotone"
                         dataKey="publications"
+                        name="Publications"
                         stroke="#2563EB"
                         strokeWidth={2}
                         fill="url(#publicationGradient)"
@@ -220,12 +221,6 @@ type ScatterPartProps = {
     formula: string;
 };
 
-function fmtNum(n: number): string {
-    if (n >= 1_000_000) return (n / 1_000_000).toFixed(1) + "M";
-    if (n >= 1_000) return (n / 1_000).toFixed(0) + "K";
-    return String(n);
-}
-
 function ScatterTooltip({
                             active,
                             payload,
@@ -250,7 +245,7 @@ function ScatterTooltip({
                     Works:
                     {" "}
                     <span className="font-medium text-gray-900">
-                        {fmtNum(item.works)}
+                        {item.works.toLocaleString()}
                     </span>
                 </div>
 
@@ -258,7 +253,7 @@ function ScatterTooltip({
                     Citations:
                     {" "}
                     <span className="font-medium text-gray-900">
-                        {fmtNum(item.citations)}
+                        {item.citations.toLocaleString()}
                     </span>
                 </div>
 
@@ -297,11 +292,11 @@ function Bubble({ cx = 0, cy = 0, payload }: BubbleProps) {
 }
 
 function ScatterHotTopics({
-                                     startDate,
-                                     endDate,
-                                     fieldId,
-                                     formula
-                                 }:ScatterPartProps) {
+                              startDate,
+                              endDate,
+                              fieldId,
+                              formula
+                          }:ScatterPartProps) {
     const { topicList, isLoading, error } = useTopicScatter({startDate, endDate, fieldId, formula});
 
     if (isLoading) {
@@ -339,7 +334,7 @@ function ScatterHotTopics({
                         dataKey="works"
                         type="number"
                         name="Works"
-                        tickFormatter={fmtNum}
+                        tickFormatter={(value: number) => value.toLocaleString()}
                         tick={{ fontSize: 12, fill: "#9ca3af" }}
                         label={{ value: "Works", position: "insideBottom", offset: -10, fontSize: 13, fill: "#9ca3af" }}
                     />
@@ -348,7 +343,7 @@ function ScatterHotTopics({
                         dataKey="citations"
                         type="number"
                         name="Citations"
-                        tickFormatter={fmtNum}
+                        tickFormatter={(value: number) => value.toLocaleString()}
                         tick={{ fontSize: 12, fill: "#9ca3af" }}
                         label={{ value: "Citations", angle: -90, position: "insideLeft", offset: 10, fontSize: 13, fill: "#9ca3af" }}
                     />
@@ -428,9 +423,9 @@ function MomentumPart({
 
                 <Tooltip />
 
-                <Bar dataKey="pastAverage" fill="#2563EB" barSize={18} radius={[5, 5, 0, 0]}
+                <Bar dataKey="pastAverage" name="Past Average" fill="#2563EB" barSize={18} radius={[5, 5, 0, 0]}
                 />
-                <Bar dataKey="currentAverage" fill="#16A34A" barSize={18} radius={[5, 5, 0, 0]} >
+                <Bar dataKey="currentAverage" name="Current Average" fill="#16A34A" barSize={18} radius={[5, 5, 0, 0]} >
                     <LabelList
                         className="text-xs"
                         dataKey="growthPercentage"

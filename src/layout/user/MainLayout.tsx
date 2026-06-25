@@ -4,7 +4,7 @@ import { ROUTES } from "@/app/router";
 import { AUTH_ROLES } from "@/features/auth/constants/roles";
 import { useAuthSession } from "@/features/auth/hooks/useAuthSession";
 
-import MainFooter from "./Footer";
+import MainFooter from "../global/Footer";
 import MainHeader from "./Header";
 import MainSidebar from "./Sidebar";
 

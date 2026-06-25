@@ -31,7 +31,7 @@ export function getRedirectPathByRole(
 ) {
   const role = getUserRole(user);
 
-  if (role === AUTH_ROLES.ADMIN) {
+  if (role === AUTH_ROLES.ADMIN.toLowerCase()) {
     return ROUTES.ADMIN_DASHBOARD;
   }
 
