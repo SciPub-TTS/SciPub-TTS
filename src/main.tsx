@@ -1,6 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClientProvider } from "@tanstack/react-query";
 import { RouterProvider } from "react-router-dom";
 import { Provider } from "react-redux";
 
@@ -8,8 +8,7 @@ import { router } from "@/app/router";
 import "@/app/i18n";
 import "@/styles/index.css";
 import {store} from "@/store";
-
-const queryClient = new QueryClient();
+import { queryClient } from "@/lib/query/queryClient";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
     <React.StrictMode>
