@@ -24,6 +24,7 @@ type UseWorkBookmarkOptions = {
   title?: string | null;
   topic?: string | null;
   topicOpenAlexId?: string | null;
+  workType?: string | null;
   year?: number | null;
   onSuccess?: (isSaved: boolean) => void;
 };
@@ -90,6 +91,7 @@ function buildCreateBookmarkPayload(
     | "title"
     | "topic"
     | "topicOpenAlexId"
+    | "workType"
     | "year"
   >,
 ): CreateBookmarkRequest {
@@ -116,6 +118,7 @@ function buildCreateBookmarkPayload(
     topicOpenAlexIdSnapshot: normalizeOpenAlexSnapshotId(
       options.topicOpenAlexId,
     ),
+    workTypeSnapshot: normalizeOptionalSnapshotValue(options.workType),
   };
 }
 
@@ -143,6 +146,7 @@ export function useWorkBookmark(options: UseWorkBookmarkOptions) {
     title,
     topic,
     topicOpenAlexId,
+    workType,
     year,
   } = options;
   const { accessToken } = useAuthSession();
@@ -210,6 +214,7 @@ export function useWorkBookmark(options: UseWorkBookmarkOptions) {
         title,
         topic,
         topicOpenAlexId,
+        workType,
         year,
       });
       const response = await bookmarkApi.add(payload);

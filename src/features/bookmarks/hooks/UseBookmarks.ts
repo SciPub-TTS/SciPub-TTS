@@ -140,52 +140,6 @@ export function useBookmarks() {
     },
   });
 
-  const updateNoteMutation = useMutation<
-    Awaited<ReturnType<typeof bookmarkApi.updateNote>>,
-    Error,
-    {
-      bookmarkId: string;
-      note: string | null;
-    },
-    BookmarkMutationContext
-  >({
-    mutationFn: ({ bookmarkId, note }) =>
-      bookmarkApi.updateNote(bookmarkId, { note }),
-    onError: (mutationError, variables, context) => {
-      if (context?.previousBookmarks) {
-        queryClient.setQueryData(bookmarkListQueryKey, context.previousBookmarks);
-      }
-
-      setError(
-        getMutationErrorMessage(
-          mutationError,
-          `Cannot update note for bookmark ${variables.bookmarkId}.`,
-        ),
-      );
-    },
-    onMutate: async ({ bookmarkId, note }) => {
-      setError(null);
-      await queryClient.cancelQueries({ queryKey: bookmarkListQueryKey });
-
-      const previousBookmarks = queryClient.getQueryData<
-        InfiniteData<BookmarkPageResponse>
-      >(bookmarkListQueryKey);
-
-      queryClient.setQueryData<InfiniteData<BookmarkPageResponse> | undefined>(
-        bookmarkListQueryKey,
-        (cachedData) =>
-          updateInfiniteBookmarkPages(cachedData, (bookmark) =>
-            bookmark.id === bookmarkId ? { ...bookmark, note } : bookmark,
-          ),
-      );
-
-      return { previousBookmarks };
-    },
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: bookmarkQueryKeys.lists() });
-    },
-  });
-
   const createCollectionMutation = useMutation<
     Awaited<ReturnType<typeof bookmarkApi.createCollection>>,
     Error,
@@ -279,7 +233,6 @@ export function useBookmarks() {
 
     if (
       !deleteBookmarkMutation.isError &&
-      !updateNoteMutation.isError &&
       !createCollectionMutation.isError &&
       !addToCollectionMutation.isError &&
       !removeFromCollectionMutation.isError
@@ -293,7 +246,6 @@ export function useBookmarks() {
     createCollectionMutation.isError,
     deleteBookmarkMutation.isError,
     removeFromCollectionMutation.isError,
-    updateNoteMutation.isError,
   ]);
 
   const loadMore = useCallback(() => {
@@ -322,13 +274,6 @@ export function useBookmarks() {
 
   async function deleteBookmark(bookmarkId: string) {
     await deleteBookmarkMutation.mutateAsync(bookmarkId);
-  }
-
-  async function updateNote(bookmarkId: string, note: string | null) {
-    await updateNoteMutation.mutateAsync({
-      bookmarkId,
-      note,
-    });
   }
 
   async function createCollection(name: string) {
@@ -384,6 +329,5 @@ export function useBookmarks() {
     stats: bookmarkStatsQuery.data ?? null,
     totalElements,
     updateFilter,
-    updateNote,
   };
 }

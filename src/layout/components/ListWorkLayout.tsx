@@ -159,6 +159,7 @@ export default function ListWorkLayout({
     title,
     topic: topicRef?.name || topic,
     topicOpenAlexId: topicRef?.id ?? null,
+    workType: field,
     year,
   });
 

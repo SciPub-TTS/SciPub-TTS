@@ -4,7 +4,6 @@ import {
   Eye,
   FolderTree,
   MoreHorizontal,
-  NotebookPen,
   Quote,
   Share2,
   Trash2,
@@ -34,7 +33,6 @@ interface BookmarkCardProps {
     bookmarkId: string,
     collectionId: string,
   ) => Promise<void>;
-  onUpdateNote: (id: string, note: string | null) => void | Promise<void>;
   selectedCollectionId: string | null;
 }
 
@@ -54,6 +52,13 @@ function getTopicColor(topic: string): string {
   return TOPIC_COLORS[topic] ?? "bg-[#FFF6E8] text-[#8B5E34]";
 }
 
+function getWorkTypeLabel(workType: string | null | undefined) {
+  const normalizedWorkType = workType?.trim();
+  return normalizedWorkType && normalizedWorkType.length > 0
+    ? normalizedWorkType
+    : "Work";
+}
+
 async function copyText(value: string) {
   if (
     typeof navigator !== "undefined" &&
@@ -71,13 +76,10 @@ export function BookmarkCard({
   onAddToCollection,
   onDelete,
   onRemoveFromCollection,
-  onUpdateNote,
   selectedCollectionId,
 }: BookmarkCardProps) {
   const [showMenu, setShowMenu] = useState(false);
   const [showCollectionMenu, setShowCollectionMenu] = useState(false);
-  const [editingNote, setEditingNote] = useState(false);
-  const [noteValue, setNoteValue] = useState(bookmark.note ?? "");
   const [pendingCollectionId, setPendingCollectionId] = useState<string | null>(
     null,
   );
@@ -88,10 +90,6 @@ export function BookmarkCard({
     [bookmark.openAlexId],
   );
 
-  useEffect(() => {
-    setNoteValue(bookmark.note ?? "");
-  }, [bookmark.note]);
-
   useEffect(
     () => () => {
       if (typeof window !== "undefined" && shareResetTimer.current !== null) {
@@ -100,11 +98,6 @@ export function BookmarkCard({
     },
     [],
   );
-
-  async function handleSaveNote() {
-    await onUpdateNote(bookmark.id, noteValue.trim() || null);
-    setEditingNote(false);
-  }
 
   async function handleShare() {
     if (typeof window === "undefined") {
@@ -160,38 +153,42 @@ export function BookmarkCard({
       )}
 
       <div className="flex items-start justify-between gap-3">
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="inline-flex items-center gap-1 rounded-full border border-black bg-white px-2.5 py-1 text-[11px] font-semibold text-[#8B5E34]">
-            Paper
+        <div className="flex min-w-0 flex-col gap-2">
+          <span className="inline-flex w-fit items-center gap-1 rounded-full border border-black bg-white px-2.5 py-1 text-[11px] font-semibold text-[#8B5E34]">
+            {getWorkTypeLabel(bookmark.workType)}
           </span>
 
-          {bookmark.topic ? (
-            <span
-              className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold ${getTopicColor(
-                bookmark.topic,
-              )}`}
-            >
-              {bookmark.topic}
-            </span>
+          {bookmark.topic || bookmark.collections.length > 0 ? (
+            <div className="flex flex-wrap items-center gap-2">
+              {bookmark.topic ? (
+                <span
+                  className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold ${getTopicColor(
+                    bookmark.topic,
+                  )}`}
+                >
+                  {bookmark.topic}
+                </span>
+              ) : null}
+
+              {bookmark.collections.map((collection) => {
+                const isActiveCollection = collection.id === selectedCollectionId;
+
+                return (
+                  <span
+                    key={collection.id}
+                    className={[
+                      "inline-flex items-center rounded-md border border-black bg-black px-3 py-1.5 text-[11px] font-semibold text-white shadow-[0_12px_24px_rgba(0,0,0,0.22)]",
+                      isActiveCollection
+                        ? "ring-2 ring-[#F37021]/30"
+                        : "",
+                    ].join(" ")}
+                  >
+                    {collection.name}
+                  </span>
+                );
+              })}
+            </div>
           ) : null}
-
-          {bookmark.collections.map((collection) => {
-            const isActiveCollection = collection.id === selectedCollectionId;
-
-            return (
-              <span
-                key={collection.id}
-                className={[
-                  "inline-flex items-center rounded-full border border-black bg-black px-2.5 py-1 text-[11px] font-semibold text-white shadow-[0_8px_18px_rgba(0,0,0,0.16)]",
-                  isActiveCollection
-                    ? "ring-2 ring-[#F37021]/30"
-                    : "",
-                ].join(" ")}
-              >
-                {collection.name}
-              </span>
-            );
-          })}
         </div>
 
         <button
@@ -235,48 +232,6 @@ export function BookmarkCard({
         ) : null}
       </div>
 
-      {!editingNote && bookmark.note ? (
-        <div className="rounded-[1.35rem] border border-black bg-white px-4 py-3">
-          <p className="font-subtext line-clamp-3 text-[15px] leading-7 text-[#6F4B2A]">
-            {bookmark.note}
-          </p>
-        </div>
-      ) : null}
-
-      {editingNote ? (
-        <div className="space-y-3 rounded-[1.35rem] border border-black bg-white p-3">
-          <textarea
-            value={noteValue}
-            onChange={(event) => setNoteValue(event.target.value)}
-            placeholder="Add a note about this work..."
-            rows={4}
-            autoFocus
-            className="w-full resize-none rounded-2xl border border-black px-3 py-3 text-sm text-black placeholder:text-black/45 focus:outline-none focus:ring-2 focus:ring-[#7AC143]/25"
-          />
-          <div className="flex items-center justify-end gap-2">
-            <button
-              type="button"
-              onClick={() => {
-                setEditingNote(false);
-                setNoteValue(bookmark.note ?? "");
-              }}
-              className="inline-flex h-10 items-center rounded-2xl border border-black bg-white px-4 text-sm font-semibold text-black transition hover:bg-black hover:text-white"
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                void handleSaveNote();
-              }}
-              className="inline-flex h-10 items-center rounded-2xl border border-black bg-[#00AEEF] px-4 text-sm font-semibold text-white transition hover:bg-[#0095CC]"
-            >
-              Save note
-            </button>
-          </div>
-        </div>
-      ) : null}
-
       <div className="mt-auto flex items-center justify-between border-t border-black/10 pt-3">
         <span className="font-subtext text-[13px] font-semibold text-black/65">
           {formatSavedAt(bookmark.createdAt)}
@@ -302,15 +257,6 @@ export function BookmarkCard({
           >
             <Share2 className="h-4 w-4" />
             {shareLabel}
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setEditingNote(true)}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-black bg-white text-black transition hover:bg-black hover:text-white"
-            title="Edit note"
-          >
-            <NotebookPen className="h-4.5 w-4.5" />
           </button>
 
           <div className="relative z-20">
@@ -412,17 +358,6 @@ export function BookmarkCard({
 
             {showMenu ? (
               <div className="absolute bottom-12 right-0 z-30 w-44 rounded-[1.4rem] border border-black bg-white p-2 shadow-[0_18px_40px_rgba(0,0,0,0.12)]">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setEditingNote(true);
-                    setShowMenu(false);
-                  }}
-                  className="flex w-full items-center gap-2 rounded-2xl px-3 py-2.5 text-left text-sm font-semibold text-black transition hover:bg-[#E8F8FF]"
-                >
-                  <NotebookPen className="h-4 w-4" />
-                  Edit note
-                </button>
                 <button
                   type="button"
                   onClick={() => {

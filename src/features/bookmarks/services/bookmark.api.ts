@@ -11,7 +11,6 @@ import type {
   FilterOptionsResponse,
   SortOption,
   UpdateBookmarkCollectionItemsRequest,
-  UpdateBookmarkNoteRequest,
 } from "@/features/bookmarks/types/bookmark.types";
 
 const BASE = "/api/bookmarks";
@@ -111,12 +110,6 @@ export const bookmarkApi = {
       .delete<ApiResponse<null>>(
         `${BASE}/collections/${collectionId}/items/${bookmarkId}`,
       )
-      .then((res) => res.data);
-  },
-
-  updateNote(bookmarkId: string, payload: UpdateBookmarkNoteRequest) {
-    return http
-      .patch<ApiResponse<BookmarkResponse>>(`${BASE}/${bookmarkId}/note`, payload)
       .then((res) => res.data);
   },
 

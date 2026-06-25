@@ -25,7 +25,6 @@ export default function BookmarkLibraryPage() {
     removeBookmarkFromCollection,
     totalElements,
     updateFilter,
-    updateNote,
   } = useBookmarks();
 
   const [searchValue, setSearchValue] = useState(filters.keyword);
@@ -150,7 +149,6 @@ export default function BookmarkLibraryPage() {
             onDelete={handleRequestDeleteBookmark}
             onLoadMore={loadMore}
             onRemoveFromCollection={removeBookmarkFromCollection}
-            onUpdateNote={updateNote}
             searchQuery={filters.keyword}
             selectedCollectionId={filters.collectionId}
             selectedCollectionName={selectedCollection?.name ?? null}

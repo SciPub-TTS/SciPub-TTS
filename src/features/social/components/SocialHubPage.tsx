@@ -73,7 +73,7 @@ type BlogModalProps = {
   isSubmitting: boolean;
   mode: BlogModalMode;
   open: boolean;
-  selectedKeywords: string[];
+  selectedTopics: string[];
   onChangeBody: (event: ChangeEvent<HTMLTextAreaElement>) => void;
   onChangeTitle: (event: ChangeEvent<HTMLInputElement>) => void;
   onClose: () => void;
@@ -240,28 +240,40 @@ function SocialReferenceCard({
     ? authorEntries
     : authorEntries.slice(0, 3);
   const hasMoreAuthors = authorEntries.length > 3;
+  const workTypeLabel = reference.workTypeSnapshot?.trim() || null;
   const topicLabel = reference.topicSnapshot?.trim() || null;
   const topicId = normalizeReferenceEntityId(reference.topicOpenAlexIdSnapshot);
   const workTitle = reference.titleSnapshot?.trim() || reference.openalexId;
+  const hasMetadataBadges = Boolean(topicLabel || workTypeLabel);
   const topicBadgeClassName =
     "inline-flex items-center rounded-full border border-[#D6B37A] bg-[#FFF7ED] px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-[#A16207] transition hover:border-[#B45309] hover:text-[#92400E]";
+  const typeBadgeClassName =
+    "inline-flex items-center rounded-full border border-[#14532D]/35 bg-[#F0FDF4] px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-[#14532D]";
 
   return (
     <div className="rounded-[1rem] bg-white px-4 py-3">
-      {topicLabel ? (
-        topicId ? (
-          <Link
-            to={buildSocialDetailHref("topics", topicId)}
-            className={topicBadgeClassName}
-          >
-            {topicLabel}
-          </Link>
-        ) : (
-          <span className={topicBadgeClassName}>{topicLabel}</span>
-        )
+      {hasMetadataBadges ? (
+        <div className="flex flex-wrap gap-2">
+          {topicLabel ? (
+            topicId ? (
+              <Link
+                to={buildSocialDetailHref("topics", topicId)}
+                className={topicBadgeClassName}
+              >
+                {topicLabel}
+              </Link>
+            ) : (
+              <span className={topicBadgeClassName}>{topicLabel}</span>
+            )
+          ) : null}
+
+          {workTypeLabel ? (
+            <span className={typeBadgeClassName}>{workTypeLabel}</span>
+          ) : null}
+        </div>
       ) : null}
 
-      <p className={`${topicLabel ? "mt-2" : ""} ${titleClassName}`}>
+      <p className={`${hasMetadataBadges ? "mt-2" : ""} ${titleClassName}`}>
         <Link
           to={buildSocialDetailHref("works", reference.openalexId)}
           className="transition hover:text-[#0EA5E9] hover:underline"
@@ -377,6 +389,7 @@ function normalizeSocialPost(post: SocialPostSummary): SocialPostSummary {
           )
             ? reference.authorOpenAlexIdsSnapshot
             : [],
+          workTypeSnapshot: reference.workTypeSnapshot ?? null,
           topicOpenAlexIdSnapshot: reference.topicOpenAlexIdSnapshot ?? null,
           topicSnapshot: reference.topicSnapshot ?? null,
         }))
@@ -432,39 +445,31 @@ function SocialAvatar({
   );
 }
 
-function extractKeywordsFromTopic(topic: string | null | undefined) {
-  if (!topic) {
-    return [];
-  }
-
-  return topic
-    .split(",")
-    .map((keyword) => keyword.trim())
-    .filter((keyword) => keyword.length > 0);
+function normalizeTopicLabel(topic: string | null | undefined) {
+  const normalizedTopic = topic?.trim();
+  return normalizedTopic ? normalizedTopic : null;
 }
 
-function buildKeywordsFromBookmarks(bookmarks: BookmarkResponse[]) {
-  const uniqueKeywords = new Set<string>();
+function buildTopicLabelsFromBookmarks(bookmarks: BookmarkResponse[]) {
+  const uniqueTopics = new Set<string>();
 
   for (const bookmark of bookmarks) {
-    const keywords = extractKeywordsFromTopic(bookmark.topic);
+    const topic = normalizeTopicLabel(bookmark.topic);
 
-    for (const keyword of keywords) {
-      if (!uniqueKeywords.has(keyword)) {
-        uniqueKeywords.add(keyword);
-      }
+    if (topic && !uniqueTopics.has(topic)) {
+      uniqueTopics.add(topic);
     }
   }
 
-  return Array.from(uniqueKeywords);
+  return Array.from(uniqueTopics);
 }
 
-function buildTopicTagValue(keywords: string[]) {
-  if (keywords.length === 0) {
+function buildTopicTagValue(topics: string[]) {
+  if (topics.length === 0) {
     return null;
   }
 
-  return keywords.join(",");
+  return topics.join(",");
 }
 
 function sortPosts(posts: SocialPostSummary[], sortMode: SortMode) {
@@ -542,7 +547,7 @@ function BlogEditorModal(props: BlogModalProps) {
     isSubmitting,
     mode,
     open,
-    selectedKeywords,
+    selectedTopics,
     onChangeBody,
     onChangeTitle,
     onClose,
@@ -619,7 +624,7 @@ function BlogEditorModal(props: BlogModalProps) {
                     Add papers from Bookmarks
                   </p>
                   <p className="font-subtext mt-1 text-sm text-slate-500">
-                    Select bookmarked papers. Their keywords will appear automatically.
+                    Select bookmarked papers. Their topics will appear automatically.
                   </p>
                   <p className="font-subtext mt-1 text-xs text-slate-400">
                     You can add up to 3 bookmarked papers to one blog post.
@@ -645,6 +650,7 @@ function BlogEditorModal(props: BlogModalProps) {
                     const isSelected = form.selectedOpenAlexIds.includes(
                       bookmark.openAlexId,
                     );
+                    const topicLabel = normalizeTopicLabel(bookmark.topic);
 
                     return (
                       <button
@@ -674,16 +680,11 @@ function BlogEditorModal(props: BlogModalProps) {
                           <p className="font-subtext mt-1 text-sm text-slate-500">
                             {bookmark.authors}
                           </p>
-                          <div className="mt-2 flex flex-wrap gap-2">
-                            {extractKeywordsFromTopic(bookmark.topic).map((keyword) => (
-                              <span
-                                key={`${bookmark.id}-${keyword}`}
-                                className={TAG_PILL_CLASS}
-                              >
-                                {keyword}
-                              </span>
-                            ))}
-                          </div>
+                          {topicLabel ? (
+                            <div className="mt-2 flex flex-wrap gap-2">
+                              <span className={TAG_PILL_CLASS}>{topicLabel}</span>
+                            </div>
+                          ) : null}
                         </div>
                       </button>
                     );
@@ -694,21 +695,21 @@ function BlogEditorModal(props: BlogModalProps) {
 
             <div>
               <label className="mb-2 block text-sm font-extrabold uppercase tracking-[0.22em] text-[#14532D]">
-                Keywords from selected papers
+                Topics from selected papers
               </label>
               <div className="flex min-h-12 flex-wrap items-center gap-2 rounded-[1rem] border border-black bg-slate-50/60 px-3 py-3">
-                {selectedKeywords.length > 0 ? (
-                  selectedKeywords.map((keyword) => (
+                {selectedTopics.length > 0 ? (
+                  selectedTopics.map((topic) => (
                     <span
-                      key={keyword}
+                      key={topic}
                       className={TAG_PILL_CLASS}
                     >
-                      {keyword}
+                      {topic}
                     </span>
                   ))
                 ) : (
                   <span className="text-sm text-slate-400">
-                    Choose bookmarked papers to display their keywords here.
+                    Choose bookmarked papers to display their topics here.
                   </span>
                 )}
               </div>
@@ -1101,8 +1102,8 @@ export default function SocialHubPage() {
     );
   }, [blogForm.selectedOpenAlexIds, bookmarkOptions]);
 
-  const selectedKeywords = useMemo(() => {
-    return buildKeywordsFromBookmarks(selectedBookmarks);
+  const selectedTopics = useMemo(() => {
+    return buildTopicLabelsFromBookmarks(selectedBookmarks);
   }, [selectedBookmarks]);
 
   const feedPosts = useMemo(() => {
@@ -1205,7 +1206,7 @@ export default function SocialHubPage() {
 
     const normalizedTitle = blogForm.title.trim();
     const normalizedBody = blogForm.body.trim();
-    const topicTag = buildTopicTagValue(selectedKeywords);
+    const topicTag = buildTopicTagValue(selectedTopics);
 
     if (!normalizedTitle || !normalizedBody) {
       setBlogError("Please enter both title and content before saving.");
@@ -1229,7 +1230,7 @@ export default function SocialHubPage() {
 
     if (topicTag && topicTag.length > 500) {
       setBlogError(
-        "Selected keywords are too long for one post. Please choose fewer papers.",
+        "Selected topics are too long for one post. Please choose fewer papers.",
       );
       return;
     }
@@ -1647,7 +1648,7 @@ export default function SocialHubPage() {
         isSubmitting={isSubmittingBlog}
         mode={blogModalMode}
         open={isBlogModalOpen}
-        selectedKeywords={selectedKeywords}
+        selectedTopics={selectedTopics}
         onChangeBody={updateBlogField("body")}
         onChangeTitle={updateBlogField("title")}
         onClose={closeBlogModal}

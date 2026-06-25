@@ -252,4 +252,5 @@ export type PaperDetailData = {
   sourceType: string;
   title: string;
   topics: PaperDetailEntityRef[];
+  workType: string;
 };
