@@ -25,7 +25,6 @@ import {
 import { markSearchPageRestorePending } from "@/features/search/utils/navigationState";
 import LoginPage from "@/features/auth/components/pages/LoginPage.tsx";
 import RegisterPage from "@/features/auth/components/pages/RegisterPage.tsx";
-import LandingPage from "@/features/landing/components/LandingPage";
 import GuideHelpPage from "@/features/guide/components/GuideHelpPage";
 import SearchPage from "@/features/search/components/SearchPage";
 import PaperDetailPage from "@/features/detail/works/components/PaperDetailPage";
@@ -47,6 +46,7 @@ import { KeywordDashboardPage } from "@/features/dashboard/keyword/KeywordDashbo
 import BookmarkLibraryPage from "@/features/bookmarks/components/BookmarkLibraryPage.tsx";
 import GoogleRegisterCompletePage from "@/features/auth/components/pages/GoogleRegisterCompletePage.tsx";
 import SocialHubPage from "@/features/social/components/SocialHubPage.tsx";
+import LandingPage from "@/features/landing/components/LandingPage";
 
 const ROUTER_PATHS = {
   guide: "guide",

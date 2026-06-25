@@ -25,38 +25,11 @@ import { ROUTES } from "@/app/router";
 import logoImage from "@/assets/images/logo.png";
 import { AUTH_ROLES } from "@/features/auth/constants/roles";
 import { useAuthSession } from "@/features/auth/hooks/useAuthSession";
+import { LandingHeroPreview } from "@/features/landing/components/LandingHeroPreview";
+import { LandingLiveTrendsSection } from "@/features/landing/components/LandingLiveTrendsSection";
+import { LandingPersonalizedPapersSection } from "@/features/landing/components/LandingPersonalizedPapersSection";
+import { useLandingSummary } from "@/features/landing/hooks/useLandingSummary";
 import MainFooter from "@/layout/main/Footer";
-
-const floatCards = [
-  {
-    title: "Routing Stability in MoE Models",
-    label: "PAPER NODE",
-    className:
-      "left-[-14px] top-[54px] w-[180px] md:left-[-20px] md:top-[60px] md:w-[210px]",
-    delay: "0s",
-  },
-  {
-    title: "Author Node",
-    label: "AUTHOR NODE",
-    className:
-      "left-[-8px] bottom-[50px] w-[150px] md:left-[-14px] md:bottom-[62px] md:w-[180px]",
-    delay: "0.8s",
-  },
-  {
-    title: "Topic Score",
-    label: "TOPIC SCORE",
-    className:
-      "right-[8px] top-[26px] w-[130px] md:right-[12px] md:top-[34px] md:w-[150px]",
-    delay: "1.2s",
-  },
-  {
-    title: "Topic Node",
-    label: "TOPIC NODE",
-    className:
-      "right-[8px] bottom-[92px] w-[130px] md:right-[12px] md:bottom-[108px] md:w-[150px]",
-    delay: "0.4s",
-  },
-];
 
 const landingSections = [
   { id: "overview", number: "01", title: "Overview" },
@@ -68,7 +41,16 @@ const landingSections = [
   { id: "live-trends", number: "03", title: "Live Trends" },
   { id: "the-argument", number: "04", title: "The Argument" },
   { id: "command-center", number: "05", title: "Command Center" },
-  { id: "knowledge-graph", number: "06", title: "Knowledge Graph" },
+  {
+    id: "knowledge-graph",
+    number: "06",
+    title: "Research Growth Landscape",
+  },
+  {
+    id: "personalized-intelligence",
+    number: "06b",
+    title: "Personalized Intelligence",
+  },
   { id: "method", number: "07", title: "Method" },
   { id: "audience", number: "08", title: "Audience" },
   { id: "invitation", number: "09", title: "The Invitation" },
@@ -77,6 +59,7 @@ const landingSections = [
 export default function LandingPage() {
   const [isSectionMenuOpen, setIsSectionMenuOpen] = useState(false);
   const { currentUser, isAuthenticated: loggedIn } = useAuthSession();
+  const { data: landingSummary } = useLandingSummary();
   const dashboardPath =
     currentUser?.role === AUTH_ROLES.ADMIN
       ? ROUTES.ADMIN_DASHBOARD
@@ -119,53 +102,6 @@ export default function LandingPage() {
 
     nodes.forEach((node) => observer.observe(node));
     return () => observer.disconnect();
-  }, []);
-
-  useEffect(() => {
-    const rail = document.getElementById("live-trends-rail");
-    if (!rail) return;
-
-    const prefersReducedMotion = window.matchMedia(
-      "(prefers-reduced-motion: reduce)",
-    ).matches;
-    if (prefersReducedMotion) return;
-
-    let timerId: number | null = null;
-    let isPaused = false;
-    let pos = rail.scrollLeft;
-
-    const onEnter = () => {
-      isPaused = true;
-    };
-    const onLeave = () => {
-      isPaused = false;
-    };
-
-    rail.addEventListener("mouseenter", onEnter);
-    rail.addEventListener("mouseleave", onLeave);
-
-    timerId = window.setInterval(() => {
-      if (isPaused) return;
-
-      const max = rail.scrollWidth - rail.clientWidth;
-      if (max <= 0) return;
-
-      pos += 0.8;
-      rail.scrollLeft = pos;
-
-      if (pos >= max - 1) {
-        pos = 0;
-        rail.scrollLeft = 0;
-      }
-    }, 16);
-
-    return () => {
-      if (timerId !== null) {
-        window.clearInterval(timerId);
-      }
-      rail.removeEventListener("mouseenter", onEnter);
-      rail.removeEventListener("mouseleave", onLeave);
-    };
   }, []);
 
   return (
@@ -339,95 +275,7 @@ export default function LandingPage() {
             </div>
           </div>
 
-          <div
-            id="trending-topic-preview"
-            className="relative mt-12 scroll-mt-24 overflow-visible rounded-[28px] border border-slate-300/70 bg-white p-3 shadow-[0_20px_60px_rgba(15,23,42,0.09)] md:p-4"
-          >
-            <div className="grid gap-4 lg:grid-cols-[1.35fr_0.95fr]">
-              <div className="relative">
-                <img
-                  src="/LandingPage-Img/DashboardPreview.png"
-                  alt="Trending topic preview"
-                  className="h-[420px] w-full rounded-3xl object-cover object-left-top md:h-[460px]"
-                />
-
-                {floatCards.map((card) => (
-                  <article
-                    key={card.title}
-                    className={`floating-node absolute rounded-2xl border border-white/45 bg-white/72 p-3 shadow-[0_10px_24px_rgba(15,23,42,0.12)] backdrop-blur-sm ${card.className}`}
-                    style={{ animationDelay: card.delay }}
-                  >
-                    <p className="mb-1 text-[10px] uppercase tracking-[0.18em] text-slate-500">
-                      {card.label}
-                    </p>
-                    <h3 className="text-[20px] font-semibold leading-tight text-slate-900">
-                      {card.title}
-                    </h3>
-                  </article>
-                ))}
-              </div>
-
-              <div className="grid gap-3">
-                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-2">
-                  <article className="rounded-2xl border border-slate-200 bg-white p-4">
-                    <p className="text-[11px] uppercase tracking-[0.14em] text-slate-500">
-                      Papers Synced
-                    </p>
-                    <p className="mt-1 text-3xl font-semibold text-emerald-600">
-                      248K
-                    </p>
-                  </article>
-                  <article className="rounded-2xl border border-amber-200 bg-amber-50 p-4">
-                    <p className="text-[11px] uppercase tracking-[0.14em] text-slate-500">
-                      Active Trends
-                    </p>
-                    <p className="mt-1 text-3xl font-semibold text-amber-500">
-                      42
-                    </p>
-                  </article>
-                  <article className="rounded-2xl border border-blue-200 bg-blue-50 p-4">
-                    <p className="text-[11px] uppercase tracking-[0.14em] text-slate-500">
-                      Topics
-                    </p>
-                    <p className="mt-1 text-3xl font-semibold text-blue-600">
-                      186
-                    </p>
-                  </article>
-                  <article className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
-                    <p className="text-[11px] uppercase tracking-[0.14em] text-slate-500">
-                      Fields
-                    </p>
-                    <p className="mt-1 text-3xl font-semibold text-emerald-600">
-                      12
-                    </p>
-                  </article>
-                </div>
-
-                <article className="h-[120px] rounded-2xl border border-slate-200 bg-white px-4 pt-3 pb-1">
-                  <div className="mb-2 flex items-center justify-between text-[10px] uppercase tracking-[0.12em] text-slate-500">
-                    <span>Trust Stack</span>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[13px] text-slate-800">
-                      OpenAlex Metadata
-                    </span>
-                    <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[13px] text-slate-800">
-                      Topic Trend Analysis
-                    </span>
-                    <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[13px] text-slate-800">
-                      Personalized Feed
-                    </span>
-                    <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[13px] text-slate-800">
-                      Report Export
-                    </span>
-                    <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[13px] text-slate-800">
-                      Citation Graph
-                    </span>
-                  </div>
-                </article>
-              </div>
-            </div>
-          </div>
+          <LandingHeroPreview summary={landingSummary ?? null} />
 
           <section
             id="research-tool-modules"
@@ -627,255 +475,7 @@ export default function LandingPage() {
             </div>
           </section>
 
-          <section
-            id="live-trends"
-            className="mt-16 rounded-[28px] border border-slate-200/80 bg-[#f2f4f3] px-6 py-12 md:px-10 md:py-16"
-          >
-            <div className="mb-7 flex items-center gap-4">
-              <span className="font-serif text-[36px] italic text-emerald-600">
-                §03
-              </span>
-              <span className="h-px w-[130px] bg-slate-300" />
-              <span className="text-xs uppercase tracking-[0.34em] text-slate-500">
-                The Pulse · Live Trends
-              </span>
-            </div>
-
-            <div className="mb-8 flex items-end justify-between gap-4">
-              <h2 className="text-[44px] font-semibold leading-[0.95] tracking-[-0.02em] text-[#0b0f0e] md:text-[64px]">
-                Topics moving{" "}
-                <span className="font-serif italic text-amber-500">
-                  right now
-                </span>
-              </h2>
-            </div>
-
-            <div
-              id="live-trends-rail"
-              className="no-scrollbar -mx-1 overflow-x-auto pb-2"
-            >
-              <div className="flex min-w-max gap-4 px-1">
-                <article className="w-[320px] rounded-2xl border border-slate-200 bg-white p-5 shadow-none transition hover:border-emerald-300 hover:shadow-[0_10px_28px_rgba(22,163,74,0.18)]">
-                  <div className="mb-8 flex items-center justify-between text-[13px] text-slate-400">
-                    <span>#01</span>
-                    <span className="rounded-full bg-amber-100 px-3 py-1 font-medium text-amber-600">
-                      Breakout
-                    </span>
-                  </div>
-                  <p className="text-[14px] text-slate-500">Computer Science</p>
-                  <h3 className="mt-6 text-[16px] font-semibold text-slate-900">
-                    Large Language Models
-                  </h3>
-                  <div className="mt-16 flex items-end justify-between">
-                    <div>
-                      <p className="text-[12px] uppercase tracking-[0.12em] text-slate-400">
-                        Score
-                      </p>
-                      <p className="text-[40px] font-semibold text-amber-500">
-                        96
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-[12px] uppercase tracking-[0.12em] text-slate-400">
-                        Growth
-                      </p>
-                      <p className="text-[32px] font-semibold text-emerald-600">
-                        +48%
-                      </p>
-                    </div>
-                  </div>
-                </article>
-
-                <article className="w-[320px] rounded-2xl border border-slate-200 bg-white p-5 shadow-none transition hover:border-emerald-300 hover:shadow-[0_10px_28px_rgba(22,163,74,0.18)]">
-                  <div className="mb-8 flex items-center justify-between text-[13px] text-slate-400">
-                    <span>#02</span>
-                    <span className="rounded-full bg-emerald-100 px-3 py-1 font-medium text-emerald-600">
-                      Hot
-                    </span>
-                  </div>
-                  <p className="text-[14px] text-slate-500">Education</p>
-                  <h3 className="mt-6 text-[16px] font-semibold text-slate-900">
-                    AI in Education
-                  </h3>
-                  <div className="mt-16 flex items-end justify-between">
-                    <div>
-                      <p className="text-[12px] uppercase tracking-[0.12em] text-slate-400">
-                        Score
-                      </p>
-                      <p className="text-[40px] font-semibold text-emerald-600">
-                        87
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-[12px] uppercase tracking-[0.12em] text-slate-400">
-                        Growth
-                      </p>
-                      <p className="text-[32px] font-semibold text-emerald-600">
-                        +32%
-                      </p>
-                    </div>
-                  </div>
-                </article>
-
-                <article className="w-[320px] rounded-2xl border border-slate-200 bg-white p-5 shadow-none transition hover:border-emerald-300 hover:shadow-[0_10px_28px_rgba(22,163,74,0.18)]">
-                  <div className="mb-8 flex items-center justify-between text-[13px] text-slate-400">
-                    <span>#03</span>
-                    <span className="rounded-full bg-emerald-100 px-3 py-1 font-medium text-emerald-600">
-                      Rising
-                    </span>
-                  </div>
-                  <p className="text-[14px] text-slate-500">Information</p>
-                  <h3 className="mt-6 text-[16px] font-semibold text-slate-900">
-                    Open Science
-                  </h3>
-                  <div className="mt-16 flex items-end justify-between">
-                    <div>
-                      <p className="text-[12px] uppercase tracking-[0.12em] text-slate-400">
-                        Score
-                      </p>
-                      <p className="text-[40px] font-semibold text-emerald-600">
-                        79
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-[12px] uppercase tracking-[0.12em] text-slate-400">
-                        Growth
-                      </p>
-                      <p className="text-[32px] font-semibold text-emerald-600">
-                        +24%
-                      </p>
-                    </div>
-                  </div>
-                </article>
-
-                <article className="w-[320px] rounded-2xl border border-slate-200 bg-white p-5 shadow-none transition hover:border-emerald-300 hover:shadow-[0_10px_28px_rgba(22,163,74,0.18)]">
-                  <div className="mb-8 flex items-center justify-between text-[13px] text-slate-400">
-                    <span>#04</span>
-                    <span className="rounded-full bg-blue-100 px-3 py-1 font-medium text-blue-600">
-                      Rising
-                    </span>
-                  </div>
-                  <p className="text-[14px] text-slate-500">Sustainability</p>
-                  <h3 className="mt-6 text-[16px] font-semibold text-slate-900">
-                    Green Computing
-                  </h3>
-                  <div className="mt-16 flex items-end justify-between">
-                    <div>
-                      <p className="text-[12px] uppercase tracking-[0.12em] text-slate-400">
-                        Score
-                      </p>
-                      <p className="text-[40px] font-semibold text-blue-600">
-                        71
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-[12px] uppercase tracking-[0.12em] text-slate-400">
-                        Growth
-                      </p>
-                      <p className="text-[32px] font-semibold text-emerald-600">
-                        +19%
-                      </p>
-                    </div>
-                  </div>
-                </article>
-
-                <article className="w-[320px] rounded-2xl border border-slate-200 bg-white p-5 shadow-none transition hover:border-emerald-300 hover:shadow-[0_10px_28px_rgba(22,163,74,0.18)]">
-                  <div className="mb-8 flex items-center justify-between text-[13px] text-slate-400">
-                    <span>#05</span>
-                    <span className="rounded-full bg-blue-100 px-3 py-1 font-medium text-blue-600">
-                      Rising
-                    </span>
-                  </div>
-                  <p className="text-[14px] text-slate-500">
-                    Health Informatics
-                  </p>
-                  <h3 className="mt-6 text-[16px] font-semibold text-slate-900">
-                    Digital Health
-                  </h3>
-                  <div className="mt-16 flex items-end justify-between">
-                    <div>
-                      <p className="text-[12px] uppercase tracking-[0.12em] text-slate-400">
-                        Score
-                      </p>
-                      <p className="text-[40px] font-semibold text-blue-600">
-                        68
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-[12px] uppercase tracking-[0.12em] text-slate-400">
-                        Growth
-                      </p>
-                      <p className="text-[32px] font-semibold text-emerald-600">
-                        +15%
-                      </p>
-                    </div>
-                  </div>
-                </article>
-
-                <article className="w-[320px] rounded-2xl border border-slate-200 bg-white p-5 shadow-none transition hover:border-emerald-300 hover:shadow-[0_10px_28px_rgba(22,163,74,0.18)]">
-                  <div className="mb-8 flex items-center justify-between text-[13px] text-slate-400">
-                    <span>#06</span>
-                    <span className="rounded-full bg-slate-200 px-3 py-1 font-medium text-slate-600">
-                      Stable
-                    </span>
-                  </div>
-                  <p className="text-[14px] text-slate-500">Scientometrics</p>
-                  <h3 className="mt-6 text-[16px] font-semibold text-slate-900">
-                    Bibliometrics
-                  </h3>
-                  <div className="mt-16 flex items-end justify-between">
-                    <div>
-                      <p className="text-[12px] uppercase tracking-[0.12em] text-slate-400">
-                        Score
-                      </p>
-                      <p className="text-[40px] font-semibold text-slate-500">
-                        52
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-[12px] uppercase tracking-[0.12em] text-slate-400">
-                        Growth
-                      </p>
-                      <p className="text-[32px] font-semibold text-emerald-600">
-                        +4%
-                      </p>
-                    </div>
-                  </div>
-                </article>
-
-                <article className="w-[320px] rounded-2xl border border-slate-200 bg-white p-5 shadow-none transition hover:border-emerald-300 hover:shadow-[0_10px_28px_rgba(22,163,74,0.18)]">
-                  <div className="mb-8 flex items-center justify-between text-[13px] text-slate-400">
-                    <span>#07</span>
-                    <span className="rounded-full bg-blue-100 px-3 py-1 font-medium text-blue-600">
-                      Rising
-                    </span>
-                  </div>
-                  <p className="text-[14px] text-slate-500">Physics</p>
-                  <h3 className="mt-6 text-[16px] font-semibold text-slate-900">
-                    Quantum ML
-                  </h3>
-                  <div className="mt-16 flex items-end justify-between">
-                    <div>
-                      <p className="text-[12px] uppercase tracking-[0.12em] text-slate-400">
-                        Score
-                      </p>
-                      <p className="text-[40px] font-semibold text-blue-600">
-                        64
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-[12px] uppercase tracking-[0.12em] text-slate-400">
-                        Growth
-                      </p>
-                      <p className="text-[32px] font-semibold text-emerald-600">
-                        +22%
-                      </p>
-                    </div>
-                  </div>
-                </article>
-              </div>
-            </div>
-          </section>
+          <LandingLiveTrendsSection topics={landingSummary?.top10Topics} />
 
           <section
             id="the-argument"
@@ -1067,7 +667,7 @@ export default function LandingPage() {
             id="knowledge-graph"
             className="mt-16 overflow-hidden rounded-[28px] border border-slate-200/80 bg-[#f2f4f3] px-6 py-10 md:px-10 md:py-12"
           >
-            <div className="grid gap-8 lg:grid-cols-[0.9fr_1.5fr] lg:items-start">
+            <div className="grid gap-8 lg:grid-cols-[4fr_3fr] lg:items-start">
               <div>
                 <div className="mb-7 flex items-center gap-4">
                   <span className="font-serif text-[36px] italic text-emerald-600">
@@ -1075,286 +675,63 @@ export default function LandingPage() {
                   </span>
                   <span className="h-px w-[130px] bg-slate-300" />
                   <span className="text-xs uppercase tracking-[0.34em] text-slate-500">
-                    Knowledge Graph
+                    Research Growth Landscape
                   </span>
                 </div>
 
-                <h2 className="max-w-[560px] text-[44px] font-semibold leading-[0.95] tracking-[-0.02em] text-[#0b0f0e] md:text-[64px]">
-                  A{" "}
+                <h2 className="max-w-[620px] text-[40px] font-semibold leading-[1.04] tracking-[-0.02em] text-[#0b0f0e] md:text-[56px]">
+                  Compare research
+                  <br />
+                  fields by{" "}
                   <span className="font-serif italic text-emerald-600">
-                    topic constellation
+                    publication
+                  </span>
+                  <br />
+                  <span className="font-serif italic text-emerald-600">
+                    share
                   </span>{" "}
-                  of connected research.
+                  and growth rate.
                 </h2>
 
                 <p className="mt-5 max-w-[500px] text-[16px] leading-[1.75] text-slate-600">
-                  Every paper is a node. Every author, topic, and field is a
-                  link. Explore how ideas connect across disciplines and watch
-                  new clusters emerge in real time.
+                  Each bubble represents a research area, positioned by its
+                  current publication share and CAGR. Larger bubbles indicate
+                  stronger overall presence or impact.
                 </p>
 
-                <div className="mt-6 flex flex-wrap gap-2">
-                  <span className="rounded-full bg-amber-100 px-3 py-1 text-[16px] text-amber-600">
-                    • Breakout
+                <div className="mt-7 flex flex-wrap gap-2">
+                  <span className="inline-flex items-center gap-2 rounded-full bg-amber-100 px-3 py-2 text-[16px] font-medium leading-none text-amber-500">
+                    <span className="h-2 w-2 rounded-full bg-amber-500" />
+                    Breakout
                   </span>
-                  <span className="rounded-full bg-emerald-100 px-3 py-1 text-[16px] text-emerald-600">
-                    • Hot
+                  <span className="inline-flex items-center gap-2 rounded-full bg-emerald-100 px-3 py-2 text-[16px] font-medium leading-none text-emerald-600">
+                    <span className="h-2 w-2 rounded-full bg-emerald-600" />
+                    Hot
                   </span>
-                  <span className="rounded-full bg-blue-100 px-3 py-1 text-[16px] text-blue-600">
-                    • Rising
+                  <span className="inline-flex items-center gap-2 rounded-full bg-blue-100 px-3 py-2 text-[16px] font-medium leading-none text-blue-600">
+                    <span className="h-2 w-2 rounded-full bg-blue-600" />
+                    Rising
                   </span>
-                  <span className="rounded-full bg-slate-200 px-3 py-1 text-[16px] text-slate-600">
-                    • Stable
+                  <span className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-2 text-[16px] font-medium leading-none text-slate-500">
+                    <span className="h-2 w-2 rounded-full bg-slate-500" />
+                    Stable
                   </span>
                 </div>
               </div>
 
-              <div className="relative rounded-[24px] border border-slate-200 bg-white p-4 md:p-6">
-                <div
-                  aria-hidden="true"
-                  className="pointer-events-none absolute inset-0 rounded-[24px] opacity-35"
-                  style={{
-                    backgroundImage:
-                      "linear-gradient(to right, rgba(148,163,184,0.12) 1px, transparent 1px), linear-gradient(to bottom, rgba(148,163,184,0.12) 1px, transparent 1px)",
-                    backgroundSize: "32px 32px, 32px 32px",
-                  }}
+              <div className="overflow-hidden rounded-[24px] border border-slate-200 bg-white p-3 shadow-[0_18px_50px_rgba(15,23,42,0.08)] md:p-4">
+                <img
+                  src="/LandingPage-Img/KnowledgeGraph.jpg"
+                  alt="Research growth landscape bubble chart"
+                  className="h-[420px] w-full rounded-[20px] object-contain"
                 />
-                <p className="relative z-10 text-[11px] uppercase tracking-[0.3em] text-slate-500">
-                  Graph.Topics · 7 Nodes · 10 Edges
-                </p>
-
-                <div className="relative z-10 mt-6 h-[520px]">
-                  <svg
-                    className="absolute inset-0 h-full w-full"
-                    viewBox="0 0 800 520"
-                    aria-hidden="true"
-                  >
-                    <g
-                      stroke="#9ed8af"
-                      strokeWidth="1.5"
-                      strokeDasharray="4 6"
-                      fill="none"
-                    >
-                      <line x1="390" y1="250" x2="300" y2="120" />
-                      <line x1="390" y1="250" x2="390" y2="70" />
-                      <line x1="390" y1="250" x2="660" y2="110" />
-                      <line x1="390" y1="250" x2="710" y2="290" />
-                      <line x1="390" y1="250" x2="630" y2="430" />
-                      <line x1="390" y1="250" x2="330" y2="440" />
-                      <line x1="130" y1="140" x2="330" y2="440" />
-                      <line x1="130" y1="140" x2="390" y2="70" />
-                      <line x1="660" y1="110" x2="710" y2="290" />
-                      <line x1="710" y1="290" x2="630" y2="430" />
-                    </g>
-                  </svg>
-
-                  <div className="absolute left-[355px] top-[214px] h-[86px] w-[86px] rounded-full border-2 border-amber-500 bg-white text-center text-[16px] font-semibold leading-tight text-amber-500 shadow-[0_0_28px_rgba(245,158,11,0.28)]">
-                    <div className="pt-4">LLMs</div>
-                    <div className="text-[12px]">96</div>
-                  </div>
-                  <div className="absolute left-[86px] top-[100px] h-[66px] w-[66px] rounded-full border-2 border-emerald-500 bg-white text-center text-[14px] leading-tight text-emerald-600 shadow-[0_0_22px_rgba(16,185,129,0.25)]">
-                    <div className="pt-3">
-                      Open
-                      <br />
-                      Science
-                    </div>
-                  </div>
-                  <div className="absolute left-[350px] top-[40px] h-[60px] w-[60px] rounded-full border-2 border-emerald-500 bg-white text-center text-[13px] leading-tight text-emerald-600 shadow-[0_0_20px_rgba(16,185,129,0.22)]">
-                    <div className="pt-2.5">
-                      AI in
-                      <br />
-                      Edu
-                    </div>
-                  </div>
-                  <div className="absolute right-[72px] top-[92px] h-[64px] w-[64px] rounded-full border-2 border-blue-500 bg-white text-center text-[13px] leading-tight text-blue-600 shadow-[0_0_20px_rgba(59,130,246,0.24)]">
-                    <div className="pt-2">
-                      Green
-                      <br />
-                      Comp
-                    </div>
-                  </div>
-                  <div className="absolute right-[44px] top-[256px] h-[52px] w-[52px] rounded-full border-2 border-blue-500 bg-white text-center text-[12px] leading-tight text-blue-600 shadow-[0_0_16px_rgba(59,130,246,0.2)]">
-                    <div className="pt-2">XAI</div>
-                  </div>
-                  <div className="absolute right-[106px] bottom-[60px] h-[62px] w-[62px] rounded-full border-2 border-emerald-500 bg-white text-center text-[12px] leading-tight text-emerald-600 shadow-[0_0_18px_rgba(16,185,129,0.2)]">
-                    <div className="pt-2">
-                      Digital
-                      <br />
-                      Health
-                    </div>
-                  </div>
-                  <div className="absolute left-[125px] bottom-[52px] h-[54px] w-[54px] rounded-full border-2 border-slate-500 bg-white text-center text-[12px] leading-tight text-slate-600 shadow-[0_0_14px_rgba(100,116,139,0.2)]">
-                    <div className="pt-2">Biblio</div>
-                  </div>
-                </div>
               </div>
             </div>
           </section>
 
-          <section className="mt-8 rounded-[28px] border border-slate-200/80 bg-[#f2f4f3] px-6 py-8 md:px-10 md:py-10">
-            <div className="mb-5 flex items-center gap-4">
-              <span className="font-serif text-[42px] italic text-emerald-600">
-                §06b
-              </span>
-              <span className="h-px w-[130px] bg-slate-300" />
-              <span className="text-xs uppercase tracking-[0.34em] text-slate-500">
-                Personalized Intelligence
-              </span>
-            </div>
-
-            <h2 className="max-w-[920px] text-[44px] font-semibold leading-[1.02] tracking-[-0.02em] text-[#0b0f0e] md:text-[64px]">
-              Follow{" "}
-              <span className="font-serif italic text-emerald-600">topics</span>
-              . Track{" "}
-              <span className="font-serif italic text-blue-600">authors</span>.
-              <br />
-              Understand trends.
-            </h2>
-
-            <div className="mt-4 flex flex-wrap items-end justify-between gap-4">
-              <p className="text-[16px] leading-[1.7] text-slate-600">
-                Every recommendation comes with an explanation - see exactly why
-                a paper showed up.
-              </p>
-
-              <div className="flex flex-wrap items-center gap-2">
-                <button
-                  type="button"
-                  className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2 text-[16px] font-medium text-slate-900"
-                >
-                  <Sparkles className="h-4 w-4 text-emerald-600" />
-                  Follow New Topic
-                </button>
-                <button
-                  type="button"
-                  className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2 text-[16px] font-medium text-slate-900"
-                >
-                  <UserRoundPlus className="h-4 w-4 text-blue-600" />
-                  Follow New Author
-                </button>
-              </div>
-            </div>
-
-            <div className="mt-8 grid gap-4 lg:grid-cols-3">
-              <article className="reveal-on-scroll rounded-2xl border border-slate-200 bg-white p-6 shadow-none transition hover:border-emerald-300 hover:shadow-[0_10px_28px_rgba(22,163,74,0.18)]">
-                <span className="inline-flex items-center rounded-full bg-emerald-100 px-3 py-1 text-[14px] font-medium text-emerald-700">
-                  ✧ Matched followed topic
-                </span>
-                <h3 className="mt-5 text-[16px] font-semibold leading-[1.5] text-slate-900">
-                  Sparse Mixture-of-Experts at Scale: Routing Stability in Large
-                  Language Models
-                </h3>
-                <p className="mt-6 text-[16px] text-blue-600">
-                  Y. Chen, L. Patel, A. Nakamura
-                </p>
-                <span className="mt-5 inline-flex rounded-xl border border-slate-300 bg-slate-100 px-3 py-1 text-[16px] text-slate-900">
-                  Computer Science
-                </span>
-                <div className="mt-5 flex flex-wrap gap-2">
-                  <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-[14px] text-emerald-700">
-                    #LLMs
-                  </span>
-                  <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-[14px] text-emerald-700">
-                    #MoE
-                  </span>
-                  <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-[14px] text-emerald-700">
-                    #Scaling
-                  </span>
-                </div>
-                <div className="mt-8 border-t border-slate-200 pt-5">
-                  <div className="flex items-center justify-between">
-                    <p className="text-[16px] text-slate-500">
-                      ❞ 124 citations
-                    </p>
-                    <button
-                      type="button"
-                      className="inline-flex items-center gap-2 text-[16px] font-semibold text-emerald-600"
-                    >
-                      View Details
-                      <ArrowRight className="h-4 w-4" />
-                    </button>
-                  </div>
-                </div>
-              </article>
-
-              <article className="reveal-on-scroll rounded-2xl border border-slate-200 bg-white p-6 shadow-none transition hover:border-emerald-300 hover:shadow-[0_10px_28px_rgba(22,163,74,0.18)]">
-                <span className="inline-flex items-center rounded-full bg-blue-100 px-3 py-1 text-[14px] font-medium text-blue-700">
-                  ✧ Matched followed author
-                </span>
-                <h3 className="mt-5 text-[16px] font-semibold leading-[1.5] text-slate-900">
-                  Measuring the Open Access Citation Advantage Across 12M
-                  Articles
-                </h3>
-                <p className="mt-6 text-[16px] text-blue-600">
-                  Jason R Priem, H. Piwowar
-                </p>
-                <span className="mt-5 inline-flex rounded-xl border border-slate-300 bg-slate-100 px-3 py-1 text-[16px] text-slate-900">
-                  Information Science
-                </span>
-                <div className="mt-5 flex flex-wrap gap-2">
-                  <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-[14px] text-emerald-700">
-                    #Open Access
-                  </span>
-                  <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-[14px] text-emerald-700">
-                    #Bibliometrics
-                  </span>
-                </div>
-                <div className="mt-8 border-t border-slate-200 pt-5">
-                  <div className="flex items-center justify-between">
-                    <p className="text-[16px] text-slate-500">
-                      ❞ 312 citations
-                    </p>
-                    <button
-                      type="button"
-                      className="inline-flex items-center gap-2 text-[16px] font-semibold text-emerald-600"
-                    >
-                      View Details
-                      <ArrowRight className="h-4 w-4" />
-                    </button>
-                  </div>
-                </div>
-              </article>
-
-              <article className="reveal-on-scroll rounded-2xl border border-slate-200 bg-white p-6 shadow-none transition hover:border-emerald-300 hover:shadow-[0_10px_28px_rgba(22,163,74,0.18)]">
-                <span className="inline-flex items-center rounded-full bg-amber-100 px-3 py-1 text-[14px] font-medium text-amber-700">
-                  ✧ Matched topic & author
-                </span>
-                <h3 className="mt-5 text-[16px] font-semibold leading-[1.5] text-slate-900">
-                  Open Access Repositories and Trend Visibility in Emerging
-                  Research Areas
-                </h3>
-                <p className="mt-6 text-[16px] text-blue-600">
-                  Jason R Priem, S. Okafor
-                </p>
-                <span className="mt-5 inline-flex rounded-xl border border-slate-300 bg-slate-100 px-3 py-1 text-[16px] text-slate-900">
-                  Scientometrics
-                </span>
-                <div className="mt-5 flex flex-wrap gap-2">
-                  <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-[14px] text-emerald-700">
-                    #Open Access
-                  </span>
-                  <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-[14px] text-emerald-700">
-                    #Trends
-                  </span>
-                  <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-[14px] text-emerald-700">
-                    #Repositories
-                  </span>
-                </div>
-                <div className="mt-8 border-t border-slate-200 pt-5">
-                  <div className="flex items-center justify-between">
-                    <p className="text-[16px] text-slate-500">❞ 88 citations</p>
-                    <button
-                      type="button"
-                      className="inline-flex items-center gap-2 text-[16px] font-semibold text-emerald-600"
-                    >
-                      View Details
-                      <ArrowRight className="h-4 w-4" />
-                    </button>
-                  </div>
-                </div>
-              </article>
-            </div>
-          </section>
+          <LandingPersonalizedPapersSection
+            papers={landingSummary?.top6TrendingPapers?.slice(0, 3)}
+          />
 
           <section
             id="method"
