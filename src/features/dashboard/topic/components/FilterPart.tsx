@@ -55,11 +55,20 @@ export default function FilterPart({
             />
 
             <div className="flex flex-row justify-between items-end w-full">
-                <div className="rounded-lg border border-slate-200 bg-gray-50 flex flex-row gap-2 w-fit px-2 py-1 h-fit cursor-pointer"
-                    onClick={() => handleApply()}
-                >
-                    <Filter width={16} />
-                    Filters
+                <div className="relative group">
+                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 flex flex-col items-center animate-bounce pointer-events-none">
+                        <span className="bg-slate-800 text-white text-xs px-2 py-1 rounded shadow-md whitespace-nowrap font-medium">
+                            This is button
+                        </span>
+                        <div className="w-0 h-0 border-l-[5px] border-l-transparent border-r-[5px] border-r-transparent border-t-[6px] border-t-slate-800"></div>
+                    </div>
+
+                    <div className="rounded-lg border border-slate-200 bg-gray-50 flex flex-row gap-2 w-fit px-2 py-1 h-fit cursor-pointer hover:bg-gray-100 transition-colors"
+                         onClick={() => handleApply()}
+                    >
+                        <Filter width={16} />
+                        Filters
+                    </div>
                 </div>
 
                 {MENU_FILTER.map((filter) => {
