@@ -113,6 +113,11 @@ export default function MainSidebar() {
                 item.path === ROUTES.SOCIAL_HUB &&
                 (location.pathname === ROUTES.SOCIAL_HUB ||
                   (isDetailPage && detailOrigin === "social-hub"));
+              const isTrendingSectionActive =
+                item.path === ROUTES.TRENDING_TOPIC &&
+                (location.pathname === ROUTES.TRENDING_TOPIC ||
+                  location.pathname === ROUTES.TRENDING_KEYWORD ||
+                  (isDetailPage && detailOrigin === "trending"));
 
               return (
                 <NavLink
@@ -123,6 +128,7 @@ export default function MainSidebar() {
                       "flex items-center gap-3 rounded-lg px-3 py-2.5 text-[13px] font-semibold transition",
                       isActive ||
                       isSearchSectionActive ||
+                      isTrendingSectionActive ||
                       isBookmarksSectionActive ||
                       isSocialHubSectionActive
                         ? "bg-emerald-600 text-white"

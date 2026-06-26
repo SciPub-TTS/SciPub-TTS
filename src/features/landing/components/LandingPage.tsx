@@ -55,8 +55,23 @@ const landingSections = [
   { id: "invitation", number: "09", title: "The Invitation" },
 ] as const;
 
+const publicNavLinks = [
+  { label: "Trending Topics", to: ROUTES.TRENDING_TOPIC },
+  { label: "Trending Keywords", to: ROUTES.TRENDING_KEYWORD },
+  { label: "Guide", to: ROUTES.GUIDE },
+] as const;
+
+const authenticatedNavLinks = [
+  { label: "Feed", to: ROUTES.FEED },
+  { label: "Bookmarks", to: ROUTES.BOOKMARKS },
+  { label: "Report", to: ROUTES.REPORT },
+  { label: "Social Hub", to: ROUTES.SOCIAL_HUB },
+] as const;
+
 export default function LandingPage() {
   const [isSectionMenuOpen, setIsSectionMenuOpen] = useState(false);
+  const [isExploreMenuOpen, setIsExploreMenuOpen] = useState(false);
+  const [isWorkspaceMenuOpen, setIsWorkspaceMenuOpen] = useState(false);
   const { currentUser, isAuthenticated: loggedIn } = useAuthSession();
   const { data: landingSummary } = useLandingSummary();
   const dashboardPath =
@@ -68,6 +83,7 @@ export default function LandingPage() {
       ? ROUTES.ADMIN_DASHBOARD
       : ROUTES.PROFILE;
   const displayName = currentUser?.fullName ?? "User";
+  const displayEmail = currentUser?.email ?? "Signed in account";
   const initials = displayName
     .split(" ")
     .filter(Boolean)
@@ -75,13 +91,24 @@ export default function LandingPage() {
     .map((part) => part[0])
     .join("")
     .toUpperCase();
-
   function handleSectionSelect(sectionId: string) {
     document
       .getElementById(sectionId)
       ?.scrollIntoView({ behavior: "smooth", block: "start" });
 
     window.history.replaceState(null, "", `#${sectionId}`);
+    setIsSectionMenuOpen(false);
+  }
+
+  function handleExploreMenuToggle() {
+    setIsExploreMenuOpen((isOpen) => !isOpen);
+    setIsWorkspaceMenuOpen(false);
+    setIsSectionMenuOpen(false);
+  }
+
+  function handleWorkspaceMenuToggle() {
+    setIsWorkspaceMenuOpen((isOpen) => !isOpen);
+    setIsExploreMenuOpen(false);
     setIsSectionMenuOpen(false);
   }
 
@@ -116,11 +143,15 @@ export default function LandingPage() {
             <span className="font-brand text-3xl font-normal">Owlreka</span>
           </Link>
 
-          <nav className="hidden items-center gap-6 text-sm font-medium text-slate-600 md:flex">
+          <nav className="hidden items-center gap-4 text-sm font-medium text-slate-600 lg:flex xl:gap-6">
             <div className="relative">
               <button
                 type="button"
-                onClick={() => setIsSectionMenuOpen((isOpen) => !isOpen)}
+                onClick={() => {
+                  setIsSectionMenuOpen((isOpen) => !isOpen);
+                  setIsExploreMenuOpen(false);
+                  setIsWorkspaceMenuOpen(false);
+                }}
                 className="inline-flex items-center gap-1.5 hover:text-emerald-700 text-black"
               >
                 Sections
@@ -152,39 +183,97 @@ export default function LandingPage() {
 
             <Link
               to={ROUTES.SEARCH}
-              className="hover:text-emerald-700 text-black"
+              className="rounded-full bg-slate-50 px-4 py-2 whitespace-nowrap text-black transition hover:bg-emerald-50 hover:text-emerald-700"
             >
-              Search
+              Discovery
             </Link>
-            <Link
-              to={ROUTES.TRENDING_TOPIC}
-              className="hover:text-emerald-700 text-black"
-            >
-              Trending
-            </Link>
-            <Link
-              to={ROUTES.GUIDE}
-              className="hover:text-emerald-700 text-black"
-            >
-              Guide
-            </Link>
+
+            <div className="relative">
+              <button
+                type="button"
+                onClick={handleExploreMenuToggle}
+                className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-black transition hover:bg-emerald-50 hover:text-emerald-700"
+              >
+                Explore
+                <ChevronDown
+                  className={`h-4 w-4 transition ${
+                    isExploreMenuOpen ? "rotate-180" : ""
+                  }`}
+                />
+              </button>
+
+              {isExploreMenuOpen && (
+                <div className="absolute left-0 top-12 z-30 w-64 rounded-[28px] border border-black bg-[#fcfdfb] p-3 shadow-[0_18px_38px_rgba(15,23,42,0.16)]">
+                  {publicNavLinks.map((link) => (
+                    <Link
+                      key={link.to}
+                      to={link.to}
+                      onClick={() => setIsExploreMenuOpen(false)}
+                      className="mb-1.5 flex items-center border-b border-black px-3 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-emerald-50 hover:text-emerald-700 last:mb-0 last:border-b-0"
+                    >
+                      {link.label}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="relative">
+              <button
+                type="button"
+                onClick={handleWorkspaceMenuToggle}
+                className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-black transition hover:bg-emerald-50 hover:text-emerald-700"
+              >
+                Workspace
+                <ChevronDown
+                  className={`h-4 w-4 transition ${
+                    isWorkspaceMenuOpen ? "rotate-180" : ""
+                  }`}
+                />
+              </button>
+
+              {isWorkspaceMenuOpen && (
+                <div className="absolute left-0 top-12 z-30 w-60 rounded-[28px] border border-black bg-[#fcfdfb] p-3 shadow-[0_18px_38px_rgba(15,23,42,0.16)]">
+                  {authenticatedNavLinks.map((link) => (
+                    <Link
+                      key={link.to}
+                      to={loggedIn ? link.to : ROUTES.LOGIN}
+                      onClick={() => setIsWorkspaceMenuOpen(false)}
+                      className="mb-1.5 flex items-center border-b border-black px-3 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-emerald-50 hover:text-emerald-700 last:mb-0 last:border-b-0"
+                    >
+                      {link.label}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
           </nav>
 
           {loggedIn ? (
             <Link
               to={profilePath}
               aria-label="Open user profile"
-              className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-emerald-600 text-sm font-bold text-white"
+              className="flex items-center gap-3 transition hover:opacity-90"
             >
-              {currentUser?.avatarUrl ? (
-                <img
-                  src={currentUser.avatarUrl}
-                  alt={displayName}
-                  className="h-full w-full object-cover"
-                />
-              ) : (
-                initials || "U"
-              )}
+              <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full bg-emerald-600 text-base font-bold text-white ring-2 ring-emerald-100">
+                {currentUser?.avatarUrl ? (
+                  <img
+                    src={currentUser.avatarUrl}
+                    alt={displayName}
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  initials || "U"
+                )}
+              </div>
+              <div className="hidden min-w-0 sm:block">
+                <p className="truncate text-sm font-bold text-slate-900">
+                  {displayName}
+                </p>
+                <p className="mt-0.5 truncate text-xs text-slate-500">
+                  {displayEmail}
+                </p>
+              </div>
             </Link>
           ) : (
             <div className="flex items-center gap-2">

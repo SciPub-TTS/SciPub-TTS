@@ -191,6 +191,7 @@ export type SearchPanelProps = {
   saveSearchFeedback: SaveSearchFeedback | null;
   saveSearchNotice: string | null;
   saveSearchSuccessToken: number;
+  hasLoadedTrendSnapshot: boolean;
   topicHotSearches: string[];
   searchQuery: string;
   searchPlaceholder: string;

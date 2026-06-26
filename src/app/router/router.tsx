@@ -135,6 +135,11 @@ function getDetailBreadcrumb(
             label: "Social Hub",
             to: ROUTES.SOCIAL_HUB,
           }
+        : detailOrigin === "trending"
+          ? {
+              label: "Trending",
+              to: ROUTES.TRENDING_TOPIC,
+            }
       : {
           label: "Search",
           to: ROUTES.SEARCH,

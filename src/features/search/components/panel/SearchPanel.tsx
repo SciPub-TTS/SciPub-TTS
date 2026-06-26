@@ -28,6 +28,7 @@ export function SearchPanel({
   filterOptions,
   filters,
   filtersOpen,
+  hasLoadedTrendSnapshot,
   hasMoreFilterOptions,
   hasFormError,
   isClearingRecentSearches,
@@ -99,21 +100,29 @@ export function SearchPanel({
           />
         </div>
 
-        {activeEntityType === "topics" && topicHotSearches.length > 0 ? (
-          <div className="mt-4 flex flex-wrap items-center gap-2 rounded-xl border border-black bg-[#FFF7ED] px-4 py-3">
-            <span className="text-[11px] font-extrabold uppercase tracking-[0.24em] text-[#C2410C]">
-              Try:
-            </span>
-            {topicHotSearches.map((topic) => (
-              <button
-                key={topic}
-                type="button"
-                onClick={() => onSuggestedSearchSelect(topic)}
-                className="rounded-full border border-[#F97316]/40 bg-white px-3 py-1.5 text-sm font-semibold text-[#C2410C] transition hover:-translate-y-0.5 hover:border-[#EA580C] hover:bg-[#FED7AA]"
-              >
-                {topic}
-              </button>
-            ))}
+        {activeEntityType === "topics" && hasLoadedTrendSnapshot ? (
+          <div className="mt-4 rounded-xl border border-black bg-[#FFF7ED] px-4 py-3">
+            {topicHotSearches.length > 0 ? (
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-[11px] font-extrabold uppercase tracking-[0.24em] text-[#C2410C]">
+                  Try:
+                </span>
+                {topicHotSearches.map((topic) => (
+                  <button
+                    key={topic}
+                    type="button"
+                    onClick={() => onSuggestedSearchSelect(topic)}
+                    className="rounded-full border border-[#F97316]/40 bg-white px-3 py-1.5 text-sm font-semibold text-[#C2410C] transition hover:-translate-y-0.5 hover:border-[#EA580C] hover:bg-[#FED7AA]"
+                  >
+                    {topic}
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm font-semibold text-[#C2410C]">
+                No trending topics this week.
+              </p>
+            )}
           </div>
         ) : null}
       </div>

@@ -369,7 +369,7 @@ function getRemoteFilterKeysForEntityType(
 ): RemoteOptionFilterKey[] {
   switch (entityType) {
     case "authors":
-      return ["institution", "country", "primaryTopic"];
+      return ["institution", "country"];
     case "topics":
       return ["subField", "field"];
     default:

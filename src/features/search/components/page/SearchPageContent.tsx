@@ -18,6 +18,7 @@ export default function SearchPageContent() {
     filterOptions,
     filters,
     filtersOpen,
+    hasLoadedTrendSnapshot,
     handleApplyFilters,
     handleClearRecentSearches,
     handleClearSorts,
@@ -78,6 +79,7 @@ export default function SearchPageContent() {
         filterOptions={filterOptions}
         filters={filters}
         filtersOpen={filtersOpen}
+        hasLoadedTrendSnapshot={hasLoadedTrendSnapshot}
         hasFormError={hasFormError}
         hasMoreFilterOptions={hasMoreFilterOptions}
         isClearingRecentSearches={isClearingRecentSearches}
