@@ -1,4 +1,6 @@
 import { Plus } from "lucide-react";
+import { Link } from "react-router-dom";
+import { routePaths } from "@/app/router";
 
 import type {
   FollowedAuthor,
@@ -48,11 +50,14 @@ function FollowedTopicsCard({ topics }: { topics: FollowedTopic[] }) {
         {topics.map((topic) => (
           <div
             className="flex min-w-0 items-center justify-between gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2"
-            key={topic.name}
+            key={topic.id}
           >
-            <span className="truncate text-xs font-semibold text-slate-700">
+            <Link
+              to={routePaths.topicDetail(topic.id)}
+              className="truncate text-xs font-semibold text-slate-700 hover:text-emerald-600 hover:underline"
+            >
               {topic.name}
-            </span>
+            </Link>
             <div className="flex shrink-0 items-center gap-2">
               <span className={getTopicStatusClassName(topic.status)}>
                 {topic.status}
@@ -64,12 +69,12 @@ function FollowedTopicsCard({ topics }: { topics: FollowedTopic[] }) {
           </div>
         ))}
       </div>
-      <button
-        className="mt-4 w-full text-center text-xs font-bold text-blue-600 hover:text-blue-700"
-        type="button"
+      <Link
+        to="/search" // Links back to search for discoverability
+        className="mt-4 block w-full text-center text-xs font-bold text-blue-600 hover:text-blue-700"
       >
         + Follow more topics
-      </button>
+      </Link>
     </SidebarCard>
   );
 }
@@ -81,12 +86,15 @@ function FollowedAuthorsCard({ authors }: { authors: FollowedAuthor[] }) {
         {authors.map((author) => (
           <div
             className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2"
-            key={author.name}
+            key={author.id}
           >
             <div className="min-w-0">
-              <p className="truncate text-xs font-semibold text-slate-700">
+              <Link
+                to={routePaths.authorDetail(author.id)}
+                className="truncate text-xs font-semibold text-slate-700 hover:text-emerald-600 hover:underline block"
+              >
                 {author.name}
-              </p>
+              </Link>
               <p className="truncate text-[11px] font-medium text-slate-400">
                 {author.field}
               </p>
@@ -97,12 +105,12 @@ function FollowedAuthorsCard({ authors }: { authors: FollowedAuthor[] }) {
           </div>
         ))}
       </div>
-      <button
-        className="mt-4 w-full text-center text-xs font-bold text-blue-600 hover:text-blue-700"
-        type="button"
+      <Link
+        to="/search"
+        className="mt-4 block w-full text-center text-xs font-bold text-blue-600 hover:text-blue-700"
       >
         + Follow more authors
-      </button>
+      </Link>
     </SidebarCard>
   );
 }
@@ -114,11 +122,14 @@ function SuggestedTopicsCard({ topics }: { topics: SuggestedTopic[] }) {
         {topics.map((topic) => (
           <div
             className="flex items-center justify-between gap-3"
-            key={topic.name}
+            key={topic.id}
           >
-            <span className="min-w-0 truncate text-xs font-semibold text-slate-600">
+            <Link
+              to={routePaths.topicDetail(topic.id)}
+              className="min-w-0 truncate text-xs font-semibold text-slate-600 hover:text-emerald-600 hover:underline"
+            >
               {topic.name}
-            </span>
+            </Link>
             <button
               aria-label={`Follow ${topic.name}`}
               className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 transition hover:bg-emerald-200"

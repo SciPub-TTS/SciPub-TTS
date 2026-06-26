@@ -8,25 +8,36 @@ import type {
   ResearchFeedData,
 } from "../types";
 
+// Helper to strip any full OpenAlex URL prefixes to keep route navigation clean
+function extractRawId(id: string): string {
+  if (!id) return "";
+  return id.split("/").pop() || id;
+}
+
 export const fallbackResearchFeedData: ResearchFeedData = {
   articles: [
     {
       abstract:
-        "We introduce a new class of selective state space models that match Transformer quality while scaling linearly with sequence length. Across language, audio, and genomics, Mamba achieves state-of-the-art performance and faster inference.",
-      authors: [{ name: "Tri Dao" }, { name: "Albert Gu" }],
+        "Despite growing interest in Open Access (OA) to scholarly literature, there is an unmet need for large-scale, up-to-date, and reproducible studies assessing the prevalence and characteristics of OA. We address this using oaDOI, an open online service that determines OA status for 67 million articles.",
+      authors: [
+        { following: true, name: "Heather Piwowar" },
+        { following: true, name: "Jason R. Priem" },
+        { name: "Vincent Larivière" },
+        { following: true, name: "Juan Pablo Alperin" },
+      ],
       badges: [
-        { label: "Computer Science", tone: "topic" },
-        { label: "Rising Topic", tone: "rising" },
+        { label: "Scientometrics", tone: "topic" },
+        { label: "Matched followed author", tone: "author" },
         { label: "Matched topic & author", tone: "match" },
       ],
-      citations: 286,
-      doiLabel: "doi.org/10.48550/arXiv.2312.00752",
-      doiUrl: "https://doi.org/10.48550/arXiv.2312.00752",
-      extraAuthors: 1,
-      id: "mamba-linear-time-sequence-modeling",
-      relevance: 94,
+      citations: 1217,
+      doiLabel: "doi.org/10.7717/peerj.4375",
+      doiUrl: "https://doi.org/10.7717/peerj.4375",
+      extraAuthors: 5,
+      id: "W2741809807",
+      relevance: 99,
       reason:
-        "Shown because you follow both the topic 'Large Language Models' and the author 'Fei-Fei Li'.",
+        "Shown because you follow both the topic 'Academic Publishing and Open Access' and the author 'Heather Piwowar'.",
       tabMatches: [
         "matched-topic",
         "matched-author",
@@ -35,78 +46,88 @@ export const fallbackResearchFeedData: ResearchFeedData = {
         "trending",
         "most-relevant",
       ],
-      tags: [
-        "Large Language Models",
-        "Mechanistic Interpretability",
-        "Scaling Laws",
-      ],
-      title: "Mamba: Linear-Time Sequence Modeling with Selective State Spaces",
-      venue: "NeurIPS 2025",
-      year: 2025,
+      tags: ["Open Access", "Scholarly Communication", "Bibliometrics"],
+      title:
+        "The state of OA: a large-scale analysis of the prevalence and impact of Open Access articles",
+      venue: "PeerJ",
+      year: 2018,
     },
     {
       abstract:
-        "A large-scale bibliometric analysis of Open Access prevalence over fifteen years reveals accelerating Gold OA growth, declining Bronze share, and significant disciplinary variation in licensing practices.",
-      authors: [
-        { following: true, name: "Heather Piwowar" },
-        { following: true, name: "Juan Pablo Alperin" },
-      ],
+        "This paper explores Advanced MIMO systems optimization, multi-antenna beamforming, and millimeter-wave propagation modeling. Testing results over ten years indicate highly stable signal-to-noise ratios and low-latency metrics.",
+      authors: [{ following: true, name: "Stefan Pratschner" }],
       badges: [
-        { label: "Decision Sciences", tone: "topic" },
+        { label: "Electrical Engineering", tone: "topic" },
         { label: "Matched followed author", tone: "author" },
       ],
-      citations: 142,
-      doiLabel: "doi.org/10.7717/peerj.4375",
-      doiUrl: "https://doi.org/10.7717/peerj.4375",
-      id: "open-access-longitudinal-evidence",
-      relevance: 91,
-      reason: "Shown because you follow the author: Heather Piwowar.",
-      tabMatches: ["matched-author", "latest", "most-relevant"],
-      tags: ["Open Access", "Scholarly Communication", "Licensing"],
+      citations: 435,
+      doiLabel: "doi.org/10.1109/mimo.2023.123",
+      doiUrl: "https://doi.org/10.1109/mimo.2023.123",
+      id: "W5083417991", // Derived from Stefan's Author ID A5083417991
+      relevance: 94,
+      reason: "Shown because you follow the author: Stefan Pratschner.",
+      tabMatches: ["matched-author", "latest", "trending"],
+      tags: ["MIMO Systems", "Wireless Propagation", "Antenna Design"],
       title:
-        "The shifting landscape of Open Access: longitudinal evidence from 2010-2025",
-      venue: "PeerJ",
-      year: 2025,
+        "Advanced MIMO Systems Optimization and Millimeter-Wave Channel Propagation Modeling",
+      venue: "TU Wien Publications",
+      year: 2023,
     },
     {
       abstract:
-        "This study maps research data management practices across institutions and identifies collaboration patterns that improve dataset reuse, citation, and long-term repository health.",
-      authors: [{ name: "Jason R. Priem" }, { name: "Vincent Lariviere" }],
+        "This study focuses on the use of microwave imaging techniques, including ultrawideband and confocal methods, for the detection and localization of breast cancer tumors.",
+      authors: [{ name: "Manoel Sant'Ana Filho" }],
       badges: [
-        { label: "Research Data", tone: "topic" },
+        { label: "Biomedical Engineering", tone: "topic" },
         { label: "Stable", tone: "stable" },
       ],
-      citations: 97,
-      doiLabel: "doi.org/10.1038/s41597-025-01000-1",
-      doiUrl: "https://doi.org/10.1038/s41597-025-01000-1",
-      id: "research-data-reuse-network",
+      citations: 23133,
+      doiLabel: "doi.org/10.1016/j.bme.2024.01",
+      doiUrl: "https://doi.org/10.1016/j.bme.2024.01",
+      id: "W11739", // Derived from Topic ID T11739
       relevance: 87,
       reason:
-        "Shown because it matches saved keywords around research data management.",
+        "Shown because it matches your followed topic: Microwave Imaging.",
       tabMatches: ["matched-topic", "most-relevant"],
-      tags: ["Research Data", "Repositories", "Data Reuse"],
+      tags: ["Microwave Imaging", "Breast Cancer Detection", "Ultrawideband"],
       title:
-        "Research data reuse networks and the institutional practices behind them",
-      venue: "Scientific Data",
-      year: 2025,
+        "Microwave Breast Imaging and Dielectric Tissue Scattering Localization",
+      venue: "Biomedical Engineering Journal",
+      year: 2024,
     },
   ],
   followedAuthors: [
-    { field: "Scientometrics", name: "Jason R. Priem" },
-    { field: "Open Access", name: "Heather Piwowar" },
-    { field: "Computer Vision", name: "Fei-Fei Li" },
-    { field: "Researcher", name: "Vincent Lariviere" },
-    { field: "Researcher", name: "Juan Pablo Alperin" },
+    {
+      id: "A5083417991",
+      field: "Electrical Engineering",
+      name: "Stefan Pratschner",
+    },
+    { id: "A5048491430", field: "Open Access", name: "Heather Piwowar" },
+    { id: "A5023888391", field: "Scientometrics", name: "Jason R. Priem" },
+    {
+      id: "A5085171399",
+      field: "Scholarly Publishing",
+      name: "Juan Pablo Alperin",
+    },
+    { id: "A5109613364", field: "Civil Engineering", name: "Abdul Hamid" },
   ],
   followedTopics: [
-    { name: "AI in Education", status: "Rising" },
-    { name: "Open Access", status: "Stable" },
-    { name: "Research Data Management", status: "Stable" },
-    { name: "Scientometrics and Impact", status: "Stable" },
+    {
+      id: "T11739",
+      name: "Microwave Imaging and Scattering Analysis",
+      status: "Rising",
+    },
+    { id: "T11999", name: "Empathy and Medical Education", status: "Stable" },
+    { id: "T11246", name: "Sports injuries and prevention", status: "Stable" },
+    {
+      id: "T13607",
+      name: "Academic Publishing and Open Access",
+      status: "Stable",
+    },
   ],
   suggestedTopics: [
-    { name: "Academic Publishing and Open Access" },
-    { name: "AI Policy in Higher Education" },
+    { id: "T10194", name: "Nonlinear Partial Differential Equations" },
+    { id: "T13897", name: "Historical Economic and Legal Thought" },
   ],
   tabs: [
     { key: "all", label: "All" },
@@ -125,7 +146,11 @@ export const apiService = {
       const response = await http.get<ApiResponse<FollowedTopic[]>>(
         "/api/feed/followed-topics",
       );
-      return response.data.data;
+      const data = response.data.data || [];
+      return data.map((topic) => ({
+        ...topic,
+        id: extractRawId(topic.id),
+      }));
     } catch (e) {
       console.warn(
         "Unable to resolve live followed topics; utilizing local cache fallback.",
@@ -140,7 +165,11 @@ export const apiService = {
       const response = await http.get<ApiResponse<FollowedAuthor[]>>(
         "/api/feed/followed-authors",
       );
-      return response.data.data;
+      const data = response.data.data || [];
+      return data.map((author) => ({
+        ...author,
+        id: extractRawId(author.id),
+      }));
     } catch (e) {
       console.warn(
         "Unable to resolve live followed authors; utilizing local cache fallback.",
@@ -155,7 +184,11 @@ export const apiService = {
       const response = await http.get<ApiResponse<SuggestedTopic[]>>(
         "/api/feed/suggested-topics",
       );
-      return response.data.data;
+      const data = response.data.data || [];
+      return data.map((topic) => ({
+        ...topic,
+        id: extractRawId(topic.id),
+      }));
     } catch (e) {
       console.warn(
         "Unable to resolve live suggested topics; utilizing local cache fallback.",
@@ -183,12 +216,14 @@ export const apiService = {
 
       const data = response.data.data;
 
-      // The API endpoint resolves to the structure: { items: FeedArticle[], totalItems: number }
       if (!data || !data.items || data.items.length === 0) {
         return fallbackResearchFeedData.articles;
       }
 
-      return data.items;
+      return data.items.map((item) => ({
+        ...item,
+        id: extractRawId(item.id),
+      }));
     } catch (e) {
       console.warn(
         "Unable to fetch live feed articles; utilizing mock articles.",
