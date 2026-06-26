@@ -22,3 +22,5 @@ Implementation note:
 - `h1` to `h6` and `.font-title` use `Space Grotesk`.
 - `p`, `small`, captions, and `.font-subtext` use `Manrope`.
 - The Owlreka sidebar wordmark intentionally keeps `Agbalumo`.
+
+CI verification note: trigger a fresh frontend build on GitHub Actions.
