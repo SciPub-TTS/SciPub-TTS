@@ -3,9 +3,7 @@ export type FeedTabKey =
   | "matched-topic"
   | "matched-author"
   | "matched-both"
-  | "latest"
-  | "trending"
-  | "most-relevant";
+  | "latest";
 
 export type FeedTab = {
   key: FeedTabKey;
@@ -23,7 +21,6 @@ export type FeedAuthor = {
 };
 
 export type FeedArticle = {
-  abstract: string;
   authors: FeedAuthor[];
   badges: FeedBadge[];
   citations: number;
@@ -47,7 +44,6 @@ export type FollowedTopic = {
 
 export type FollowedAuthor = {
   id: string;
-  field: string;
   name: string;
 };
 

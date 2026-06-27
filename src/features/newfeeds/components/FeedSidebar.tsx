@@ -82,6 +82,7 @@ function TopicRowItem({ topic }: { topic: FollowedTopic }) {
                 await http.post("/api/follows", {
                     targetType: "TOPIC",
                     targetOpenalexId: topic.id,
+                    displayName: topic.name,
                 });
                 setIsFollowed(true);
             }
@@ -165,6 +166,7 @@ function AuthorRowItem({ author }: { author: FollowedAuthor }) {
                 await http.post("/api/follows", {
                     targetType: "AUTHOR",
                     targetOpenalexId: author.id,
+                    displayName: author.name,
                 });
                 setIsFollowed(true);
             }
@@ -188,9 +190,6 @@ function AuthorRowItem({ author }: { author: FollowedAuthor }) {
               >
                 {author.name}
               </Link>
-              <p className="truncate text-[11px] font-medium text-slate-400">
-                {author.field}
-              </p>
             </div>
             <button
                 onClick={handleToggleFollow}
