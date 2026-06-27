@@ -43,7 +43,6 @@ export type FeedArticle = {
 export type FollowedTopic = {
   id: string;
   name: string;
-  status: "Rising" | "Stable";
 };
 
 export type FollowedAuthor = {

@@ -140,6 +140,11 @@ function getDetailBreadcrumb(
               label: "Trending",
               to: ROUTES.TRENDING_TOPIC,
             }
+        : detailOrigin === "feed"
+          ? {
+              label: "My Feed",
+              to: ROUTES.FEED
+            }
       : {
           label: "Search",
           to: ROUTES.SEARCH,
