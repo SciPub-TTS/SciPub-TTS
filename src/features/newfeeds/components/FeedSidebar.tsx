@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Plus, Check } from "lucide-react";
 import { Link } from "react-router-dom";
-import { routePaths } from "@/app/router";
+import { ROUTES, routePaths } from "@/app/router";
 import { http } from "@/services/http";
 
 import type {
@@ -54,7 +54,8 @@ function FollowedTopicsCard({ topics }: { topics: FollowedTopic[] }) {
                 ))}
             </div>
             <Link
-                to="/search"
+                to={ROUTES.SEARCH}
+                state={{ initialEntityType: "topics" }}
                 className="mt-4 block w-full text-center text-xs font-bold text-blue-600 hover:text-blue-700"
             >
                 + Follow more topics
@@ -138,7 +139,8 @@ function FollowedAuthorsCard({ authors }: { authors: FollowedAuthor[] }) {
                 ))}
             </div>
             <Link
-                to="/search"
+                to={ROUTES.SEARCH}
+                state={{ initialEntityType: "authors" }}
                 className="mt-4 block w-full text-center text-xs font-bold text-blue-600 hover:text-blue-700"
             >
                 + Follow more authors

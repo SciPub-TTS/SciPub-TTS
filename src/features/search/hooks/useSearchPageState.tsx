@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigationType } from "react-router-dom";
+import { useLocation, useNavigationType } from "react-router-dom";
 
 import { useAuthSession } from "@/features/auth/hooks/useAuthSession";
 import { useAppDispatch, useAppSelector } from "@/store";
@@ -54,6 +54,7 @@ import { useRemoteFilterOptions } from "./useRemoteFilterOptions";
 export function useSearchPageState() {
   const { isAuthenticated } = useAuthSession();
   const dispatch = useAppDispatch();
+  const location = useLocation();
   const navigationType = useNavigationType();
   const isSearchHistoryEnabled = isAuthenticated;
   const shouldRestoreSearchPageState =
@@ -123,6 +124,9 @@ export function useSearchPageState() {
     activeEntityType,
     storedVisibleFilterWidgets,
   );
+  const requestedEntityType = normalizeRequestedSearchEntityType(
+    (location.state as { initialEntityType?: string } | null)?.initialEntityType ?? null,
+  );
   const showFilters = true;
   const showFilterAddMenu = isWorksTab;
   const activeFilterCount = countActiveFilters(activeEntityType, filters);
@@ -135,6 +139,7 @@ export function useSearchPageState() {
     : false;
   useSearchPagePersistence({
     dispatch,
+    initialEntityType: requestedEntityType,
     restoredSnapshot,
     remoteFilterOptionsSnapshot,
     searchPageState,
@@ -423,4 +428,12 @@ export function useSearchPageState() {
     visibleFilterWidgets,
     visibleResults,
   };
+}
+
+function normalizeRequestedSearchEntityType(tab: string | null): SearchEntityType | null {
+  if (tab === "authors" || tab === "topics" || tab === "works") {
+    return tab;
+  }
+
+  return null;
 }

@@ -30,6 +30,7 @@ type SearchPageStateForPersistence = {
 
 type UseSearchPagePersistenceParams = {
   dispatch: AppDispatch;
+  initialEntityType?: SearchEntityType | null;
   restoredSnapshot: SearchPageSnapshot | null;
   remoteFilterOptionsSnapshot: RemoteFilterOptionsSnapshot;
   searchPageState: SearchPageStateForPersistence;
@@ -44,6 +45,7 @@ export function useSearchPagePersistence(
 ) {
   const {
     dispatch,
+    initialEntityType,
     restoredSnapshot,
     remoteFilterOptionsSnapshot,
     searchPageState,
@@ -57,7 +59,7 @@ export function useSearchPagePersistence(
     if (restoredSnapshot) {
       dispatch(hydrateSearchPageState(restoredSnapshot));
     } else {
-      dispatch(resetSearchPageState());
+      dispatch(resetSearchPageState(initialEntityType || undefined));
     }
 
     clearSearchPageRestorePending();
@@ -74,7 +76,7 @@ export function useSearchPagePersistence(
 
       dispatch(resetSearchPageState());
     };
-  }, [dispatch, restoredSnapshot]);
+  }, [dispatch, initialEntityType, restoredSnapshot]);
 
   useEffect(() => {
     if (!hasInitializedRef.current) {
@@ -108,4 +110,3 @@ export function useSearchPagePersistence(
     });
   }, [restoredSnapshot, visibleResultCount]);
 }
-
