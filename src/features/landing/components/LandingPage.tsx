@@ -183,7 +183,7 @@ export default function LandingPage() {
 
             <Link
               to={ROUTES.SEARCH}
-              className="rounded-full bg-slate-50 px-4 py-2 whitespace-nowrap text-black transition hover:bg-emerald-50 hover:text-emerald-700"
+              className="rounded-full bg-slate-50 px-4 py-2 whitespace-nowrap text-black transition hover:text-emerald-700"
             >
               Discovery
             </Link>
@@ -192,7 +192,7 @@ export default function LandingPage() {
               <button
                 type="button"
                 onClick={handleExploreMenuToggle}
-                className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-black transition hover:bg-emerald-50 hover:text-emerald-700"
+                className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-black transition hover:text-emerald-700"
               >
                 Explore
                 <ChevronDown
@@ -222,7 +222,7 @@ export default function LandingPage() {
               <button
                 type="button"
                 onClick={handleWorkspaceMenuToggle}
-                className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-black transition hover:bg-emerald-50 hover:text-emerald-700"
+                className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-black transition hover:text-emerald-700"
               >
                 Workspace
                 <ChevronDown
