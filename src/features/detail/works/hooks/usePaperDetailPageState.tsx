@@ -1,7 +1,7 @@
 import { useDetailPageQuery } from "@/features/detail/hooks/useDetailPageQuery";
 import { useTrimmedRouteParam } from "@/features/detail/hooks/useTrimmedRouteParam";
 
-import { getPaperDetail } from "../services";
+import { getPaperDetail } from "../services/api";
 
 export function usePaperDetailPageState() {
   const paperId = useTrimmedRouteParam("paperId");

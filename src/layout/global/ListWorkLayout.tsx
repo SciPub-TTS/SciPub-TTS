@@ -21,7 +21,7 @@ import {
 } from "@/features/detail/detailTrail";
 import { markSearchPageRestorePending } from "@/features/search/utils/navigationState";
 import type { PaperResultEntityRef } from "@/features/search/types";
-import MetadataBadge from "@/layout/components/MetadataBadge";
+import MetadataBadge from "./MetadataBadge";
 
 type ListWorkLayoutProps = {
   abstractText: string;
@@ -159,6 +159,7 @@ export default function ListWorkLayout({
     title,
     topic: topicRef?.name || topic,
     topicOpenAlexId: topicRef?.id ?? null,
+    workType: field,
     year,
   });
 

@@ -23,8 +23,8 @@ export {
   getFilterOptionPage,
   getSearchSummary,
 } from "./filterOptionsApi";
-export { getHotKeywords, getTrendingKeywords } from "./hotKeywordsApi";
-export { getHotTopics, getTrendingTopics } from "./hotTopicsApi";
+export { getTrendingKeywords } from "./hotKeywordsApi";
+export { getTrendingTopics } from "./hotTopicsApi";
 export {
   clearSearchHistory,
   deleteSearchHistory,

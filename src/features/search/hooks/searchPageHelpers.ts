@@ -10,7 +10,6 @@ import type { SearchPageSnapshot } from "./types";
 const authorFilterWidgets: SearchFilterWidgetKey[] = [
   "institution",
   "country",
-  "primaryTopic",
 ];
 
 const topicFilterWidgets: SearchFilterWidgetKey[] = [
@@ -59,4 +58,3 @@ export function getNextSortStateForEntityType(
     ? { ...defaultSearchSortState }
     : currentSortState;
 }
-

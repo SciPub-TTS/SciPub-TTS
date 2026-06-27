@@ -75,6 +75,7 @@ export function useSearchPageState() {
   } = searchPageState;
   const isWorksTab = activeEntityType === "works";
   const activeEntityMetadata = getSearchEntityMetadata(activeEntityType);
+  const [hasLoadedTrendSnapshot, setHasLoadedTrendSnapshot] = useState(false);
   const [topicHotSearches, setTopicHotSearches] = useState<string[]>([]);
   const [trendingTopicNames, setTrendingTopicNames] = useState<string[]>([]);
   const [trendingKeywordNames, setTrendingKeywordNames] = useState<string[]>([]);
@@ -173,9 +174,11 @@ export function useSearchPageState() {
         setTrendingTopicNames(nextTrendingTopics);
         setTrendingKeywordNames(nextTrendingKeywords);
         setTopicHotSearches(nextTrendingTopics.slice(0, 8));
+        setHasLoadedTrendSnapshot(true);
       } catch (error) {
         if (!isCancelled) {
           console.error("Cannot load weekly trend snapshot:", error);
+          setHasLoadedTrendSnapshot(true);
         }
       }
     }
@@ -406,6 +409,7 @@ export function useSearchPageState() {
     saveSearchFeedback: searchHistory.saveSearchFeedback,
     saveSearchNotice: searchHistory.saveSearchNotice,
     saveSearchSuccessToken: searchHistory.saveSearchSuccessToken,
+    hasLoadedTrendSnapshot,
     topicHotSearches,
     trendingKeywordNames,
     trendingTopicNames,

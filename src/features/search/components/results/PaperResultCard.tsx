@@ -4,7 +4,7 @@ import {
   buildNormalizedTrendLabelSet,
   isExactTrendMatch,
 } from "@/features/search/utils";
-import ListWorkLayout from "@/layout/components/ListWorkLayout";
+import ListWorkLayout from "@/layout/global/ListWorkLayout";
 
 export function PaperResultCard({
   paper,

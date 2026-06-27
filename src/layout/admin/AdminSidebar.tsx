@@ -1,22 +1,21 @@
 import { LayoutDashboard, LogOut, Users } from "lucide-react";
 import { useState } from "react";
-import { useTranslation } from "react-i18next";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 
 import { ROUTES } from "@/app/router";
 import logoImage from "@/assets/images/logo.png";
-import { SafeActionDialog } from "@/components/SafeActionDialog";
+import { SafeActionDialog } from "@/layout/global/SafeActionDialog";
 import { useAuthSession } from "@/features/auth/hooks/useAuthSession";
 import { submitLogout } from "@/features/auth/services/authFlows";
 
 const adminMenuItems = [
   {
-    labelKey: "admin.dashboard",
+    label: "Admin Dashboard",
     path: ROUTES.ADMIN_DASHBOARD,
     icon: LayoutDashboard,
   },
   {
-    labelKey: "admin.userManagement",
+    label: "User Management",
     path: ROUTES.ADMIN_USERS,
     icon: Users,
   },
@@ -33,12 +32,11 @@ function getInitials(name: string) {
 }
 
 export default function AdminSidebar() {
-  const { t } = useTranslation();
   const navigate = useNavigate();
   const { currentUser } = useAuthSession();
   const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
-  const displayName = currentUser?.fullName ?? t("admin.admin");
+  const displayName = currentUser?.fullName ?? "Admin";
   const initials = getInitials(displayName) || "AD";
 
   async function handleConfirmLogout() {
@@ -74,14 +72,14 @@ export default function AdminSidebar() {
               Owlreka
             </h1>
             <p className="mt-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-400">
-              {t("admin.console")}
+              Admin Console
             </p>
           </div>
         </Link>
 
         <div className="flex-1 px-2.5 py-5">
           <p className="mb-2 px-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">
-            {t("admin.admin")}
+            Admin
           </p>
 
           <nav className="space-y-1">
@@ -102,7 +100,7 @@ export default function AdminSidebar() {
                   }
                 >
                   <Icon className="h-4 w-4 shrink-0" />
-                  <span className="truncate">{t(item.labelKey)}</span>
+                  <span className="truncate">{item.label}</span>
                 </NavLink>
               );
             })}
@@ -128,7 +126,7 @@ export default function AdminSidebar() {
                   {displayName}
                 </p>
                 <p className="mt-0.5 truncate text-[10px] text-slate-400">
-                  {t("admin.admin")}
+                  Admin
                 </p>
               </div>
             </div>
@@ -139,16 +137,15 @@ export default function AdminSidebar() {
               className="flex w-full items-center gap-3 rounded-lg px-2.5 py-2 text-left text-xs font-medium text-slate-300 transition hover:bg-rose-500/15 hover:text-rose-100"
             >
               <LogOut className="h-4 w-4 shrink-0" />
-              <span className="truncate">{t("common.logout")}</span>
+              <span className="truncate">Log out</span>
             </button>
           </div>
         )}
       </aside>
 
       <SafeActionDialog
-        confirmLabel={t("common.logout")}
+        confirmLabel="Log out"
         description="You will be signed out from the admin console and returned to the login page."
-        eyebrow="Session check"
         isPending={isLoggingOut}
         onClose={() => {
           if (!isLoggingOut) {

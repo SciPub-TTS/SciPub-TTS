@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 
-import { SafeActionDialog } from "@/components/SafeActionDialog";
+import { SafeActionDialog } from "@/layout/global/SafeActionDialog";
 import { BookmarkGrid } from "@/features/bookmarks/components/BookmarkGrid";
 import { BookmarkPageHeader } from "@/features/bookmarks/components/BookmarkPageHeader";
 import { BookmarkTopBar } from "@/features/bookmarks/components/BookmarkTopBar";
@@ -25,7 +25,6 @@ export default function BookmarkLibraryPage() {
     removeBookmarkFromCollection,
     totalElements,
     updateFilter,
-    updateNote,
   } = useBookmarks();
 
   const [searchValue, setSearchValue] = useState(filters.keyword);
@@ -150,7 +149,6 @@ export default function BookmarkLibraryPage() {
             onDelete={handleRequestDeleteBookmark}
             onLoadMore={loadMore}
             onRemoveFromCollection={removeBookmarkFromCollection}
-            onUpdateNote={updateNote}
             searchQuery={filters.keyword}
             selectedCollectionId={filters.collectionId}
             selectedCollectionName={selectedCollection?.name ?? null}

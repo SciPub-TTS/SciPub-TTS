@@ -57,12 +57,6 @@ function buildSearchEntityParams(request: SearchEntityRequest) {
       filters.country,
       optionValueLookup.country,
     );
-    appendMappedValues(
-      params,
-      "primaryTopic",
-      filters.primaryTopic,
-      optionValueLookup.primaryTopic,
-    );
   }
 
   if (request.entityType === "topics") {

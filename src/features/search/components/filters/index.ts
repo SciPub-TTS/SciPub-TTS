@@ -1,4 +1,3 @@
-export { searchFilterWidgetDefinitions } from "./filterWidgetConfig";
 export { default as SearchFilterAddMenu } from "./SearchFilterAddMenu";
 export {
   AuthorFilterWidget,

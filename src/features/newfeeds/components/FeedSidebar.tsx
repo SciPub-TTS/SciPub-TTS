@@ -1,4 +1,8 @@
-import { Plus } from "lucide-react";
+import { useState } from "react";
+import { Plus, Check } from "lucide-react";
+import { Link } from "react-router-dom";
+import { routePaths } from "@/app/router";
+import { http } from "@/services/http";
 
 import type {
   FollowedAuthor,
@@ -42,101 +46,235 @@ function SidebarCard({
 }
 
 function FollowedTopicsCard({ topics }: { topics: FollowedTopic[] }) {
-  return (
-    <SidebarCard title="Followed Topics">
-      <div className="space-y-2">
-        {topics.map((topic) => (
-          <div
-            className="flex min-w-0 items-center justify-between gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2"
-            key={topic.name}
-          >
-            <span className="truncate text-xs font-semibold text-slate-700">
-              {topic.name}
-            </span>
-            <div className="flex shrink-0 items-center gap-2">
-              <span className={getTopicStatusClassName(topic.status)}>
-                {topic.status}
-              </span>
-              <span className="text-[11px] font-bold text-emerald-600">
-                Following
-              </span>
+    return (
+        <SidebarCard title="Followed Topics">
+            <div className="space-y-2">
+                {topics.map((topic) => (
+                    <TopicRowItem key={topic.id} topic={topic} />
+                ))}
             </div>
-          </div>
-        ))}
-      </div>
-      <button
-        className="mt-4 w-full text-center text-xs font-bold text-blue-600 hover:text-blue-700"
-        type="button"
-      >
-        + Follow more topics
-      </button>
-    </SidebarCard>
-  );
+            <Link
+                to="/search"
+                className="mt-4 block w-full text-center text-xs font-bold text-blue-600 hover:text-blue-700"
+            >
+                + Follow more topics
+            </Link>
+        </SidebarCard>
+    );
+}
+
+function TopicRowItem({ topic }: { topic: FollowedTopic }) {
+    const [isFollowed, setIsFollowed] = useState(true);
+    const [loading, setLoading] = useState(false);
+
+    const handleToggleFollow = async () => {
+        setLoading(true);
+        try {
+            if (isFollowed) {
+                await http.delete("/api/follows", {
+                    params: {
+                        targetType: "TOPIC",
+                        targetOpenAlexId: topic.id,
+                    },
+                });
+                setIsFollowed(false);
+            } else {
+                await http.post("/api/follows", {
+                    targetType: "TOPIC",
+                    targetOpenalexId: topic.id,
+                    displayName: topic.name,
+                });
+                setIsFollowed(true);
+            }
+        } catch (err) {
+            console.error("Failed to toggle follow topic:", err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const followButtonClassName = isFollowed
+        ? "border border-[#14532D] bg-[#14532D] text-white hover:border-[#0f3d22] hover:bg-[#0f3d22] hover:text-white"
+        : "border border-black bg-white text-black hover:border-[#14532D] hover:bg-[#14532D] hover:text-white";
+
+    return (
+        <div className="flex min-w-0 items-center justify-between gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
+            <Link
+                to={routePaths.topicDetail(topic.id)}
+                className="truncate text-xs font-semibold text-slate-700 hover:text-emerald-600 hover:underline"
+            >
+                {topic.name}
+            </Link>
+            <button
+                onClick={handleToggleFollow}
+                disabled={loading}
+                className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold transition duration-200 ${followButtonClassName} ${
+                    loading ? "opacity-50 cursor-not-allowed" : ""
+                }`}
+                type="button"
+            >
+                {isFollowed ? (
+                    <>
+                        <Check className="h-3 w-3" />
+                        <span>Following</span>
+                    </>
+                ) : (
+                    <>
+                        <Plus className="h-3 w-3" />
+                        <span>Follow</span>
+                    </>
+                )}
+            </button>
+        </div>
+    );
 }
 
 function FollowedAuthorsCard({ authors }: { authors: FollowedAuthor[] }) {
-  return (
-    <SidebarCard title="Followed Authors">
-      <div className="space-y-2">
-        {authors.map((author) => (
-          <div
-            className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2"
-            key={author.name}
-          >
-            <div className="min-w-0">
-              <p className="truncate text-xs font-semibold text-slate-700">
-                {author.name}
-              </p>
-              <p className="truncate text-[11px] font-medium text-slate-400">
-                {author.field}
-              </p>
+    return (
+        <SidebarCard title="Followed Authors">
+            <div className="space-y-2">
+                {authors.map((author) => (
+                    <AuthorRowItem key={author.id} author={author} />
+                ))}
             </div>
-            <span className="shrink-0 rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-bold text-emerald-600">
-              Following
-            </span>
-          </div>
-        ))}
-      </div>
-      <button
-        className="mt-4 w-full text-center text-xs font-bold text-blue-600 hover:text-blue-700"
-        type="button"
-      >
-        + Follow more authors
-      </button>
-    </SidebarCard>
-  );
+            <Link
+                to="/search"
+                className="mt-4 block w-full text-center text-xs font-bold text-blue-600 hover:text-blue-700"
+            >
+                + Follow more authors
+            </Link>
+        </SidebarCard>
+    );
+}
+
+function AuthorRowItem({ author }: { author: FollowedAuthor }) {
+    const [isFollowed, setIsFollowed] = useState(true);
+    const [loading, setLoading] = useState(false);
+
+    const handleToggleFollow = async () => {
+        setLoading(true);
+        try {
+            if (isFollowed) {
+                await http.delete("/api/follows", {
+                    params: {
+                        targetType: "AUTHOR",
+                        targetOpenAlexId: author.id,
+                    },
+                });
+                setIsFollowed(false);
+            } else {
+                await http.post("/api/follows", {
+                    targetType: "AUTHOR",
+                    targetOpenalexId: author.id,
+                    displayName: author.name,
+                });
+                setIsFollowed(true);
+            }
+        } catch (err) {
+            console.error("Failed to toggle follow author:", err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const followButtonClassName = isFollowed
+        ? "border border-[#14532D] bg-[#14532D] text-white hover:border-[#0f3d22] hover:bg-[#0f3d22] hover:text-white"
+        : "border border-black bg-white text-black hover:border-[#14532D] hover:bg-[#14532D] hover:text-white";
+
+    return (
+        <div className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
+            <div className="min-w-0">
+              <Link
+                to={routePaths.authorDetail(author.id)}
+                className="truncate text-xs font-semibold text-slate-700 hover:text-emerald-600 hover:underline block"
+              >
+                {author.name}
+              </Link>
+            </div>
+            <button
+                onClick={handleToggleFollow}
+                disabled={loading}
+                className={`inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold transition duration-200 ${followButtonClassName} ${
+                    loading ? "opacity-50 cursor-not-allowed" : ""
+                }`}
+                type="button"
+            >
+                {isFollowed ? (
+                    <>
+                        <Check className="h-3 w-3" />
+                        <span>Following</span>
+                    </>
+                ) : (
+                    <>
+                        <Plus className="h-3 w-3" />
+                        <span>Follow</span>
+                    </>
+                )}
+            </button>
+        </div>
+    );
 }
 
 function SuggestedTopicsCard({ topics }: { topics: SuggestedTopic[] }) {
-  return (
-    <SidebarCard title="Suggested Topics">
-      <div className="space-y-2">
-        {topics.map((topic) => (
-          <div
-            className="flex items-center justify-between gap-3"
-            key={topic.name}
-          >
-            <span className="min-w-0 truncate text-xs font-semibold text-slate-600">
-              {topic.name}
-            </span>
-            <button
-              aria-label={`Follow ${topic.name}`}
-              className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 transition hover:bg-emerald-200"
-              type="button"
-            >
-              <Plus className="h-4 w-4" />
-            </button>
-          </div>
-        ))}
-      </div>
-    </SidebarCard>
-  );
+    return (
+        <SidebarCard title="Suggested Topics">
+            <div className="space-y-2">
+                {topics.map((topic) => (
+                    <SuggestedTopicRowItem key={topic.id} topic={topic} />
+                ))}
+            </div>
+        </SidebarCard>
+    );
 }
 
-function getTopicStatusClassName(status: FollowedTopic["status"]) {
-  if (status === "Rising") {
-    return "rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-semibold text-amber-700";
-  }
+function SuggestedTopicRowItem({ topic }: { topic: SuggestedTopic }) {
+    const [isFollowed, setIsFollowed] = useState(false); // Gợi ý mặc định là chưa follow
+    const [loading, setLoading] = useState(false);
 
-  return "rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-500";
+    const handleToggleFollow = async () => {
+        setLoading(true);
+        try {
+            if (isFollowed) {
+                await http.delete(`/api/topics/${topic.id}/follow`);
+                setIsFollowed(false);
+            } else {
+                await http.post(`/api/topics/${topic.id}/follow`);
+                setIsFollowed(true);
+            }
+        } catch (err) {
+            console.error("Failed to toggle follow suggested topic:", err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const followButtonClassName = isFollowed
+        ? "border border-[#14532D] bg-[#14532D] text-white hover:border-[#0f3d22] hover:bg-[#0f3d22] hover:text-white"
+        : "border border-black bg-white text-black hover:border-[#14532D] hover:bg-[#14532D] hover:text-white";
+
+    return (
+        <div className="flex items-center justify-between gap-3">
+            <Link
+              to={routePaths.topicDetail(topic.id)}
+              className="min-w-0 truncate text-xs font-semibold text-slate-600 hover:text-emerald-600 hover:underline"
+            >
+              {topic.name}
+            </Link>
+            <button
+                aria-label={`Follow ${topic.name}`}
+                onClick={handleToggleFollow}
+                disabled={loading}
+                className={`inline-flex h-7 px-2.5 items-center justify-center rounded-full text-xs font-bold transition duration-200 ${followButtonClassName} ${
+                    loading ? "opacity-50 cursor-not-allowed" : ""
+                }`}
+                type="button"
+            >
+                {isFollowed ? (
+                    <Check className="h-3.5 w-3.5" />
+                ) : (
+                    <Plus className="h-3.5 w-3.5" />
+                )}
+            </button>
+          </div>
+  );
 }

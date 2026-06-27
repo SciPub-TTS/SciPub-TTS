@@ -1,1 +1,0 @@
-export { getPaperDetail } from "./api";

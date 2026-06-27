@@ -115,6 +115,7 @@ export function mapWorkDetailToPaperDetail(
     sourceType: normalizedSourceType,
     title: normalizedTitle,
     topics,
+    workType: normalizedType,
   };
 }
 

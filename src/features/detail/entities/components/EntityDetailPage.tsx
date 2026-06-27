@@ -28,7 +28,7 @@ import {
 } from "@/features/detail/works/components/sections/PaperDetailFeedbackState";
 import DetailSectionCard from "@/features/detail/works/components/sections/DetailSectionCard";
 import { formatCompactNumber, formatFullNumber } from "@/features/search/utils";
-import ListWorkLayout from "@/layout/components/ListWorkLayout";
+import ListWorkLayout from "@/layout/global/ListWorkLayout";
 
 import { useEntityDetailNavigation } from "../hooks/useEntityDetailNavigation";
 import { useEntityDetailPageState } from "../hooks/useEntityDetailPageState";

@@ -8,6 +8,11 @@ const OPEN_ALEX_QUERY_DEFAULTS = {
   staleTime: 10 * 60 * 1000,
 };
 
+const LANDING_SUMMARY_QUERY_DEFAULTS = {
+  gcTime: 7 * 24 * 60 * 60 * 1000,
+  staleTime: 12 * 60 * 60 * 1000,
+};
+
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -24,3 +29,4 @@ queryClient.setQueryDefaults(["searchResults"], OPEN_ALEX_QUERY_DEFAULTS);
 queryClient.setQueryDefaults(["searchFilterOptions"], OPEN_ALEX_QUERY_DEFAULTS);
 queryClient.setQueryDefaults(["paperDetail"], OPEN_ALEX_QUERY_DEFAULTS);
 queryClient.setQueryDefaults(["entityDetail"], OPEN_ALEX_QUERY_DEFAULTS);
+queryClient.setQueryDefaults(["landingSummary"], LANDING_SUMMARY_QUERY_DEFAULTS);

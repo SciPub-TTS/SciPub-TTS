@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
-import { apiService, fallbackResearchFeedData } from "../services";
+import { apiService } from "../services";
 import type {
   FeedArticle,
   FeedTabKey,
@@ -7,78 +7,95 @@ import type {
   FollowedTopic,
   SuggestedTopic,
   ResearchFeedData,
+  FeedTab
 } from "../types";
+
+const FEED_TABS: FeedTab[] = [
+  { key: "all", label: "All" },
+  { key: "matched-topic", label: "Matched Topic" },
+  { key: "matched-author", label: "Matched Author" },
+  { key: "matched-both", label: "Matched Both" },
+  { key: "latest", label: "Latest" },
+];
 
 export function useResearchFeedPage() {
   const [activeTab, setActiveTab] = useState<FeedTabKey>("all");
 
-  const [followedTopics, setFollowedTopics] = useState<FollowedTopic[]>(
-    fallbackResearchFeedData.followedTopics,
-  );
-  const [followedAuthors, setFollowedAuthors] = useState<FollowedAuthor[]>(
-    fallbackResearchFeedData.followedAuthors,
-  );
-  const [suggestedTopics, setSuggestedTopics] = useState<SuggestedTopic[]>(
-    fallbackResearchFeedData.suggestedTopics,
-  );
-  const [allArticles, setAllArticles] = useState<FeedArticle[]>(
-    fallbackResearchFeedData.articles,
-  );
+  // Thêm state quản lý phân trang
+  const [page, setPage] = useState<number>(0);
+  const [totalItems, setTotalItems] = useState<number>(0);
+
+  const [followedTopics, setFollowedTopics] = useState<FollowedTopic[]>([]);
+  const [followedAuthors, setFollowedAuthors] = useState<FollowedAuthor[]>([]);
+  const [suggestedTopics, setSuggestedTopics] = useState<SuggestedTopic[]>([]);
+  const [articles, setArticles] = useState<FeedArticle[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+
+  const handleTabChange = (tab: FeedTabKey) => {
+    setActiveTab(tab);
+    setPage(0);
+  };
 
   const loadData = useCallback(async () => {
     setIsLoading(true);
     try {
-      const [topics, authors, suggested, fetchedArticles] = await Promise.all([
+      const [topics, authors, suggested, feedResponse] = await Promise.all([
         apiService.getFollowedTopics(),
         apiService.getFollowedAuthors(),
         apiService.getSuggestedTopics(),
-        apiService.getFeed(activeTab),
+        apiService.getFeed(activeTab, page, 10),
       ]);
 
       setFollowedTopics(topics);
       setFollowedAuthors(authors);
       setSuggestedTopics(suggested);
-      setAllArticles(fetchedArticles);
+
+      if (page === 0) {
+        setArticles(feedResponse.items);
+      } else {
+        setArticles((prevArticles) => {
+          const newItems = feedResponse.items.filter(
+              (newItem) => !prevArticles.some((oldItem) => oldItem.id === newItem.id)
+          );
+          return [...prevArticles, ...newItems];
+        });
+      }
+
+      setTotalItems(feedResponse.totalItems);
+
     } catch (err) {
-      console.warn(
-        "Error resolving live endpoint payloads. Reverting to stub fallback.",
-        err,
-      );
+      console.warn("Lỗi load data.", err);
     } finally {
       setIsLoading(false);
     }
-  }, [activeTab]);
+  }, [activeTab, page]);
+
 
   useEffect(() => {
-    loadData();
+    (async () => {
+      await loadData();
+    })();
   }, [loadData]);
 
-  const articles = useMemo(() => {
-    if (activeTab === "all") {
-      return allArticles;
-    }
-
-    return allArticles.filter((article) =>
-      article.tabMatches ? article.tabMatches.includes(activeTab) : true,
-    );
-  }, [activeTab, allArticles]);
 
   const feedData: ResearchFeedData = useMemo(() => {
     return {
-      articles: allArticles,
+      articles: articles,
       followedAuthors,
       followedTopics,
       suggestedTopics,
-      tabs: fallbackResearchFeedData.tabs,
+      tabs: FEED_TABS,
     };
-  }, [allArticles, followedAuthors, followedTopics, suggestedTopics]);
+  }, [articles, followedAuthors, followedTopics, suggestedTopics]);
 
   return {
     activeTab,
     articles,
+    totalItems,
+    page,
+    setPage,
     feedData,
-    setActiveTab,
     isLoading,
+    setActiveTab: handleTabChange,
   };
 }

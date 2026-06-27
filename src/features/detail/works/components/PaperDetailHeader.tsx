@@ -13,7 +13,7 @@ import {
   FileText,
   Globe2,
 } from "lucide-react";
-import MetadataBadge from "@/layout/components/MetadataBadge";
+import MetadataBadge from "@/layout/global/MetadataBadge";
 
 import type { PaperDetailData } from "../types";
 
@@ -40,6 +40,7 @@ export default function PaperDetailHeader(props: PaperDetailHeaderProps) {
     title: paperDetail.title,
     topic: paperDetail.topics[0]?.name || "",
     topicOpenAlexId: paperDetail.topics[0]?.id ?? null,
+    workType: paperDetail.workType,
     year: paperDetail.publicationYear,
   });
   const bookmarkClassName = isSaved
