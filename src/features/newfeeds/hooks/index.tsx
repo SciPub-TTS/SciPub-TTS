@@ -7,15 +7,13 @@ import type {
   FollowedTopic,
   SuggestedTopic,
   ResearchFeedData,
-  FeedTab
+  FeedTab,
 } from "../types";
 
 const FEED_TABS: FeedTab[] = [
   { key: "all", label: "All" },
   { key: "matched-topic", label: "Matched Topic" },
   { key: "matched-author", label: "Matched Author" },
-  { key: "matched-both", label: "Matched Both" },
-  { key: "latest", label: "Latest" },
 ];
 
 export function useResearchFeedPage() {
@@ -55,14 +53,14 @@ export function useResearchFeedPage() {
       } else {
         setArticles((prevArticles) => {
           const newItems = feedResponse.items.filter(
-              (newItem) => !prevArticles.some((oldItem) => oldItem.id === newItem.id)
+            (newItem) =>
+              !prevArticles.some((oldItem) => oldItem.id === newItem.id),
           );
           return [...prevArticles, ...newItems];
         });
       }
 
       setTotalItems(feedResponse.totalItems);
-
     } catch (err) {
       console.warn("Lỗi load data.", err);
     } finally {
@@ -70,13 +68,11 @@ export function useResearchFeedPage() {
     }
   }, [activeTab, page]);
 
-
   useEffect(() => {
     (async () => {
       await loadData();
     })();
   }, [loadData]);
-
 
   const feedData: ResearchFeedData = useMemo(() => {
     return {

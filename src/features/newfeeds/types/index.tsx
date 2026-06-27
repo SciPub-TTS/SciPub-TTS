@@ -1,9 +1,7 @@
 export type FeedTabKey =
   | "all"
   | "matched-topic"
-  | "matched-author"
-  | "matched-both"
-  | "latest";
+  | "matched-author";
 
 export type FeedTab = {
   key: FeedTabKey;

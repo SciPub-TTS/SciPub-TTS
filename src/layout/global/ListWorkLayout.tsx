@@ -25,6 +25,7 @@ import MetadataBadge from "./MetadataBadge";
 
 type ListWorkLayoutProps = {
   abstractText: string;
+  abstractLabel?: string;
   authors: string[];
   authorRefs?: PaperResultEntityRef[];
   citations: number;
@@ -110,6 +111,7 @@ function copyTextWithFallback(value: string) {
 
 export default function ListWorkLayout({
   abstractText,
+  abstractLabel = "Abstract",
   authors,
   authorRefs = [],
   citations,
@@ -365,7 +367,7 @@ export default function ListWorkLayout({
       <div className="mt-4 text-sm font-medium leading-7 text-black">
         <div className="mb-1 flex items-center gap-1 font-bold text-black">
           <FileText className="h-4 w-4" />
-          Abstract:
+          {abstractLabel}:
         </div>
         <p>{visibleAbstract}</p>
       </div>
