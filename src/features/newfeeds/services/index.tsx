@@ -7,6 +7,10 @@ import type {
   SuggestedTopic
 } from "../types";
 
+type FeedArticleApiItem = Omit<FeedArticle, "source"> & {
+  venue: string;
+};
+
 // Helper to strip any full OpenAlex URL prefixes to keep route navigation clean
 function extractRawId(id: string): string {
   if (!id) return "";
@@ -67,7 +71,7 @@ export const apiService = {
     try {
       const response = await http.get<
         ApiResponse<{
-          items: FeedArticle[];
+          items: FeedArticleApiItem[];
           totalItems: number;
         }>
       >("/api/feed", {
@@ -89,6 +93,7 @@ export const apiService = {
         items: data.items.map((item) => ({
           ...item,
           id: extractRawId(item.id),
+          source: item.venue,
         })),
         totalItems: data.totalItems
       };

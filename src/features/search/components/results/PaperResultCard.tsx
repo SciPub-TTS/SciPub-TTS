@@ -37,7 +37,7 @@ export function PaperResultCard({
       topic={paper.topic}
       topicRef={paper.topicRef}
       trendingKeywords={trendingKeywords}
-      venue={paper.venue}
+      source={paper.source}
       workId={paper.id}
       year={paper.year}
     />

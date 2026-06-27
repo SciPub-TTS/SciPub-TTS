@@ -28,10 +28,10 @@ export type FeedArticle = {
   id: string;
   relevance: number;
   reason: string;
+  source: string;
   tabMatches: FeedTabKey[];
   tags: string[];
   title: string;
-  venue: string;
   year: number;
 };
 

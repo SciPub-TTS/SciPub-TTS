@@ -40,11 +40,11 @@ type ListWorkLayoutProps = {
   workId: string;
   pdfUrl: string | null;
   preserveSearchStateOnDetailClick?: boolean;
+  source: string;
   subField: string;
   title: string;
   topic: string;
   topicRef?: PaperResultEntityRef | null;
-  venue: string;
   year: number;
   onBookmarkClick?: () => void;
 };
@@ -126,11 +126,11 @@ export default function ListWorkLayout({
   workId,
   pdfUrl,
   preserveSearchStateOnDetailClick = true,
+  source,
   subField,
   title,
   topic,
   topicRef = null,
-  venue,
   year,
   onBookmarkClick,
 }: ListWorkLayoutProps) {
@@ -157,7 +157,7 @@ export default function ListWorkLayout({
     initialSaved: isSaved,
     onSuccess: onBookmarkClick,
     openAlexId: workId,
-    source: venue,
+    source,
     title,
     topic: topicRef?.name || topic,
     topicOpenAlexId: topicRef?.id ?? null,
@@ -355,7 +355,7 @@ export default function ListWorkLayout({
         <span className="text-black">-</span>
         <span className="inline-flex items-center gap-1 text-black">
           <Building2 className="h-4 w-4 text-black" />
-          {venue}
+          {source}
         </span>
         <span className="text-black">-</span>
         <span className="inline-flex items-center gap-1">

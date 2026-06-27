@@ -34,7 +34,7 @@ export function mapApiWorkToPaperResult(work: SearchWorksApiItem): PaperResult {
     title,
     authors,
     authorRefs,
-    venue: normalizedSource,
+    source: normalizedSource,
     citations: citedByCount,
     year: publicationYear,
     abstract: summary,
@@ -52,7 +52,6 @@ export function mapApiWorkToPaperResult(work: SearchWorksApiItem): PaperResult {
     growthPercent: 0,
     isTrendTopic: false,
     saved: false,
-    trend: false,
   };
 }
 

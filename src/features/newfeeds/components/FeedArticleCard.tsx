@@ -32,7 +32,7 @@ export function FeedArticleCard({ article }: FeedArticleCardProps) {
       title={article.title}
       topic={primaryTopicBadge?.label || article.tags[0] || "Recommended paper"}
       trendingKeywords={hasTrendSignal ? article.tags : []}
-      venue={article.venue}
+      source={article.source}
       workId={article.id}
       year={article.year}
     />

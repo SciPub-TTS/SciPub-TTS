@@ -154,6 +154,14 @@ function AuthorList(props: AuthorListProps) {
 function InstitutionList(props: InstitutionListProps) {
   const { institutions } = props;
 
+  if (institutions.length === 0) {
+    return (
+      <p className="mt-4 text-lg text-black">
+        Institution information is not available.
+      </p>
+    );
+  }
+
   return (
     <div className="mt-4 flex flex-wrap gap-3">
       {institutions.map((institution) => (

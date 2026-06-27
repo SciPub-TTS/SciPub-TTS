@@ -43,7 +43,7 @@ export function mapWorkDetailToPaperDetail(
   const normalizedSourceName =
     work.primary_location?.source?.display_name?.trim() || "Unknown source";
   const normalizedSourceType = formatTypeLabel(
-    work.primary_location?.source?.type || "source",
+    work.primary_location?.source?.type || "unknown",
   );
   const abstractText =
     reconstructAbstractText(work.abstract_inverted_index) ||

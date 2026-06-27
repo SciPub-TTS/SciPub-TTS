@@ -278,7 +278,7 @@ function EntityWorksSection({
               title={work.title}
               topic={work.topic}
               topicRef={work.topicRef}
-              venue={work.venue}
+              source={work.source}
               workId={work.id}
               year={work.year}
             />
