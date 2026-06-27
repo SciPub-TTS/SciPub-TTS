@@ -1,12 +1,13 @@
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Bookmark,
-  ExternalLink,
+  Check,
   GitBranch,
   Share2,
   Sparkles,
-  TrendingUp,
 } from "lucide-react";
-
+import { http} from "@/services/http.ts";
 import type { FeedArticle, FeedBadge } from "../types";
 
 type FeedArticleCardProps = {
@@ -14,6 +15,57 @@ type FeedArticleCardProps = {
 };
 
 export function FeedArticleCard({ article }: FeedArticleCardProps) {
+
+    const navigate = useNavigate();
+
+    const [isBookmarked, setIsBookmarked] = useState(false);
+    const [isBookmarking, setIsBookmarking] = useState(false);
+    const [isCopied, setIsCopied] = useState(false);
+    const [, setIsLoading] = useState(false);
+
+    const handleViewDetails = () => {
+        navigate(`/papers/${article.doiUrl}?origin=feed`);
+    };
+
+    const handleBookmark = async () => {
+        if (isBookmarked) return;
+
+        setIsBookmarking(true);
+        try {
+            const payload = {
+                openAlexId: article.id,
+                titleSnapshot: article.title,
+                authorsSnapshot: article.authors.map(a => a.name).join(", "),
+                authorOpenAlexIdsSnapshot: ["A1234567890"],
+                workTypeSnapshot: "journal-article",
+                sourceSnapshot: article.venue,
+                topicSnapshot: article.tags.length > 0 ? article.tags[0] : null,
+                topicOpenAlexIdSnapshot: null,
+                publicationYear: article.year,
+                citationSnapshot: article.citations,
+            };
+
+            await http.post("/api/bookmarks", payload);
+            setIsBookmarked(true);
+        } catch (error) {
+            console.error("Failed to bookmark article:", error);
+        } finally {
+            setIsLoading(false);
+            setIsBookmarking(false);
+        }
+    };
+
+    const handleShare = async () => {
+        const detailUrl = `${window.location.origin}/papers/${article.doiUrl}`;
+        try {
+            await navigator.clipboard.writeText(detailUrl);
+            setIsCopied(true);
+            setTimeout(() => setIsCopied(false), 2000);
+        } catch (error) {
+            console.error("Failed to copy to clipboard:", error);
+        }
+    };
+
   return (
     <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
       <div className="flex items-start justify-between gap-4">
@@ -85,30 +137,32 @@ export function FeedArticleCard({ article }: FeedArticleCardProps) {
       </div>
 
       <div className="mt-5 border-t border-slate-200 pt-4">
-        <a
-          className="inline-flex max-w-full items-center gap-1 truncate text-sm font-medium text-blue-600 hover:text-blue-700"
-          href={article.doiUrl}
-          rel="noreferrer"
-          target="_blank"
-        >
-          <ExternalLink className="h-4 w-4 shrink-0" />
-          <span className="truncate">{article.doiLabel}</span>
-        </a>
-
         <div className="mt-3 flex flex-wrap gap-2">
-          <ActionButton icon={<Bookmark className="h-4 w-4" />} label="Bookmark" />
-          <ActionButton label="View Details" />
-          <ActionButton
-            icon={<TrendingUp className="h-4 w-4" />}
-            label="View Trend"
-          />
-          <button
+            {/* Nút Bookmark */}
+            <ActionButton
+                icon={isBookmarked ? <Check className="h-4 w-4 text-emerald-600" /> : <Bookmark className="h-4 w-4" />}
+                label={isBookmarking ? "Saving..." : (isBookmarked ? "Saved" : "Bookmark")}
+                onClick={handleBookmark}
+                disabled={isBookmarked || isBookmarking}
+                className={isBookmarked ? "border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-50" : ""}
+            />
+
+            {/* Nút View Details */}
+            <ActionButton
+                label="View Details"
+                onClick={handleViewDetails}
+            />
+
+            {/* Nút Share */}
+        <button
             aria-label="Share paper"
             className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-700 transition hover:bg-slate-50"
             type="button"
-          >
-            <Share2 className="h-4 w-4" />
-          </button>
+            onClick={handleShare}
+            title="Copy detail link to clipboard"
+        >
+            {isCopied ? <Check className="h-4 w-4 text-emerald-600" /> : <Share2 className="h-4 w-4" />}
+        </button>
         </div>
       </div>
     </article>
@@ -137,17 +191,27 @@ function Badge({ badge }: { badge: FeedBadge }) {
 function ActionButton({
   icon,
   label,
+  onClick,
+  disabled,
+  className = "",
 }: {
-  icon?: React.ReactNode;
-  label: string;
+    icon?: React.ReactNode;
+    label: string;
+    onClick?: () => void;
+    disabled?: boolean;
+    className?: string;
 }) {
-  return (
-    <button
-      className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 text-xs font-semibold text-slate-800 transition hover:bg-slate-50 sm:text-sm"
-      type="button"
-    >
-      {icon}
-      <span>{label}</span>
-    </button>
-  );
+    return (
+        <button
+            className={`inline-flex h-8 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 text-xs font-semibold text-slate-800 transition hover:bg-slate-50 sm:text-sm ${
+                disabled ? "opacity-75 cursor-not-allowed" : ""
+            } ${className}`}
+            type="button"
+            onClick={onClick}
+            disabled={disabled}
+        >
+            {icon}
+            <span>{label}</span>
+        </button>
+    );
 }
