@@ -20,17 +20,15 @@ export function KeywordHotListPart({ keywordList, isLoading, onAdd }: KeywordHot
 
             // Only mark as added (hide the button) when onAdd succeeds
             setAddedIds((prev) => [...prev, keyword.id]);
-            alert(`Successfully added keyword: ${keyword.name}`);
         } catch (error) {
             // On failure, button stays visible because addedIds is not updated
-            alert(`Failed to add keyword: ${keyword.name}. Please try again.`);
             console.error("Failed to add keyword:", error);
         }
     };
 
     return (
         <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-            <h2 className="text-lg font-bold text-slate-900">Top Sources</h2>
+            <h2 className="text-lg font-bold text-slate-900">Hot Topics</h2>
             <p className="mb-3 text-sm text-slate-500">Ranked by works and field relevance</p>
 
             {isLoading ? (
