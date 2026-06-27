@@ -68,7 +68,7 @@ function Topic({topic, id}:
         isFollowed,
     } = useEntityFollow({
         displayName: topic.name,
-        targetOpenAlexId: topic.topicId,
+        targetOpenAlexId: topic.topicId.split("/").pop() ?? "",
         targetType: "TOPIC",
     });
 
