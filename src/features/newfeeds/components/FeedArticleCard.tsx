@@ -3,11 +3,11 @@ import { useNavigate } from "react-router-dom";
 import {
   Bookmark,
   Check,
-  GitBranch,
   Share2,
   Sparkles,
 } from "lucide-react";
-import { http} from "@/services/http.ts";
+import { http } from "@/services/http.ts";
+import MetadataBadge from "@/layout/global/MetadataBadge.tsx";
 import type { FeedArticle, FeedBadge } from "../types";
 
 type FeedArticleCardProps = {
@@ -15,13 +15,11 @@ type FeedArticleCardProps = {
 };
 
 export function FeedArticleCard({ article }: FeedArticleCardProps) {
-
     const navigate = useNavigate();
 
     const [isBookmarked, setIsBookmarked] = useState(false);
     const [isBookmarking, setIsBookmarking] = useState(false);
     const [isCopied, setIsCopied] = useState(false);
-    const [, setIsLoading] = useState(false);
 
     const handleViewDetails = () => {
         navigate(`/papers/${article.doiUrl}?origin=feed`);
@@ -50,7 +48,6 @@ export function FeedArticleCard({ article }: FeedArticleCardProps) {
         } catch (error) {
             console.error("Failed to bookmark article:", error);
         } finally {
-            setIsLoading(false);
             setIsBookmarking(false);
         }
     };
@@ -66,19 +63,41 @@ export function FeedArticleCard({ article }: FeedArticleCardProps) {
         }
     };
 
-  return (
-    <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex min-w-0 flex-wrap items-center gap-2">
-          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-700">
+    const mapBadgeTone = (tone: FeedBadge["tone"]) => {
+        switch (tone) {
+            case "match":
+                return "topicTrend";
+            case "rising":
+                return "keywordTrend";
+            case "topic":
+                return "topic";
+            case "author":
+                return "accent";
+            case "stable":
+            default:
+                return "default";
+        }
+    };
+
+    return (
+        <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div className="flex items-start justify-between gap-4">
+                <div className="flex min-w-0 flex-wrap items-center gap-2">
+                    {/* Badge Relevance nguyên bản */}
+                    <span className="inline-flex min-h-8 items-center gap-1 rounded-full bg-emerald-50 border border-emerald-200 px-3.5 py-1.5 text-xs font-semibold text-emerald-700">
             <Sparkles className="h-3.5 w-3.5" />
             {article.relevance}% relevance
           </span>
-          {article.badges.map((badge) => (
-            <Badge badge={badge} key={`${article.id}-${badge.label}`} />
-          ))}
+            {article.badges.map((badge) => (
+                <MetadataBadge
+                    key={`${article.id}-${badge.label}`}
+                    label={badge.label}
+                    tone={mapBadgeTone(badge.tone)}
+                    showTrendIcon={badge.tone === "rising" || badge.tone === "match"}
+                />
+            ))}
         </div>
-        <span className="shrink-0 text-sm font-semibold text-slate-400">
+        <span className="shrink-0 text-sm font-semibold text-slate-400 mt-1.5">
           {article.year}
         </span>
       </div>
@@ -116,9 +135,6 @@ export function FeedArticleCard({ article }: FeedArticleCardProps) {
         </span>
       </p>
 
-      <p className="mt-5 text-sm leading-6 text-slate-700">
-        {article.abstract}
-      </p>
 
       <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs font-medium leading-5 text-slate-500 sm:text-sm">
         {article.reason}
@@ -126,13 +142,11 @@ export function FeedArticleCard({ article }: FeedArticleCardProps) {
 
       <div className="mt-4 flex flex-wrap gap-2">
         {article.tags.map((tag) => (
-          <span
-            className="rounded-full border border-slate-200 bg-white px-2.5 py-1 text-sm font-semibold text-slate-900"
+        <MetadataBadge
             key={tag}
-          >
-            #{tag}
-            <span className="ml-1 text-emerald-600">+</span>
-          </span>
+            label={`#${tag}`}
+            tone="keyword"
+        />
         ))}
       </div>
 
@@ -156,7 +170,7 @@ export function FeedArticleCard({ article }: FeedArticleCardProps) {
             {/* Nút Share */}
         <button
             aria-label="Share paper"
-            className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-700 transition hover:bg-slate-50"
+            className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-700 transition hover:bg-slate-50"
             type="button"
             onClick={handleShare}
             title="Copy detail link to clipboard"
@@ -166,25 +180,6 @@ export function FeedArticleCard({ article }: FeedArticleCardProps) {
         </div>
       </div>
     </article>
-  );
-}
-
-function Badge({ badge }: { badge: FeedBadge }) {
-  const styles = {
-    author: "bg-emerald-100 text-emerald-700",
-    match: "bg-emerald-600 text-white",
-    rising: "bg-amber-100 text-amber-700",
-    stable: "bg-slate-100 text-slate-500",
-    topic: "bg-blue-100 text-blue-600",
-  } satisfies Record<FeedBadge["tone"], string>;
-
-  return (
-    <span
-      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ${styles[badge.tone]}`}
-    >
-      {badge.tone === "rising" ? <GitBranch className="h-3.5 w-3.5" /> : null}
-      {badge.label}
-    </span>
   );
 }
 

@@ -16,8 +16,6 @@ const FEED_TABS: FeedTab[] = [
   { key: "matched-author", label: "Matched Author" },
   { key: "matched-both", label: "Matched Both" },
   { key: "latest", label: "Latest" },
-  { key: "trending", label: "Trending" },
-  { key: "most-relevant", label: "Most Relevant" },
 ];
 
 export function useResearchFeedPage() {
@@ -72,9 +70,6 @@ export function useResearchFeedPage() {
     }
   }, [activeTab, page]);
 
-  // useEffect(() => {
-  //   setPage(0);
-  // }, [activeTab]);
 
   useEffect(() => {
     (async () => {
