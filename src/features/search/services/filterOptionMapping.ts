@@ -1,3 +1,7 @@
+import {
+  extractPathId,
+  toPlainText,
+} from "@/lib/resourceFormatting";
 import type { RemoteOptionFilterKey } from "../types";
 import type { OptionItem } from "./types";
 
@@ -81,7 +85,7 @@ function buildDisplayOptions(
   const displayOptions: OptionItem[] = [];
 
   for (const option of options) {
-    const sanitizedLabel = sanitizePlainText(option.label);
+    const sanitizedLabel = toPlainText(option.label);
     const optionValue = resolveOptionValue(option);
 
     if (!optionValue) {
@@ -102,7 +106,7 @@ function buildDisplayOptions(
       continue;
     }
 
-    const stableSuffix = extractLastSegment(optionValue);
+    const stableSuffix = extractPathId(optionValue);
     displayOptions.push({
       ...option,
       value: optionValue,
@@ -115,44 +119,4 @@ function buildDisplayOptions(
 
 function resolveOptionValue(option: OptionItem) {
   return option.value || option.id || "";
-}
-
-function extractLastSegment(value: string) {
-  const lastSlashIndex = value.lastIndexOf("/");
-
-  if (lastSlashIndex === -1 || lastSlashIndex === value.length - 1) {
-    return value;
-  }
-
-  return value.slice(lastSlashIndex + 1);
-}
-
-let htmlEntityDecoder: HTMLTextAreaElement | null = null;
-
-function sanitizePlainText(value: string | null | undefined) {
-  if (!value) {
-    return "";
-  }
-
-  const decodedText = decodeHtmlEntities(value);
-  const withoutHtmlTags = decodedText.replace(/<[^>]*>/g, " ");
-
-  return withoutHtmlTags.replace(/\s+/g, " ").trim();
-}
-
-function decodeHtmlEntities(value: string) {
-  if (!value.includes("&")) {
-    return value;
-  }
-
-  if (typeof document === "undefined") {
-    return value;
-  }
-
-  if (!htmlEntityDecoder) {
-    htmlEntityDecoder = document.createElement("textarea");
-  }
-
-  htmlEntityDecoder.innerHTML = value;
-  return htmlEntityDecoder.value;
 }

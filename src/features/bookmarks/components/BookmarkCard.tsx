@@ -233,7 +233,7 @@ export function BookmarkCard({
       </div>
 
       <div className="mt-auto flex items-center justify-between border-t border-black/10 pt-3">
-        <span className="font-subtext text-[13px] font-semibold text-black/65">
+        <span className="font-subtext shrink-0 whitespace-nowrap text-[13px] font-semibold text-black/65">
           {formatSavedAt(bookmark.createdAt)}
         </span>
 

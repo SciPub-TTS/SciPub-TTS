@@ -40,17 +40,17 @@ export function BookmarkTopBar({
 
   return (
     <div className="mb-6 rounded-[2rem] border border-black bg-[radial-gradient(circle_at_top_left,_rgba(243,112,33,0.14),_transparent_30%),radial-gradient(circle_at_bottom_right,_rgba(0,174,239,0.16),_transparent_36%),white] p-5 shadow-[0_18px_55px_rgba(0,0,0,0.08)] sm:p-6">
-      <div className="max-w-2xl">
-          <p className="font-subtext text-xs font-semibold uppercase tracking-[0.24em] text-[#00AEEF]">
-            Bookmark workspace
-          </p>
-          <h2 className="font-title mt-2 text-[1.9rem] leading-tight text-black sm:text-[2.1rem]">
-            Search titles, build collections, and browse your saved works
-            faster.
-          </h2>
-          <p className="font-subtext mt-3 text-[15px] leading-7 text-black/70">
-            Tap a collection chip below to focus the library instantly.
-          </p>
+      <div className="max-w-3xl">
+        <p className="text-xs font-extrabold uppercase tracking-[0.32em] text-[#14532D]">
+          Bookmark - Workspace
+        </p>
+        <h2 className="font-search-title mt-3 text-4xl font-normal leading-[1.15] tracking-normal text-[#14532D] md:text-5xl">
+          Search titles, build collections, and browse your saved works
+          faster.
+        </h2>
+        <p className="mt-3 max-w-2xl text-sm leading-7 text-black/70 md:text-[15px]">
+          Organize saved papers and jump between collections quickly.
+        </p>
       </div>
 
       <div className="mt-6 flex flex-col gap-3 xl:flex-row">

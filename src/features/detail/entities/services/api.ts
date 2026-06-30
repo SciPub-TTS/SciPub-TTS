@@ -1,4 +1,9 @@
 import { mapApiWorkToPaperResult } from "@/features/search/services/searchWorksMapper";
+import {
+  extractPathId,
+  trimToEmpty,
+  trimToNull,
+} from "@/lib/resourceFormatting";
 import { publicHttp } from "@/services/http";
 import type { ApiResponse } from "@/types/common.types";
 
@@ -12,7 +17,7 @@ import type {
 } from "../types";
 
 export async function getAuthorDetail(authorId: string): Promise<AuthorDetailData> {
-  const normalizedAuthorId = authorId.trim();
+  const normalizedAuthorId = trimToEmpty(authorId);
 
   if (!normalizedAuthorId) {
     throw new Error("Author ID is missing.");
@@ -27,7 +32,7 @@ export async function getAuthorDetail(authorId: string): Promise<AuthorDetailDat
 }
 
 export async function getTopicDetail(topicId: string): Promise<TopicDetailData> {
-  const normalizedTopicId = topicId.trim();
+  const normalizedTopicId = trimToEmpty(topicId);
 
   if (!normalizedTopicId) {
     throw new Error("Topic ID is missing.");
@@ -44,8 +49,8 @@ export async function getTopicDetail(topicId: string): Promise<TopicDetailData> 
 function mapAuthorDetail(data: EntityDetailApiResponse): AuthorDetailData {
   return {
     entityType: "authors",
-    id: normalizeIdentifier(data.id),
-    displayName: normalizeText(data.displayName) || "Unknown author",
+    id: extractPathId(data.id),
+    displayName: trimToNull(data.displayName) || "Unknown author",
     worksCount: Math.max(data.worksCount || 0, 0),
     citedByCount: Math.max(data.citedByCount || 0, 0),
     works: (data.works || []).map(mapApiWorkToPaperResult),
@@ -54,8 +59,8 @@ function mapAuthorDetail(data: EntityDetailApiResponse): AuthorDetailData {
     i10Index: normalizeNullableNumber(data.i10Index),
     observedInstitutions: normalizeTextList(data.observedInstitutions),
     observedNames: normalizeTextList(data.observedNames),
-    orcid: normalizeText(data.orcid),
-    primaryInstitutionName: normalizeText(data.primaryInstitutionName),
+    orcid: trimToNull(data.orcid),
+    primaryInstitutionName: trimToNull(data.primaryInstitutionName),
     topicHighlights: normalizeRelatedItems(data.topicHighlights),
   };
 }
@@ -63,17 +68,17 @@ function mapAuthorDetail(data: EntityDetailApiResponse): AuthorDetailData {
 function mapTopicDetail(data: EntityDetailApiResponse): TopicDetailData {
   return {
     entityType: "topics",
-    id: normalizeIdentifier(data.id),
-    displayName: normalizeText(data.displayName) || "Unknown topic",
+    id: extractPathId(data.id),
+    displayName: trimToNull(data.displayName) || "Unknown topic",
     worksCount: Math.max(data.worksCount || 0, 0),
     citedByCount: Math.max(data.citedByCount || 0, 0),
     works: (data.works || []).map(mapApiWorkToPaperResult),
     countsByYear: normalizeYearStats(data.countsByYear),
-    description: normalizeText(data.description),
-    domainName: normalizeText(data.domainName),
-    fieldName: normalizeText(data.fieldName),
+    description: trimToNull(data.description),
+    domainName: trimToNull(data.domainName),
+    fieldName: trimToNull(data.fieldName),
     siblingTopics: normalizeRelatedItems(data.siblingTopics),
-    subfieldName: normalizeText(data.subfieldName),
+    subfieldName: trimToNull(data.subfieldName),
     typeBreakdown: normalizeTypeBreakdown(data.typeBreakdown),
   };
 }
@@ -94,8 +99,8 @@ function normalizeRelatedItems(
 ) {
   return (values || [])
     .map((value) => ({
-      id: normalizeIdentifier(value.id),
-      displayName: normalizeText(value.displayName) || "",
+      id: extractPathId(value.id),
+      displayName: trimToNull(value.displayName) || "",
       count: normalizeNullableNumber(value.count),
     }))
     .filter((value) => Boolean(value.id) && Boolean(value.displayName));
@@ -106,8 +111,8 @@ function normalizeTypeBreakdown(
 ) {
   return (values || [])
     .map((value) => ({
-      value: normalizeIdentifier(value.value),
-      label: normalizeText(value.label) || "",
+      value: trimToEmpty(value.value),
+      label: trimToNull(value.label) || "",
       count: Math.max(value.count || 0, 0),
     }))
     .filter((value) => Boolean(value.label));
@@ -117,7 +122,7 @@ function normalizeTextList(values: string[] | null | undefined) {
   const uniqueValues = new Set<string>();
 
   for (const value of values || []) {
-    const normalizedValue = normalizeText(value);
+    const normalizedValue = trimToNull(value);
 
     if (normalizedValue) {
       uniqueValues.add(normalizedValue);
@@ -126,20 +131,6 @@ function normalizeTextList(values: string[] | null | undefined) {
 
   return [...uniqueValues];
 }
-
-function normalizeText(value: string | null | undefined) {
-  if (!value) {
-    return null;
-  }
-
-  const normalizedValue = value.trim();
-  return normalizedValue || null;
-}
-
-function normalizeIdentifier(value: string | null | undefined) {
-  return normalizeText(value) || "";
-}
-
 function normalizeNullableNumber(value: number | null | undefined) {
   if (value === null || value === undefined || Number.isNaN(value)) {
     return null;

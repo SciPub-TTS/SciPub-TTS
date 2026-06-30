@@ -39,17 +39,22 @@ import {
   cloneSearchFilters,
   isReloadNavigation,
   readPersistedSearchPageSnapshot,
+  type SearchPageSnapshot,
 } from "./stateHelpers";
-import type { SearchPageSnapshot } from "./types";
-import {
-  getNextSortStateForEntityType,
-  getVisibleFilterWidgets,
-  shouldClearSearchState,
-} from "./searchPageHelpers";
 import { useSearchHistoryState } from "./useSearchHistoryState";
 import { useSearchPagePersistence } from "./useSearchPagePersistence";
 import { useSearchResultsState } from "./useSearchResultsState";
 import { useRemoteFilterOptions } from "./useRemoteFilterOptions";
+
+const authorFilterWidgets: SearchFilterWidgetKey[] = [
+  "institution",
+  "country",
+];
+
+const topicFilterWidgets: SearchFilterWidgetKey[] = [
+  "subField",
+  "field",
+];
 
 export function useSearchPageState() {
   const { isAuthenticated } = useAuthSession();
@@ -137,13 +142,13 @@ export function useSearchPageState() {
   const hasFormError = isWorksTab
     ? hasInvalidYearRange(filters) || hasInvalidCitationRange(filters)
     : false;
+
   useSearchPagePersistence({
     dispatch,
     initialEntityType: requestedEntityType,
     restoredSnapshot,
     remoteFilterOptionsSnapshot,
     searchPageState,
-    visibleResultCount: visibleResults.length,
   });
 
   useEffect(() => {
@@ -195,8 +200,6 @@ export function useSearchPageState() {
     };
   }, [trendingKeywordNames.length, trendingTopicNames.length]);
 
-  // Centralize how a search request is submitted so every user action
-  // eventually funnels through one readable path.
   function submitSearchRequest(
     nextEntityType: SearchEntityType,
     nextQuery: string,
@@ -428,6 +431,41 @@ export function useSearchPageState() {
     visibleFilterWidgets,
     visibleResults,
   };
+}
+
+function shouldClearSearchState(
+  entityType: SearchEntityType,
+  searchQuery: string,
+  filters: SearchFilters,
+) {
+  return !searchQuery && countActiveFilters(entityType, filters) === 0;
+}
+
+function getVisibleFilterWidgets(
+  entityType: SearchEntityType,
+  visibleFilterWidgets: SearchFilterWidgetKey[],
+) {
+  switch (entityType) {
+    case "authors":
+      return authorFilterWidgets;
+    case "topics":
+      return topicFilterWidgets;
+    default:
+      return visibleFilterWidgets;
+  }
+}
+
+function getNextSortStateForEntityType(
+  currentEntityType: SearchEntityType,
+  nextEntityType: SearchEntityType,
+  currentSortState: SearchPageSnapshot["sortState"],
+) {
+  const isCrossingWorkBoundary =
+    (currentEntityType === "works") !== (nextEntityType === "works");
+
+  return isCrossingWorkBoundary
+    ? { ...defaultSearchSortState }
+    : currentSortState;
 }
 
 function normalizeRequestedSearchEntityType(tab: string | null): SearchEntityType | null {

@@ -118,6 +118,11 @@ export default function MainSidebar() {
                 (location.pathname === ROUTES.TRENDING_TOPIC ||
                   location.pathname === ROUTES.TRENDING_KEYWORD ||
                   (isDetailPage && detailOrigin === "trending"));
+              const isFeedSectionActive =
+                item.path === ROUTES.FEED &&
+                (location.pathname === ROUTES.FEED ||
+                  (isDetailPage &&
+                    (detailOrigin === "feed" || detailOrigin === "newfeed")));
 
               return (
                 <NavLink
@@ -130,7 +135,8 @@ export default function MainSidebar() {
                       isSearchSectionActive ||
                       isTrendingSectionActive ||
                       isBookmarksSectionActive ||
-                      isSocialHubSectionActive
+                      isSocialHubSectionActive ||
+                      isFeedSectionActive
                         ? "bg-emerald-600 text-white"
                         : "text-white hover:bg-emerald-500/15 hover:text-emerald-300",
                     ].join(" ")

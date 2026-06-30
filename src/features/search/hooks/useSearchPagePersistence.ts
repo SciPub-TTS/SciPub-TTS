@@ -4,12 +4,10 @@ import { hydrateSearchPageState, resetSearchPageState } from "../store/searchPag
 import {
   buildSearchPageSnapshot,
   persistSearchPageSnapshot,
+  type RemoteFilterOptionsSnapshot,
+  type SearchPageSnapshot,
+  type SubmittedSearch,
 } from "./stateHelpers";
-import type {
-  RemoteFilterOptionsSnapshot,
-  SearchPageSnapshot,
-  SubmittedSearch,
-} from "./types";
 import type { AppDispatch } from "@/store/appStore";
 import type {
   SearchEntityType,
@@ -34,12 +32,8 @@ type UseSearchPagePersistenceParams = {
   restoredSnapshot: SearchPageSnapshot | null;
   remoteFilterOptionsSnapshot: RemoteFilterOptionsSnapshot;
   searchPageState: SearchPageStateForPersistence;
-  visibleResultCount: number;
 };
 
-// Search state needs two persistence behaviors:
-// 1. hydrate when we navigate back from detail pages
-// 2. keep the latest snapshot in session storage while the user edits/searches
 export function useSearchPagePersistence(
   params: UseSearchPagePersistenceParams,
 ) {
@@ -49,11 +43,9 @@ export function useSearchPagePersistence(
     restoredSnapshot,
     remoteFilterOptionsSnapshot,
     searchPageState,
-    visibleResultCount,
   } = params;
   const hasInitializedRef = useRef(false);
   const latestSnapshotRef = useRef<SearchPageSnapshot | null>(restoredSnapshot);
-  const shouldRestoreScrollRef = useRef(Boolean(restoredSnapshot));
 
   useEffect(() => {
     if (restoredSnapshot) {
@@ -93,20 +85,4 @@ export function useSearchPagePersistence(
     latestSnapshotRef.current = snapshot;
     persistSearchPageSnapshot(snapshot);
   }, [remoteFilterOptionsSnapshot, searchPageState]);
-
-  useEffect(() => {
-    if (!shouldRestoreScrollRef.current) {
-      return;
-    }
-
-    shouldRestoreScrollRef.current = false;
-    const restoredScrollY = restoredSnapshot?.scrollY ?? 0;
-
-    window.requestAnimationFrame(() => {
-      window.scrollTo({
-        top: restoredScrollY,
-        behavior: "auto",
-      });
-    });
-  }, [restoredSnapshot, visibleResultCount]);
 }

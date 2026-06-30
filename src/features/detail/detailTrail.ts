@@ -1,11 +1,18 @@
 import { routePaths } from "@/app/router/routes";
+import { trimToEmpty } from "@/lib/resourceFormatting";
 import type { DetailTitleEntityType } from "@/features/detail/store/detailTitleStore";
 
 const detailTrailSearchParam = "trail";
 const detailOriginSearchParam = "origin";
 
 export type DetailTrailEntityType = DetailTitleEntityType;
-type DetailOrigin = "bookmarks" | "search" | "social-hub" | "trending" | "feed";
+export type DetailOrigin =
+  | "bookmarks"
+  | "search"
+  | "social-hub"
+  | "trending"
+  | "feed"
+  | "newfeed";
 
 type DetailTrailEntry = {
   entityId: string;
@@ -19,7 +26,7 @@ type DetailRouteParams = {
 };
 
 function normalizeEntityId(entityId: string) {
-  return entityId.trim();
+  return trimToEmpty(entityId);
 }
 
 function normalizeDetailOrigin(origin: string | null | undefined): DetailOrigin {
@@ -37,8 +44,8 @@ function normalizeDetailOrigin(origin: string | null | undefined): DetailOrigin 
     return "trending";
   }
 
-  if (normalizedOrigin === "feed") {
-    return "feed";
+  if (normalizedOrigin === "feed" || normalizedOrigin === "newfeed") {
+    return "newfeed";
   }
 
   return "search";

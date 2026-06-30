@@ -11,7 +11,6 @@ import {
   saveSearchHistory,
 } from "../services";
 import type { SaveSearchFeedback } from "../types";
-import { getSearchMutationErrorMessage } from "./searchPageHelpers";
 
 const SEARCH_HISTORY_QUERY_DEBOUNCE_MS = 250;
 const SAVE_SEARCH_FEEDBACK_DURATION_MS = 2800;
@@ -21,8 +20,6 @@ type UseSearchHistoryStateParams = {
   searchQuery: string;
 };
 
-// Search history is the only part of the page that depends on auth state.
-// Keeping it isolated makes the main search hook easier to read.
 export function useSearchHistoryState(params: UseSearchHistoryStateParams) {
   const { isSearchHistoryEnabled, searchQuery } = params;
   const queryClient = useQueryClient();
@@ -198,4 +195,11 @@ export function useSearchHistoryState(params: UseSearchHistoryStateParams) {
         : null,
     saveSearchSuccessToken,
   };
+}
+
+function getSearchMutationErrorMessage(
+  error: unknown,
+  fallbackMessage: string,
+) {
+  return error instanceof Error ? error.message : fallbackMessage;
 }

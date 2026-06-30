@@ -10,14 +10,15 @@ import {
   Tags,
   Users,
 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { type CSSProperties, useEffect, useRef, useState } from "react";
 import { Link, useLocation, useParams } from "react-router-dom";
 
-import { routePaths } from "@/app/router";
 import { useWorkBookmark } from "@/features/bookmarks/hooks/useWorkBookmark";
 import {
+  buildDetailTrailUrl,
   buildNextDetailUrl,
   getDetailContextFromRouteParams,
+  type DetailOrigin,
 } from "@/features/detail/detailTrail";
 import { markSearchPageRestorePending } from "@/features/search/utils/navigationState";
 import type { PaperResultEntityRef } from "@/features/search/types";
@@ -30,8 +31,10 @@ type ListWorkLayoutProps = {
   authorRefs?: PaperResultEntityRef[];
   citations: number;
   detailHref: string;
+  detailOrigin?: DetailOrigin;
   doi: string;
   field: string;
+  feedReasonText?: string;
   followedAuthors?: string[];
   isSaved?: boolean;
   isTrendTopic?: boolean;
@@ -116,8 +119,10 @@ export default function ListWorkLayout({
   authorRefs = [],
   citations,
   detailHref,
+  detailOrigin = "search",
   doi,
   field,
+  feedReasonText,
   followedAuthors = [],
   isSaved = false,
   isTrendTopic = false,
@@ -179,6 +184,14 @@ export default function ListWorkLayout({
   const visibleAbstract = showFullAbstract
     ? abstractText
     : getPreviewText(abstractText, 520);
+  const abstractPreviewStyle: CSSProperties | undefined = showFullAbstract
+    ? undefined
+    : {
+        display: "-webkit-box",
+        WebkitBoxOrient: "vertical",
+        WebkitLineClamp: 5,
+        overflow: "hidden",
+      };
   const normalizedFollowedAuthors = followedAuthors.map((author) =>
     author.trim().toLocaleLowerCase(),
   );
@@ -203,11 +216,7 @@ export default function ListWorkLayout({
     entityId: string,
   ) {
     if (!currentDetailContext) {
-      if (entityType === "authors") {
-        return routePaths.authorDetail(entityId);
-      }
-
-      return routePaths.topicDetail(entityId);
+      return buildDetailTrailUrl(entityType, entityId, [], detailOrigin);
     }
 
     return buildNextDetailUrl(
@@ -364,12 +373,22 @@ export default function ListWorkLayout({
         </span>
       </div>
 
+      {feedReasonText ? (
+        <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium leading-6 text-black">
+          <div className="mb-1 flex items-center gap-1 font-bold text-black">
+            <FileText className="h-4 w-4" />
+            Why this paper:
+          </div>
+          <p>{feedReasonText}</p>
+        </div>
+      ) : null}
+
       <div className="mt-4 text-sm font-medium leading-7 text-black">
         <div className="mb-1 flex items-center gap-1 font-bold text-black">
           <FileText className="h-4 w-4" />
           {abstractLabel}:
         </div>
-        <p>{visibleAbstract}</p>
+        <p style={abstractPreviewStyle}>{visibleAbstract}</p>
       </div>
 
       {canExpandAbstract && (

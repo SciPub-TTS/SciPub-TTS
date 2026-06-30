@@ -53,7 +53,7 @@ export function LandingPersonalizedPapersSection({
       className="mt-8 scroll-mt-24 rounded-[28px] border border-slate-200/80 bg-[#f2f4f3] px-6 py-8 md:px-10 md:py-10"
     >
       <div className="mb-5 flex items-center gap-4">
-        <span className="font-serif text-[42px] italic text-emerald-600">
+        <span className="font-search-title text-[42px] italic text-emerald-600">
           §06b
         </span>
         <span className="h-px w-[130px] bg-slate-300" />
@@ -64,8 +64,8 @@ export function LandingPersonalizedPapersSection({
 
       <h2 className="max-w-[920px] text-[44px] font-semibold leading-[1.02] tracking-[-0.02em] text-[#0b0f0e] md:text-[64px]">
         Follow{" "}
-        <span className="font-serif italic text-emerald-600">topics</span>.
-        Track <span className="font-serif italic text-blue-600">authors</span>.
+        <span className="font-search-title italic text-emerald-600">topics</span>.
+        Track <span className="font-search-title italic text-blue-600">authors</span>.
         <br />
         Understand trends.
       </h2>
@@ -115,3 +115,4 @@ export function LandingPersonalizedPapersSection({
     </section>
   );
 }
+

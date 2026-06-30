@@ -1,44 +1,37 @@
-import { routePaths } from "@/app/router";
+import { buildDetailTrailUrl } from "@/features/detail/detailTrail";
 import ListWorkLayout from "@/layout/global/ListWorkLayout";
 
-import type { FeedArticle, FeedBadge } from "../types";
+import type { FeedArticle } from "../types";
 
 type FeedArticleCardProps = {
   article: FeedArticle;
 };
 
 export function FeedArticleCard({ article }: FeedArticleCardProps) {
-  const primaryTopicBadge = article.badges.find((badge) => badge.tone === "topic");
-  const authorMatchBadge = article.badges.find((badge) => badge.tone === "author");
-  const hasTrendSignal = article.badges.some((badge) => isTrendBadgeTone(badge.tone));
-
   return (
     <ListWorkLayout
-      abstractLabel="Why this paper"
-      abstractText={article.reason}
-      authors={article.authors.map((author) => author.name)}
+      abstractText={article.abstract}
+      authors={article.authors}
+      authorRefs={article.authorRefs}
       citations={article.citations}
-      detailHref={routePaths.paperDetail(article.id)}
-      doi=""
-      field={`${article.relevance}% relevance`}
-      followedAuthors={article.authors
-        .filter((author) => author.following)
-        .map((author) => author.name)}
-      isTrendTopic={hasTrendSignal}
-      keywords={article.tags}
-      pdfUrl={null}
+      detailHref={buildDetailTrailUrl("works", article.id, [], "newfeed")}
+      detailOrigin="newfeed"
+      doi={article.doi}
+      field={article.field}
+      feedReasonText={article.reason}
+      isSaved={article.saved}
+      isTrendTopic={Boolean(article.isTrendTopic)}
+      keywords={article.keywords}
+      pdfUrl={article.pdfUrl}
       preserveSearchStateOnDetailClick={false}
-      subField={authorMatchBadge?.label || "Research Feed"}
+      subField={article.subField}
       title={article.title}
-      topic={primaryTopicBadge?.label || article.tags[0] || "Recommended paper"}
-      trendingKeywords={hasTrendSignal ? article.tags : []}
+      topic={article.topic}
+      topicRef={article.topicRef}
+      trendingKeywords={[]}
       source={article.source}
       workId={article.id}
       year={article.year}
     />
   );
-}
-
-function isTrendBadgeTone(tone: FeedBadge["tone"]) {
-  return tone === "match" || tone === "rising";
 }

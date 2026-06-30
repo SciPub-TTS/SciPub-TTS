@@ -19,11 +19,9 @@ import {
   cloneSearchFilters,
   cloneSearchOptionValueLookup,
   restoreSubmittedSearch,
+  type SearchPageSnapshot,
+  type SubmittedSearch,
 } from "@/features/search/hooks/stateHelpers";
-import type {
-  SearchPageSnapshot,
-  SubmittedSearch,
-} from "@/features/search/hooks/types";
 import { normalizeSearchFilterWidgetKeys } from "@/features/search/utils";
 import type { RootState } from "@/store/appStore";
 

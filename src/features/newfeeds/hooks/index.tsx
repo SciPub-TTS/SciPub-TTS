@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState, useCallback } from "react";
 import { apiService } from "../services";
 import type {
   FeedArticle,
+  FeedExactMatchFilter,
   FeedTabKey,
   FollowedAuthor,
   FollowedTopic,
@@ -18,6 +19,7 @@ const FEED_TABS: FeedTab[] = [
 
 export function useResearchFeedPage() {
   const [activeTab, setActiveTab] = useState<FeedTabKey>("all");
+  const [exactMatch, setExactMatch] = useState<FeedExactMatchFilter | null>(null);
 
   // Thêm state quản lý phân trang
   const [page, setPage] = useState<number>(0);
@@ -32,6 +34,22 @@ export function useResearchFeedPage() {
   const handleTabChange = (tab: FeedTabKey) => {
     setActiveTab(tab);
     setPage(0);
+    setExactMatch((currentMatch) => {
+      if (tab === "matched-author" && currentMatch?.type === "TOPIC") {
+        return null;
+      }
+
+      if (tab === "matched-topic" && currentMatch?.type === "AUTHOR") {
+        return null;
+      }
+
+      return currentMatch;
+    });
+  };
+
+  const handleExactMatchChange = (nextMatch: FeedExactMatchFilter | null) => {
+    setExactMatch(nextMatch);
+    setPage(0);
   };
 
   const loadData = useCallback(async () => {
@@ -41,7 +59,7 @@ export function useResearchFeedPage() {
         apiService.getFollowedTopics(),
         apiService.getFollowedAuthors(),
         apiService.getSuggestedTopics(),
-        apiService.getFeed(activeTab, page, 10),
+        apiService.getFeed(activeTab, page, 10, exactMatch),
       ]);
 
       setFollowedTopics(topics);
@@ -66,7 +84,7 @@ export function useResearchFeedPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [activeTab, page]);
+  }, [activeTab, exactMatch, page]);
 
   useEffect(() => {
     (async () => {
@@ -87,11 +105,13 @@ export function useResearchFeedPage() {
   return {
     activeTab,
     articles,
+    exactMatch,
     totalItems,
     page,
     setPage,
     feedData,
     isLoading,
+    setExactMatch: handleExactMatchChange,
     setActiveTab: handleTabChange,
   };
 }

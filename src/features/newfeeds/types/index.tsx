@@ -1,3 +1,5 @@
+import type { PaperResult } from "@/features/search/types";
+
 export type FeedTabKey =
   | "all"
   | "matched-topic"
@@ -8,31 +10,18 @@ export type FeedTab = {
   label: string;
 };
 
-export type FeedBadge = {
-  label: string;
-  tone: "author" | "match" | "rising" | "stable" | "topic";
-};
+export type FeedExactMatchType = "AUTHOR" | "TOPIC";
 
-export type FeedAuthor = {
-  following?: boolean;
-  name: string;
-};
-
-export type FeedArticle = {
-  authors: FeedAuthor[];
-  badges: FeedBadge[];
-  citations: number;
-  doiLabel: string;
-  doiUrl: string;
-  extraAuthors?: number;
+export type FeedExactMatchFilter = {
   id: string;
+  name: string;
+  type: FeedExactMatchType;
+};
+
+export type FeedArticle = PaperResult & {
   relevance: number;
   reason: string;
-  source: string;
   tabMatches: FeedTabKey[];
-  tags: string[];
-  title: string;
-  year: number;
 };
 
 export type FollowedTopic = {
