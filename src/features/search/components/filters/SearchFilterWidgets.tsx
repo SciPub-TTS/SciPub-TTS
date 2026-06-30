@@ -1,5 +1,5 @@
 import { Check, ChevronDown, Search, Tag } from "lucide-react";
-import type { ChangeEvent, MouseEvent, UIEvent } from "react";
+import type { ChangeEvent, KeyboardEvent, MouseEvent, UIEvent } from "react";
 import { useRef, useState } from "react";
 
 import { SEARCH_MIN_CITATION } from "@/features/search/constants";
@@ -71,7 +71,15 @@ function MultiSelectFilterControl({
   function handleOptionKeywordChange(event: ChangeEvent<HTMLInputElement>) {
     const nextOptionKeyword = event.target.value;
     setOptionKeyword(nextOptionKeyword);
-    onSearchKeywordChange?.(nextOptionKeyword);
+  }
+
+  function handleOptionKeywordKeyDown(event: KeyboardEvent<HTMLInputElement>) {
+    if (event.key !== "Enter") {
+      return;
+    }
+
+    event.preventDefault();
+    onSearchKeywordChange?.(optionKeyword);
   }
 
   function handleOptionCheckboxChange(event: ChangeEvent<HTMLInputElement>) {
@@ -137,6 +145,7 @@ function MultiSelectFilterControl({
               type="search"
               value={optionKeyword}
               onChange={handleOptionKeywordChange}
+              onKeyDown={handleOptionKeywordKeyDown}
               placeholder={`Search ${label.toLowerCase()}`}
               className="min-w-0 flex-1 bg-transparent text-sm font-semibold text-black outline-none placeholder:text-black"
             />

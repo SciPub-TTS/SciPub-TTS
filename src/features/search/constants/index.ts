@@ -12,7 +12,7 @@ export const SEARCH_WORKS_PER_PAGE = 20;
 export const SEARCH_NEXT_QUERY_TRIGGER_OFFSET = 10;
 
 // Number of recent searches requested for the search box history.
-export const SEARCH_RECENT_SEARCH_LIMIT = 7;
+export const SEARCH_RECENT_SEARCH_LIMIT = 10;
 
 // First page used by backend pagination.
 export const SEARCH_DEFAULT_PAGE = 1;

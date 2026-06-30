@@ -36,7 +36,7 @@ export function CreateCollectionModal({
           className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(122,193,67,0.14),_transparent_36%),radial-gradient(circle_at_bottom_right,_rgba(0,174,239,0.14),_transparent_42%)]"
         />
 
-        <div className="relative z-10 flex items-start justify-between gap-4">
+        <div className="relative z-10">
           <div>
             <p className="font-subtext text-xs font-semibold uppercase tracking-[0.24em] text-[#7AC143]">
               New collection
@@ -45,18 +45,10 @@ export function CreateCollectionModal({
               Name a collection for your saved works
             </h2>
             <p className="font-subtext mt-3 text-[15px] leading-7 text-black/70">
-              Create it first, then add any bookmarked work into that group
-              from the collection menu on each card.
+              Create it first, then add any bookmarked work into that group from
+              the collection menu on each card.
             </p>
           </div>
-
-          <button
-            type="button"
-            onClick={onClose}
-            className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-black bg-white text-lg font-semibold text-black transition hover:bg-black hover:text-white"
-          >
-            X
-          </button>
         </div>
 
         <div className="relative z-10 mt-6">

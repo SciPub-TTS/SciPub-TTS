@@ -150,7 +150,6 @@ export function BookmarkGrid({
             onAddToCollection={onAddToCollection}
             onDelete={onDelete}
             onRemoveFromCollection={onRemoveFromCollection}
-            selectedCollectionId={selectedCollectionId}
           />
         ))}
 

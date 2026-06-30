@@ -1,7 +1,6 @@
 import {
   FolderPlus,
   Search,
-  Sparkles,
   X,
 } from "lucide-react";
 
@@ -117,10 +116,10 @@ export function BookmarkTopBar({
             type="button"
             onClick={() => onCollectionChange(null)}
             className={[
-              "inline-flex shrink-0 items-center gap-2 rounded-2xl border px-4 py-3 text-sm font-semibold transition",
+              "inline-flex shrink-0 items-center gap-2 rounded-2xl border px-4 py-3 text-sm font-semibold transition focus-visible:outline-none",
               selectedCollectionId === null
-                ? "border-black bg-black text-white"
-                : "border-black bg-white text-black hover:bg-black hover:text-white",
+                ? "border-[#14532D] bg-[#14532D] text-white"
+                : "border-black bg-white text-black hover:border-[#14532D] hover:bg-[#DCFCE7] hover:text-[#14532D]",
             ].join(" ")}
           >
             All library
@@ -135,15 +134,14 @@ export function BookmarkTopBar({
                 type="button"
                 onClick={() => onCollectionChange(isActive ? null : collection.id)}
                 className={[
-                  "inline-flex shrink-0 items-center gap-2 rounded-2xl border px-4 py-3 text-sm font-semibold transition",
+                  "inline-flex shrink-0 items-center gap-2 rounded-2xl border px-4 py-3 text-sm font-semibold transition focus-visible:outline-none",
                   isActive
-                    ? "border-black bg-[#E8F8FF] text-[#0369A1]"
-                    : "border-black bg-white text-black hover:bg-[#FFF1E8]",
+                    ? "border-[#14532D] bg-[#14532D] text-white"
+                    : "border-black bg-white text-black hover:border-[#14532D] hover:bg-[#DCFCE7] hover:text-[#14532D]",
                 ].join(" ")}
               >
-                <Sparkles className="h-4 w-4" />
-                <span>{collection.name}</span>
-                <span className="rounded-full border border-black/15 bg-white px-2 py-0.5 text-xs text-black/70">
+                <span className="whitespace-nowrap">{collection.name}</span>
+                <span className="rounded-full border border-black bg-white px-2 py-0.5 text-xs text-black/70">
                   {collection.workCount}
                 </span>
               </button>

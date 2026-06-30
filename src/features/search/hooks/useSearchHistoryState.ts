@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
+import { getApiErrorMessage } from "@/features/auth/utils/getApiErrorMessage";
+
 import {
   SEARCH_RECENT_SEARCH_LIMIT,
 } from "../constants";
@@ -154,6 +156,18 @@ export function useSearchHistoryState(params: UseSearchHistoryStateParams) {
       return;
     }
 
+    const hasSavedQuery = recentSearchesQuery.data?.some(
+      (savedSearch) => savedSearch.query.trim() === normalizedSearchQuery,
+    );
+
+    if (hasSavedQuery) {
+      setSaveSearchFeedback({
+        kind: "error",
+        message: "Already saved this keyword.",
+      });
+      return;
+    }
+
     void saveSearchMutation.mutateAsync(normalizedSearchQuery);
   }
 
@@ -201,5 +215,11 @@ function getSearchMutationErrorMessage(
   error: unknown,
   fallbackMessage: string,
 ) {
-  return error instanceof Error ? error.message : fallbackMessage;
+  const message = getApiErrorMessage(error, fallbackMessage);
+
+  if (message.toLocaleLowerCase().includes("already")) {
+    return "Already saved this keyword.";
+  }
+
+  return message;
 }
