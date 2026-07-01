@@ -252,14 +252,17 @@ export default function ReportPage() {
 
         <div className="relative flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
           <div className="max-w-3xl">
-            <div className="inline-flex items-center gap-2 rounded-full border border-black bg-black px-3.5 py-2 text-xs font-bold uppercase tracking-[0.18em] text-white">
+            <p className="flex items-center gap-2 text-xs font-extrabold uppercase tracking-[0.32em] text-[#14532D]">
               <Sparkles className="h-3.5 w-3.5 text-[#7AC143]" />
-              Export workspace
-            </div>
-            <h1 className="font-title mt-5 text-[2.35rem] font-semibold leading-[1.02] tracking-[-0.045em] text-[#14532D] sm:text-[3.25rem]">
+              Export - Report Workspace
+            </p>
+            <h1 className="font-title-page mt-5 text-[2.55rem] font-normal leading-[1.05] tracking-normal text-[#14532D] sm:text-[3.45rem]">
               Turn your saved research into a portable dataset.
             </h1>
-           
+            <p className="mt-3 max-w-2xl text-sm leading-7 text-black/70 md:text-[15px]">
+              Select bookmarked papers, choose the metadata you need, and
+              export a clean report for spreadsheets, pipelines, or sharing.
+            </p>
           </div>
 
         </div>

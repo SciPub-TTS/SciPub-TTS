@@ -36,7 +36,7 @@ export default function LoginFormPanel({
         <p className="mb-2 font-subtext text-xs font-semibold uppercase tracking-[0.28em] text-[#8B5E34]">
           Sign in
         </p>
-        <h2 className="font-search-title text-[2.9rem] leading-[0.92] text-black sm:text-[3.3rem]">
+        <h2 className="font-title-page text-[2.9rem] leading-[0.92] text-black sm:text-[3.3rem]">
           Return to your
           <br />
           <span className="text-[#14532D]">reading room.</span>

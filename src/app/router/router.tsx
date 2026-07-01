@@ -349,9 +349,6 @@ export const router = createBrowserRouter([
       {
         path: ROUTES.ADMIN,
         element: <AdminLayout />,
-        handle: {
-          breadcrumb: "Admin",
-        },
         children: [
           {
             index: true,
@@ -375,7 +372,10 @@ export const router = createBrowserRouter([
             path: ROUTER_PATHS.adminUserDetail,
             element: <AdminUserDetailPage />,
             handle: {
-              breadcrumb: "User Detail",
+              breadcrumb: [
+                { label: "User Management", to: ROUTES.ADMIN_USERS },
+                { label: "User Detail" },
+              ],
             },
           },
         ],

@@ -299,7 +299,7 @@ export default function LandingPage() {
           <div className="grid gap-8 lg:grid-cols-[1.55fr_0.85fr] lg:items-start">
             <div className="lg:pl-4">
               <div className="flex items-start gap-4 md:gap-6">
-                <span className="pt-6 font-search-title text-[56px] italic leading-none text-emerald-600 md:text-[78px]">
+                <span className="pt-6 font-title-page text-[56px] italic leading-none text-emerald-600 md:text-[78px]">
                   §01
                 </span>
                 <div>
@@ -308,13 +308,13 @@ export default function LandingPage() {
                   </p>
                   <h1 className="max-w-[860px] text-[46px] font-semibold leading-[0.94] tracking-[-0.02em] md:text-[72px] lg:text-[86px]">
                     Read the{" "}
-                    <span className="font-search-title italic text-emerald-600">
+                    <span className="font-title-page italic text-emerald-600">
                       literature
                     </span>
                     <br />
                     as a living
                     <br />
-                    <span className="relative inline-block font-search-title italic">
+                    <span className="relative inline-block font-title-page italic">
                       conversation
                       <svg
                         viewBox="0 0 420 24"
@@ -370,7 +370,7 @@ export default function LandingPage() {
             className="mt-16 rounded-[28px] border border-slate-200/80 bg-[#f2f4f3] px-6 py-12 md:px-10 md:py-16"
           >
             <div className="mb-7 flex items-center gap-4">
-              <span className="font-search-title text-[36px] italic text-emerald-600">
+              <span className="font-title-page text-[36px] italic text-emerald-600">
                 §02
               </span>
               <span className="h-px w-[150px] bg-slate-300" />
@@ -382,7 +382,7 @@ export default function LandingPage() {
             <div className="grid gap-8 lg:grid-cols-[1.7fr_0.9fr] lg:items-end">
               <h2 className="text-[44px] font-semibold leading-[0.95] tracking-[-0.02em] text-[#0b0f0e] md:text-[64px]">
                 From paper search to{" "}
-                <span className="font-search-title italic text-emerald-600">
+                <span className="font-title-page italic text-emerald-600">
                   research intelligence
                 </span>
                 .
@@ -581,7 +581,7 @@ export default function LandingPage() {
               />
 
               <div className="relative z-10 mb-12 flex items-center gap-4">
-                <span className="font-search-title text-[36px] italic text-emerald-600">
+                <span className="font-title-page text-[36px] italic text-emerald-600">
                   §04
                 </span>
                 <span className="h-px w-[130px] bg-slate-300" />
@@ -592,7 +592,7 @@ export default function LandingPage() {
 
               <h2 className="relative z-10 max-w-[980px] text-[58px] font-semibold leading-[0.95] tracking-[-0.02em] text-[#0b0f0e] md:text-[72px]">
                 Trace the{" "}
-                <span className="font-search-title italic text-emerald-600">
+                <span className="font-title-page italic text-emerald-600">
                   argument
                 </span>{" "}
                 across scientific literature.
@@ -689,7 +689,7 @@ export default function LandingPage() {
             className="mt-16 rounded-[28px] border border-slate-200/80 bg-[#f2f4f3] px-6 py-10 md:px-10 md:py-12"
           >
             <div className="mb-7 flex items-center gap-4">
-              <span className="font-search-title text-[36px] italic text-emerald-600">
+              <span className="font-title-page text-[36px] italic text-emerald-600">
                 §05
               </span>
               <span className="h-px w-[130px] bg-slate-300" />
@@ -702,7 +702,7 @@ export default function LandingPage() {
               <div>
                 <h2 className="max-w-[580px] text-[44px] font-semibold leading-[0.95] tracking-[-0.02em] text-[#0b0f0e] md:text-[64px]">
                   A{" "}
-                  <span className="font-search-title italic text-emerald-600">
+                  <span className="font-title-page italic text-emerald-600">
                     Trending Topic
                   </span>{" "}
                   designed for research decisions.
@@ -758,7 +758,7 @@ export default function LandingPage() {
             <div className="grid gap-8 lg:grid-cols-[4fr_3fr] lg:items-start">
               <div>
                 <div className="mb-7 flex items-center gap-4">
-                  <span className="font-search-title text-[36px] italic text-emerald-600">
+                  <span className="font-title-page text-[36px] italic text-emerald-600">
                     §06
                   </span>
                   <span className="h-px w-[130px] bg-slate-300" />
@@ -771,11 +771,11 @@ export default function LandingPage() {
                   Compare research
                   <br />
                   fields by{" "}
-                  <span className="font-search-title italic text-emerald-600">
+                  <span className="font-title-page italic text-emerald-600">
                     publication
                   </span>
                   <br />
-                  <span className="font-search-title italic text-emerald-600">
+                  <span className="font-title-page italic text-emerald-600">
                     share
                   </span>{" "}
                   and growth rate.
@@ -826,7 +826,7 @@ export default function LandingPage() {
             className="mt-16 overflow-hidden rounded-[28px] border border-slate-200/80 bg-[#f2f4f3] px-6 py-10 md:px-10 md:py-12"
           >
             <div className="reveal-on-scroll mb-6 flex items-center gap-4">
-              <span className="font-search-title text-[42px] italic text-emerald-600">
+              <span className="font-title-page text-[42px] italic text-emerald-600">
                 §07
               </span>
               <span className="h-px w-[130px] bg-slate-300" />
@@ -837,7 +837,7 @@ export default function LandingPage() {
 
             <h2 className="reveal-on-scroll max-w-[980px] text-[44px] font-semibold leading-[0.98] tracking-[-0.02em] text-[#0b0f0e] md:text-[76px]">
               From research interest to{" "}
-              <span className="font-search-title italic text-emerald-600">
+              <span className="font-title-page italic text-emerald-600">
                 insight
               </span>{" "}
               in four steps.
@@ -849,7 +849,7 @@ export default function LandingPage() {
               <div className="relative space-y-12">
                 <div className="reveal-on-scroll grid items-center gap-6 md:grid-cols-[1fr_auto_1fr]">
                   <div className="text-right">
-                    <p className="font-search-title text-[64px] italic leading-none text-emerald-600">
+                    <p className="font-title-page text-[64px] italic leading-none text-emerald-600">
                       01
                     </p>
                     <h3 className="mt-3 text-[16px] font-semibold text-slate-900">
@@ -872,7 +872,7 @@ export default function LandingPage() {
                     <Search className="h-6 w-6" />
                   </div>
                   <div>
-                    <p className="font-search-title text-[64px] italic leading-none text-emerald-600">
+                    <p className="font-title-page text-[64px] italic leading-none text-emerald-600">
                       02
                     </p>
                     <h3 className="mt-3 text-[16px] font-semibold text-slate-900">
@@ -886,7 +886,7 @@ export default function LandingPage() {
 
                 <div className="reveal-on-scroll grid items-center gap-6 md:grid-cols-[1fr_auto_1fr]">
                   <div className="text-right">
-                    <p className="font-search-title text-[64px] italic leading-none text-emerald-600">
+                    <p className="font-title-page text-[64px] italic leading-none text-emerald-600">
                       03
                     </p>
                     <h3 className="mt-3 text-[16px] font-semibold text-slate-900">
@@ -909,7 +909,7 @@ export default function LandingPage() {
                     <FileBarChart2 className="h-6 w-6" />
                   </div>
                   <div>
-                    <p className="font-search-title text-[64px] italic leading-none text-emerald-600">
+                    <p className="font-title-page text-[64px] italic leading-none text-emerald-600">
                       04
                     </p>
                     <h3 className="mt-3 text-[16px] font-semibold text-slate-900">
@@ -930,7 +930,7 @@ export default function LandingPage() {
             className="mt-16 rounded-[28px] border border-slate-200/80 bg-[#f2f4f3] px-6 py-10 md:px-10 md:py-12"
           >
             <div className="mb-6 flex items-center gap-4">
-              <span className="font-search-title text-[42px] italic text-emerald-600">
+              <span className="font-title-page text-[42px] italic text-emerald-600">
                 §08
               </span>
               <span className="h-px w-[130px] bg-slate-300" />
@@ -942,7 +942,7 @@ export default function LandingPage() {
             <div className="relative">
               <h2 className="max-w-[980px] text-[44px] font-semibold leading-[0.98] tracking-[-0.02em] text-[#0b0f0e] md:text-[76px]">
                 For students, lecturers, and{" "}
-                <span className="font-search-title italic text-emerald-600">
+                <span className="font-title-page italic text-emerald-600">
                   researchers
                 </span>
                 .
@@ -1014,7 +1014,7 @@ export default function LandingPage() {
             />
             <div className="relative z-10 mx-auto max-w-[980px] text-center">
               <div className="flex items-end justify-center gap-3 text-emerald-300">
-                <span className="font-search-title text-[44px] italic leading-none">
+                <span className="font-title-page text-[44px] italic leading-none">
                   §09
                 </span>
                 <span className="pb-1.5 text-[18px] uppercase tracking-[0.2em]">
@@ -1023,7 +1023,7 @@ export default function LandingPage() {
               </div>
               <h2 className="mt-4 text-[44px] font-semibold leading-[0.98] md:text-[76px]">
                 Step Into Your{" "}
-                <span className="font-search-title italic text-emerald-400">
+                <span className="font-title-page italic text-emerald-400">
                   Research Observatory
                 </span>
               </h2>

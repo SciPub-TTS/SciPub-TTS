@@ -152,11 +152,11 @@ export default function GoogleRegisterCompletePage() {
             <main className="flex flex-1 items-center justify-center px-6 py-16">
                 <section className="w-full max-w-[440px]">
                     <div className="mb-7">
-                        <h1 className="font-search-title text-[2.35rem] leading-[1.12] text-slate-950">
+                        <h1 className="font-title-page text-[2.35rem] leading-[1.12] text-slate-950">
                             Complete your
                         </h1>
 
-                        <h1 className="mb-3 font-search-title text-[2.35rem] italic leading-[1.12] text-emerald-700">
+                        <h1 className="mb-3 font-title-page text-[2.35rem] italic leading-[1.12] text-emerald-700">
                             Owlreka account.
                         </h1>
 

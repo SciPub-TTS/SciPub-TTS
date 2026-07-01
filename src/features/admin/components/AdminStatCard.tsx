@@ -20,14 +20,14 @@ export type AdminStatCardProps = {
 };
 
 const toneClassMap: Record<AdminStatCardTone, string> = {
-  blue: "border-blue-200 bg-blue-50 text-blue-900",
-  amber: "border-amber-200 bg-amber-50 text-amber-900",
-  red: "border-red-200 bg-red-50 text-red-900",
-  indigo: "border-indigo-200 bg-indigo-50 text-indigo-900",
-  purple: "border-purple-200 bg-purple-50 text-purple-900",
-  green: "border-green-200 bg-green-50 text-green-900",
-  emerald: "border-emerald-200 bg-emerald-50 text-emerald-900",
-  teal: "border-teal-200 bg-teal-50 text-teal-900",
+  blue: "border-black bg-blue-50 text-blue-900",
+  amber: "border-black bg-amber-50 text-amber-900",
+  red: "border-black bg-red-50 text-red-900",
+  indigo: "border-black bg-indigo-50 text-indigo-900",
+  purple: "border-black bg-purple-50 text-purple-900",
+  green: "border-black bg-green-50 text-green-900",
+  emerald: "border-black bg-emerald-50 text-emerald-900",
+  teal: "border-black bg-teal-50 text-teal-900",
 };
 
 const iconToneClassMap: Record<AdminStatCardTone, string> = {
@@ -57,7 +57,7 @@ export default function AdminStatCard({
       ].join(" ")}
     >
       <div className="flex items-start justify-between gap-4">
-        <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-slate-600">
+        <p className="font-subtext text-[11px] font-medium uppercase tracking-[0.16em] text-slate-600">
           {label}
         </p>
         <span
@@ -70,9 +70,9 @@ export default function AdminStatCard({
         </span>
       </div>
 
-      <p className="mt-6 text-2xl font-bold">{value}</p>
-      <p className="mt-2 text-xs font-medium text-slate-600">{description}</p>
-      {accent && <p className="mt-2 text-xs font-semibold">{accent}</p>}
+      <p className="font-title mt-6 text-2xl font-bold">{value}</p>
+      <p className="font-subtext mt-2 text-xs font-medium text-slate-600">{description}</p>
+      {accent && <p className="font-subtext mt-2 text-xs font-semibold">{accent}</p>}
     </article>
   );
 }

@@ -12,10 +12,10 @@ export default function LoginPreviewPanel() {
           Login portal
         </p>
         <div className="mt-6">
-          <p className="font-search-title text-[clamp(3.3rem,7vw,7.2rem)] leading-[0.86] text-black/10">
+          <p className="font-title-page text-[clamp(3.3rem,7vw,7.2rem)] leading-[0.86] text-black/10">
             LOGIN
           </p>
-          <h1 className="mt-[-1.9rem] max-w-xl font-search-title text-[clamp(2.5rem,4.8vw,4.9rem)] leading-[0.88] text-black">
+          <h1 className="mt-[-1.9rem] max-w-xl font-title-page text-[clamp(2.5rem,4.8vw,4.9rem)] leading-[0.88] text-black">
             Return to your
             <br />
             <span className="text-[#059669]">research orbit.</span>

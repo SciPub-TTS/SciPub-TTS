@@ -9,7 +9,7 @@ export function SearchPageHeader() {
         <p className="text-xs font-extrabold uppercase tracking-[0.32em] text-[#14532D]">
           Explore - Search + Trend Analysis
         </p>
-        <h1 className="font-search-title mt-3 max-w-none text-4xl font-normal leading-[1.15] tracking-normal text-[#14532D] md:text-5xl xl:whitespace-nowrap">
+        <h1 className="font-title-page mt-3 max-w-none text-4xl font-normal leading-[1.15] tracking-normal text-[#14532D] md:text-5xl xl:whitespace-nowrap">
           Discover Research. Track the Trends.
         </h1>
         <p className="mt-3 max-w-2xl text-sm leading-7 text-black/70 md:text-[15px]">

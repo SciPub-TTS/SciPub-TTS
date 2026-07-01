@@ -17,6 +17,7 @@ import type {
   SearchPanelProps,
 } from "@/features/search/types";
 import { formatFullNumber } from "@/features/search/utils";
+import { SafeActionDialog } from "@/layout/global/SafeActionDialog";
 
 import { SearchFiltersPanel } from "./SearchFiltersPanel";
 
@@ -275,6 +276,7 @@ function SearchInputRow({
   onSelectSuggestion,
 }: SearchInputRowProps) {
   const [isSuggestionOpen, setIsSuggestionOpen] = useState(false);
+  const [isClearHistoryDialogOpen, setIsClearHistoryDialogOpen] = useState(false);
   const [dismissedSaveToken, setDismissedSaveToken] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
   const searchAriaLabel = getSearchEntityMetadata(activeEntityType).searchAriaLabel;
@@ -357,6 +359,11 @@ function SearchInputRow({
 
   function handleClearSuggestionsClick() {
     setDismissedSaveToken(saveSearchSuccessToken);
+    setIsClearHistoryDialogOpen(true);
+  }
+
+  function handleConfirmClearSuggestions() {
+    setIsClearHistoryDialogOpen(false);
     onClearSuggestions();
   }
 
@@ -369,6 +376,21 @@ function SearchInputRow({
       ref={containerRef}
       className="flex w-full flex-col gap-3"
     >
+      <SafeActionDialog
+        open={isClearHistoryDialogOpen}
+        onClose={() => {
+          if (!isClearingRecentSearches) {
+            setIsClearHistoryDialogOpen(false);
+          }
+        }}
+        onConfirm={handleConfirmClearSuggestions}
+        title="Clear all recent searches?"
+        confirmLabel="Clear all"
+        pendingLabel="Clearing..."
+        isPending={isClearingRecentSearches}
+        variant="danger"
+      />
+
       <div className="flex w-full flex-col gap-3 md:flex-row md:items-stretch">
         <div className="relative flex min-w-0 flex-1 items-center gap-3 rounded-xl bg-white px-4 py-5 shadow-sm ring-1 ring-[#2f8551]">
           <Search className="h-5 w-5 shrink-0 font-extrabold" />

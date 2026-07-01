@@ -571,7 +571,7 @@ function BlogEditorModal(props: BlogModalProps) {
             <p className="text-[11px] font-extrabold uppercase tracking-[0.28em] text-[#14532D]">
               Research community
             </p>
-            <h2 className="font-search-title mt-2 text-[2rem] leading-none text-[#059669]">
+            <h2 className="font-title-page mt-2 text-[2rem] leading-none text-[#059669]">
               {modalTitle}
             </h2>
           </div>
@@ -1332,7 +1332,7 @@ export default function SocialHubPage() {
                 <p className="text-xs font-extrabold uppercase tracking-[0.32em] text-[#14532D]">
                   Explore - Community Research Notes
                 </p>
-                <h1 className="font-search-title mt-3 text-[3.8rem] leading-[0.95] text-[#14532D] xl:whitespace-nowrap 2xl:text-[4.3rem]">
+                <h1 className="font-title-page mt-3 text-[3.8rem] leading-[0.95] text-[#14532D] xl:whitespace-nowrap 2xl:text-[4.3rem]">
                   Collect Papers. <span>Share</span> <span>Insight.</span>
                 </h1>
 
@@ -1495,7 +1495,7 @@ export default function SocialHubPage() {
                   <Trophy className="h-5 w-5" />
                 </div>
 
-                <h2 className="font-search-title text-[2rem] leading-none text-[#059669]">
+                <h2 className="font-title-page text-[2rem] leading-none text-[#059669]">
                   Top liked this week
                 </h2>
               </div>
@@ -1544,7 +1544,7 @@ export default function SocialHubPage() {
                 <p className="text-xs font-extrabold uppercase tracking-[0.32em] text-[#14532D]">
                   Community feed
                 </p>
-                <h2 className="font-search-title mt-3 text-[2.5rem] leading-none text-[#059669]">
+                <h2 className="font-title-page mt-3 text-[2.5rem] leading-none text-[#059669]">
                   Community Sharing
                 </h2>
               </div>
@@ -1555,7 +1555,7 @@ export default function SocialHubPage() {
                 </div>
 
                 <div>
-                  <p className="font-search-title text-3xl leading-none text-black">
+                  <p className="font-title-page text-3xl leading-none text-black">
                     {newestPostsQuery.data?.totalElements ?? 0}
                   </p>
                   <p className="font-subtext mt-1 text-sm text-slate-500">

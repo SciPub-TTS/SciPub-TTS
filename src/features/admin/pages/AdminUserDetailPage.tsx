@@ -49,7 +49,7 @@ export default function AdminUserDetailPage() {
 
   if (isLoadingDetail) {
     return (
-      <div className="rounded-xl border border-slate-200 bg-white px-5 py-10 text-center text-sm font-medium text-slate-500 shadow-sm">
+      <div className="font-subtext rounded-xl border border-black bg-white px-5 py-10 text-center text-sm font-medium text-slate-500 shadow-sm">
         Loading user details...
       </div>
     );
@@ -57,13 +57,13 @@ export default function AdminUserDetailPage() {
 
   if (isUserNotFound || !detail) {
     return (
-      <section className="rounded-xl border border-slate-200 bg-white p-8 text-center shadow-sm">
-        <h2 className="text-lg font-bold text-slate-950">User not found</h2>
-        <p className="mt-2 text-sm font-medium text-slate-500">
+      <section className="rounded-xl border border-black bg-white p-8 text-center shadow-sm">
+        <h2 className="font-title text-lg font-bold text-slate-950">User not found</h2>
+        <p className="font-subtext mt-2 text-sm font-medium text-slate-500">
           {detailErrorMessage || "This account does not exist or was removed."}
         </p>
         <Link
-          className="mt-5 inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-bold text-white transition hover:bg-blue-700"
+          className="font-subtext mt-5 inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-bold text-white transition hover:bg-blue-700"
           to={ROUTES.ADMIN_USERS}
         >
           <ArrowLeft className="h-4 w-4" />
@@ -86,23 +86,23 @@ export default function AdminUserDetailPage() {
   return (
     <>
     <section className="space-y-5">
-      <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div className="rounded-xl border border-black bg-white p-5 shadow-sm">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div className="min-w-0">
             <Link
-              className="inline-flex items-center gap-2 text-sm font-bold text-slate-500 transition hover:text-slate-900"
+              className="font-subtext inline-flex items-center gap-2 text-sm font-bold text-slate-500 transition hover:text-slate-900"
               to={ROUTES.ADMIN_USERS}
             >
               <ArrowLeft className="h-4 w-4" />
               Back to users
             </Link>
             <div className="mt-4 flex flex-wrap items-center gap-3">
-              <h2 className="text-2xl font-bold text-slate-950">
+              <h2 className="font-title text-2xl font-bold text-slate-950">
                 {getAdminUserFullName(user)}
               </h2>
               <Badge className={statusClassMap[status]}>{status}</Badge>
             </div>
-            <p className="mt-2 text-sm font-semibold text-blue-500">
+            <p className="font-subtext mt-2 text-sm font-semibold text-blue-500">
               {user.email}
             </p>
           </div>
@@ -136,7 +136,7 @@ export default function AdminUserDetailPage() {
         </div>
 
         {accountStatusErrorMessage && (
-          <p className="mt-4 text-sm font-semibold text-red-600">
+          <p className="font-subtext mt-4 text-sm font-semibold text-red-600">
             {accountStatusErrorMessage}
           </p>
         )}
@@ -230,7 +230,7 @@ export default function AdminUserDetailPage() {
         <div className="overflow-x-auto">
           <table className="w-full min-w-[520px] border-collapse text-left">
             <thead>
-              <tr className="border-b border-slate-100 bg-slate-50 text-xs font-bold uppercase text-slate-500">
+              <tr className="border-b border-black bg-slate-50 text-xs font-bold uppercase text-slate-500">
                 <th className="px-4 py-3">Keyword</th>
                 <th className="px-4 py-3">Searched At</th>
               </tr>
@@ -252,13 +252,13 @@ export default function AdminUserDetailPage() {
           </table>
 
           {isLoadingSearchHistory && (
-            <div className="border-t border-slate-100 px-5 py-10 text-center text-sm font-medium text-slate-500">
+            <div className="border-t border-black px-5 py-10 text-center text-sm font-medium text-slate-500">
               Loading search history...
             </div>
           )}
 
           {!isLoadingSearchHistory && searchHistoryErrorMessage && (
-            <div className="border-t border-slate-100 px-5 py-10 text-center text-sm font-medium text-red-600">
+            <div className="border-t border-black px-5 py-10 text-center text-sm font-medium text-red-600">
               {searchHistoryErrorMessage}
             </div>
           )}
@@ -266,7 +266,7 @@ export default function AdminUserDetailPage() {
           {!isLoadingSearchHistory &&
             !searchHistoryErrorMessage &&
             searchHistory?.items.length === 0 && (
-              <div className="border-t border-slate-100 px-5 py-10 text-center text-sm font-medium text-slate-500">
+              <div className="border-t border-black px-5 py-10 text-center text-sm font-medium text-slate-500">
                 This user has no recent search history.
               </div>
             )}
@@ -317,7 +317,7 @@ function ConfirmAccountStatusDialog({
       className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4"
       role="dialog"
     >
-      <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-2xl">
+      <div className="w-full max-w-md rounded-xl border border-black bg-white p-6 shadow-2xl">
         <div
           className={[
             "flex h-12 w-12 items-center justify-center rounded-xl",
@@ -331,17 +331,17 @@ function ConfirmAccountStatusDialog({
           )}
         </div>
 
-        <h3 className="mt-5 text-lg font-bold text-slate-950">
+        <h3 className="font-title mt-5 text-lg font-bold text-slate-950">
           {actionLabel}
         </h3>
-        <p className="mt-2 text-sm font-medium leading-6 text-slate-500">
+        <p className="font-subtext mt-2 text-sm font-medium leading-6 text-slate-500">
           Are you sure you want to {isBanned ? "unban" : "ban"}{" "}
           <span className="font-bold text-slate-800">{userName}</span>?
         </p>
 
         <div className="mt-6 flex justify-end gap-3">
           <button
-            className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-bold text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+            className="rounded-lg border border-black px-4 py-2 text-sm font-bold text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
             disabled={isSubmitting}
             onClick={onCancel}
             type="button"
@@ -369,8 +369,8 @@ function ConfirmAccountStatusDialog({
 
 function Panel({ children, title }: { children: ReactNode; title: string }) {
   return (
-    <article className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-      <h3 className="text-sm font-bold text-slate-950">{title}</h3>
+    <article className="rounded-xl border border-black bg-white p-5 shadow-sm">
+      <h3 className="font-title text-sm font-bold text-slate-950">{title}</h3>
       <div className="mt-4">{children}</div>
     </article>
   );
@@ -378,11 +378,11 @@ function Panel({ children, title }: { children: ReactNode; title: string }) {
 
 function DetailItem({ label, value }: { label: string; value: ReactNode }) {
   return (
-    <div className="rounded-lg border border-slate-100 bg-slate-50 p-4">
-      <p className="text-xs font-bold uppercase tracking-wide text-slate-400">
+    <div className="rounded-lg border border-black bg-slate-50 p-4">
+      <p className="font-subtext text-xs font-bold uppercase tracking-wide text-slate-400">
         {label}
       </p>
-      <div className="mt-2 text-sm font-semibold text-slate-800">{value}</div>
+      <div className="font-subtext mt-2 text-sm font-semibold text-slate-800">{value}</div>
     </div>
   );
 }
@@ -406,11 +406,11 @@ function ActivityCard({
   };
 
   return (
-    <article className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+    <article className="rounded-xl border border-black bg-white p-5 shadow-sm">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <p className="text-xs font-bold uppercase text-slate-500">{label}</p>
-          <p className="mt-3 text-2xl font-bold text-slate-950">
+          <p className="font-subtext text-xs font-bold uppercase text-slate-500">{label}</p>
+          <p className="font-title mt-3 text-2xl font-bold text-slate-950">
             {formatCount(value)}
           </p>
         </div>

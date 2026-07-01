@@ -198,7 +198,7 @@ export default function GuideHelpPage() {
                 <p className="text-xs font-extrabold uppercase tracking-[0.32em] text-[#14532D]">
                   Learn - Product Guide
                 </p>
-                <h1 className="font-search-title mt-3 max-w-4xl text-4xl font-normal leading-[1.05] text-[#14532D] md:text-5xl xl:whitespace-nowrap">
+                <h1 className="font-title-page mt-3 max-w-4xl text-4xl font-normal leading-[1.05] text-[#14532D] md:text-5xl xl:whitespace-nowrap">
                   Learn Owlreka. Research Smarter.
                 </h1>
                 <p className="font-subtext mt-3 max-w-3xl text-base leading-7 text-slate-500">

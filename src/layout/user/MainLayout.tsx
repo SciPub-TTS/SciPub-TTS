@@ -5,7 +5,7 @@ import { AUTH_ROLES } from "@/features/auth/constants/roles";
 import { useAuthSession } from "@/features/auth/hooks/useAuthSession";
 
 import MainFooter from "../global/Footer";
-import MainHeader from "./Header";
+import MainHeader from "../global/Header";
 import MainSidebar from "./Sidebar";
 
 export default function MainLayout() {
