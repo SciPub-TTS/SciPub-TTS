@@ -14,7 +14,8 @@ import {
 } from "../services";
 import type { SaveSearchFeedback } from "../types";
 
-const SEARCH_HISTORY_QUERY_DEBOUNCE_MS = 250;
+const SEARCH_HISTORY_QUERY_DEBOUNCE_MS = 300;
+const SEARCH_HISTORY_MIN_FILTER_LENGTH = 2;
 const SAVE_SEARCH_FEEDBACK_DURATION_MS = 2800;
 
 type UseSearchHistoryStateParams = {
@@ -120,7 +121,11 @@ export function useSearchHistoryState(params: UseSearchHistoryStateParams) {
 
   useEffect(() => {
     const timerId = window.setTimeout(() => {
-      setDebouncedRecentSearchKeyword(normalizedSearchQuery);
+      setDebouncedRecentSearchKeyword(
+        normalizedSearchQuery.length >= SEARCH_HISTORY_MIN_FILTER_LENGTH
+          ? normalizedSearchQuery
+          : "",
+      );
     }, SEARCH_HISTORY_QUERY_DEBOUNCE_MS);
 
     return () => {
