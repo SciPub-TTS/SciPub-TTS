@@ -6,7 +6,7 @@ import { getDetailTitle } from "@/features/detail/store/detailTitleStore";
 import { ROUTES } from "./routes";
 import type {AppRouteHandle} from "@/app/router/breadcrumbs.ts";
 
-import MainLayout from "@/layout/main/MainLayout";
+import MainLayout from "@/layout/user/MainLayout";
 import AdminLayout from "@/layout/admin/AdminLayout";
 
 import AdminRestrictedRoute from "@/features/auth/components/AdminRestrictedRoute";
@@ -135,8 +135,18 @@ function getDetailBreadcrumb(
             label: "Social Hub",
             to: ROUTES.SOCIAL_HUB,
           }
+        : detailOrigin === "trending"
+          ? {
+              label: "Trending",
+              to: ROUTES.TRENDING_TOPIC,
+            }
+        : detailOrigin === "feed" || detailOrigin === "newfeed"
+          ? {
+              label: "New Feed",
+              to: ROUTES.FEED
+            }
       : {
-          label: "Search",
+          label: "Discovery",
           to: ROUTES.SEARCH,
           onClick: markSearchPageRestorePending,
         };
@@ -212,7 +222,7 @@ export const router = createBrowserRouter([
             path: ROUTER_PATHS.search,
             element: <SearchPage />,
             handle: {
-              breadcrumb: "Search",
+              breadcrumb: "Discovery",
             },
           },
           {

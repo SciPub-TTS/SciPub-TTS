@@ -1,9 +1,19 @@
+import {
+  extractPathId,
+  toOptionalPlainText,
+  toPlainText,
+  trimToEmpty,
+} from "@/lib/resourceFormatting";
 import { publicHttp } from "@/services/http";
 import type { ApiResponse } from "@/types/common.types";
 import { SEARCH_WORKS_PER_PAGE } from "../constants";
-import { mapApiEntityToResult } from "./searchEntitiesMapper";
+import type {
+  AuthorResult,
+  TopicResult,
+} from "../types";
 import type {
   SearchEntitiesApiResponse,
+  SearchEntityApiItem,
   SearchEntitiesState,
   SearchEntityRequest,
 } from "./types";
@@ -57,12 +67,6 @@ function buildSearchEntityParams(request: SearchEntityRequest) {
       filters.country,
       optionValueLookup.country,
     );
-    appendMappedValues(
-      params,
-      "primaryTopic",
-      filters.primaryTopic,
-      optionValueLookup.primaryTopic,
-    );
   }
 
   if (request.entityType === "topics") {
@@ -97,7 +101,7 @@ function appendMappedValues(
   for (const label of labels) {
     const value = valueLookup[label] || label;
 
-    if (!value.trim()) {
+    if (!trimToEmpty(value)) {
       continue;
     }
 
@@ -106,7 +110,7 @@ function appendMappedValues(
 }
 
 function appendIfFilled(params: URLSearchParams, key: string, value: string) {
-  const normalizedValue = value.trim();
+  const normalizedValue = trimToEmpty(value);
 
   if (!normalizedValue) {
     return;
@@ -125,5 +129,33 @@ function normalizeEntityType(
       return value;
     default:
       return fallback;
+  }
+}
+
+function mapApiEntityToResult(
+  entity: SearchEntityApiItem,
+): AuthorResult | TopicResult {
+  switch (entity.entityType) {
+    case "authors":
+      return {
+        id: extractPathId(entity.id),
+        entityType: "authors",
+        displayName: toPlainText(entity.displayName) || "Unknown author",
+        primaryInstitutionName: toOptionalPlainText(
+          entity.primaryInstitutionName,
+        ),
+        primaryTopicName: toOptionalPlainText(entity.primaryTopicName),
+        worksCount: Math.max(entity.worksCount || 0, 0),
+      };
+    case "topics":
+      return {
+        id: extractPathId(entity.id),
+        entityType: "topics",
+        displayName: toPlainText(entity.displayName) || "Unknown topic",
+        subfieldName: toOptionalPlainText(entity.subfieldName),
+        fieldName: toOptionalPlainText(entity.fieldName),
+        domainName: toOptionalPlainText(entity.domainName),
+        worksCount: Math.max(entity.worksCount || 0, 0),
+      };
   }
 }

@@ -3,8 +3,6 @@ import {
   Check,
   Eye,
   FolderTree,
-  MoreHorizontal,
-  NotebookPen,
   Quote,
   Share2,
   Trash2,
@@ -34,8 +32,6 @@ interface BookmarkCardProps {
     bookmarkId: string,
     collectionId: string,
   ) => Promise<void>;
-  onUpdateNote: (id: string, note: string | null) => void | Promise<void>;
-  selectedCollectionId: string | null;
 }
 
 const TOPIC_COLORS: Record<string, string> = {
@@ -52,6 +48,13 @@ const TOPIC_COLORS: Record<string, string> = {
 
 function getTopicColor(topic: string): string {
   return TOPIC_COLORS[topic] ?? "bg-[#FFF6E8] text-[#8B5E34]";
+}
+
+function getWorkTypeLabel(workType: string | null | undefined) {
+  const normalizedWorkType = workType?.trim();
+  return normalizedWorkType && normalizedWorkType.length > 0
+    ? normalizedWorkType
+    : "Work";
 }
 
 async function copyText(value: string) {
@@ -71,13 +74,8 @@ export function BookmarkCard({
   onAddToCollection,
   onDelete,
   onRemoveFromCollection,
-  onUpdateNote,
-  selectedCollectionId,
 }: BookmarkCardProps) {
-  const [showMenu, setShowMenu] = useState(false);
   const [showCollectionMenu, setShowCollectionMenu] = useState(false);
-  const [editingNote, setEditingNote] = useState(false);
-  const [noteValue, setNoteValue] = useState(bookmark.note ?? "");
   const [pendingCollectionId, setPendingCollectionId] = useState<string | null>(
     null,
   );
@@ -88,10 +86,6 @@ export function BookmarkCard({
     [bookmark.openAlexId],
   );
 
-  useEffect(() => {
-    setNoteValue(bookmark.note ?? "");
-  }, [bookmark.note]);
-
   useEffect(
     () => () => {
       if (typeof window !== "undefined" && shareResetTimer.current !== null) {
@@ -100,11 +94,6 @@ export function BookmarkCard({
     },
     [],
   );
-
-  async function handleSaveNote() {
-    await onUpdateNote(bookmark.id, noteValue.trim() || null);
-    setEditingNote(false);
-  }
 
   async function handleShare() {
     if (typeof window === "undefined") {
@@ -147,61 +136,54 @@ export function BookmarkCard({
 
   return (
     <div className="group relative flex h-full flex-col gap-4 rounded-[1.8rem] border border-black bg-[radial-gradient(circle_at_top_left,_rgba(243,112,33,0.08),_transparent_34%),white] p-5 transition-all hover:-translate-y-0.5 hover:shadow-[0_20px_44px_rgba(0,0,0,0.08)]">
-      {(showMenu || showCollectionMenu) && (
+      {showCollectionMenu && (
         <button
           type="button"
           aria-label="Close card menus"
           className="fixed inset-0 z-10"
           onClick={() => {
-            setShowMenu(false);
             setShowCollectionMenu(false);
           }}
         />
       )}
 
       <div className="flex items-start justify-between gap-3">
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="inline-flex items-center gap-1 rounded-full border border-black bg-white px-2.5 py-1 text-[11px] font-semibold text-[#8B5E34]">
-            Paper
+        <div className="flex min-w-0 flex-1 flex-col gap-2">
+          <span className="inline-flex w-fit items-center gap-1 rounded-full border border-black bg-white px-2.5 py-1 text-[11px] font-semibold text-[#8B5E34]">
+            {getWorkTypeLabel(bookmark.workType)}
           </span>
 
           {bookmark.topic ? (
-            <span
-              className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold ${getTopicColor(
-                bookmark.topic,
-              )}`}
-            >
-              {bookmark.topic}
-            </span>
+            <div className="flex flex-nowrap items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
+              <span
+                className={`inline-flex shrink-0 items-center whitespace-nowrap rounded-full px-2.5 py-1 text-[11px] font-semibold ${getTopicColor(
+                  bookmark.topic,
+                )}`}
+              >
+                {bookmark.topic}
+              </span>
+            </div>
           ) : null}
 
-          {bookmark.collections.map((collection) => {
-            const isActiveCollection = collection.id === selectedCollectionId;
-
-            return (
-              <span
-                key={collection.id}
-                className={[
-                  "inline-flex items-center rounded-full border border-black bg-black px-2.5 py-1 text-[11px] font-semibold text-white shadow-[0_8px_18px_rgba(0,0,0,0.16)]",
-                  isActiveCollection
-                    ? "ring-2 ring-[#F37021]/30"
-                    : "",
-                ].join(" ")}
-              >
-                {collection.name}
-              </span>
-            );
-          })}
+          {bookmark.collections.length > 0 ? (
+            <div className="flex flex-nowrap items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
+              {bookmark.collections.map((collection) => {
+                return (
+                  <span
+                    key={collection.id}
+                    className="inline-flex shrink-0 items-center whitespace-nowrap rounded-md border border-black bg-black px-3 py-1.5 text-[11px] font-semibold text-white"
+                    title={collection.name}
+                  >
+                    {collection.name}
+                  </span>
+                );
+              })}
+            </div>
+          ) : null}
         </div>
-
-        <button
-          type="button"
-          onClick={() => onDelete(bookmark.id)}
-          className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-black bg-white text-[#14532D] transition hover:border-red-500 hover:text-red-500"
-          title="Remove bookmark"
-        >
-          <Trash2 className="h-4.5 w-4.5" />
-        </button>
+        <span className="font-subtext shrink-0 whitespace-nowrap pt-1 text-[13px] font-semibold text-black/65">
+          {formatSavedAt(bookmark.createdAt)}
+        </span>
       </div>
 
       <h3 className="font-title line-clamp-3 text-[1.28rem] font-bold leading-snug text-black">
@@ -235,57 +217,11 @@ export function BookmarkCard({
         ) : null}
       </div>
 
-      {!editingNote && bookmark.note ? (
-        <div className="rounded-[1.35rem] border border-black bg-white px-4 py-3">
-          <p className="font-subtext line-clamp-3 text-[15px] leading-7 text-[#6F4B2A]">
-            {bookmark.note}
-          </p>
-        </div>
-      ) : null}
-
-      {editingNote ? (
-        <div className="space-y-3 rounded-[1.35rem] border border-black bg-white p-3">
-          <textarea
-            value={noteValue}
-            onChange={(event) => setNoteValue(event.target.value)}
-            placeholder="Add a note about this work..."
-            rows={4}
-            autoFocus
-            className="w-full resize-none rounded-2xl border border-black px-3 py-3 text-sm text-black placeholder:text-black/45 focus:outline-none focus:ring-2 focus:ring-[#7AC143]/25"
-          />
-          <div className="flex items-center justify-end gap-2">
-            <button
-              type="button"
-              onClick={() => {
-                setEditingNote(false);
-                setNoteValue(bookmark.note ?? "");
-              }}
-              className="inline-flex h-10 items-center rounded-2xl border border-black bg-white px-4 text-sm font-semibold text-black transition hover:bg-black hover:text-white"
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                void handleSaveNote();
-              }}
-              className="inline-flex h-10 items-center rounded-2xl border border-black bg-[#00AEEF] px-4 text-sm font-semibold text-white transition hover:bg-[#0095CC]"
-            >
-              Save note
-            </button>
-          </div>
-        </div>
-      ) : null}
-
-      <div className="mt-auto flex items-center justify-between border-t border-black/10 pt-3">
-        <span className="font-subtext text-[13px] font-semibold text-black/65">
-          {formatSavedAt(bookmark.createdAt)}
-        </span>
-
-        <div className="flex flex-wrap items-center justify-end gap-2">
+      <div className="mt-auto border-t border-black pt-3">
+        <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto_auto] items-center gap-2">
           <Link
             to={detailPath}
-            className="inline-flex h-10 items-center gap-2 rounded-2xl border border-black bg-white px-3.5 text-[13px] font-semibold text-black transition hover:bg-black hover:text-white"
+            className="inline-flex h-10 min-w-0 items-center justify-center gap-2 whitespace-nowrap rounded-lg border border-black bg-white px-3.5 text-[13px] font-semibold text-black transition hover:border-[#14532D] hover:bg-[#14532D] hover:text-white"
             title="View detail"
           >
             <Eye className="h-4 w-4" />
@@ -297,30 +233,20 @@ export function BookmarkCard({
             onClick={() => {
               void handleShare();
             }}
-            className="inline-flex h-10 items-center gap-2 rounded-2xl border border-black bg-white px-3.5 text-[13px] font-semibold text-black transition hover:bg-black hover:text-white"
+            className="inline-flex h-10 min-w-0 items-center justify-center gap-2 whitespace-nowrap rounded-lg border border-black bg-white px-3.5 text-[13px] font-semibold text-black transition hover:border-[#14532D] hover:bg-[#14532D] hover:text-white"
             title="Share"
           >
             <Share2 className="h-4 w-4" />
             {shareLabel}
           </button>
 
-          <button
-            type="button"
-            onClick={() => setEditingNote(true)}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-black bg-white text-black transition hover:bg-black hover:text-white"
-            title="Edit note"
-          >
-            <NotebookPen className="h-4.5 w-4.5" />
-          </button>
-
-          <div className="relative z-20">
+          <div className="relative z-20 shrink-0">
             <button
               type="button"
               onClick={() => {
                 setShowCollectionMenu((value) => !value);
-                setShowMenu(false);
               }}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-black bg-white text-black transition hover:bg-black hover:text-white"
+              className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-black bg-white text-black transition hover:border-[#14532D] hover:bg-[#14532D] hover:text-white"
               title="Manage collections"
             >
               <FolderTree className="h-4.5 w-4.5" />
@@ -397,46 +323,17 @@ export function BookmarkCard({
             ) : null}
           </div>
 
-          <div className="relative z-20">
-            <button
-              type="button"
-              onClick={() => {
-                setShowMenu((value) => !value);
-                setShowCollectionMenu(false);
-              }}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-black bg-white text-black transition hover:bg-black hover:text-white"
-              title="More actions"
-            >
-              <MoreHorizontal className="h-4.5 w-4.5" />
-            </button>
-
-            {showMenu ? (
-              <div className="absolute bottom-12 right-0 z-30 w-44 rounded-[1.4rem] border border-black bg-white p-2 shadow-[0_18px_40px_rgba(0,0,0,0.12)]">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setEditingNote(true);
-                    setShowMenu(false);
-                  }}
-                  className="flex w-full items-center gap-2 rounded-2xl px-3 py-2.5 text-left text-sm font-semibold text-black transition hover:bg-[#E8F8FF]"
-                >
-                  <NotebookPen className="h-4 w-4" />
-                  Edit note
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    onDelete(bookmark.id);
-                    setShowMenu(false);
-                  }}
-                  className="flex w-full items-center gap-2 rounded-2xl px-3 py-2.5 text-left text-sm font-semibold text-red-600 transition hover:bg-red-50"
-                >
-                  <Trash2 className="h-4 w-4" />
-                  Remove
-                </button>
-              </div>
-            ) : null}
-          </div>
+          <button
+            type="button"
+            onClick={() => {
+              setShowCollectionMenu(false);
+              onDelete(bookmark.id);
+            }}
+            className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-black bg-white text-[#14532D] transition hover:border-red-500 hover:bg-red-500 hover:text-white"
+            title="Remove bookmark"
+          >
+            <Trash2 className="h-4.5 w-4.5" />
+          </button>
         </div>
       </div>
     </div>

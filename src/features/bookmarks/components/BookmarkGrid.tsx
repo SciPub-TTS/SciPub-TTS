@@ -23,7 +23,6 @@ interface BookmarkGridProps {
     bookmarkId: string,
     collectionId: string,
   ) => Promise<void>;
-  onUpdateNote: (id: string, note: string | null) => void | Promise<void>;
   searchQuery: string;
   selectedCollectionId: string | null;
   selectedCollectionName: string | null;
@@ -67,7 +66,6 @@ export function BookmarkGrid({
   onDelete,
   onAddToCollection,
   onRemoveFromCollection,
-  onUpdateNote,
   searchQuery,
   selectedCollectionId,
   selectedCollectionName,
@@ -152,8 +150,6 @@ export function BookmarkGrid({
             onAddToCollection={onAddToCollection}
             onDelete={onDelete}
             onRemoveFromCollection={onRemoveFromCollection}
-            onUpdateNote={onUpdateNote}
-            selectedCollectionId={selectedCollectionId}
           />
         ))}
 

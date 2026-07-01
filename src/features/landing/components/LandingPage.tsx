@@ -29,8 +29,7 @@ import { LandingHeroPreview } from "@/features/landing/components/LandingHeroPre
 import { LandingLiveTrendsSection } from "@/features/landing/components/LandingLiveTrendsSection";
 import { LandingPersonalizedPapersSection } from "@/features/landing/components/LandingPersonalizedPapersSection";
 import { useLandingSummary } from "@/features/landing/hooks/useLandingSummary";
-import MainFooter from "@/layout/main/Footer";
-
+import MainFooter from "@/layout/global/Footer";
 const landingSections = [
   { id: "overview", number: "01", title: "Overview" },
   {
@@ -56,8 +55,23 @@ const landingSections = [
   { id: "invitation", number: "09", title: "The Invitation" },
 ] as const;
 
+const publicNavLinks = [
+  { label: "Trending Topics", to: ROUTES.TRENDING_TOPIC },
+  { label: "Trending Keywords", to: ROUTES.TRENDING_KEYWORD },
+  { label: "Guide", to: ROUTES.GUIDE },
+] as const;
+
+const authenticatedNavLinks = [
+  { label: "Feed", to: ROUTES.FEED },
+  { label: "Bookmarks", to: ROUTES.BOOKMARKS },
+  { label: "Report", to: ROUTES.REPORT },
+  { label: "Social Hub", to: ROUTES.SOCIAL_HUB },
+] as const;
+
 export default function LandingPage() {
   const [isSectionMenuOpen, setIsSectionMenuOpen] = useState(false);
+  const [isExploreMenuOpen, setIsExploreMenuOpen] = useState(false);
+  const [isWorkspaceMenuOpen, setIsWorkspaceMenuOpen] = useState(false);
   const { currentUser, isAuthenticated: loggedIn } = useAuthSession();
   const { data: landingSummary } = useLandingSummary();
   const dashboardPath =
@@ -69,6 +83,7 @@ export default function LandingPage() {
       ? ROUTES.ADMIN_DASHBOARD
       : ROUTES.PROFILE;
   const displayName = currentUser?.fullName ?? "User";
+  const displayEmail = currentUser?.email ?? "Signed in account";
   const initials = displayName
     .split(" ")
     .filter(Boolean)
@@ -76,13 +91,24 @@ export default function LandingPage() {
     .map((part) => part[0])
     .join("")
     .toUpperCase();
-
   function handleSectionSelect(sectionId: string) {
     document
       .getElementById(sectionId)
       ?.scrollIntoView({ behavior: "smooth", block: "start" });
 
     window.history.replaceState(null, "", `#${sectionId}`);
+    setIsSectionMenuOpen(false);
+  }
+
+  function handleExploreMenuToggle() {
+    setIsExploreMenuOpen((isOpen) => !isOpen);
+    setIsWorkspaceMenuOpen(false);
+    setIsSectionMenuOpen(false);
+  }
+
+  function handleWorkspaceMenuToggle() {
+    setIsWorkspaceMenuOpen((isOpen) => !isOpen);
+    setIsExploreMenuOpen(false);
     setIsSectionMenuOpen(false);
   }
 
@@ -117,11 +143,15 @@ export default function LandingPage() {
             <span className="font-brand text-3xl font-normal">Owlreka</span>
           </Link>
 
-          <nav className="hidden items-center gap-6 text-sm font-medium text-slate-600 md:flex">
+          <nav className="hidden items-center gap-4 text-sm font-medium text-slate-600 lg:flex xl:gap-6">
             <div className="relative">
               <button
                 type="button"
-                onClick={() => setIsSectionMenuOpen((isOpen) => !isOpen)}
+                onClick={() => {
+                  setIsSectionMenuOpen((isOpen) => !isOpen);
+                  setIsExploreMenuOpen(false);
+                  setIsWorkspaceMenuOpen(false);
+                }}
                 className="inline-flex items-center gap-1.5 hover:text-emerald-700 text-black"
               >
                 Sections
@@ -153,39 +183,97 @@ export default function LandingPage() {
 
             <Link
               to={ROUTES.SEARCH}
-              className="hover:text-emerald-700 text-black"
+              className="rounded-full bg-slate-50 px-4 py-2 whitespace-nowrap text-black transition hover:text-emerald-700"
             >
-              Search
+              Discovery
             </Link>
-            <Link
-              to={ROUTES.TRENDING_TOPIC}
-              className="hover:text-emerald-700 text-black"
-            >
-              Trending
-            </Link>
-            <Link
-              to={ROUTES.GUIDE}
-              className="hover:text-emerald-700 text-black"
-            >
-              Guide
-            </Link>
+
+            <div className="relative">
+              <button
+                type="button"
+                onClick={handleExploreMenuToggle}
+                className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-black transition hover:text-emerald-700"
+              >
+                Explore
+                <ChevronDown
+                  className={`h-4 w-4 transition ${
+                    isExploreMenuOpen ? "rotate-180" : ""
+                  }`}
+                />
+              </button>
+
+              {isExploreMenuOpen && (
+                <div className="absolute left-0 top-12 z-30 w-64 rounded-[28px] border border-black bg-[#fcfdfb] p-3 shadow-[0_18px_38px_rgba(15,23,42,0.16)]">
+                  {publicNavLinks.map((link) => (
+                    <Link
+                      key={link.to}
+                      to={link.to}
+                      onClick={() => setIsExploreMenuOpen(false)}
+                      className="mb-1.5 flex items-center border-b border-black px-3 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-emerald-50 hover:text-emerald-700 last:mb-0 last:border-b-0"
+                    >
+                      {link.label}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="relative">
+              <button
+                type="button"
+                onClick={handleWorkspaceMenuToggle}
+                className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-black transition hover:text-emerald-700"
+              >
+                Workspace
+                <ChevronDown
+                  className={`h-4 w-4 transition ${
+                    isWorkspaceMenuOpen ? "rotate-180" : ""
+                  }`}
+                />
+              </button>
+
+              {isWorkspaceMenuOpen && (
+                <div className="absolute left-0 top-12 z-30 w-60 rounded-[28px] border border-black bg-[#fcfdfb] p-3 shadow-[0_18px_38px_rgba(15,23,42,0.16)]">
+                  {authenticatedNavLinks.map((link) => (
+                    <Link
+                      key={link.to}
+                      to={loggedIn ? link.to : ROUTES.LOGIN}
+                      onClick={() => setIsWorkspaceMenuOpen(false)}
+                      className="mb-1.5 flex items-center border-b border-black px-3 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-emerald-50 hover:text-emerald-700 last:mb-0 last:border-b-0"
+                    >
+                      {link.label}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
           </nav>
 
           {loggedIn ? (
             <Link
               to={profilePath}
               aria-label="Open user profile"
-              className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-emerald-600 text-sm font-bold text-white"
+              className="flex items-center gap-3 transition hover:opacity-90"
             >
-              {currentUser?.avatarUrl ? (
-                <img
-                  src={currentUser.avatarUrl}
-                  alt={displayName}
-                  className="h-full w-full object-cover"
-                />
-              ) : (
-                initials || "U"
-              )}
+              <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full bg-emerald-600 text-base font-bold text-white ring-2 ring-emerald-100">
+                {currentUser?.avatarUrl ? (
+                  <img
+                    src={currentUser.avatarUrl}
+                    alt={displayName}
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  initials || "U"
+                )}
+              </div>
+              <div className="hidden min-w-0 sm:block">
+                <p className="truncate text-sm font-bold text-slate-900">
+                  {displayName}
+                </p>
+                <p className="mt-0.5 truncate text-xs text-slate-500">
+                  {displayEmail}
+                </p>
+              </div>
             </Link>
           ) : (
             <div className="flex items-center gap-2">
@@ -211,7 +299,7 @@ export default function LandingPage() {
           <div className="grid gap-8 lg:grid-cols-[1.55fr_0.85fr] lg:items-start">
             <div className="lg:pl-4">
               <div className="flex items-start gap-4 md:gap-6">
-                <span className="pt-6 font-serif text-[56px] italic leading-none text-emerald-600 md:text-[78px]">
+                <span className="pt-6 font-search-title text-[56px] italic leading-none text-emerald-600 md:text-[78px]">
                   §01
                 </span>
                 <div>
@@ -220,13 +308,13 @@ export default function LandingPage() {
                   </p>
                   <h1 className="max-w-[860px] text-[46px] font-semibold leading-[0.94] tracking-[-0.02em] md:text-[72px] lg:text-[86px]">
                     Read the{" "}
-                    <span className="font-serif italic text-emerald-600">
+                    <span className="font-search-title italic text-emerald-600">
                       literature
                     </span>
                     <br />
                     as a living
                     <br />
-                    <span className="relative inline-block font-serif italic">
+                    <span className="relative inline-block font-search-title italic">
                       conversation
                       <svg
                         viewBox="0 0 420 24"
@@ -282,7 +370,7 @@ export default function LandingPage() {
             className="mt-16 rounded-[28px] border border-slate-200/80 bg-[#f2f4f3] px-6 py-12 md:px-10 md:py-16"
           >
             <div className="mb-7 flex items-center gap-4">
-              <span className="font-serif text-[36px] italic text-emerald-600">
+              <span className="font-search-title text-[36px] italic text-emerald-600">
                 §02
               </span>
               <span className="h-px w-[150px] bg-slate-300" />
@@ -294,7 +382,7 @@ export default function LandingPage() {
             <div className="grid gap-8 lg:grid-cols-[1.7fr_0.9fr] lg:items-end">
               <h2 className="text-[44px] font-semibold leading-[0.95] tracking-[-0.02em] text-[#0b0f0e] md:text-[64px]">
                 From paper search to{" "}
-                <span className="font-serif italic text-emerald-600">
+                <span className="font-search-title italic text-emerald-600">
                   research intelligence
                 </span>
                 .
@@ -493,7 +581,7 @@ export default function LandingPage() {
               />
 
               <div className="relative z-10 mb-12 flex items-center gap-4">
-                <span className="font-serif text-[36px] italic text-emerald-600">
+                <span className="font-search-title text-[36px] italic text-emerald-600">
                   §04
                 </span>
                 <span className="h-px w-[130px] bg-slate-300" />
@@ -504,7 +592,7 @@ export default function LandingPage() {
 
               <h2 className="relative z-10 max-w-[980px] text-[58px] font-semibold leading-[0.95] tracking-[-0.02em] text-[#0b0f0e] md:text-[72px]">
                 Trace the{" "}
-                <span className="font-serif italic text-emerald-600">
+                <span className="font-search-title italic text-emerald-600">
                   argument
                 </span>{" "}
                 across scientific literature.
@@ -601,7 +689,7 @@ export default function LandingPage() {
             className="mt-16 rounded-[28px] border border-slate-200/80 bg-[#f2f4f3] px-6 py-10 md:px-10 md:py-12"
           >
             <div className="mb-7 flex items-center gap-4">
-              <span className="font-serif text-[36px] italic text-emerald-600">
+              <span className="font-search-title text-[36px] italic text-emerald-600">
                 §05
               </span>
               <span className="h-px w-[130px] bg-slate-300" />
@@ -614,7 +702,7 @@ export default function LandingPage() {
               <div>
                 <h2 className="max-w-[580px] text-[44px] font-semibold leading-[0.95] tracking-[-0.02em] text-[#0b0f0e] md:text-[64px]">
                   A{" "}
-                  <span className="font-serif italic text-emerald-600">
+                  <span className="font-search-title italic text-emerald-600">
                     Trending Topic
                   </span>{" "}
                   designed for research decisions.
@@ -670,7 +758,7 @@ export default function LandingPage() {
             <div className="grid gap-8 lg:grid-cols-[4fr_3fr] lg:items-start">
               <div>
                 <div className="mb-7 flex items-center gap-4">
-                  <span className="font-serif text-[36px] italic text-emerald-600">
+                  <span className="font-search-title text-[36px] italic text-emerald-600">
                     §06
                   </span>
                   <span className="h-px w-[130px] bg-slate-300" />
@@ -683,11 +771,11 @@ export default function LandingPage() {
                   Compare research
                   <br />
                   fields by{" "}
-                  <span className="font-serif italic text-emerald-600">
+                  <span className="font-search-title italic text-emerald-600">
                     publication
                   </span>
                   <br />
-                  <span className="font-serif italic text-emerald-600">
+                  <span className="font-search-title italic text-emerald-600">
                     share
                   </span>{" "}
                   and growth rate.
@@ -738,7 +826,7 @@ export default function LandingPage() {
             className="mt-16 overflow-hidden rounded-[28px] border border-slate-200/80 bg-[#f2f4f3] px-6 py-10 md:px-10 md:py-12"
           >
             <div className="reveal-on-scroll mb-6 flex items-center gap-4">
-              <span className="font-serif text-[42px] italic text-emerald-600">
+              <span className="font-search-title text-[42px] italic text-emerald-600">
                 §07
               </span>
               <span className="h-px w-[130px] bg-slate-300" />
@@ -749,7 +837,7 @@ export default function LandingPage() {
 
             <h2 className="reveal-on-scroll max-w-[980px] text-[44px] font-semibold leading-[0.98] tracking-[-0.02em] text-[#0b0f0e] md:text-[76px]">
               From research interest to{" "}
-              <span className="font-serif italic text-emerald-600">
+              <span className="font-search-title italic text-emerald-600">
                 insight
               </span>{" "}
               in four steps.
@@ -761,7 +849,7 @@ export default function LandingPage() {
               <div className="relative space-y-12">
                 <div className="reveal-on-scroll grid items-center gap-6 md:grid-cols-[1fr_auto_1fr]">
                   <div className="text-right">
-                    <p className="font-serif text-[64px] italic leading-none text-emerald-600">
+                    <p className="font-search-title text-[64px] italic leading-none text-emerald-600">
                       01
                     </p>
                     <h3 className="mt-3 text-[16px] font-semibold text-slate-900">
@@ -784,7 +872,7 @@ export default function LandingPage() {
                     <Search className="h-6 w-6" />
                   </div>
                   <div>
-                    <p className="font-serif text-[64px] italic leading-none text-emerald-600">
+                    <p className="font-search-title text-[64px] italic leading-none text-emerald-600">
                       02
                     </p>
                     <h3 className="mt-3 text-[16px] font-semibold text-slate-900">
@@ -798,7 +886,7 @@ export default function LandingPage() {
 
                 <div className="reveal-on-scroll grid items-center gap-6 md:grid-cols-[1fr_auto_1fr]">
                   <div className="text-right">
-                    <p className="font-serif text-[64px] italic leading-none text-emerald-600">
+                    <p className="font-search-title text-[64px] italic leading-none text-emerald-600">
                       03
                     </p>
                     <h3 className="mt-3 text-[16px] font-semibold text-slate-900">
@@ -821,7 +909,7 @@ export default function LandingPage() {
                     <FileBarChart2 className="h-6 w-6" />
                   </div>
                   <div>
-                    <p className="font-serif text-[64px] italic leading-none text-emerald-600">
+                    <p className="font-search-title text-[64px] italic leading-none text-emerald-600">
                       04
                     </p>
                     <h3 className="mt-3 text-[16px] font-semibold text-slate-900">
@@ -842,7 +930,7 @@ export default function LandingPage() {
             className="mt-16 rounded-[28px] border border-slate-200/80 bg-[#f2f4f3] px-6 py-10 md:px-10 md:py-12"
           >
             <div className="mb-6 flex items-center gap-4">
-              <span className="font-serif text-[42px] italic text-emerald-600">
+              <span className="font-search-title text-[42px] italic text-emerald-600">
                 §08
               </span>
               <span className="h-px w-[130px] bg-slate-300" />
@@ -854,7 +942,7 @@ export default function LandingPage() {
             <div className="relative">
               <h2 className="max-w-[980px] text-[44px] font-semibold leading-[0.98] tracking-[-0.02em] text-[#0b0f0e] md:text-[76px]">
                 For students, lecturers, and{" "}
-                <span className="font-serif italic text-emerald-600">
+                <span className="font-search-title italic text-emerald-600">
                   researchers
                 </span>
                 .
@@ -926,7 +1014,7 @@ export default function LandingPage() {
             />
             <div className="relative z-10 mx-auto max-w-[980px] text-center">
               <div className="flex items-end justify-center gap-3 text-emerald-300">
-                <span className="font-serif text-[44px] italic leading-none">
+                <span className="font-search-title text-[44px] italic leading-none">
                   §09
                 </span>
                 <span className="pb-1.5 text-[18px] uppercase tracking-[0.2em]">
@@ -935,7 +1023,7 @@ export default function LandingPage() {
               </div>
               <h2 className="mt-4 text-[44px] font-semibold leading-[0.98] md:text-[76px]">
                 Step Into Your{" "}
-                <span className="font-serif italic text-emerald-400">
+                <span className="font-search-title italic text-emerald-400">
                   Research Observatory
                 </span>
               </h2>
@@ -975,3 +1063,4 @@ export default function LandingPage() {
     </div>
   );
 }
+

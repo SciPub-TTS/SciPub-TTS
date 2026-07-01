@@ -206,7 +206,9 @@ function GeneralPart(){
                             }).format(value)
                         }
                     />
-                    <Tooltip />
+                    <Tooltip
+                        formatter={(value: any) => [Number(value).toLocaleString("en-US"), "Publications"]}
+                    />
                     <Legend align="right" />
                 </AreaChart>
             </ResponsiveContainer>

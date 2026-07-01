@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { useNavigationType } from "react-router-dom";
+import { useState } from "react";
+import { useLocation, useNavigationType } from "react-router-dom";
 
 import { useAuthSession } from "@/features/auth/hooks/useAuthSession";
 import { useAppDispatch, useAppSelector } from "@/store";
@@ -19,8 +19,6 @@ import { initialFilters } from "../constants";
 import {
   defaultSearchSortState,
   getSearchEntityMetadata,
-  getTrendingKeywords,
-  getTrendingTopics,
   normalizeSearchSortState,
 } from "../services";
 import type {
@@ -39,21 +37,28 @@ import {
   cloneSearchFilters,
   isReloadNavigation,
   readPersistedSearchPageSnapshot,
+  type SearchPageSnapshot,
 } from "./stateHelpers";
-import type { SearchPageSnapshot } from "./types";
-import {
-  getNextSortStateForEntityType,
-  getVisibleFilterWidgets,
-  shouldClearSearchState,
-} from "./searchPageHelpers";
 import { useSearchHistoryState } from "./useSearchHistoryState";
 import { useSearchPagePersistence } from "./useSearchPagePersistence";
 import { useSearchResultsState } from "./useSearchResultsState";
 import { useRemoteFilterOptions } from "./useRemoteFilterOptions";
+import { useTrendingSnapshotState } from "./useTrendingSnapshotState";
+
+const authorFilterWidgets: SearchFilterWidgetKey[] = [
+  "institution",
+  "country",
+];
+
+const topicFilterWidgets: SearchFilterWidgetKey[] = [
+  "subField",
+  "field",
+];
 
 export function useSearchPageState() {
   const { isAuthenticated } = useAuthSession();
   const dispatch = useAppDispatch();
+  const location = useLocation();
   const navigationType = useNavigationType();
   const isSearchHistoryEnabled = isAuthenticated;
   const shouldRestoreSearchPageState =
@@ -75,9 +80,6 @@ export function useSearchPageState() {
   } = searchPageState;
   const isWorksTab = activeEntityType === "works";
   const activeEntityMetadata = getSearchEntityMetadata(activeEntityType);
-  const [topicHotSearches, setTopicHotSearches] = useState<string[]>([]);
-  const [trendingTopicNames, setTrendingTopicNames] = useState<string[]>([]);
-  const [trendingKeywordNames, setTrendingKeywordNames] = useState<string[]>([]);
   const {
     filterOptions,
     handleFilterOptionSearch,
@@ -118,9 +120,18 @@ export function useSearchPageState() {
     totalIndexedCount,
     visibleResults,
   } = searchResults;
+  const {
+    hasLoadedTrendSnapshot,
+    topicHotSearches,
+    trendingKeywordNames,
+    trendingTopicNames,
+  } = useTrendingSnapshotState();
   const visibleFilterWidgets = getVisibleFilterWidgets(
     activeEntityType,
     storedVisibleFilterWidgets,
+  );
+  const requestedEntityType = normalizeRequestedSearchEntityType(
+    (location.state as { initialEntityType?: string } | null)?.initialEntityType ?? null,
   );
   const showFilters = true;
   const showFilterAddMenu = isWorksTab;
@@ -132,63 +143,15 @@ export function useSearchPageState() {
   const hasFormError = isWorksTab
     ? hasInvalidYearRange(filters) || hasInvalidCitationRange(filters)
     : false;
+
   useSearchPagePersistence({
     dispatch,
+    initialEntityType: requestedEntityType,
     restoredSnapshot,
     remoteFilterOptionsSnapshot,
     searchPageState,
-    visibleResultCount: visibleResults.length,
   });
 
-  useEffect(() => {
-    if (trendingTopicNames.length > 0 && trendingKeywordNames.length > 0) {
-      return;
-    }
-
-    let isCancelled = false;
-
-    async function loadWeeklyTrendSnapshot() {
-      try {
-        const [topicResult, keywordResult] = await Promise.allSettled([
-          getTrendingTopics(undefined, 12),
-          getTrendingKeywords(undefined, 16),
-        ]);
-
-        if (isCancelled) {
-          return;
-        }
-
-        const topicResponse =
-          topicResult.status === "fulfilled" ? topicResult.value : null;
-        const keywordResponse =
-          keywordResult.status === "fulfilled" ? keywordResult.value : null;
-
-        const nextTrendingTopics = (topicResponse?.topics || [])
-          .map((item) => item.name.trim())
-          .filter((label, index, array) => label.length > 0 && array.indexOf(label) === index);
-        const nextTrendingKeywords = (keywordResponse?.keywords || [])
-          .map((item) => item.name.trim())
-          .filter((label, index, array) => label.length > 0 && array.indexOf(label) === index);
-
-        setTrendingTopicNames(nextTrendingTopics);
-        setTrendingKeywordNames(nextTrendingKeywords);
-        setTopicHotSearches(nextTrendingTopics.slice(0, 8));
-      } catch (error) {
-        if (!isCancelled) {
-          console.error("Cannot load weekly trend snapshot:", error);
-        }
-      }
-    }
-
-    void loadWeeklyTrendSnapshot();
-
-    return () => {
-      isCancelled = true;
-    };
-  }, [trendingKeywordNames.length, trendingTopicNames.length]);
-
-  // Centralize how a search request is submitted so every user action
-  // eventually funnels through one readable path.
   function submitSearchRequest(
     nextEntityType: SearchEntityType,
     nextQuery: string,
@@ -241,14 +204,8 @@ export function useSearchPageState() {
       sortState,
     );
     dispatch(setSortState(nextSortState));
-
-    runSearchOrClear(
-      nextEntityType,
-      searchQuery,
-      filters,
-      nextSortState,
-      optionValueLookup,
-    );
+    dispatch(setSearchQuery(""));
+    dispatch(clearSearchResults());
   }
 
   function handleSearchQueryChange(nextQuery: string) {
@@ -406,6 +363,7 @@ export function useSearchPageState() {
     saveSearchFeedback: searchHistory.saveSearchFeedback,
     saveSearchNotice: searchHistory.saveSearchNotice,
     saveSearchSuccessToken: searchHistory.saveSearchSuccessToken,
+    hasLoadedTrendSnapshot,
     topicHotSearches,
     trendingKeywordNames,
     trendingTopicNames,
@@ -419,4 +377,47 @@ export function useSearchPageState() {
     visibleFilterWidgets,
     visibleResults,
   };
+}
+
+function shouldClearSearchState(
+  entityType: SearchEntityType,
+  searchQuery: string,
+  filters: SearchFilters,
+) {
+  return !searchQuery && countActiveFilters(entityType, filters) === 0;
+}
+
+function getVisibleFilterWidgets(
+  entityType: SearchEntityType,
+  visibleFilterWidgets: SearchFilterWidgetKey[],
+) {
+  switch (entityType) {
+    case "authors":
+      return authorFilterWidgets;
+    case "topics":
+      return topicFilterWidgets;
+    default:
+      return visibleFilterWidgets;
+  }
+}
+
+function getNextSortStateForEntityType(
+  currentEntityType: SearchEntityType,
+  nextEntityType: SearchEntityType,
+  currentSortState: SearchPageSnapshot["sortState"],
+) {
+  const isCrossingWorkBoundary =
+    (currentEntityType === "works") !== (nextEntityType === "works");
+
+  return isCrossingWorkBoundary
+    ? { ...defaultSearchSortState }
+    : currentSortState;
+}
+
+function normalizeRequestedSearchEntityType(tab: string | null): SearchEntityType | null {
+  if (tab === "authors" || tab === "topics" || tab === "works") {
+    return tab;
+  }
+
+  return null;
 }

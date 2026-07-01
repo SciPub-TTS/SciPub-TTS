@@ -19,9 +19,7 @@ export function FeedTabs({ activeTab, onTabChange, tabs }: FeedTabsProps) {
             <button
               className={clsx(
                 "relative h-12 whitespace-nowrap text-sm font-semibold transition",
-                isActive
-                  ? "text-emerald-600"
-                  : "text-slate-500 hover:text-slate-900",
+                isActive ? "text-emerald-600" : "text-black hover:text-black",
               )}
               key={tab.key}
               onClick={() => onTabChange(tab.key)}

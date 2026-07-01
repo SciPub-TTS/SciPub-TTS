@@ -3,20 +3,16 @@ export interface CreateBookmarkRequest {
   titleSnapshot?: string;
   authorsSnapshot?: string;
   authorOpenAlexIdsSnapshot?: Array<string | null>;
+  workTypeSnapshot?: string;
   sourceSnapshot?: string;
   topicSnapshot?: string;
   topicOpenAlexIdSnapshot?: string;
   publicationYear?: number;
   citationSnapshot?: number;
-  note?: string;
 }
 
 export interface CreateBookmarkCollectionRequest {
   name: string;
-}
-
-export interface UpdateBookmarkNoteRequest {
-  note: string | null;
 }
 
 export interface UpdateBookmarkCollectionItemsRequest {
@@ -38,11 +34,11 @@ export interface BookmarkResponse {
   openAlexId: string;
   title: string;
   authors: string;
+  workType: string | null;
   source: string;
   topic: string;
   publicationYear: number | null;
   citationCount: number | null;
-  note: string | null;
   collections: BookmarkCollectionSummary[];
   createdAt: string;
 }

@@ -132,10 +132,10 @@ export default function VerifyResetCodePage() {
                 Password recovery · Step 2 of 3
             </p>
 
-            <h1 className="font-serif text-[2.2rem] leading-[1.15] text-slate-950 mb-1">
+            <h1 className="font-search-title text-[2.2rem] leading-[1.15] text-slate-950 mb-1">
                 Check your
             </h1>
-            <h1 className="font-serif text-[2.2rem] leading-[1.15] italic text-emerald-700 mb-3">
+            <h1 className="font-search-title text-[2.2rem] leading-[1.15] italic text-emerald-700 mb-3">
                 email.
             </h1>
 

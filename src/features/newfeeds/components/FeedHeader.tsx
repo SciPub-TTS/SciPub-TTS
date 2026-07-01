@@ -1,31 +1,16 @@
-import { Plus, UserPlus } from "lucide-react";
-
 export function FeedHeader() {
   return (
     <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
       <div className="min-w-0">
-        <h1 className="text-3xl font-bold text-slate-950">Research Feed</h1>
-        <p className="mt-2 max-w-3xl text-sm font-medium text-slate-500">
-          New papers based on your followed topics, authors, journals, and
-          saved keywords.
+        <p className="text-xs font-extrabold uppercase tracking-[0.32em] text-[#14532D]">
+          Monitor - Personalized Research Feed
         </p>
-      </div>
-
-      <div className="flex flex-wrap gap-2 sm:justify-end">
-        <button
-          className="inline-flex h-10 items-center gap-2 rounded-lg bg-emerald-600 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700"
-          type="button"
-        >
-          <Plus className="h-4 w-4" />
-          <span>Follow New Topic</span>
-        </button>
-        <button
-          className="inline-flex h-10 items-center gap-2 rounded-lg border border-emerald-500 bg-white px-4 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-50"
-          type="button"
-        >
-          <UserPlus className="h-4 w-4" />
-          <span>Follow New Author</span>
-        </button>
+        <h1 className="font-search-title mt-3 text-4xl font-normal leading-[1.05] text-[#14532D] md:text-5xl">
+          Your Research Radar.
+        </h1>
+        <p className="font-subtext mt-3 max-w-3xl text-base leading-7 text-slate-500">
+          New papers curated from the topics and authors you follow.
+        </p>
       </div>
     </div>
   );

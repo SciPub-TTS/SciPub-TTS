@@ -4,7 +4,7 @@ import {
   buildNormalizedTrendLabelSet,
   isExactTrendMatch,
 } from "@/features/search/utils";
-import ListWorkLayout from "@/layout/components/ListWorkLayout";
+import ListWorkLayout from "@/layout/global/ListWorkLayout";
 
 export function PaperResultCard({
   paper,
@@ -37,7 +37,7 @@ export function PaperResultCard({
       topic={paper.topic}
       topicRef={paper.topicRef}
       trendingKeywords={trendingKeywords}
-      venue={paper.venue}
+      source={paper.source}
       workId={paper.id}
       year={paper.year}
     />

@@ -3,6 +3,7 @@ import {Check} from "lucide-react";
 import type {TopicData} from "@/features/dashboard/topic/types/topic.ts";
 import {useTopicRanking} from "@/features/dashboard/topic/hooks/useTopicRanking.ts";
 import {useEntityFollow} from "@/features/follows/hooks/useEntityFollow.ts";
+import {buildDetailTrailUrl} from "@/features/detail/detailTrail.ts";
 
 type TrendingPartProps = {
     startDate: string;
@@ -51,15 +52,13 @@ const stateStyle = {
     rising: "bg-yellow-100 text-yellow-700"
 };
 
-const apiBaseUrl = (
-    import.meta.env.VITE_APP_BASE_URL || "http://localhost:8080"
-).replace(/\/$/, "");
-
 function Topic({topic, id}:
                {topic:TopicData, id:number}){
 
     const topicId = topic.topicId.split('/').at(-1);
-    const link = `${apiBaseUrl}/topics/` + topicId;
+    const link = topicId
+        ? buildDetailTrailUrl("topics", topicId, [], "trending")
+        : "#";
 
     const {
         buttonLabel,
@@ -68,7 +67,7 @@ function Topic({topic, id}:
         isFollowed,
     } = useEntityFollow({
         displayName: topic.name,
-        targetOpenAlexId: topic.topicId,
+        targetOpenAlexId: topic.topicId.split("/").pop() ?? "",
         targetType: "TOPIC",
     });
 

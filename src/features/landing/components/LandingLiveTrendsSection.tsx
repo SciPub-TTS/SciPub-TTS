@@ -99,7 +99,7 @@ export function LandingLiveTrendsSection({
       className="mt-16 rounded-[28px] border border-slate-200/80 bg-[#f2f4f3] px-6 py-12 md:px-10 md:py-16"
     >
       <div className="mb-7 flex items-center gap-4">
-        <span className="font-serif text-[36px] italic text-emerald-600">
+        <span className="font-search-title text-[36px] italic text-emerald-600">
           §03
         </span>
         <span className="h-px w-[130px] bg-slate-300" />
@@ -111,7 +111,7 @@ export function LandingLiveTrendsSection({
       <div className="mb-8 flex items-end justify-between gap-4">
         <h2 className="text-[44px] font-semibold leading-[0.95] tracking-[-0.02em] text-[#0b0f0e] md:text-[64px]">
           Topics moving{" "}
-          <span className="font-serif italic text-amber-500">right now</span>
+          <span className="font-search-title italic text-amber-500">right now</span>
         </h2>
       </div>
 
@@ -217,3 +217,4 @@ function useLiveTrendsAutoScroll() {
     };
   }, []);
 }
+

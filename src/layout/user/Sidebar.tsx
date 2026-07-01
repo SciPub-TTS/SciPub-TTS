@@ -10,28 +10,27 @@ import {
   User,
 } from "lucide-react";
 import { useState } from "react";
-import { useTranslation } from "react-i18next";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 
 import { ROUTES } from "@/app/router";
 import logoImage from "@/assets/images/logo.png";
-import { SafeActionDialog } from "@/components/SafeActionDialog";
+import { SafeActionDialog } from "@/layout/global/SafeActionDialog";
 import { useAuthSession } from "@/features/auth/hooks/useAuthSession";
 import { submitLogout } from "@/features/auth/services/authFlows";
 import { parseDetailOrigin } from "@/features/detail/detailTrail";
 
 const workspaceMenuItems = [
-  { labelKey: "navigation.discovery", path: ROUTES.SEARCH, icon: Search },
-  { labelKey: "navigation.trending", path: ROUTES.TRENDING_TOPIC, icon: LayoutDashboard },
-  { labelKey: "navigation.bookmarks", path: ROUTES.BOOKMARKS, icon: Bookmark },
-  { labelKey: "navigation.newFeed", path: ROUTES.FEED, icon: Rss },
-  { labelKey: "navigation.socialHub", path: ROUTES.SOCIAL_HUB, icon: MessagesSquare },
-  { labelKey: "navigation.report", path: ROUTES.REPORT, icon: FileText },
-  { labelKey: "navigation.guideHelp", path: ROUTES.GUIDE, icon: CircleHelp },
+  { label: "Discovery", path: ROUTES.SEARCH, icon: Search },
+  { label: "Trending", path: ROUTES.TRENDING_TOPIC, icon: LayoutDashboard },
+  { label: "Bookmarks", path: ROUTES.BOOKMARKS, icon: Bookmark },
+  { label: "New Feed", path: ROUTES.FEED, icon: Rss },
+  { label: "Social Hub", path: ROUTES.SOCIAL_HUB, icon: MessagesSquare },
+  { label: "Report", path: ROUTES.REPORT, icon: FileText },
+  { label: "Guide & Help", path: ROUTES.GUIDE, icon: CircleHelp },
 ];
 
 const accountMenuItems = [
-  { labelKey: "navigation.userProfile", path: ROUTES.PROFILE, icon: User },
+  { label: "User Profile", path: ROUTES.PROFILE, icon: User },
 ];
 
 function getInitials(name: string) {
@@ -45,15 +44,13 @@ function getInitials(name: string) {
 }
 
 export default function MainSidebar() {
-  const { t } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
   const { currentUser, isAuthenticated: loggedIn } = useAuthSession();
   const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
-  const displayName = currentUser?.fullName ?? t("common.guest");
-  const displayEmail =
-    currentUser?.email ?? t("common.signInToManageProfile");
+  const displayName = currentUser?.fullName ?? "Guest";
+  const displayEmail = currentUser?.email ?? "Sign in to manage your profile";
   const initials = getInitials(displayName) || "G";
   const detailOrigin = parseDetailOrigin(location.search);
   const isDetailPage =
@@ -98,7 +95,7 @@ export default function MainSidebar() {
 
         <div className="flex-1 px-2.5 py-5">
           <p className="mb-3 px-2 text-[17px] font-extrabold tracking-wider text-white">
-            {t("common.workspace").toUpperCase()}
+            WORKSPACE
           </p>
 
           <nav className="space-y-1">
@@ -116,6 +113,16 @@ export default function MainSidebar() {
                 item.path === ROUTES.SOCIAL_HUB &&
                 (location.pathname === ROUTES.SOCIAL_HUB ||
                   (isDetailPage && detailOrigin === "social-hub"));
+              const isTrendingSectionActive =
+                item.path === ROUTES.TRENDING_TOPIC &&
+                (location.pathname === ROUTES.TRENDING_TOPIC ||
+                  location.pathname === ROUTES.TRENDING_KEYWORD ||
+                  (isDetailPage && detailOrigin === "trending"));
+              const isFeedSectionActive =
+                item.path === ROUTES.FEED &&
+                (location.pathname === ROUTES.FEED ||
+                  (isDetailPage &&
+                    (detailOrigin === "feed" || detailOrigin === "newfeed")));
 
               return (
                 <NavLink
@@ -126,15 +133,17 @@ export default function MainSidebar() {
                       "flex items-center gap-3 rounded-lg px-3 py-2.5 text-[13px] font-semibold transition",
                       isActive ||
                       isSearchSectionActive ||
+                      isTrendingSectionActive ||
                       isBookmarksSectionActive ||
-                      isSocialHubSectionActive
+                      isSocialHubSectionActive ||
+                      isFeedSectionActive
                         ? "bg-emerald-600 text-white"
                         : "text-white hover:bg-emerald-500/15 hover:text-emerald-300",
                     ].join(" ")
                   }
                 >
                   <Icon className="h-5 w-5 shrink-0" />
-                  <span className="truncate">{t(item.labelKey)}</span>
+                  <span className="truncate">{item.label}</span>
                 </NavLink>
               );
             })}
@@ -165,7 +174,7 @@ export default function MainSidebar() {
           </div>
 
           <p className="mb-3 px-2 text-[17px] font-extrabold tracking-wider text-white">
-            {t("common.account").toUpperCase()}
+            ACCOUNT
           </p>
 
           <nav className="space-y-1">
@@ -187,7 +196,7 @@ export default function MainSidebar() {
                   }
                 >
                   <Icon className="h-5 w-5 shrink-0" />
-                  <span className="truncate">{t(item.labelKey)}</span>
+                  <span className="truncate">{item.label}</span>
                 </NavLink>
               );
             })}
@@ -199,7 +208,7 @@ export default function MainSidebar() {
                 className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-semibold text-slate-300 transition hover:bg-rose-500/15 hover:text-rose-100"
               >
                 <LogOut className="h-5 w-5 shrink-0" />
-                <span className="truncate">{t("common.logout")}</span>
+                <span className="truncate">Log out</span>
               </button>
             )}
           </nav>
@@ -207,9 +216,8 @@ export default function MainSidebar() {
       </div>
 
       <SafeActionDialog
-        confirmLabel={t("common.logout")}
+        confirmLabel="Log out"
         description="You will be signed out of your current session and sent back to the login page."
-        eyebrow="Session check"
         isPending={isLoggingOut}
         onClose={() => {
           if (!isLoggingOut) {

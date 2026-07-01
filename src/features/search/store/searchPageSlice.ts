@@ -19,11 +19,9 @@ import {
   cloneSearchFilters,
   cloneSearchOptionValueLookup,
   restoreSubmittedSearch,
+  type SearchPageSnapshot,
+  type SubmittedSearch,
 } from "@/features/search/hooks/stateHelpers";
-import type {
-  SearchPageSnapshot,
-  SubmittedSearch,
-} from "@/features/search/hooks/types";
 import { normalizeSearchFilterWidgetKeys } from "@/features/search/utils";
 import type { RootState } from "@/store/appStore";
 
@@ -56,8 +54,8 @@ const searchPageSlice = createSlice({
   name: "searchPage",
   initialState,
   reducers: {
-    resetSearchPageState() {
-      return createDefaultSearchPageState();
+    resetSearchPageState(_, action: PayloadAction<SearchEntityType | undefined>) {
+      return createDefaultSearchPageState(action.payload);
     },
     hydrateSearchPageState(_, action: PayloadAction<SearchPageSnapshot>) {
       return createStateFromSnapshot(action.payload);
@@ -140,9 +138,11 @@ export function selectSearchPageState(state: RootState) {
   return state.searchPage;
 }
 
-function createDefaultSearchPageState(): SearchPageState {
+function createDefaultSearchPageState(
+  initialEntityType: SearchEntityType = "works",
+): SearchPageState {
   return {
-    activeEntityType: "works",
+    activeEntityType: normalizeSearchTabEntityType(initialEntityType),
     filters: cloneSearchFilters(initialFilters),
     filtersOpen: false,
     searchQuery: "",

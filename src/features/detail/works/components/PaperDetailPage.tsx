@@ -10,7 +10,7 @@ import PaperQuickLinksSection from "./sections/PaperQuickLinksSection";
 import PaperReferencesSection from "./sections/PaperReferencesSection";
 import PaperSourceAccessSection from "./sections/PaperSourceAccessSection";
 
-import { usePaperDetailPageState } from "../hooks";
+import { usePaperDetailPageState } from "../hooks/usePaperDetailPageState";
 import { buildPaperDetailSections } from "../view-models/paperDetailSections";
 
 export default function PaperDetailPage() {

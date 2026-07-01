@@ -26,7 +26,7 @@ import {
   SubFieldFilterWidget,
   TypeFilterWidget,
   YearFilterWidget,
-} from "@/layout/components/Filters";
+} from "@/features/search/components/filters";
 
 export function SearchFiltersPanel({
   activeFilterCount,

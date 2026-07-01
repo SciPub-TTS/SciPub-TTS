@@ -1,56 +1,41 @@
+import type { PaperResult } from "@/features/search/types";
+
 export type FeedTabKey =
   | "all"
   | "matched-topic"
-  | "matched-author"
-  | "matched-both"
-  | "latest"
-  | "trending"
-  | "most-relevant";
+  | "matched-author";
 
 export type FeedTab = {
   key: FeedTabKey;
   label: string;
 };
 
-export type FeedBadge = {
-  label: string;
-  tone: "author" | "match" | "rising" | "stable" | "topic";
-};
+export type FeedExactMatchType = "AUTHOR" | "TOPIC";
 
-export type FeedAuthor = {
-  following?: boolean;
-  name: string;
-};
-
-export type FeedArticle = {
-  abstract: string;
-  authors: FeedAuthor[];
-  badges: FeedBadge[];
-  citations: number;
-  doiLabel: string;
-  doiUrl: string;
-  extraAuthors?: number;
+export type FeedExactMatchFilter = {
   id: string;
+  name: string;
+  type: FeedExactMatchType;
+};
+
+export type FeedArticle = PaperResult & {
   relevance: number;
   reason: string;
   tabMatches: FeedTabKey[];
-  tags: string[];
-  title: string;
-  venue: string;
-  year: number;
 };
 
 export type FollowedTopic = {
+  id: string;
   name: string;
-  status: "Rising" | "Stable";
 };
 
 export type FollowedAuthor = {
-  field: string;
+  id: string;
   name: string;
 };
 
 export type SuggestedTopic = {
+  id: string;
   name: string;
 };
 

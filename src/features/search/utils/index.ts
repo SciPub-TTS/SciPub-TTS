@@ -170,10 +170,6 @@ export function countActiveFilters(
       activeFilterCount += 1;
     }
 
-    if (filters.primaryTopic.length > 0) {
-      activeFilterCount += 1;
-    }
-
     return activeFilterCount;
   }
 
@@ -253,7 +249,6 @@ export function buildAppliedFilterSummary(
   if (entityType === "authors") {
     addListFilterSummary(summary, "Institution", filters.institution);
     addListFilterSummary(summary, "Country", filters.country);
-    addListFilterSummary(summary, "Primary Topic", filters.primaryTopic);
     return summary;
   }
 

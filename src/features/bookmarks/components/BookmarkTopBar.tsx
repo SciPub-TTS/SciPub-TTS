@@ -1,7 +1,6 @@
 import {
   FolderPlus,
   Search,
-  Sparkles,
   X,
 } from "lucide-react";
 
@@ -40,17 +39,17 @@ export function BookmarkTopBar({
 
   return (
     <div className="mb-6 rounded-[2rem] border border-black bg-[radial-gradient(circle_at_top_left,_rgba(243,112,33,0.14),_transparent_30%),radial-gradient(circle_at_bottom_right,_rgba(0,174,239,0.16),_transparent_36%),white] p-5 shadow-[0_18px_55px_rgba(0,0,0,0.08)] sm:p-6">
-      <div className="max-w-2xl">
-          <p className="font-subtext text-xs font-semibold uppercase tracking-[0.24em] text-[#00AEEF]">
-            Bookmark workspace
-          </p>
-          <h2 className="font-title mt-2 text-[1.9rem] leading-tight text-black sm:text-[2.1rem]">
-            Search titles, build collections, and browse your saved works
-            faster.
-          </h2>
-          <p className="font-subtext mt-3 text-[15px] leading-7 text-black/70">
-            Tap a collection chip below to focus the library instantly.
-          </p>
+      <div className="max-w-3xl">
+        <p className="text-xs font-extrabold uppercase tracking-[0.32em] text-[#14532D]">
+          Bookmark - Workspace
+        </p>
+        <h2 className="font-search-title mt-3 text-4xl font-normal leading-[1.15] tracking-normal text-[#14532D] md:text-5xl">
+          Search titles, build collections, and browse your saved works
+          faster.
+        </h2>
+        <p className="mt-3 max-w-2xl text-sm leading-7 text-black/70 md:text-[15px]">
+          Organize saved papers and jump between collections quickly.
+        </p>
       </div>
 
       <div className="mt-6 flex flex-col gap-3 xl:flex-row">
@@ -117,10 +116,10 @@ export function BookmarkTopBar({
             type="button"
             onClick={() => onCollectionChange(null)}
             className={[
-              "inline-flex shrink-0 items-center gap-2 rounded-2xl border px-4 py-3 text-sm font-semibold transition",
+              "inline-flex shrink-0 items-center gap-2 rounded-2xl border px-4 py-3 text-sm font-semibold transition focus-visible:outline-none",
               selectedCollectionId === null
-                ? "border-black bg-black text-white"
-                : "border-black bg-white text-black hover:bg-black hover:text-white",
+                ? "border-[#14532D] bg-[#14532D] text-white"
+                : "border-black bg-white text-black hover:border-[#14532D] hover:bg-[#DCFCE7] hover:text-[#14532D]",
             ].join(" ")}
           >
             All library
@@ -135,15 +134,14 @@ export function BookmarkTopBar({
                 type="button"
                 onClick={() => onCollectionChange(isActive ? null : collection.id)}
                 className={[
-                  "inline-flex shrink-0 items-center gap-2 rounded-2xl border px-4 py-3 text-sm font-semibold transition",
+                  "inline-flex shrink-0 items-center gap-2 rounded-2xl border px-4 py-3 text-sm font-semibold transition focus-visible:outline-none",
                   isActive
-                    ? "border-black bg-[#E8F8FF] text-[#0369A1]"
-                    : "border-black bg-white text-black hover:bg-[#FFF1E8]",
+                    ? "border-[#14532D] bg-[#14532D] text-white"
+                    : "border-black bg-white text-black hover:border-[#14532D] hover:bg-[#DCFCE7] hover:text-[#14532D]",
                 ].join(" ")}
               >
-                <Sparkles className="h-4 w-4" />
-                <span>{collection.name}</span>
-                <span className="rounded-full border border-black/15 bg-white px-2 py-0.5 text-xs text-black/70">
+                <span className="whitespace-nowrap">{collection.name}</span>
+                <span className="rounded-full border border-black bg-white px-2 py-0.5 text-xs text-black/70">
                   {collection.workCount}
                 </span>
               </button>

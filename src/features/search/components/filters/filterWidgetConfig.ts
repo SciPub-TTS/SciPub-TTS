@@ -82,7 +82,7 @@ export const searchFilterWidgetDefinitions: SearchFilterWidgetDefinition[] = [
   {
     key: "source",
     label: "Source",
-    description: "Filter by journal, venue, or source",
+    description: "Filter by journal or source",
     icon: Tag,
   },
   {

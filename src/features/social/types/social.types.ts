@@ -9,6 +9,7 @@ export interface SocialPostReferenceInfo {
   titleSnapshot: string;
   authorsSnapshot: string;
   authorOpenAlexIdsSnapshot: Array<string | null>;
+  workTypeSnapshot: string | null;
   topicSnapshot: string | null;
   topicOpenAlexIdSnapshot: string | null;
   yearSnapshot: number | null;

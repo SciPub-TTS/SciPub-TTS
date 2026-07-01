@@ -4,12 +4,10 @@ import { hydrateSearchPageState, resetSearchPageState } from "../store/searchPag
 import {
   buildSearchPageSnapshot,
   persistSearchPageSnapshot,
+  type RemoteFilterOptionsSnapshot,
+  type SearchPageSnapshot,
+  type SubmittedSearch,
 } from "./stateHelpers";
-import type {
-  RemoteFilterOptionsSnapshot,
-  SearchPageSnapshot,
-  SubmittedSearch,
-} from "./types";
 import type { AppDispatch } from "@/store/appStore";
 import type {
   SearchEntityType,
@@ -30,34 +28,30 @@ type SearchPageStateForPersistence = {
 
 type UseSearchPagePersistenceParams = {
   dispatch: AppDispatch;
+  initialEntityType?: SearchEntityType | null;
   restoredSnapshot: SearchPageSnapshot | null;
   remoteFilterOptionsSnapshot: RemoteFilterOptionsSnapshot;
   searchPageState: SearchPageStateForPersistence;
-  visibleResultCount: number;
 };
 
-// Search state needs two persistence behaviors:
-// 1. hydrate when we navigate back from detail pages
-// 2. keep the latest snapshot in session storage while the user edits/searches
 export function useSearchPagePersistence(
   params: UseSearchPagePersistenceParams,
 ) {
   const {
     dispatch,
+    initialEntityType,
     restoredSnapshot,
     remoteFilterOptionsSnapshot,
     searchPageState,
-    visibleResultCount,
   } = params;
   const hasInitializedRef = useRef(false);
   const latestSnapshotRef = useRef<SearchPageSnapshot | null>(restoredSnapshot);
-  const shouldRestoreScrollRef = useRef(Boolean(restoredSnapshot));
 
   useEffect(() => {
     if (restoredSnapshot) {
       dispatch(hydrateSearchPageState(restoredSnapshot));
     } else {
-      dispatch(resetSearchPageState());
+      dispatch(resetSearchPageState(initialEntityType || undefined));
     }
 
     clearSearchPageRestorePending();
@@ -74,7 +68,7 @@ export function useSearchPagePersistence(
 
       dispatch(resetSearchPageState());
     };
-  }, [dispatch, restoredSnapshot]);
+  }, [dispatch, initialEntityType, restoredSnapshot]);
 
   useEffect(() => {
     if (!hasInitializedRef.current) {
@@ -91,21 +85,4 @@ export function useSearchPagePersistence(
     latestSnapshotRef.current = snapshot;
     persistSearchPageSnapshot(snapshot);
   }, [remoteFilterOptionsSnapshot, searchPageState]);
-
-  useEffect(() => {
-    if (!shouldRestoreScrollRef.current) {
-      return;
-    }
-
-    shouldRestoreScrollRef.current = false;
-    const restoredScrollY = restoredSnapshot?.scrollY ?? 0;
-
-    window.requestAnimationFrame(() => {
-      window.scrollTo({
-        top: restoredScrollY,
-        behavior: "auto",
-      });
-    });
-  }, [restoredSnapshot, visibleResultCount]);
 }
-
