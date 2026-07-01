@@ -277,7 +277,6 @@ export const router = createBrowserRouter([
                 getDetailBreadcrumb(location, "topics", match.params.topicId || ""),
             },
           },
-
           {
             element: <ProtectedRoute allowedRoles={AUTHENTICATED_ROLES} />,
             children: [
@@ -286,13 +285,6 @@ export const router = createBrowserRouter([
                 element: <FeedPage />,
                 handle: {
                   breadcrumb: "Feed",
-                },
-              },
-              {
-                path: ROUTER_PATHS.report,
-                element: <ReportPage />,
-                handle: {
-                  breadcrumb: "Reports",
                 },
               },
               {
@@ -325,6 +317,13 @@ export const router = createBrowserRouter([
                 element: <BookmarkLibraryPage />,
                 handle: {
                   breadcrumb: "Bookmarks",
+                },
+              },
+              {
+                path: ROUTER_PATHS.report,
+                element: <ReportPage />,
+                handle: {
+                  breadcrumb: "Reports",
                 },
               },
             ],
