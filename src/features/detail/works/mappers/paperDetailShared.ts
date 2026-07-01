@@ -1,4 +1,10 @@
 import type { OpenAlexAbstractInvertedIndex } from "../types";
+import {
+  extractPathId,
+  normalizeIdentifierLabel as normalizeResourceIdentifierLabel,
+  normalizePubmedUrl as normalizeResourcePubmedUrl,
+  trimToEmpty,
+} from "@/lib/resourceFormatting";
 
 const languageDisplayNames = new Intl.DisplayNames(["en"], {
   type: "language",
@@ -26,7 +32,7 @@ export function reconstructAbstractText(
 }
 
 export function formatTypeLabel(value: string) {
-  const normalizedValue = value.trim();
+  const normalizedValue = trimToEmpty(value);
   if (!normalizedValue) {
     return "";
   }
@@ -80,32 +86,11 @@ export function formatPublishedLabel(
 }
 
 export function normalizeIdentifierLabel(value: string | null) {
-  if (!value?.trim()) {
-    return "";
-  }
-
-  return value
-    .replace(/^https?:\/\/doi\.org\//i, "")
-    .replace(/^https?:\/\/pubmed\.ncbi\.nlm\.nih\.gov\//i, "")
-    .replace(/^https?:\/\/openalex\.org\//i, "");
+  return normalizeResourceIdentifierLabel(value);
 }
 
 export function normalizePubmedUrl(value: string | null | undefined) {
-  if (!value?.trim()) {
-    return "";
-  }
-
-  if (/^https?:\/\//i.test(value)) {
-    return value;
-  }
-
-  const normalizedValue = value.replace(/^pmid:/i, "").trim();
-
-  if (!normalizedValue) {
-    return "";
-  }
-
-  return `https://pubmed.ncbi.nlm.nih.gov/${normalizedValue}`;
+  return normalizeResourcePubmedUrl(value);
 }
 
 export function formatOpenAccessStatus(status: string | null) {
@@ -153,14 +138,7 @@ export function formatHostnameLabel(value: string) {
 }
 
 export function extractLastSegment(value: string) {
-  const normalizedValue = value.trim();
-  const lastSlashIndex = normalizedValue.lastIndexOf("/");
-
-  if (lastSlashIndex === -1 || lastSlashIndex === normalizedValue.length - 1) {
-    return normalizedValue;
-  }
-
-  return normalizedValue.slice(lastSlashIndex + 1);
+  return extractPathId(value);
 }
 
 export function normalizeOpenAlexWorkId(value: string) {

@@ -22,9 +22,9 @@ export {
 export {
   getFilterOptionPage,
   getSearchSummary,
+  getTrendingKeywords,
+  getTrendingTopics,
 } from "./filterOptionsApi";
-export { getTrendingKeywords } from "./hotKeywordsApi";
-export { getTrendingTopics } from "./hotTopicsApi";
 export {
   clearSearchHistory,
   deleteSearchHistory,
@@ -32,7 +32,6 @@ export {
   saveSearchHistory,
 } from "./searchHistoryApi";
 export { searchEntities } from "./searchEntitiesApi";
-export { mapApiEntityToResult } from "./searchEntitiesMapper";
 export { mapApiWorkToPaperResult } from "./searchWorksMapper";
 export { sortPaperResults } from "./searchWorksSorting";
 export { searchWorks } from "./searchWorksApi";

@@ -6,11 +6,8 @@ export function BookmarkPageHeader() {
           <div>
             <h1 className="font-title text-[2rem] leading-tight text-black sm:text-[2.2rem]">
               Your <span className="italic text-[#F37021]">bookmark</span>{" "}
-              <span className="text-[#00AEEF]">library</span>,
-            </h1>
-            <h1 className="font-title text-[2rem] leading-tight text-black sm:text-[2.2rem]">
-              organized into <span className="text-[#7AC143]">collections</span>
-              .
+              <span className="text-[#00AEEF]">library</span>, organized into{" "}
+              <span className="text-[#7AC143]">collections</span>.
             </h1>
           </div>
         </div>

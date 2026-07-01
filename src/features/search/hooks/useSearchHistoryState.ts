@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
+import { getApiErrorMessage } from "@/features/auth/utils/getApiErrorMessage";
+
 import {
   SEARCH_RECENT_SEARCH_LIMIT,
 } from "../constants";
@@ -11,9 +13,9 @@ import {
   saveSearchHistory,
 } from "../services";
 import type { SaveSearchFeedback } from "../types";
-import { getSearchMutationErrorMessage } from "./searchPageHelpers";
 
-const SEARCH_HISTORY_QUERY_DEBOUNCE_MS = 250;
+const SEARCH_HISTORY_QUERY_DEBOUNCE_MS = 300;
+const SEARCH_HISTORY_MIN_FILTER_LENGTH = 2;
 const SAVE_SEARCH_FEEDBACK_DURATION_MS = 2800;
 
 type UseSearchHistoryStateParams = {
@@ -21,8 +23,6 @@ type UseSearchHistoryStateParams = {
   searchQuery: string;
 };
 
-// Search history is the only part of the page that depends on auth state.
-// Keeping it isolated makes the main search hook easier to read.
 export function useSearchHistoryState(params: UseSearchHistoryStateParams) {
   const { isSearchHistoryEnabled, searchQuery } = params;
   const queryClient = useQueryClient();
@@ -121,7 +121,11 @@ export function useSearchHistoryState(params: UseSearchHistoryStateParams) {
 
   useEffect(() => {
     const timerId = window.setTimeout(() => {
-      setDebouncedRecentSearchKeyword(normalizedSearchQuery);
+      setDebouncedRecentSearchKeyword(
+        normalizedSearchQuery.length >= SEARCH_HISTORY_MIN_FILTER_LENGTH
+          ? normalizedSearchQuery
+          : "",
+      );
     }, SEARCH_HISTORY_QUERY_DEBOUNCE_MS);
 
     return () => {
@@ -154,6 +158,18 @@ export function useSearchHistoryState(params: UseSearchHistoryStateParams) {
 
   function handleSaveSearch() {
     if (!normalizedSearchQuery || saveSearchMutation.isPending) {
+      return;
+    }
+
+    const hasSavedQuery = recentSearchesQuery.data?.some(
+      (savedSearch) => savedSearch.query.trim() === normalizedSearchQuery,
+    );
+
+    if (hasSavedQuery) {
+      setSaveSearchFeedback({
+        kind: "error",
+        message: "Already saved this keyword.",
+      });
       return;
     }
 
@@ -198,4 +214,17 @@ export function useSearchHistoryState(params: UseSearchHistoryStateParams) {
         : null,
     saveSearchSuccessToken,
   };
+}
+
+function getSearchMutationErrorMessage(
+  error: unknown,
+  fallbackMessage: string,
+) {
+  const message = getApiErrorMessage(error, fallbackMessage);
+
+  if (message.toLocaleLowerCase().includes("already")) {
+    return "Already saved this keyword.";
+  }
+
+  return message;
 }

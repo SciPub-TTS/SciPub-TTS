@@ -1,11 +1,20 @@
 import { http } from "@/services/http";
 import type { ApiResponse } from "@/types/common.types";
+import { mapApiWorkToPaperResult } from "@/features/search/services/searchWorksMapper";
+import type { SearchWorksApiItem } from "@/features/search/services/types";
 import type {
   FeedArticle,
+  FeedExactMatchFilter,
   FollowedAuthor,
   FollowedTopic,
   SuggestedTopic
 } from "../types";
+
+type FeedArticleApiItem = SearchWorksApiItem & {
+  reason: string;
+  relevance: number | null;
+  tabMatches: string[] | null;
+};
 
 // Helper to strip any full OpenAlex URL prefixes to keep route navigation clean
 function extractRawId(id: string): string {
@@ -59,7 +68,12 @@ export const apiService = {
     }
   },
 
-  async getFeed(tabKey: string, page: number = 0, pageSize: number = 10): Promise<{
+  async getFeed(
+    tabKey: string,
+    page: number = 0,
+    pageSize: number = 10,
+    exactMatch: FeedExactMatchFilter | null = null,
+  ): Promise<{
     items: FeedArticle[];
     totalItems: number
   }> {
@@ -67,7 +81,7 @@ export const apiService = {
     try {
       const response = await http.get<
         ApiResponse<{
-          items: FeedArticle[];
+          items: FeedArticleApiItem[];
           totalItems: number;
         }>
       >("/api/feed", {
@@ -75,6 +89,9 @@ export const apiService = {
           feedTab: backendEnumTab,
           page: page,
           pageSize: pageSize,
+          exactMatchType: exactMatch?.type,
+          exactMatchId: exactMatch?.id,
+          exactMatchName: exactMatch?.name,
         },
       });
 
@@ -85,11 +102,41 @@ export const apiService = {
       }
 
 
+      const items = data.items.map((item) => ({
+          ...mapApiWorkToPaperResult({
+            ...item,
+            id: extractRawId(item.id),
+            authorRefs: (item.authorRefs || []).map((authorRef) => ({
+              ...authorRef,
+              id: authorRef.id ? extractRawId(authorRef.id) : null,
+            })),
+            topicRef: item.topicRef
+              ? {
+                ...item.topicRef,
+                id: item.topicRef.id ? extractRawId(item.topicRef.id) : null,
+              }
+              : null,
+          }),
+          reason: item.reason || "Recommended based on your followed profile filters.",
+          relevance: item.relevance ?? 0,
+          tabMatches: (item.tabMatches || []).filter(
+            (tabMatch): tabMatch is FeedArticle["tabMatches"][number] =>
+              tabMatch === "all"
+              || tabMatch === "matched-topic"
+              || tabMatch === "matched-author",
+          ),
+        }));
+
+      const exactMatchedItems = exactMatch
+        ? items.filter((item) =>
+          item.reason.trim().toLocaleLowerCase().includes(
+            exactMatch.name.trim().toLocaleLowerCase(),
+          ),
+        )
+        : items;
+
       return {
-        items: data.items.map((item) => ({
-          ...item,
-          id: extractRawId(item.id),
-        })),
+        items: exactMatchedItems,
         totalItems: data.totalItems
       };
 

@@ -8,7 +8,6 @@ import {
   FileBarChart2,
   FileSearch,
   Filter,
-  Flame,
   Layers3,
   Library,
   Radar,
@@ -22,37 +21,6 @@ import {
 import { Link } from "react-router-dom";
 
 import { ROUTES } from "@/app/router";
-
-const quickStartCards = [
-  {
-    title: "Search papers",
-    description: "Find papers fast.",
-    href: ROUTES.SEARCH,
-    icon: Search,
-    accentClassName: "border-emerald-200 bg-emerald-50 text-emerald-700",
-  },
-  {
-    title: "See what is rising",
-    description: "Spot rising topics first.",
-    href: ROUTES.TRENDING_TOPIC,
-    icon: Flame,
-    accentClassName: "border-amber-200 bg-amber-50 text-amber-700",
-  },
-  {
-    title: "Save your trail",
-    description: "Keep your reading trail.",
-    href: ROUTES.BOOKMARKS,
-    icon: Bookmark,
-    accentClassName: "border-sky-200 bg-sky-50 text-sky-700",
-  },
-  {
-    title: "Share on Social Hub",
-    description: "Turn bookmarks into posts.",
-    href: ROUTES.SOCIAL_HUB,
-    icon: Sparkles,
-    accentClassName: "border-violet-200 bg-violet-50 text-violet-700",
-  },
-];
 
 const workflowSteps = [
   {
@@ -225,20 +193,19 @@ export default function GuideHelpPage() {
       <main className="px-4 pb-14 pt-6 md:px-8 md:pt-10">
         <section className="mx-auto max-w-7xl space-y-8">
           <section className="overflow-hidden rounded-[34px] border border-[#d9d2bf] bg-[radial-gradient(circle_at_top_left,rgba(253,224,71,0.22),transparent_30%),radial-gradient(circle_at_top_right,rgba(16,185,129,0.16),transparent_32%),linear-gradient(135deg,#fffdf6_0%,#f3f8f5_52%,#eef6ff_100%)] shadow-[0_30px_90px_rgba(15,23,42,0.08)]">
-            <div className="grid gap-8 px-6 py-8 md:px-10 md:py-10 lg:grid-cols-[1.2fr_0.8fr] lg:items-end">
+            <div className="px-6 py-8 md:px-10 md:py-10">
               <div>
-                <p className="text-[11px] font-extrabold uppercase tracking-[0.34em] text-emerald-700">
-                  Product Guide
+                <p className="text-xs font-extrabold uppercase tracking-[0.32em] text-[#14532D]">
+                  Learn - Product Guide
                 </p>
-                <h1 className="mt-4 max-w-4xl text-[40px] font-semibold leading-[0.95] tracking-[-0.03em] md:text-[64px] lg:text-[82px]">
-                  Learn the flow of
-                  {" "}
-                  <span className="font-serif italic text-emerald-700">Owlreka</span>
-                  {" "}
-                  like a real research workflow.
+                <h1 className="font-search-title mt-3 max-w-4xl text-4xl font-normal leading-[1.05] text-[#14532D] md:text-5xl xl:whitespace-nowrap">
+                  Learn Owlreka. Research Smarter.
                 </h1>
+                <p className="font-subtext mt-3 max-w-3xl text-base leading-7 text-slate-500">
+                  Follow the product flow from discovery to bookmarking, monitoring, and sharing.
+                </p>
 
-                <div className="mt-8 flex flex-wrap gap-3">
+                <div className="mt-7 flex flex-wrap gap-3">
                   <Link
                     to={ROUTES.SEARCH}
                     className="inline-flex items-center gap-2 rounded-2xl bg-[#14532D] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#166534]"
@@ -253,39 +220,6 @@ export default function GuideHelpPage() {
                     View Trending Topic
                   </Link>
                 </div>
-              </div>
-
-              <div className="grid gap-3 md:grid-cols-3 lg:grid-cols-1">
-                {quickStartCards.map((card) => {
-                  const Icon = card.icon;
-
-                  return (
-                    <Link
-                      key={card.title}
-                      to={card.href}
-                      className="group rounded-[24px] border border-white/70 bg-white/80 p-4 shadow-[0_14px_34px_rgba(15,23,42,0.08)] backdrop-blur transition hover:-translate-y-0.5 hover:shadow-[0_18px_40px_rgba(15,23,42,0.12)]"
-                    >
-                      <span
-                        className={[
-                          "inline-flex h-11 w-11 items-center justify-center rounded-2xl border",
-                          card.accentClassName,
-                        ].join(" ")}
-                      >
-                        <Icon className="h-5 w-5" />
-                      </span>
-                      <h2 className="mt-4 text-lg font-semibold text-slate-950">
-                        {card.title}
-                      </h2>
-                      <p className="mt-2 text-sm leading-7 text-slate-600">
-                        {card.description}
-                      </p>
-                      <span className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-slate-950">
-                        Go there
-                        <ChevronRight className="h-4 w-4 transition group-hover:translate-x-0.5" />
-                      </span>
-                    </Link>
-                  );
-                })}
               </div>
             </div>
           </section>

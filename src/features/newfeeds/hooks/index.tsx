@@ -2,24 +2,24 @@ import { useEffect, useMemo, useState, useCallback } from "react";
 import { apiService } from "../services";
 import type {
   FeedArticle,
+  FeedExactMatchFilter,
   FeedTabKey,
   FollowedAuthor,
   FollowedTopic,
   SuggestedTopic,
   ResearchFeedData,
-  FeedTab
+  FeedTab,
 } from "../types";
 
 const FEED_TABS: FeedTab[] = [
   { key: "all", label: "All" },
   { key: "matched-topic", label: "Matched Topic" },
   { key: "matched-author", label: "Matched Author" },
-  { key: "matched-both", label: "Matched Both" },
-  { key: "latest", label: "Latest" },
 ];
 
 export function useResearchFeedPage() {
   const [activeTab, setActiveTab] = useState<FeedTabKey>("all");
+  const [exactMatch, setExactMatch] = useState<FeedExactMatchFilter | null>(null);
 
   // Thêm state quản lý phân trang
   const [page, setPage] = useState<number>(0);
@@ -34,6 +34,22 @@ export function useResearchFeedPage() {
   const handleTabChange = (tab: FeedTabKey) => {
     setActiveTab(tab);
     setPage(0);
+    setExactMatch((currentMatch) => {
+      if (tab === "matched-author" && currentMatch?.type === "TOPIC") {
+        return null;
+      }
+
+      if (tab === "matched-topic" && currentMatch?.type === "AUTHOR") {
+        return null;
+      }
+
+      return currentMatch;
+    });
+  };
+
+  const handleExactMatchChange = (nextMatch: FeedExactMatchFilter | null) => {
+    setExactMatch(nextMatch);
+    setPage(0);
   };
 
   const loadData = useCallback(async () => {
@@ -43,7 +59,7 @@ export function useResearchFeedPage() {
         apiService.getFollowedTopics(),
         apiService.getFollowedAuthors(),
         apiService.getSuggestedTopics(),
-        apiService.getFeed(activeTab, page, 10),
+        apiService.getFeed(activeTab, page, 10, exactMatch),
       ]);
 
       setFollowedTopics(topics);
@@ -55,28 +71,26 @@ export function useResearchFeedPage() {
       } else {
         setArticles((prevArticles) => {
           const newItems = feedResponse.items.filter(
-              (newItem) => !prevArticles.some((oldItem) => oldItem.id === newItem.id)
+            (newItem) =>
+              !prevArticles.some((oldItem) => oldItem.id === newItem.id),
           );
           return [...prevArticles, ...newItems];
         });
       }
 
       setTotalItems(feedResponse.totalItems);
-
     } catch (err) {
       console.warn("Lỗi load data.", err);
     } finally {
       setIsLoading(false);
     }
-  }, [activeTab, page]);
-
+  }, [activeTab, exactMatch, page]);
 
   useEffect(() => {
     (async () => {
       await loadData();
     })();
   }, [loadData]);
-
 
   const feedData: ResearchFeedData = useMemo(() => {
     return {
@@ -91,11 +105,13 @@ export function useResearchFeedPage() {
   return {
     activeTab,
     articles,
+    exactMatch,
     totalItems,
     page,
     setPage,
     feedData,
     isLoading,
+    setExactMatch: handleExactMatchChange,
     setActiveTab: handleTabChange,
   };
 }

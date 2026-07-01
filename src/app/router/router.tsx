@@ -140,13 +140,13 @@ function getDetailBreadcrumb(
               label: "Trending",
               to: ROUTES.TRENDING_TOPIC,
             }
-        : detailOrigin === "feed"
+        : detailOrigin === "feed" || detailOrigin === "newfeed"
           ? {
-              label: "My Feed",
+              label: "New Feed",
               to: ROUTES.FEED
             }
       : {
-          label: "Search",
+          label: "Discovery",
           to: ROUTES.SEARCH,
           onClick: markSearchPageRestorePending,
         };
@@ -222,7 +222,7 @@ export const router = createBrowserRouter([
             path: ROUTER_PATHS.search,
             element: <SearchPage />,
             handle: {
-              breadcrumb: "Search",
+              breadcrumb: "Discovery",
             },
           },
           {
@@ -287,7 +287,6 @@ export const router = createBrowserRouter([
                 getDetailBreadcrumb(location, "topics", match.params.topicId || ""),
             },
           },
-
           {
             element: <ProtectedRoute allowedRoles={AUTHENTICATED_ROLES} />,
             children: [
@@ -296,13 +295,6 @@ export const router = createBrowserRouter([
                 element: <FeedPage />,
                 handle: {
                   breadcrumb: "Feed",
-                },
-              },
-              {
-                path: ROUTER_PATHS.report,
-                element: <ReportPage />,
-                handle: {
-                  breadcrumb: "Reports",
                 },
               },
               {
@@ -335,6 +327,13 @@ export const router = createBrowserRouter([
                 element: <BookmarkLibraryPage />,
                 handle: {
                   breadcrumb: "Bookmarks",
+                },
+              },
+              {
+                path: ROUTER_PATHS.report,
+                element: <ReportPage />,
+                handle: {
+                  breadcrumb: "Reports",
                 },
               },
             ],

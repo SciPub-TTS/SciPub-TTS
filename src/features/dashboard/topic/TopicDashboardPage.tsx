@@ -48,19 +48,15 @@ export default function TopicDashboardPage() {
   return (
     <div className="flex flex-col gap-[3vh]">
         <div>
-            <div className="flex flex-row justify-between">
-                <h1 className="text-3xl font-bold text-slate-900">
-                    Research Topic Trend Dashboard
-                </h1>
-                {/*<button onClick={handleClick}>*/}
-                {/*    <p className="text-ml font-bold text-blue-700 cursor-pointer">*/}
-                {/*        Keyword Dashboard &rarr;*/}
-                {/*    </p>*/}
-                {/*</button>*/}
-            </div>
-            <h2 className="text-base opacity-75">
+            <p className="text-xs font-extrabold uppercase tracking-[0.32em] text-[#14532D]">
+                Analyze - Topic + Keyword Trends
+            </p>
+            <h1 className="font-search-title mt-3 text-4xl font-normal leading-[1.05] text-[#14532D] md:text-5xl xl:whitespace-nowrap">
+                Read the Research Pulse.
+            </h1>
+            <p className="font-subtext mt-3 max-w-4xl text-base leading-7 text-slate-500">
                 Track publication growth, citation impact, trending topics, and rising keywords.
-            </h2>
+            </p>
         </div>
 
         <FilterPart endDate={endDate}

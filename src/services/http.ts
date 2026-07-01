@@ -3,6 +3,7 @@ import axios, { type InternalAxiosRequestConfig } from "axios";
 import {
   clearAuthStorage,
   getAccessToken,
+  setAccessTokenExpiry,
   setAccessToken,
 } from "@/features/auth/utils/authStorage";
 import type { AuthResponse } from "@/features/auth/types/auth.types";
@@ -47,7 +48,77 @@ http.interceptors.request.use((config) => {
   return config;
 });
 
-let refreshPromise: Promise<string | null> | null = null;
+type RefreshedAccessSession = {
+  accessToken: string | null;
+  expiresInSeconds?: number;
+};
+
+let refreshPromise: Promise<RefreshedAccessSession> | null = null;
+
+async function wait(ms: number) {
+  await new Promise((resolve) => {
+    window.setTimeout(resolve, ms);
+  });
+}
+
+function isRetriableRefreshError(error: unknown) {
+  if (!axios.isAxiosError(error)) {
+    return false;
+  }
+
+  if (!error.response) {
+    return true;
+  }
+
+  return error.response.status >= 500;
+}
+
+function isTerminalRefreshError(error: unknown) {
+  if (!axios.isAxiosError(error)) {
+    return false;
+  }
+
+  const status = error.response?.status;
+
+  return status === 400 || status === 401 || status === 403;
+}
+
+async function requestRefreshedAccessToken() {
+  let lastError: unknown = null;
+
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    try {
+      const response =
+        await refreshClient.post<ApiResponse<AuthResponse>>("/auth/refresh");
+      const nextToken = response.data.data?.accessToken ?? null;
+      const expiresInSeconds = response.data.data?.expiresInSeconds;
+
+      if (nextToken) {
+        setAccessToken(nextToken);
+        setAccessTokenExpiry(expiresInSeconds);
+      }
+
+      return {
+        accessToken: nextToken,
+        expiresInSeconds,
+      };
+    } catch (error) {
+      lastError = error;
+
+      if (!isRetriableRefreshError(error) || attempt === 1) {
+        if (isTerminalRefreshError(error)) {
+          clearAuthStorage();
+        }
+
+        throw error;
+      }
+
+      await wait(600);
+    }
+  }
+
+  throw lastError;
+}
 
 http.interceptors.response.use(
   (response) => response,
@@ -67,26 +138,13 @@ http.interceptors.response.use(
 
     originalRequest._retry = true;
 
-    refreshPromise ??= refreshClient
-      .post<ApiResponse<AuthResponse>>("/auth/refresh")
-      .then((response) => {
-        const nextToken = response.data.data?.accessToken ?? null;
-
-        if (nextToken) {
-          setAccessToken(nextToken);
-        }
-
-        return nextToken;
-      })
-      .catch((refreshError) => {
-        clearAuthStorage();
-        throw refreshError;
-      })
+    refreshPromise ??= requestRefreshedAccessToken()
       .finally(() => {
         refreshPromise = null;
       });
 
-    const nextToken = await refreshPromise;
+    const refreshedSession = await refreshPromise;
+    const nextToken = refreshedSession.accessToken;
 
     if (!nextToken) {
       return Promise.reject(error);

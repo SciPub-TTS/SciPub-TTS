@@ -26,7 +26,7 @@ export type PaperResult = {
   title: string;
   authors: string[];
   authorRefs: PaperResultEntityRef[];
-  venue: string;
+  source: string;
   citations: number;
   year: number;
   abstract: string;
@@ -44,7 +44,6 @@ export type PaperResult = {
   growthPercent: number;
   isTrendTopic?: boolean;
   saved?: boolean;
-  trend?: boolean;
 };
 
 export type AuthorResult = {

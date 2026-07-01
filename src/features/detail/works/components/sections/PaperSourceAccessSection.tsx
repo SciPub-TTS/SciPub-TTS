@@ -48,7 +48,8 @@ export default function PaperSourceAccessSection(
       title="Source, Awards & Access"
     >
       <div className="space-y-2 text-sm font-semibold text-black">
-        <p className="font-bold text-black">
+        <p>
+          <span className="font-bold text-[#9a6700]">Source:</span>{" "}
           {section.source?.name || section.sourceName}
         </p>
         <p>
@@ -56,7 +57,10 @@ export default function PaperSourceAccessSection(
           {section.sourceType}
         </p>
         {section.sourceHostOrganization ? (
-          <p>{section.sourceHostOrganization}</p>
+          <p>
+            <span className="font-bold text-[#9a6700]">Host organization:</span>{" "}
+            {section.sourceHostOrganization}
+          </p>
         ) : null}
       </div>
 

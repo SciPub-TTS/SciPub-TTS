@@ -194,7 +194,7 @@ export function useWorkBookmark(options: UseWorkBookmarkOptions) {
   }
 
   const bookmarkMutation = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (targetCollectionId: string | null | undefined) => {
       if (!normalizedOpenAlexId) {
         throw new Error("OpenAlex ID is missing.");
       }
@@ -218,6 +218,12 @@ export function useWorkBookmark(options: UseWorkBookmarkOptions) {
         year,
       });
       const response = await bookmarkApi.add(payload);
+
+      if (targetCollectionId && response.data.id) {
+        await bookmarkApi.addToCollection(targetCollectionId, {
+          bookmarkIds: [response.data.id],
+        });
+      }
 
       return createBookmarkStatus(
         normalizedOpenAlexId,
@@ -245,15 +251,17 @@ export function useWorkBookmark(options: UseWorkBookmarkOptions) {
     },
   });
 
-  async function handleBookmarkClick() {
+  async function handleBookmarkClick(targetCollectionId?: string | null) {
     if (bookmarkMutation.isPending) {
-      return;
+      return false;
     }
 
     try {
-      await bookmarkMutation.mutateAsync();
+      await bookmarkMutation.mutateAsync(targetCollectionId ?? null);
+      return true;
     } catch {
       // React Query already routes the UI feedback through onError.
+      return false;
     }
   }
 

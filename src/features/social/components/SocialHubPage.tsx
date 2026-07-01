@@ -786,13 +786,13 @@ function PostCard({
           </div>
         </div>
 
-        <div className="flex items-center gap-2 text-sm text-slate-500">
+        <div className="flex items-center gap-2 text-sm text-black">
           <Clock3 className="h-4 w-4" />
           <span>{formatPostedAt(post.createdAt, post.updatedAt)}</span>
         </div>
       </div>
 
-      <h3 className="font-search-title mt-6 text-[2.35rem] leading-[1.08] text-[#14532D]">
+      <h3 className="font-brand mt-6 text-[2.35rem] font-normal leading-[1.08] text-[#14532D]">
         {post.title}
       </h3>
 
@@ -1328,14 +1328,12 @@ export default function SocialHubPage() {
             className={`rounded-[2rem] border border-black px-8 py-8 shadow-[0_24px_70px_rgba(15,23,42,0.06)] ${HERO_GRADIENT}`}
           >
             <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
-              <div className="max-w-[640px]">
+              <div className="max-w-[900px]">
                 <p className="text-xs font-extrabold uppercase tracking-[0.32em] text-[#14532D]">
                   Explore - Community Research Notes
                 </p>
-                <h1 className="font-search-title mt-3 text-[4.5rem] leading-[0.95] text-[#059669]">
-                  Share Research. <span className="text-[#14532D]">Spark</span>
-                  <br />
-                  <span className="text-[#14532D]">Discussion.</span>
+                <h1 className="font-search-title mt-3 text-[3.8rem] leading-[0.95] text-[#14532D] xl:whitespace-nowrap 2xl:text-[4.3rem]">
+                  Collect Papers. <span>Share</span> <span>Insight.</span>
                 </h1>
 
                 <p className="font-subtext mt-6 max-w-[520px] text-[1.1rem] leading-9 text-slate-500">
@@ -1365,7 +1363,7 @@ export default function SocialHubPage() {
           <section className="grid gap-6 xl:grid-cols-[minmax(0,1.7fr)_minmax(320px,0.95fr)]">
             <div className={`${SURFACE_CARD_CLASS} p-7`}>
               <div className="inline-flex items-center gap-2 rounded-full bg-[#A3E635]/20 px-4 py-2 text-xs font-bold uppercase tracking-[0.2em] text-[#14532D] ring-1 ring-[#059669]/40">
-                <Heart className="h-3.5 w-3.5" />
+                <Heart className="h-3.5 w-3.5 fill-current text-[#F33E58]" />
                 Most liked this week
               </div>
 
@@ -1386,7 +1384,7 @@ export default function SocialHubPage() {
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2 text-sm text-slate-500">
+                    <div className="flex items-center gap-2 text-sm text-black">
                       <Clock3 className="h-4 w-4" />
                       <span>
                         {formatPostedAt(
@@ -1397,7 +1395,7 @@ export default function SocialHubPage() {
                     </div>
                   </div>
 
-                  <h2 className="font-search-title mt-7 max-w-4xl text-[3rem] leading-[1.02] text-[#14532D]">
+                  <h2 className="font-brand mt-7 max-w-4xl text-[3rem] font-normal leading-[1.02] text-[#14532D]">
                     {featuredPost.title}
                   </h2>
 
@@ -1517,7 +1515,7 @@ export default function SocialHubPage() {
                       />
 
                       <div className="min-w-0 flex-1">
-                        <p className="truncate text-base font-semibold text-black">
+                        <p className="font-brand truncate text-base font-normal text-black">
                           {entry.title}
                         </p>
                         <p className="font-subtext text-sm text-slate-500">

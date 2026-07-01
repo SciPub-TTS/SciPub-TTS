@@ -1,16 +1,22 @@
 import { useEffect } from "react";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 
-import { initialFilters, SEARCH_DEFAULT_PAGE } from "../constants";
-import { getSearchSummary, searchEntities, searchWorks } from "../services";
-import type { SearchEntityType, SearchSortState } from "../types";
 import {
-  flattenSearchResultPages,
-  getAutoLoadAnchorIndex,
-  getNextSearchResultsPage,
-  getSearchResponseTime,
-} from "./resultHelpers";
-import type { SubmittedSearch } from "./types";
+  initialFilters,
+  SEARCH_DEFAULT_PAGE,
+  SEARCH_NEXT_QUERY_TRIGGER_OFFSET,
+  SEARCH_WORKS_PER_PAGE,
+} from "../constants";
+import {
+  getSearchSummary,
+  searchEntities,
+  searchWorks,
+  sortPaperResults,
+  type SearchResultsPage,
+} from "../services";
+import type { SearchEntityType, SearchSortState } from "../types";
+import type { SubmittedSearch } from "./stateHelpers";
+import type { PaperResult, SearchResultItem } from "../types";
 
 type UseSearchResultsStateParams = {
   activeEntityType: SearchEntityType;
@@ -18,8 +24,6 @@ type UseSearchResultsStateParams = {
   submittedSearch: SubmittedSearch | null;
 };
 
-// Query-heavy logic lives here so the page hook can focus on user intent:
-// which search should run, when to clear, and which handlers the UI needs.
 export function useSearchResultsState(params: UseSearchResultsStateParams) {
   const { activeEntityType, currentSortState, submittedSearch } = params;
   const searchSummaryQuery = useQuery({
@@ -121,3 +125,112 @@ export function useSearchResultsState(params: UseSearchResultsStateParams) {
   };
 }
 
+function flattenSearchResultPages(
+  pages: SearchResultsPage[],
+  entityType: SearchEntityType,
+  sortState: SearchSortState,
+) {
+  let mergedResults: SearchResultItem[] = [];
+
+  for (const page of pages) {
+    const pageItems = getPageItems(page);
+    mergedResults = mergeUniqueSearchResults(mergedResults, pageItems);
+  }
+
+  if (entityType !== "works") {
+    return mergedResults;
+  }
+
+  return sortPaperResults(mergedResults as PaperResult[], sortState);
+}
+
+function getNextSearchResultsPage(
+  lastPage: SearchResultsPage,
+  allPages: SearchResultsPage[],
+) {
+  if (!isWorksResultsPage(lastPage)) {
+    return lastPage.hasMore ? lastPage.page + 1 : undefined;
+  }
+
+  const loadedResultCount = allPages.reduce((totalCount, page) => {
+    const pageItems = getPageItems(page);
+    return totalCount + pageItems.length;
+  }, 0);
+  const lastPageItems = getPageItems(lastPage);
+
+  if (lastPageItems.length === 0) {
+    return undefined;
+  }
+
+  if (loadedResultCount >= lastPage.totalCount) {
+    return undefined;
+  }
+
+  return lastPage.page + 1;
+}
+
+function getSearchResponseTime(pages: SearchResultsPage[]) {
+  if (pages.length === 0) {
+    return 0;
+  }
+
+  return pages[pages.length - 1].responseTimeSeconds;
+}
+
+function getAutoLoadAnchorIndex(
+  hasSearched: boolean,
+  hasMoreResults: boolean,
+  loadedPageCount: number,
+) {
+  if (!hasSearched || !hasMoreResults || loadedPageCount <= 0) {
+    return -1;
+  }
+
+  return (
+    (loadedPageCount - 1) * SEARCH_WORKS_PER_PAGE
+    + SEARCH_NEXT_QUERY_TRIGGER_OFFSET
+    - 1
+  );
+}
+
+function mergeUniqueSearchResults(
+  existing: SearchResultItem[],
+  incoming: SearchResultItem[],
+) {
+  const seenIds = new Set<string>();
+  const merged: SearchResultItem[] = [];
+
+  for (const item of existing) {
+    seenIds.add(`${item.entityType}:${item.id}`);
+    merged.push(item);
+  }
+
+  for (const item of incoming) {
+    const itemKey = `${item.entityType}:${item.id}`;
+
+    if (!seenIds.has(itemKey)) {
+      seenIds.add(itemKey);
+      merged.push(item);
+    }
+  }
+
+  return merged;
+}
+
+function getPageItems(page: SearchResultsPage): SearchResultItem[] {
+  if ("works" in page && Array.isArray(page.works)) {
+    return page.works;
+  }
+
+  if ("items" in page && Array.isArray(page.items)) {
+    return page.items;
+  }
+
+  return [];
+}
+
+function isWorksResultsPage(
+  page: SearchResultsPage,
+): page is Extract<SearchResultsPage, { entityType: "works" }> {
+  return page.entityType === "works" && "works" in page && Array.isArray(page.works);
+}

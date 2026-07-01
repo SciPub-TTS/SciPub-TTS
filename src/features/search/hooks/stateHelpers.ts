@@ -11,14 +11,39 @@ import type {
   SearchEntityType,
   SearchFilterOptions,
   SearchFilters,
+  SearchFilterWidgetKey,
+  SearchSortState,
 } from "../types";
 import { countActiveFilters, normalizeSearchFilterWidgetKeys } from "../utils";
 import { searchPageStateStorageKey } from "../utils/navigationState";
-import type {
-  RemoteFilterOptionsSnapshot,
-  SearchPageSnapshot,
-  SubmittedSearch,
-} from "./types";
+
+export type SubmittedSearch = {
+  appliedFilters: SearchFilters;
+  appliedSearchQuery: string;
+  entityType: SearchEntityType;
+  optionValueLookup: SearchOptionValueLookup;
+  sortState: SearchSortState;
+};
+
+export type RemoteFilterOptionsSnapshot = {
+  filterOptions: SearchFilterOptions;
+  hasMoreFilterOptions: Record<RemoteOptionFilterKey, boolean>;
+  optionValueLookup: SearchOptionValueLookup;
+  remoteOptionKeywords: Record<RemoteOptionFilterKey, string>;
+  remoteOptionPages: Record<RemoteOptionFilterKey, number>;
+};
+
+export type SearchPageSnapshot = {
+  activeEntityType: SearchEntityType;
+  filters: SearchFilters;
+  filtersOpen: boolean;
+  remoteFilterOptions: RemoteFilterOptionsSnapshot;
+  scrollY: number;
+  searchQuery: string;
+  sortState: SearchSortState;
+  submittedSearch: SubmittedSearch | null;
+  visibleFilterWidgets: SearchFilterWidgetKey[];
+};
 
 export const remoteOptionFilterKeys: RemoteOptionFilterKey[] = [
   "type",
@@ -287,7 +312,7 @@ export function persistSearchPageSnapshot(snapshot: SearchPageSnapshot) {
       JSON.stringify(snapshot),
     );
   } catch {
-    // Ignore storage failures so search still works in restricted browsers.
+    return;
   }
 }
 

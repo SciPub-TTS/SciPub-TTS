@@ -45,12 +45,14 @@ import { AUTH_ROLES, normalizeRole, type AuthRole } from "@/features/auth/consta
 import type { AuthResponse, UserPrincipal } from "@/features/auth/types/auth.types";
 
 const ACCESS_TOKEN_KEY = "owlreka.access_token";
+const ACCESS_TOKEN_EXPIRES_AT_KEY = "owlreka.access_token_expires_at";
 const CURRENT_USER_KEY = "owlreka.current_user";
 const PASSWORD_RECOVERY_EMAIL_KEY = "owlreka.password_recovery.email";
 const PASSWORD_RECOVERY_GRANT_TOKEN_KEY = "owlreka.password_recovery.grant_token";
 const LOGOUT_MARKER_KEY = "owlreka.logged_out";
 const AUTH_STATE_EVENT = "owlreka-auth-state";
 const DICEBEAR_ADVENTURER_BASE_URL = "https://api.dicebear.com/9.x/adventurer/svg";
+let isAuthSessionRestoring = false;
 
 function notifyAuthStateChanged() {
   window.dispatchEvent(new Event(AUTH_STATE_EVENT));
@@ -139,8 +141,32 @@ export function setAccessToken(token: string) {
   notifyAuthStateChanged();
 }
 
+export function setAccessTokenExpiry(expiresInSeconds?: number) {
+  if (!expiresInSeconds || expiresInSeconds <= 0) {
+    localStorage.removeItem(ACCESS_TOKEN_EXPIRES_AT_KEY);
+    notifyAuthStateChanged();
+    return;
+  }
+
+  const expiresAt = Date.now() + (expiresInSeconds * 1000);
+  localStorage.setItem(ACCESS_TOKEN_EXPIRES_AT_KEY, String(expiresAt));
+  notifyAuthStateChanged();
+}
+
 export function getAccessToken() {
   return localStorage.getItem(ACCESS_TOKEN_KEY);
+}
+
+export function getAccessTokenExpiresAt() {
+  const rawValue = localStorage.getItem(ACCESS_TOKEN_EXPIRES_AT_KEY);
+
+  if (!rawValue) {
+    return null;
+  }
+
+  const numericValue = Number(rawValue);
+
+  return Number.isFinite(numericValue) ? numericValue : null;
 }
 
 export function setCurrentUser(user: unknown) {
@@ -156,13 +182,29 @@ export function getCurrentUser(): UserPrincipal | null {
 export function setAuthSession(data: AuthResponse) {
   clearLogoutMarker();
   if (data.accessToken) setAccessToken(data.accessToken);
+  setAccessTokenExpiry(data.expiresInSeconds);
   if (data.user) setCurrentUser(data.user);
 }
 
 export function clearAuthStorage() {
   localStorage.removeItem(ACCESS_TOKEN_KEY);
+  localStorage.removeItem(ACCESS_TOKEN_EXPIRES_AT_KEY);
   localStorage.removeItem(CURRENT_USER_KEY);
+  isAuthSessionRestoring = false;
   notifyAuthStateChanged();
+}
+
+export function setAuthSessionRestoring(nextValue: boolean) {
+  if (isAuthSessionRestoring === nextValue) {
+    return;
+  }
+
+  isAuthSessionRestoring = nextValue;
+  notifyAuthStateChanged();
+}
+
+export function getAuthSessionRestoring() {
+  return isAuthSessionRestoring;
 }
 
 export function markLoggedOut() {

@@ -10,8 +10,8 @@ import {
   createDefaultRemoteFilterOptionsSnapshot,
   createRemoteOptionState,
   remoteOptionFilterKeys,
+  type RemoteFilterOptionsSnapshot,
 } from "./stateHelpers";
-import type { RemoteFilterOptionsSnapshot } from "./types";
 
 type RemoteFilterOptionsState = RemoteFilterOptionsSnapshot & {
   isLoadingFilterOptions: Record<RemoteOptionFilterKey, boolean>;
@@ -287,6 +287,7 @@ export function useRemoteFilterOptions(
       buildVisibleFilterOptions(remoteFilterOptionsState.filterOptions, filters),
     [filters, remoteFilterOptionsState.filterOptions],
   );
+
   const remoteFilterOptionsSnapshot = useMemo(
     () =>
       cloneRemoteFilterOptionsSnapshot({
@@ -316,6 +317,7 @@ export function useRemoteFilterOptions(
     optionValueLookup: remoteFilterOptionsState.optionValueLookup,
     remoteFilterOptionsSnapshot,
   };
+
   function updateRemoteFilterOptionsState(
     updater: (state: RemoteFilterOptionsState) => RemoteFilterOptionsState,
   ) {

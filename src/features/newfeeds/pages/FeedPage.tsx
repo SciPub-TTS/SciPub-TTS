@@ -1,5 +1,6 @@
 import {
     FeedArticleCard,
+    FeedExactMatchFilter,
     FeedHeader,
     FeedSidebar,
     FeedTabs,
@@ -12,7 +13,9 @@ export default function ResearchFeedPage() {
     const {
         activeTab,
         setActiveTab,
+        setExactMatch,
         articles,
+        exactMatch,
         isLoading,
         setPage,
         totalItems,
@@ -37,6 +40,13 @@ export default function ResearchFeedPage() {
         activeTab={activeTab}
         onTabChange={setActiveTab}
         tabs={feedData.tabs}
+      />
+      <FeedExactMatchFilter
+        activeTab={activeTab}
+        authors={feedData.followedAuthors}
+        selectedMatch={exactMatch}
+        topics={feedData.followedTopics}
+        onMatchChange={setExactMatch}
       />
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
