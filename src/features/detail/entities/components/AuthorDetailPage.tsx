@@ -76,6 +76,23 @@ function AuthorOverviewSection({ detail }: { detail: AuthorDetailData }) {
         value={detail.primaryInstitutionName || "No institution available."}
       />
       <OverviewRow
+        label="ORCID"
+        value={
+          detail.orcid ? (
+            <a
+              href={detail.orcid}
+              target="_blank"
+              rel="noreferrer"
+              className="font-medium text-[#2563EB] underline decoration-[#2563EB]/50 underline-offset-4 transition hover:text-[#1D4ED8] hover:decoration-[#1D4ED8]"
+            >
+              {detail.orcid}
+            </a>
+          ) : (
+            "No ORCID available."
+          )
+        }
+      />
+      <OverviewRow
         label="Observed institutions"
         value={joinValues(
           detail.observedInstitutions,

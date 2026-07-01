@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import {
   BarChart3,
   BookOpenText,
@@ -259,7 +260,7 @@ export function OverviewRow({
   value,
 }: {
   label: string;
-  value: string;
+  value: ReactNode;
 }) {
   return (
     <div className="border-b border-black pb-4 last:border-b-0 last:pb-0">

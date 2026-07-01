@@ -3,6 +3,7 @@ import axios, { type InternalAxiosRequestConfig } from "axios";
 import {
   clearAuthStorage,
   getAccessToken,
+  setAccessTokenExpiry,
   setAccessToken,
 } from "@/features/auth/utils/authStorage";
 import type { AuthResponse } from "@/features/auth/types/auth.types";
@@ -47,7 +48,12 @@ http.interceptors.request.use((config) => {
   return config;
 });
 
-let refreshPromise: Promise<string | null> | null = null;
+type RefreshedAccessSession = {
+  accessToken: string | null;
+  expiresInSeconds?: number;
+};
+
+let refreshPromise: Promise<RefreshedAccessSession> | null = null;
 
 async function wait(ms: number) {
   await new Promise((resolve) => {
@@ -85,12 +91,17 @@ async function requestRefreshedAccessToken() {
       const response =
         await refreshClient.post<ApiResponse<AuthResponse>>("/auth/refresh");
       const nextToken = response.data.data?.accessToken ?? null;
+      const expiresInSeconds = response.data.data?.expiresInSeconds;
 
       if (nextToken) {
         setAccessToken(nextToken);
+        setAccessTokenExpiry(expiresInSeconds);
       }
 
-      return nextToken;
+      return {
+        accessToken: nextToken,
+        expiresInSeconds,
+      };
     } catch (error) {
       lastError = error;
 
@@ -132,7 +143,8 @@ http.interceptors.response.use(
         refreshPromise = null;
       });
 
-    const nextToken = await refreshPromise;
+    const refreshedSession = await refreshPromise;
+    const nextToken = refreshedSession.accessToken;
 
     if (!nextToken) {
       return Promise.reject(error);

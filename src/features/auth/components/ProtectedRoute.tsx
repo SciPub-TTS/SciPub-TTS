@@ -12,7 +12,11 @@ type ProtectedRouteProps = {
 
 export default function ProtectedRoute({ allowedRoles }: ProtectedRouteProps) {
     const location = useLocation();
-    const { currentUser, isAuthenticated } = useAuthSession();
+    const { currentUser, isAuthenticated, isAuthSessionRestoring } = useAuthSession();
+
+    if (isAuthSessionRestoring) {
+        return null;
+    }
 
     if (!isAuthenticated || !currentUser) {
         return <Navigate to={ROUTES.LOGIN} replace state={{ from: location }} />;

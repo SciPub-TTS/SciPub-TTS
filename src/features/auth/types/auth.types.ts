@@ -72,6 +72,7 @@ export interface UserPrincipal {
 export interface AuthResponse {
   accessToken: string;
   tokenType?: string;
+  expiresInSeconds?: number;
   expiresAt?: string;
   user?: UserPrincipal;
 }
