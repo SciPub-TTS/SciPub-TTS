@@ -11,8 +11,12 @@ import {
   Users,
 } from "lucide-react";
 import { type CSSProperties, useEffect, useRef, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Link, useLocation, useParams } from "react-router-dom";
 
+import { useAuthSession } from "@/features/auth/hooks/useAuthSession";
+import { bookmarkApi } from "@/features/bookmarks/services/bookmark.api";
+import { bookmarkQueryKeys } from "@/features/bookmarks/services/bookmarkQueryKeys";
 import { useWorkBookmark } from "@/features/bookmarks/hooks/useWorkBookmark";
 import {
   buildDetailTrailUrl,
@@ -141,8 +145,11 @@ export default function ListWorkLayout({
 }: ListWorkLayoutProps) {
   const location = useLocation();
   const currentDetailContext = getDetailContextFromRouteParams(useParams());
+  const { accessToken } = useAuthSession();
   const [showAllAuthors, setShowAllAuthors] = useState(false);
   const [showFullAbstract, setShowFullAbstract] = useState(false);
+  const [showBookmarkDialog, setShowBookmarkDialog] = useState(false);
+  const [selectedCollectionId, setSelectedCollectionId] = useState("");
   const [shareLabel, setShareLabel] = useState("Share");
   const shareResetTimeoutRef = useRef<number | null>(null);
   const authorItems =
@@ -168,6 +175,15 @@ export default function ListWorkLayout({
     topicOpenAlexId: topicRef?.id ?? null,
     workType: field,
     year,
+  });
+  const collectionsQuery = useQuery({
+    enabled: Boolean(accessToken) && showBookmarkDialog,
+    queryFn: async () => {
+      const response = await bookmarkApi.getCollections();
+      return response.data;
+    },
+    queryKey: bookmarkQueryKeys.collections(),
+    staleTime: 60_000,
   });
 
   const bookmarkClassName = savedState
@@ -232,6 +248,25 @@ export default function ListWorkLayout({
     return normalizedFollowedAuthors.includes(
       author.trim().toLocaleLowerCase(),
     );
+  }
+
+  async function handleBookmarkButtonClick() {
+    if (savedState || !accessToken) {
+      void handleWorkBookmarkClick();
+      return;
+    }
+
+    setSelectedCollectionId("");
+    setShowBookmarkDialog(true);
+  }
+
+  async function handleBookmarkConfirm() {
+    const didSave = await handleWorkBookmarkClick(selectedCollectionId || null);
+
+    if (didSave) {
+      setShowBookmarkDialog(false);
+      setSelectedCollectionId("");
+    }
   }
 
   useEffect(
@@ -444,21 +479,102 @@ export default function ListWorkLayout({
         )}
 
         <div className="flex flex-wrap items-center gap-2">
-          <button
-            type="button"
-            disabled={isBookmarkActionPending}
-            onClick={() => {
-              void handleWorkBookmarkClick();
-            }}
-            title={savedState ? "Remove bookmark" : "Save bookmark"}
-            className={[
-              "inline-flex items-center gap-2 rounded-lg border-black px-3 py-2 text-xs font-bold transition disabled:cursor-not-allowed disabled:opacity-70",
-              bookmarkClassName,
-            ].join(" ")}
-          >
-            <Bookmark className="h-4 w-4" />
-            {bookmarkButtonLabel}
-          </button>
+          <div className="relative">
+            {showBookmarkDialog ? (
+              <button
+                type="button"
+                aria-label="Close bookmark dialog"
+                className="fixed inset-0 z-10"
+                onClick={() => {
+                  setShowBookmarkDialog(false);
+                }}
+              />
+            ) : null}
+
+            <button
+              type="button"
+              disabled={isBookmarkActionPending}
+              onClick={() => {
+                void handleBookmarkButtonClick();
+              }}
+              title={savedState ? "Remove bookmark" : "Save bookmark"}
+              className={[
+                "relative z-20 inline-flex items-center gap-2 rounded-lg border-black px-3 py-2 text-xs font-bold transition disabled:cursor-not-allowed disabled:opacity-70",
+                bookmarkClassName,
+              ].join(" ")}
+            >
+              <Bookmark className="h-4 w-4" />
+              {bookmarkButtonLabel}
+            </button>
+
+            {showBookmarkDialog ? (
+              <div className="absolute bottom-[calc(100%+0.75rem)] left-0 z-20 w-72 max-w-[calc(100vw-3rem)] rounded-2xl border border-black bg-white p-4 shadow-[0_18px_40px_rgba(0,0,0,0.12)]">
+                <p className="text-[11px] font-extrabold uppercase tracking-[0.22em] text-[#14532D]">
+                  Save bookmark
+                </p>
+                <p className="mt-1 text-sm font-medium leading-6 text-black/70">
+                  Choose a collection for this paper, or keep it in All library.
+                </p>
+
+                <label
+                  htmlFor={`bookmark-collection-${workId}`}
+                  className="mt-3 block text-xs font-bold uppercase tracking-[0.18em] text-black"
+                >
+                  Collection
+                </label>
+                <select
+                  id={`bookmark-collection-${workId}`}
+                  value={selectedCollectionId}
+                  onChange={(event) => {
+                    setSelectedCollectionId(event.target.value);
+                  }}
+                  className="mt-2 w-full rounded-xl border border-black bg-white px-3 py-2.5 text-sm font-semibold text-black outline-none transition focus:border-[#14532D]"
+                >
+                  <option value="">All library</option>
+                  {(collectionsQuery.data ?? []).map((collection) => (
+                    <option key={collection.id} value={collection.id}>
+                      {collection.name}
+                    </option>
+                  ))}
+                </select>
+
+                {collectionsQuery.isPending ? (
+                  <p className="mt-2 text-xs font-medium text-black/55">
+                    Loading collections...
+                  </p>
+                ) : null}
+
+                {collectionsQuery.isError ? (
+                  <p className="mt-2 text-xs font-medium text-red-600">
+                    Cannot load collections right now. You can still save to All
+                    library.
+                  </p>
+                ) : null}
+
+                <div className="mt-4 flex items-center justify-end gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowBookmarkDialog(false);
+                    }}
+                    className="inline-flex items-center rounded-lg border border-black bg-white px-3 py-2 text-xs font-bold text-black transition hover:border-[#14532D] hover:bg-[#14532D] hover:text-white"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    disabled={isBookmarkActionPending}
+                    onClick={() => {
+                      void handleBookmarkConfirm();
+                    }}
+                    className="inline-flex items-center rounded-lg border border-[#14532D] bg-[#14532D] px-3 py-2 text-xs font-bold text-white transition hover:border-[#0f3d22] hover:bg-[#0f3d22] disabled:cursor-not-allowed disabled:opacity-70"
+                  >
+                    Save
+                  </button>
+                </div>
+              </div>
+            ) : null}
+          </div>
 
           <button
             type="button"
