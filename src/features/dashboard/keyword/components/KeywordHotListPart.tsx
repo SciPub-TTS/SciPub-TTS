@@ -28,7 +28,7 @@ export function KeywordHotListPart({ keywordList, isLoading, onAdd }: KeywordHot
 
     return (
         <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-            <h2 className="text-lg font-bold text-slate-900">Hot Topics</h2>
+            <h2 className="text-lg font-bold text-slate-900">Hot Keywords</h2>
             <p className="mb-3 text-sm text-slate-500">Ranked by works and field relevance</p>
 
             {isLoading ? (
