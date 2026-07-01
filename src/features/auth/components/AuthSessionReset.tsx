@@ -7,6 +7,7 @@ import {
   getAccessToken,
   clearAuthStorage,
   getCurrentUser,
+  getAccessTokenExpiresAt,
   hasLogoutMarker,
   setAuthSession,
   setAuthSessionRestoring,
@@ -73,7 +74,39 @@ async function withTransientRetry<T>(task: () => Promise<T>) {
   throw lastError;
 }
 
-export async function restoreAuthSession() {
+function hasUsableCachedSession() {
+  const accessToken = getAccessToken();
+  const currentUser = getCurrentUser();
+  const expiresAt = getAccessTokenExpiresAt();
+
+  if (!accessToken || !currentUser) {
+    return false;
+  }
+
+  if (!expiresAt) {
+    return true;
+  }
+
+  return expiresAt > Date.now();
+}
+
+function shouldRestoreSessionNow() {
+  const accessToken = getAccessToken();
+  const currentUser = getCurrentUser();
+  const expiresAt = getAccessTokenExpiresAt();
+
+  if (!accessToken || !currentUser) {
+    return true;
+  }
+
+  if (!expiresAt) {
+    return false;
+  }
+
+  return expiresAt - Date.now() <= ACCESS_TOKEN_REFRESH_BUFFER_MS;
+}
+
+export async function restoreAuthSession(options?: { blockUi?: boolean }) {
   if (typeof window === "undefined") {
     return;
   }
@@ -87,7 +120,11 @@ export async function restoreAuthSession() {
     return;
   }
 
-  setAuthSessionRestoring(true);
+  const shouldBlockUi = options?.blockUi ?? false;
+
+  if (shouldBlockUi) {
+    setAuthSessionRestoring(true);
+  }
 
   try {
     const refreshResponse = await withTransientRetry(() => authApi.refresh());
@@ -101,6 +138,10 @@ export async function restoreAuthSession() {
 
     setAuthSession(authSession);
 
+    if (getCurrentUser()) {
+      return;
+    }
+
     const meResponse = await withTransientRetry(() => authApi.me());
     setCurrentUser(meResponse.data);
   } catch (error) {
@@ -109,7 +150,9 @@ export async function restoreAuthSession() {
       return;
     }
   } finally {
-    setAuthSessionRestoring(false);
+    if (shouldBlockUi) {
+      setAuthSessionRestoring(false);
+    }
   }
 }
 
@@ -134,7 +177,9 @@ export default function AuthSessionReset() {
       return restorePromiseRef.current;
     }
 
-    const restorePromise = restoreAuthSession()
+    const restorePromise = restoreAuthSession({
+      blockUi: !hasUsableCachedSession(),
+    })
       .finally(() => {
         restorePromiseRef.current = null;
       });
@@ -166,6 +211,11 @@ export default function AuthSessionReset() {
     }
 
     hasBootstrappedRef.current = true;
+
+    if (!shouldRestoreSessionNow()) {
+      return;
+    }
+
     void runRestore();
   }, []);
 
@@ -173,7 +223,7 @@ export default function AuthSessionReset() {
     scheduleSilentRefresh();
 
     function handleWakeUpRestore() {
-      if (!getCurrentUser() && !getAccessToken()) {
+      if (!shouldRestoreSessionNow()) {
         return;
       }
 
