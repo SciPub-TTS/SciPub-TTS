@@ -6,8 +6,7 @@ import type {
   FeedArticle,
   FeedExactMatchFilter,
   FollowedAuthor,
-  FollowedTopic,
-  SuggestedTopic
+  FollowedTopic
 } from "../types";
 
 type FeedArticleApiItem = SearchWorksApiItem & {
@@ -47,21 +46,6 @@ export const apiService = {
       return data.map((author) => ({
         ...author,
         id: extractRawId(author.id),
-      }));
-    } catch {
-      return [];
-    }
-  },
-
-  async getSuggestedTopics(): Promise<SuggestedTopic[]> {
-    try {
-      const response = await http.get<ApiResponse<SuggestedTopic[]>>(
-          "/api/feed/suggested-topics",
-      );
-      const data = response.data.data || [];
-      return data.map((topic) => ({
-        ...topic,
-        id: extractRawId(topic.id),
       }));
     } catch {
       return [];

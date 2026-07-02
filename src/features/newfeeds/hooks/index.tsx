@@ -6,7 +6,6 @@ import type {
   FeedTabKey,
   FollowedAuthor,
   FollowedTopic,
-  SuggestedTopic,
   ResearchFeedData,
   FeedTab,
 } from "../types";
@@ -27,7 +26,6 @@ export function useResearchFeedPage() {
 
   const [followedTopics, setFollowedTopics] = useState<FollowedTopic[]>([]);
   const [followedAuthors, setFollowedAuthors] = useState<FollowedAuthor[]>([]);
-  const [suggestedTopics, setSuggestedTopics] = useState<SuggestedTopic[]>([]);
   const [articles, setArticles] = useState<FeedArticle[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
@@ -55,16 +53,14 @@ export function useResearchFeedPage() {
   const loadData = useCallback(async () => {
     setIsLoading(true);
     try {
-      const [topics, authors, suggested, feedResponse] = await Promise.all([
+      const [topics, authors, feedResponse] = await Promise.all([
         apiService.getFollowedTopics(),
         apiService.getFollowedAuthors(),
-        apiService.getSuggestedTopics(),
         apiService.getFeed(activeTab, page, 10, exactMatch),
       ]);
 
       setFollowedTopics(topics);
       setFollowedAuthors(authors);
-      setSuggestedTopics(suggested);
 
       if (page === 0) {
         setArticles(feedResponse.items);
@@ -97,10 +93,9 @@ export function useResearchFeedPage() {
       articles: articles,
       followedAuthors,
       followedTopics,
-      suggestedTopics,
       tabs: FEED_TABS,
     };
-  }, [articles, followedAuthors, followedTopics, suggestedTopics]);
+  }, [articles, followedAuthors, followedTopics]);
 
   return {
     activeTab,
