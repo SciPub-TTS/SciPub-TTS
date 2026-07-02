@@ -76,15 +76,37 @@ export function BookmarkCard({
   onRemoveFromCollection,
 }: BookmarkCardProps) {
   const [showCollectionMenu, setShowCollectionMenu] = useState(false);
-  const [pendingCollectionId, setPendingCollectionId] = useState<string | null>(
-    null,
-  );
+  const [draftCollectionIds, setDraftCollectionIds] = useState<string[]>([]);
+  const [isSavingCollections, setIsSavingCollections] = useState(false);
   const [shareLabel, setShareLabel] = useState("Share");
   const shareResetTimer = useRef<number | null>(null);
   const detailPath = useMemo(
     () => buildDetailTrailUrl("works", bookmark.openAlexId, [], "bookmarks"),
     [bookmark.openAlexId],
   );
+  const orderedCollections = useMemo(() => {
+    if (bookmark.collections.length === 0) {
+      return [];
+    }
+
+    const bookmarkCollectionIds = new Set(
+      bookmark.collections.map((collection) => collection.id),
+    );
+    const bookmarkCollectionMap = new Map(
+      bookmark.collections.map((collection) => [collection.id, collection]),
+    );
+    const collectionsInLibraryOrder = availableCollections
+      .filter((collection) => bookmarkCollectionIds.has(collection.id))
+      .map((collection) => bookmarkCollectionMap.get(collection.id) ?? collection);
+    const remainingCollections = bookmark.collections.filter(
+      (collection) =>
+        !collectionsInLibraryOrder.some(
+          (orderedCollection) => orderedCollection.id === collection.id,
+        ),
+    );
+
+    return [...collectionsInLibraryOrder, ...remainingCollections];
+  }, [availableCollections, bookmark.collections]);
 
   useEffect(
     () => () => {
@@ -94,6 +116,14 @@ export function BookmarkCard({
     },
     [],
   );
+
+  useEffect(() => {
+    if (!showCollectionMenu) {
+      return;
+    }
+
+    setDraftCollectionIds(bookmark.collections.map((collection) => collection.id));
+  }, [bookmark.collections, showCollectionMenu]);
 
   async function handleShare() {
     if (typeof window === "undefined") {
@@ -117,73 +147,111 @@ export function BookmarkCard({
     }, 2400);
   }
 
-  async function handleCollectionToggle(
-    collectionId: string,
-    isMember: boolean,
-  ) {
-    setPendingCollectionId(collectionId);
+  function handleCollectionToggle(collectionId: string) {
+    setDraftCollectionIds((currentCollectionIds) =>
+      currentCollectionIds.includes(collectionId)
+        ? currentCollectionIds.filter((id) => id !== collectionId)
+        : [...currentCollectionIds, collectionId],
+    );
+  }
+
+  async function handleSaveCollectionChanges() {
+    const initialCollectionIds = bookmark.collections.map((collection) => collection.id);
+    const collectionIdsToAdd = draftCollectionIds.filter(
+      (collectionId) => !initialCollectionIds.includes(collectionId),
+    );
+    const collectionIdsToRemove = initialCollectionIds.filter(
+      (collectionId) => !draftCollectionIds.includes(collectionId),
+    );
+
+    if (collectionIdsToAdd.length === 0 && collectionIdsToRemove.length === 0) {
+      setShowCollectionMenu(false);
+      return;
+    }
+
+    setIsSavingCollections(true);
 
     try {
-      if (isMember) {
-        await onRemoveFromCollection(bookmark.id, collectionId);
-      } else {
-        await onAddToCollection(bookmark.id, collectionId);
-      }
+      await Promise.all([
+        ...collectionIdsToAdd.map((collectionId) =>
+          onAddToCollection(bookmark.id, collectionId),
+        ),
+        ...collectionIdsToRemove.map((collectionId) =>
+          onRemoveFromCollection(bookmark.id, collectionId),
+        ),
+      ]);
+      setShowCollectionMenu(false);
     } finally {
-      setPendingCollectionId(null);
+      setIsSavingCollections(false);
     }
   }
 
+  const initialCollectionIds = bookmark.collections.map((collection) => collection.id);
+  const hasPendingCollectionChanges =
+    draftCollectionIds.length !== initialCollectionIds.length ||
+    draftCollectionIds.some((collectionId) => !initialCollectionIds.includes(collectionId));
+  const isCollectionActionPending = isSavingCollections || isCollectionMutating;
+
   return (
-    <div className="group relative flex h-full flex-col gap-4 rounded-[1.8rem] border border-black bg-[radial-gradient(circle_at_top_left,_rgba(243,112,33,0.08),_transparent_34%),white] p-5 transition-all hover:-translate-y-0.5 hover:shadow-[0_20px_44px_rgba(0,0,0,0.08)]">
+    <div
+      className={[
+        "group relative isolate flex h-full flex-col gap-4 rounded-[1.8rem] border border-black bg-[radial-gradient(circle_at_top_left,_rgba(243,112,33,0.08),_transparent_34%),white] p-5 transition-all hover:-translate-y-0.5 hover:shadow-[0_20px_44px_rgba(0,0,0,0.08)]",
+        showCollectionMenu ? "z-50" : "z-0",
+      ].join(" ")}
+    >
       {showCollectionMenu && (
         <button
           type="button"
           aria-label="Close card menus"
           className="fixed inset-0 z-10"
           onClick={() => {
+            if (isCollectionActionPending) {
+              return;
+            }
+
             setShowCollectionMenu(false);
           }}
         />
       )}
 
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex min-w-0 flex-1 flex-col gap-2">
+      <div className="flex flex-col gap-2">
+        <div className="flex items-start justify-between gap-3">
           <span className="inline-flex w-fit items-center gap-1 rounded-full border border-black bg-white px-2.5 py-1 text-[11px] font-semibold text-[#8B5E34]">
             {getWorkTypeLabel(bookmark.workType)}
           </span>
-
-          {bookmark.topic ? (
-            <div className="flex flex-nowrap items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
-              <span
-                className={`inline-flex shrink-0 items-center whitespace-nowrap rounded-full px-2.5 py-1 text-[11px] font-semibold ${getTopicColor(
-                  bookmark.topic,
-                )}`}
-              >
-                {bookmark.topic}
-              </span>
-            </div>
-          ) : null}
-
-          {bookmark.collections.length > 0 ? (
-            <div className="flex flex-nowrap items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
-              {bookmark.collections.map((collection) => {
-                return (
-                  <span
-                    key={collection.id}
-                    className="inline-flex shrink-0 items-center whitespace-nowrap rounded-md border border-black bg-black px-3 py-1.5 text-[11px] font-semibold text-white"
-                    title={collection.name}
-                  >
-                    {collection.name}
-                  </span>
-                );
-              })}
-            </div>
-          ) : null}
+          <span className="font-subtext shrink-0 whitespace-nowrap pt-1 text-[13px] font-semibold text-black/65">
+            {formatSavedAt(bookmark.createdAt)}
+          </span>
         </div>
-        <span className="font-subtext shrink-0 whitespace-nowrap pt-1 text-[13px] font-semibold text-black/65">
-          {formatSavedAt(bookmark.createdAt)}
-        </span>
+
+        {bookmark.topic ? (
+          <div className="flex flex-wrap items-center gap-2 pb-1">
+            <span
+              className={`inline-flex max-w-full items-center overflow-hidden text-ellipsis whitespace-nowrap rounded-full px-2.5 py-1 text-[11px] font-semibold ${getTopicColor(
+                bookmark.topic,
+              )}`}
+              title={bookmark.topic}
+            >
+              {bookmark.topic}
+            </span>
+          </div>
+        ) : null}
+
+        {orderedCollections.length > 0 ? (
+          <div className="flex flex-wrap items-center gap-2 pb-1">
+            {orderedCollections.map((collection) => {
+              return (
+                <span
+                  key={collection.id}
+                  className="inline-flex max-w-full items-center break-words rounded-md border border-black bg-black px-3 py-1.5 text-[11px] font-semibold text-white"
+                  title={collection.name}
+                >
+                  {collection.name}
+                </span>
+              );
+            })}
+          </div>
+        ) : null}
       </div>
 
       <h3 className="font-title line-clamp-3 text-[1.28rem] font-bold leading-snug text-black">
@@ -240,11 +308,21 @@ export function BookmarkCard({
             {shareLabel}
           </button>
 
-          <div className="relative z-20 shrink-0">
+          <div className={["relative shrink-0", showCollectionMenu ? "z-40" : "z-10"].join(" ")}>
             <button
               type="button"
               onClick={() => {
-                setShowCollectionMenu((value) => !value);
+                setShowCollectionMenu((value) => {
+                  const nextValue = !value;
+
+                  if (nextValue) {
+                    setDraftCollectionIds(
+                      bookmark.collections.map((collection) => collection.id),
+                    );
+                  }
+
+                  return nextValue;
+                });
               }}
               className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-black bg-white text-black transition hover:border-[#14532D] hover:bg-[#14532D] hover:text-white"
               title="Manage collections"
@@ -273,27 +351,22 @@ export function BookmarkCard({
                 ) : (
                   <div className="space-y-2">
                     {availableCollections.map((collection) => {
-                      const isMember = bookmark.collections.some(
-                        (item) => item.id === collection.id,
-                      );
-                      const isPending =
-                        pendingCollectionId === collection.id ||
-                        isCollectionMutating;
+                      const isSelected = draftCollectionIds.includes(collection.id);
 
                       return (
                         <button
                           key={collection.id}
                           type="button"
-                          disabled={isPending}
+                          disabled={isCollectionActionPending}
                           onClick={() => {
-                            void handleCollectionToggle(collection.id, isMember);
+                            handleCollectionToggle(collection.id);
                           }}
                           className={[
                             "flex w-full items-center justify-between gap-3 rounded-2xl border px-3 py-3 text-left transition",
-                            isMember
+                            isSelected
                               ? "border-black bg-[#EEF9EC]"
                               : "border-black/20 bg-white hover:border-black hover:bg-[#E8F8FF]",
-                            isPending ? "cursor-not-allowed opacity-60" : "",
+                            isCollectionActionPending ? "cursor-not-allowed opacity-60" : "",
                           ].join(" ")}
                         >
                           <div className="min-w-0">
@@ -307,7 +380,7 @@ export function BookmarkCard({
                           <span
                             className={[
                               "inline-flex h-7 w-7 items-center justify-center rounded-full border",
-                              isMember
+                              isSelected
                                 ? "border-[#14532D] bg-[#14532D] text-white"
                                 : "border-black/20 bg-white text-black/35",
                             ].join(" ")}
@@ -317,6 +390,33 @@ export function BookmarkCard({
                         </button>
                       );
                     })}
+
+                    <div className="flex items-center justify-end gap-2 border-t border-black/10 pt-3">
+                      <button
+                        type="button"
+                        disabled={isCollectionActionPending}
+                        onClick={() => {
+                          setDraftCollectionIds(
+                            bookmark.collections.map((collection) => collection.id),
+                          );
+                          setShowCollectionMenu(false);
+                        }}
+                        className="inline-flex h-10 items-center justify-center rounded-xl border border-black/20 bg-white px-4 text-sm font-semibold text-black transition hover:border-black hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        Cancel
+                      </button>
+
+                      <button
+                        type="button"
+                        disabled={!hasPendingCollectionChanges || isCollectionActionPending}
+                        onClick={() => {
+                          void handleSaveCollectionChanges();
+                        }}
+                        className="inline-flex h-10 items-center justify-center rounded-xl border border-[#14532D] bg-[#14532D] px-4 text-sm font-semibold text-white transition hover:bg-[#166534] disabled:cursor-not-allowed disabled:border-slate-300 disabled:bg-slate-300"
+                      >
+                        {isCollectionActionPending ? "Saving..." : "Save changes"}
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>
