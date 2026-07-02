@@ -34,15 +34,9 @@ export type FollowedAuthor = {
   name: string;
 };
 
-export type SuggestedTopic = {
-  id: string;
-  name: string;
-};
-
 export type ResearchFeedData = {
   articles: FeedArticle[];
   followedAuthors: FollowedAuthor[];
   followedTopics: FollowedTopic[];
-  suggestedTopics: SuggestedTopic[];
   tabs: FeedTab[];
 };

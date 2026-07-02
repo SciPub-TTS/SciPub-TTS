@@ -1,31 +1,28 @@
-import { useState } from "react";
-import { Plus, Check } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { Plus, Check, X } from "lucide-react";
 import { Link } from "react-router-dom";
 import { ROUTES, routePaths } from "@/app/router";
 import { http } from "@/services/http";
+import { useInfiniteScroll } from "../hooks/UseInfiniteScroll";
 
 import type {
   FollowedAuthor,
   FollowedTopic,
-  SuggestedTopic,
 } from "../types";
 
 type FeedSidebarProps = {
   authors: FollowedAuthor[];
-  suggestedTopics: SuggestedTopic[];
   topics: FollowedTopic[];
 };
 
 export function FeedSidebar({
   authors,
-  suggestedTopics,
   topics,
 }: FeedSidebarProps) {
   return (
     <aside className="space-y-4">
       <FollowedTopicsCard topics={topics} />
       <FollowedAuthorsCard authors={authors} />
-      <SuggestedTopicsCard topics={suggestedTopics} />
     </aside>
   );
 }
@@ -46,21 +43,129 @@ function SidebarCard({
 }
 
 function FollowedTopicsCard({ topics }: { topics: FollowedTopic[] }) {
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const recentTopics = topics.slice(0, 3);
+
     return (
-        <SidebarCard title="Followed Topics">
-            <div className="space-y-2">
-                {topics.map((topic) => (
-                    <TopicRowItem key={topic.id} topic={topic} />
-                ))}
-            </div>
-            <Link
-                to={ROUTES.SEARCH}
-                state={{ initialEntityType: "topics" }}
-                className="mt-4 block w-full text-center text-xs font-bold text-blue-600 hover:text-blue-700"
+        <>
+            <SidebarCard title="Followed Topics">
+                {recentTopics.length > 0 ? (
+                    <div className="space-y-2">
+                        {recentTopics.map((topic) => (
+                            <TopicRowItem key={topic.id} topic={topic} />
+                        ))}
+                    </div>
+                ) : (
+                    <p className="text-xs text-slate-500">You are not following any topics yet.</p>
+                )}
+                <button
+                    className="mt-4 block w-full text-center text-xs font-bold text-blue-600 transition hover:text-blue-700"
+                    onClick={() => setIsDialogOpen(true)}
+                    type="button"
+                >
+                    View all followed topics ({topics.length})
+                </button>
+            </SidebarCard>
+
+            {isDialogOpen && (
+                <FollowedTopicsDialog
+                    onClose={() => setIsDialogOpen(false)}
+                    topics={topics}
+                />
+            )}
+        </>
+    );
+}
+
+const FOLLOWED_ITEMS_BATCH_SIZE = 20;
+
+function FollowedTopicsDialog({
+    onClose,
+    topics,
+}: {
+    onClose: () => void;
+    topics: FollowedTopic[];
+}) {
+    const [visibleCount, setVisibleCount] = useState(FOLLOWED_ITEMS_BATCH_SIZE);
+    const hasMore = visibleCount < topics.length;
+
+    useEffect(() => {
+        const handleEscape = (event: KeyboardEvent) => {
+            if (event.key === "Escape") onClose();
+        };
+
+        document.addEventListener("keydown", handleEscape);
+        return () => document.removeEventListener("keydown", handleEscape);
+    }, [onClose]);
+
+    const loadMore = useCallback(() => {
+        setVisibleCount((current) => Math.min(current + FOLLOWED_ITEMS_BATCH_SIZE, topics.length));
+    }, [topics.length]);
+
+    const sentinelRef = useInfiniteScroll(loadMore, hasMore);
+
+    return (
+        <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/45 p-4 backdrop-blur-[2px]"
+            onMouseDown={onClose}
+        >
+            <section
+                aria-labelledby="followed-topics-title"
+                aria-modal="true"
+                className="flex max-h-[80vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl"
+                onMouseDown={(event) => event.stopPropagation()}
+                role="dialog"
             >
-                + Follow more topics
-            </Link>
-        </SidebarCard>
+                <header className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
+                    <div>
+                        <h2 id="followed-topics-title" className="text-base font-bold text-slate-900">
+                            Followed Topics
+                        </h2>
+                        <p className="mt-0.5 text-xs text-slate-500">
+                            {topics.length} {topics.length === 1 ? "topic" : "topics"}
+                        </p>
+                    </div>
+                    <button
+                        aria-label="Close followed topics"
+                        className="rounded-lg p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+                        onClick={onClose}
+                        type="button"
+                    >
+                        <X className="h-5 w-5" />
+                    </button>
+                </header>
+
+                <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">
+                    {topics.length > 0 ? (
+                        <div className="space-y-2">
+                            {topics.slice(0, visibleCount).map((topic) => (
+                                <TopicRowItem key={topic.id} topic={topic} />
+                            ))}
+                            {hasMore && (
+                                <div ref={sentinelRef} className="py-3 text-center text-xs text-slate-400">
+                                    Loading more topics...
+                                </div>
+                            )}
+                        </div>
+                    ) : (
+                        <div className="py-10 text-center text-sm text-slate-500">
+                            You are not following any topics yet.
+                        </div>
+                    )}
+                </div>
+
+                <footer className="border-t border-slate-200 bg-slate-50 px-5 py-4 text-center">
+                    <Link
+                        className="text-sm font-bold text-blue-600 transition hover:text-blue-700"
+                        onClick={onClose}
+                        state={{ initialEntityType: "topics" }}
+                        to={ROUTES.SEARCH}
+                    >
+                        + Follow more topics
+                    </Link>
+                </footer>
+            </section>
+        </div>
     );
 }
 
@@ -131,21 +236,127 @@ function TopicRowItem({ topic }: { topic: FollowedTopic }) {
 }
 
 function FollowedAuthorsCard({ authors }: { authors: FollowedAuthor[] }) {
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const recentAuthors = authors.slice(0, 3);
+
     return (
-        <SidebarCard title="Followed Authors">
-            <div className="space-y-2">
-                {authors.map((author) => (
-                    <AuthorRowItem key={author.id} author={author} />
-                ))}
-            </div>
-            <Link
-                to={ROUTES.SEARCH}
-                state={{ initialEntityType: "authors" }}
-                className="mt-4 block w-full text-center text-xs font-bold text-blue-600 hover:text-blue-700"
+        <>
+            <SidebarCard title="Followed Authors">
+                {recentAuthors.length > 0 ? (
+                    <div className="space-y-2">
+                        {recentAuthors.map((author) => (
+                            <AuthorRowItem key={author.id} author={author} />
+                        ))}
+                    </div>
+                ) : (
+                    <p className="text-xs text-slate-500">You are not following any authors yet.</p>
+                )}
+                <button
+                    className="mt-4 block w-full text-center text-xs font-bold text-blue-600 transition hover:text-blue-700"
+                    onClick={() => setIsDialogOpen(true)}
+                    type="button"
+                >
+                    View all followed authors ({authors.length})
+                </button>
+            </SidebarCard>
+
+            {isDialogOpen && (
+                <FollowedAuthorsDialog
+                    authors={authors}
+                    onClose={() => setIsDialogOpen(false)}
+                />
+            )}
+        </>
+    );
+}
+
+function FollowedAuthorsDialog({
+    authors,
+    onClose,
+}: {
+    authors: FollowedAuthor[];
+    onClose: () => void;
+}) {
+    const [visibleCount, setVisibleCount] = useState(FOLLOWED_ITEMS_BATCH_SIZE);
+    const hasMore = visibleCount < authors.length;
+
+    useEffect(() => {
+        const handleEscape = (event: KeyboardEvent) => {
+            if (event.key === "Escape") onClose();
+        };
+
+        document.addEventListener("keydown", handleEscape);
+        return () => document.removeEventListener("keydown", handleEscape);
+    }, [onClose]);
+
+    const loadMore = useCallback(() => {
+        setVisibleCount((current) => Math.min(current + FOLLOWED_ITEMS_BATCH_SIZE, authors.length));
+    }, [authors.length]);
+
+    const sentinelRef = useInfiniteScroll(loadMore, hasMore);
+
+    return (
+        <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/45 p-4 backdrop-blur-[2px]"
+            onMouseDown={onClose}
+        >
+            <section
+                aria-labelledby="followed-authors-title"
+                aria-modal="true"
+                className="flex max-h-[80vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl"
+                onMouseDown={(event) => event.stopPropagation()}
+                role="dialog"
             >
-                + Follow more authors
-            </Link>
-        </SidebarCard>
+                <header className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
+                    <div>
+                        <h2 id="followed-authors-title" className="text-base font-bold text-slate-900">
+                            Followed Authors
+                        </h2>
+                        <p className="mt-0.5 text-xs text-slate-500">
+                            {authors.length} {authors.length === 1 ? "author" : "authors"}
+                        </p>
+                    </div>
+                    <button
+                        aria-label="Close followed authors"
+                        className="rounded-lg p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+                        onClick={onClose}
+                        type="button"
+                    >
+                        <X className="h-5 w-5" />
+                    </button>
+                </header>
+
+                <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">
+                    {authors.length > 0 ? (
+                        <div className="space-y-2">
+                            {authors.slice(0, visibleCount).map((author) => (
+                                <AuthorRowItem key={author.id} author={author} />
+                            ))}
+                            {hasMore && (
+                                <div ref={sentinelRef} className="py-3 text-center text-xs text-slate-400">
+                                    Loading more authors...
+                                </div>
+                            )}
+                        </div>
+                    ) : (
+                        <div className="py-10 text-center text-sm text-slate-500">
+                            You are not following any authors yet.
+                        </div>
+                    )}
+                </div>
+
+                <footer className="border-t border-slate-200 bg-slate-50 px-5 py-4 text-center">
+                    <Link
+                        className="text-sm font-bold text-blue-600 transition hover:text-blue-700"
+                        onClick={onClose}
+                        state={{ initialEntityType: "authors" }}
+                        to={ROUTES.SEARCH}
+                    >
+                        + Follow more authors
+                    </Link>
+                </footer>
+            </section>
+        </div>
     );
 }
 
@@ -217,66 +428,3 @@ function AuthorRowItem({ author }: { author: FollowedAuthor }) {
     );
 }
 
-function SuggestedTopicsCard({ topics }: { topics: SuggestedTopic[] }) {
-    return (
-        <SidebarCard title="Suggested Topics">
-            <div className="space-y-2">
-                {topics.map((topic) => (
-                    <SuggestedTopicRowItem key={topic.id} topic={topic} />
-                ))}
-            </div>
-        </SidebarCard>
-    );
-}
-
-function SuggestedTopicRowItem({ topic }: { topic: SuggestedTopic }) {
-    const [isFollowed, setIsFollowed] = useState(false); // Gợi ý mặc định là chưa follow
-    const [loading, setLoading] = useState(false);
-
-    const handleToggleFollow = async () => {
-        setLoading(true);
-        try {
-            if (isFollowed) {
-                await http.delete(`/api/topics/${topic.id}/follow`);
-                setIsFollowed(false);
-            } else {
-                await http.post(`/api/topics/${topic.id}/follow`);
-                setIsFollowed(true);
-            }
-        } catch (err) {
-            console.error("Failed to toggle follow suggested topic:", err);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const followButtonClassName = isFollowed
-        ? "border border-[#14532D] bg-[#14532D] text-white hover:border-[#0f3d22] hover:bg-[#0f3d22] hover:text-white"
-        : "border border-black bg-white text-black hover:border-[#14532D] hover:bg-[#14532D] hover:text-white";
-
-    return (
-        <div className="flex items-center justify-between gap-3">
-            <Link
-              to={routePaths.topicDetail(topic.id)}
-              className="min-w-0 truncate text-xs font-semibold text-slate-600 hover:text-emerald-600 hover:underline"
-            >
-              {topic.name}
-            </Link>
-            <button
-                aria-label={`Follow ${topic.name}`}
-                onClick={handleToggleFollow}
-                disabled={loading}
-                className={`inline-flex h-7 px-2.5 items-center justify-center rounded-full text-xs font-bold transition duration-200 ${followButtonClassName} ${
-                    loading ? "opacity-50 cursor-not-allowed" : ""
-                }`}
-                type="button"
-            >
-                {isFollowed ? (
-                    <Check className="h-3.5 w-3.5" />
-                ) : (
-                    <Plus className="h-3.5 w-3.5" />
-                )}
-            </button>
-          </div>
-  );
-}
