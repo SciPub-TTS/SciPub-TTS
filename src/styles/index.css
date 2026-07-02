@@ -1,28 +1,45 @@
 @import "@fontsource/agbalumo/latin.css";
+@import "@fontsource/agbalumo/vietnamese.css";
 @import "@fontsource/be-vietnam-pro/latin-400.css";
 @import "@fontsource/be-vietnam-pro/latin-500.css";
 @import "@fontsource/be-vietnam-pro/latin-600.css";
 @import "@fontsource/be-vietnam-pro/latin-700.css";
 @import "@fontsource/be-vietnam-pro/latin-800.css";
+@import "@fontsource/be-vietnam-pro/vietnamese-400.css";
+@import "@fontsource/be-vietnam-pro/vietnamese-500.css";
+@import "@fontsource/be-vietnam-pro/vietnamese-600.css";
+@import "@fontsource/be-vietnam-pro/vietnamese-700.css";
+@import "@fontsource/be-vietnam-pro/vietnamese-800.css";
 @import "@fontsource/manrope/latin-400.css";
 @import "@fontsource/manrope/latin-500.css";
 @import "@fontsource/manrope/latin-600.css";
 @import "@fontsource/manrope/latin-700.css";
 @import "@fontsource/manrope/latin-800.css";
+@import "@fontsource/manrope/vietnamese-400.css";
+@import "@fontsource/manrope/vietnamese-500.css";
+@import "@fontsource/manrope/vietnamese-600.css";
+@import "@fontsource/manrope/vietnamese-700.css";
+@import "@fontsource/manrope/vietnamese-800.css";
 @import "@fontsource/space-grotesk/latin-400.css";
 @import "@fontsource/space-grotesk/latin-500.css";
 @import "@fontsource/space-grotesk/latin-600.css";
 @import "@fontsource/space-grotesk/latin-700.css";
+@import "@fontsource/space-grotesk/vietnamese-400.css";
+@import "@fontsource/space-grotesk/vietnamese-500.css";
+@import "@fontsource/space-grotesk/vietnamese-600.css";
+@import "@fontsource/space-grotesk/vietnamese-700.css";
 @import "@fontsource/cormorant-garamond/latin-600.css";
 @import "@fontsource/cormorant-garamond/latin-700.css";
+@import "@fontsource/cormorant-garamond/vietnamese-600.css";
+@import "@fontsource/cormorant-garamond/vietnamese-700.css";
 @import "tailwindcss";
 
 :root {
-  --font-brand: "Agbalumo", system-ui, sans-serif;
-  --font-title: "Space Grotesk", system-ui, sans-serif;
+  --font-brand: "Agbalumo", "Be Vietnam Pro", system-ui, sans-serif;
+  --font-title: "Space Grotesk", "Be Vietnam Pro", system-ui, sans-serif;
   --font-title-page: "Cormorant Garamond", Georgia, serif;
-  --font-text: "Be Vietnam Pro", system-ui, sans-serif;
-  --font-subtext: "Manrope", system-ui, sans-serif;
+  --font-text: "Be Vietnam Pro", "Segoe UI", system-ui, sans-serif;
+  --font-subtext: "Manrope", "Be Vietnam Pro", "Segoe UI", system-ui, sans-serif;
 }
 
 * {
