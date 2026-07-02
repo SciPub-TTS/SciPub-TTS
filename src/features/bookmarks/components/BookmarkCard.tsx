@@ -84,30 +84,6 @@ export function BookmarkCard({
     () => buildDetailTrailUrl("works", bookmark.openAlexId, [], "bookmarks"),
     [bookmark.openAlexId],
   );
-  const orderedCollections = useMemo(() => {
-    if (bookmark.collections.length === 0) {
-      return [];
-    }
-
-    const bookmarkCollectionIds = new Set(
-      bookmark.collections.map((collection) => collection.id),
-    );
-    const bookmarkCollectionMap = new Map(
-      bookmark.collections.map((collection) => [collection.id, collection]),
-    );
-    const collectionsInLibraryOrder = availableCollections
-      .filter((collection) => bookmarkCollectionIds.has(collection.id))
-      .map((collection) => bookmarkCollectionMap.get(collection.id) ?? collection);
-    const remainingCollections = bookmark.collections.filter(
-      (collection) =>
-        !collectionsInLibraryOrder.some(
-          (orderedCollection) => orderedCollection.id === collection.id,
-        ),
-    );
-
-    return [...collectionsInLibraryOrder, ...remainingCollections];
-  }, [availableCollections, bookmark.collections]);
-
   useEffect(
     () => () => {
       if (typeof window !== "undefined" && shareResetTimer.current !== null) {
@@ -237,9 +213,9 @@ export function BookmarkCard({
           </div>
         ) : null}
 
-        {orderedCollections.length > 0 ? (
+        {bookmark.collections.length > 0 ? (
           <div className="flex flex-wrap items-center gap-2 pb-1">
-            {orderedCollections.map((collection) => {
+            {bookmark.collections.map((collection) => {
               return (
                 <span
                   key={collection.id}
