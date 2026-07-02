@@ -38,7 +38,7 @@ export default function TopicGeneralChartPart({
         <div className="flex flex-col items-center gap-6">
             <GeneralPart/>
 
-            <div className="grid grid-cols-2 gap-6 select-none">
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 select-none">
                 <ScatterHotTopics
                 startDate={startDate}
                 endDate={endDate}
@@ -318,44 +318,86 @@ function ScatterHotTopics({
     }
 
     return (
-        <div className="rounded-lg border border-slate-200 bg-white p-4 flex flex-col gap-2">
+        <div className="rounded-lg border border-slate-200 bg-white p-4 flex flex-col gap-2 min-w-0">
             <div className="flex flex-col">
                 <h2 className="text-xl font-bold text-slate-900">
                     Research topics — works vs citations
                 </h2>
+
                 <p className="text-sm opacity-75">
                     Bubble size reflects topic score. Hover for details.
                 </p>
             </div>
 
-            <ResponsiveContainer width="100%" height={440}>
-                <ScatterChart margin={{ top: 20, right: 30, bottom: 40, left: 20 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+            <div className="w-full min-w-0 h-[440px]">
+                <ResponsiveContainer width="100%" height="100%">
+                    <ScatterChart
+                        margin={{
+                            top: 20,
+                            right: 30,
+                            bottom: 40,
+                            left: 20,
+                        }}
+                    >
+                        <CartesianGrid
+                            strokeDasharray="3 3"
+                            stroke="#f0f0f0"
+                        />
 
-                    <XAxis
-                        dataKey="works"
-                        type="number"
-                        name="Works"
-                        tickFormatter={(value: number) => value.toLocaleString()}
-                        tick={{ fontSize: 12, fill: "#9ca3af" }}
-                        label={{ value: "Works", position: "insideBottom", offset: -10, fontSize: 13, fill: "#9ca3af" }}
-                    />
+                        <XAxis
+                            dataKey="works"
+                            type="number"
+                            name="Works"
+                            tickFormatter={(value: number) =>
+                                value.toLocaleString()
+                            }
+                            tick={{
+                                fontSize: 12,
+                                fill: "#9ca3af",
+                            }}
+                            label={{
+                                value: "Works",
+                                position: "insideBottom",
+                                offset: -10,
+                                fontSize: 13,
+                                fill: "#9ca3af",
+                            }}
+                        />
 
-                    <YAxis
-                        dataKey="citations"
-                        type="number"
-                        name="Citations"
-                        tickFormatter={(value: number) => value.toLocaleString()}
-                        tick={{ fontSize: 12, fill: "#9ca3af" }}
-                        label={{ value: "Citations", angle: -90, position: "insideLeft", offset: 10, fontSize: 13, fill: "#9ca3af" }}
-                    />
+                        <YAxis
+                            dataKey="citations"
+                            type="number"
+                            name="Citations"
+                            tickFormatter={(value: number) =>
+                                value.toLocaleString()
+                            }
+                            tick={{
+                                fontSize: 12,
+                                fill: "#9ca3af",
+                            }}
+                            label={{
+                                value: "Citations",
+                                angle: -90,
+                                position: "insideLeft",
+                                offset: 10,
+                                fontSize: 13,
+                                fill: "#9ca3af",
+                            }}
+                        />
 
-                    <ZAxis range={[1, 1]} />
-                    <Tooltip content={ScatterTooltip} />
+                        <ZAxis range={[1, 1]} />
 
-                    <Scatter data={topicList} shape={(props: BubbleProps) => <Bubble {...props} />} />
-                </ScatterChart>
-            </ResponsiveContainer>
+                        <Tooltip content={ScatterTooltip} />
+
+                        <Scatter
+                            data={topicList}
+                            shape={(props: BubbleProps) => (
+                                <Bubble {...props} />
+                            )}
+                        />
+                    </ScatterChart>
+                </ResponsiveContainer>
+            </div>
         </div>
     );
 }
@@ -379,65 +421,78 @@ function MomentumPart({
 
     const {momentumData} = useTopicMomentum({startDate, endDate, fieldId, formula});
 
-    return(
-        <div className="rounded-lg border border-slate-200 bg-white p-4
-        flex flex-col gap-2 overflow-hidden">
-
+    return (
+        <div className="rounded-lg border border-slate-200 bg-white p-4 flex flex-col gap-2 min-w-0">
             <div className="flex flex-row justify-between">
                 <div className="flex flex-col">
                     <h1 className="text-xl font-bold text-slate-900">
                         Topic Momentum Analysis
                     </h1>
+
                     <h2 className="text-sm opacity-75">
-                        Comparison of current and historical topic scores with percentage growth trends.
+                        Comparison of current and historical topic scores with
+                        percentage growth trends.
                     </h2>
                 </div>
-
             </div>
 
-            <BarChart
-                width={600}
-                height={350}
-                data={momentumData}
-                margin={{
-                    top: 20,
-                    right: 20,
-                    bottom: 5,
-                    left: 0,
-                }}
-            >
-                <XAxis
-                    dataKey="name"
-                    tickFormatter={formatAxisTick}
-                    label={{ position: 'insideBottomRight', offset: -10 }}
-                />
+            <div className="w-full h-[350px] min-w-0">
+                <ResponsiveContainer width="100%" height="100%">
+                    <BarChart
+                        data={momentumData}
+                        margin={{
+                            top: 30,
+                            right: 20,
+                            bottom: 20,
+                            left: 0,
+                        }}
+                    >
+                        <XAxis
+                            dataKey="name"
+                            tickFormatter={formatAxisTick}
+                        />
 
-                <CartesianGrid
-                    stroke="#aaa"
-                    strokeDasharray="10 10"
-                    vertical={false}
-                    opacity={0.6}
-                />
+                        <CartesianGrid
+                            stroke="#aaa"
+                            strokeDasharray="10 10"
+                            vertical={false}
+                            opacity={0.6}
+                        />
 
-                <YAxis
-                    label={{ position: 'insideTopLeft', angle: -90, dy: 60 }}
-                />
+                        <YAxis />
 
-                <Tooltip />
+                        <Tooltip />
 
-                <Bar dataKey="pastAverage" name="Past Average" fill="#2563EB" barSize={18} radius={[5, 5, 0, 0]}
-                />
-                <Bar dataKey="currentAverage" name="Current Average" fill="#16A34A" barSize={18} radius={[5, 5, 0, 0]} >
-                    <LabelList
-                        className="text-xs"
-                        dataKey="growthPercentage"
-                        position="top"
-                        formatter={(value) => Number(value) > 0 ? `+${value}%` : `${value}%`}
-                    />
-                </Bar>
+                        <Bar
+                            dataKey="pastAverage"
+                            name="Past Average"
+                            fill="#2563EB"
+                            barSize={18}
+                            radius={[5, 5, 0, 0]}
+                        />
 
-                <Legend align="right" />
-            </BarChart>
+                        <Bar
+                            dataKey="currentAverage"
+                            name="Current Average"
+                            fill="#16A34A"
+                            barSize={18}
+                            radius={[5, 5, 0, 0]}
+                        >
+                            <LabelList
+                                dataKey="growthPercentage"
+                                position="top"
+                                formatter={(value) =>
+                                    Number(value) > 0
+                                        ? `+${value}%`
+                                        : `${value}%`
+                                }
+                            />
+                        </Bar>
+
+                        <Legend align="right" />
+                    </BarChart>
+                </ResponsiveContainer>
+            </div>
         </div>
-    )
+    );
 }
