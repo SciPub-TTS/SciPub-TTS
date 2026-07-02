@@ -1,6 +1,7 @@
 import { routePaths } from "@/app/router/routes";
 import { trimToEmpty } from "@/lib/resourceFormatting";
 import type { DetailTitleEntityType } from "@/features/detail/store/detailTitleStore";
+import { ENABLE_SOCIAL_HUB } from "@/features/social/socialFeature";
 
 const detailTrailSearchParam = "trail";
 const detailOriginSearchParam = "origin";
@@ -36,7 +37,7 @@ function normalizeDetailOrigin(origin: string | null | undefined): DetailOrigin 
     return "bookmarks";
   }
 
-  if (normalizedOrigin === "social-hub") {
+  if (normalizedOrigin === "social-hub" && ENABLE_SOCIAL_HUB) {
     return "social-hub";
   }
 

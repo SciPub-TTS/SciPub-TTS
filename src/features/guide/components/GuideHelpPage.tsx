@@ -21,6 +21,7 @@ import {
 import { Link } from "react-router-dom";
 
 import { ROUTES } from "@/app/router";
+import { ENABLE_SOCIAL_HUB } from "@/features/social/socialFeature";
 
 const workflowSteps = [
   {
@@ -75,19 +76,23 @@ const workflowSteps = [
     icon: Sparkles,
     surfaceClassName: "from-amber-100 via-white to-orange-50",
   },
-  {
-    id: "05",
-    eyebrow: "Share",
-    title: "Create a blog from your saved papers in Social Hub",
-    description: "Turn bookmarks into public notes.",
-    checkpoints: [
-      "Create a blog post in Social Hub.",
-      "Attach papers from your Bookmark Library.",
-      "Publish so others can read and like it.",
-    ],
-    icon: Library,
-    surfaceClassName: "from-rose-100 via-white to-orange-50",
-  },
+  ...(ENABLE_SOCIAL_HUB
+    ? [
+        {
+          id: "05",
+          eyebrow: "Share",
+          title: "Create a blog from your saved papers in Social Hub",
+          description: "Turn bookmarks into public notes.",
+          checkpoints: [
+            "Create a blog post in Social Hub.",
+            "Attach papers from your Bookmark Library.",
+            "Publish so others can read and like it.",
+          ],
+          icon: Library,
+          surfaceClassName: "from-rose-100 via-white to-orange-50",
+        },
+      ]
+    : []),
   {
     id: "06",
     eyebrow: "Monitor",
@@ -101,7 +106,7 @@ const workflowSteps = [
     icon: Rss,
     surfaceClassName: "from-slate-200 via-white to-slate-100",
   },
-];
+] as const;
 
 const routeMapCards = [
   {
@@ -160,14 +165,18 @@ const routeMapCards = [
     href: ROUTES.REPORT,
     icon: FileBarChart2,
   },
-  {
-    title: "Social Hub",
-    subtitle: "Public sharing",
-    description: "Write blogs and attach bookmarked papers.",
-    href: ROUTES.SOCIAL_HUB,
-    icon: BellRing,
-  },
-];
+  ...(ENABLE_SOCIAL_HUB
+    ? [
+        {
+          title: "Social Hub",
+          subtitle: "Public sharing",
+          description: "Write blogs and attach bookmarked papers.",
+          href: ROUTES.SOCIAL_HUB,
+          icon: BellRing,
+        },
+      ]
+    : []),
+] as const;
 
 const habitCards = [
   {
@@ -180,12 +189,16 @@ const habitCards = [
     description: "Best for discovery into monitoring.",
     icon: Tag,
   },
-  {
-    title: "Bookmark -> Social Hub -> like",
-    description: "Best for sharing notes with others.",
-    icon: BellRing,
-  },
-];
+  ...(ENABLE_SOCIAL_HUB
+    ? [
+        {
+          title: "Bookmark -> Social Hub -> like",
+          description: "Best for sharing notes with others.",
+          icon: BellRing,
+        },
+      ]
+    : []),
+] as const;
 
 export default function GuideHelpPage() {
   return (
@@ -372,7 +385,9 @@ export default function GuideHelpPage() {
                 {[
                   "Search broad first, then narrow with filters.",
                   "Open detail pages before bookmarking.",
-                  "Use Social Hub to turn saved papers into public notes.",
+                  ENABLE_SOCIAL_HUB
+                    ? "Use Social Hub to turn saved papers into public notes."
+                    : "Use bookmarks and reports to keep your research trail organized.",
                 ].map((tip) => (
                   <div
                     key={tip}
@@ -432,7 +447,9 @@ export default function GuideHelpPage() {
                 The strongest product loop is:
                 {" "}
                 <span className="font-semibold text-white">
-                  Search {"->"} Detail {"->"} Bookmark {"->"} Social Hub {"->"} Feed/Report
+                  {ENABLE_SOCIAL_HUB
+                    ? "Search -> Detail -> Bookmark -> Social Hub -> Feed/Report"
+                    : "Search -> Detail -> Bookmark -> Feed/Report"}
                 </span>
                 .
               </div>
