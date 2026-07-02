@@ -12,10 +12,10 @@ export default function RegisterReviewPanel() {
           Register now
         </p>
         <div className="mt-6">
-          <p className="font-search-title text-[clamp(3rem,6.5vw,6.8rem)] leading-[0.86] text-black/10">
+          <p className="font-title-page text-[clamp(3rem,6.5vw,6.8rem)] leading-[0.86] text-black/10">
             REGISTER
           </p>
-          <h1 className="mt-[-1.9rem] max-w-xl font-search-title text-[clamp(2.4rem,4.7vw,4.8rem)] leading-[0.88] text-black">
+          <h1 className="mt-[-1.9rem] max-w-xl font-title-page text-[clamp(2.4rem,4.7vw,4.8rem)] leading-[0.88] text-black">
             Build a sharper
             <br />
             <span className="text-[#14532D]">reading system.</span>

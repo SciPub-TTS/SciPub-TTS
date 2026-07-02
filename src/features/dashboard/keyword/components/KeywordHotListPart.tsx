@@ -1,7 +1,14 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type {
     KeywordsMetric,
 } from "@/features/dashboard/keyword/types/keyword.ts";
+
+const ADD_FEEDBACK_DURATION_MS = 2800;
+
+type AddFeedback = {
+    kind: "success" | "error";
+    message: string;
+};
 
 type KeywordHotListPartProps = {
     keywordList: KeywordsMetric[];
@@ -11,6 +18,21 @@ type KeywordHotListPartProps = {
 
 export function KeywordHotListPart({ keywordList, isLoading, onAdd }: KeywordHotListPartProps) {
     const [addedIds, setAddedIds] = useState<number[]>([]);
+    const [addFeedback, setAddFeedback] = useState<AddFeedback | null>(null);
+
+    useEffect(() => {
+        if (!addFeedback) {
+            return;
+        }
+
+        const timerId = window.setTimeout(() => {
+            setAddFeedback(null);
+        }, ADD_FEEDBACK_DURATION_MS);
+
+        return () => {
+            window.clearTimeout(timerId);
+        };
+    }, [addFeedback]);
 
     const handleAdd = async (keyword: KeywordsMetric) => {
         try {
@@ -18,11 +40,17 @@ export function KeywordHotListPart({ keywordList, isLoading, onAdd }: KeywordHot
                 await onAdd(keyword);
             }
 
-            // Only mark as added (hide the button) when onAdd succeeds
             setAddedIds((prev) => [...prev, keyword.id]);
+            setAddFeedback({
+                kind: "success",
+                message: "Add successfully",
+            });
         } catch (error) {
-            // On failure, button stays visible because addedIds is not updated
             console.error("Failed to add keyword:", error);
+            setAddFeedback({
+                kind: "error",
+                message: "Add failed",
+            });
         }
     };
 
@@ -30,6 +58,16 @@ export function KeywordHotListPart({ keywordList, isLoading, onAdd }: KeywordHot
         <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
             <h2 className="text-lg font-bold text-slate-900">Hot Keywords</h2>
             <p className="mb-3 text-sm text-slate-500">Ranked by works and field relevance</p>
+            {addFeedback ? (
+                <p
+                    className={[
+                        "mb-3 text-xs font-semibold",
+                        addFeedback.kind === "success" ? "text-[#166534]" : "text-[#B91C1C]",
+                    ].join(" ")}
+                >
+                    {addFeedback.message}
+                </p>
+            ) : null}
 
             {isLoading ? (
                 <p className="text-sm text-slate-400">Loading...</p>

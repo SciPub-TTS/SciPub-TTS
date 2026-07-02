@@ -5,7 +5,7 @@ export function FeedHeader() {
         <p className="text-xs font-extrabold uppercase tracking-[0.32em] text-[#14532D]">
           Monitor - Personalized Research Feed
         </p>
-        <h1 className="font-search-title mt-3 text-4xl font-normal leading-[1.05] text-[#14532D] md:text-5xl">
+        <h1 className="font-title-page mt-3 text-4xl font-normal leading-[1.05] text-[#14532D] md:text-5xl">
           Your Research Radar.
         </h1>
         <p className="font-subtext mt-3 max-w-3xl text-base leading-7 text-slate-500">

@@ -1,4 +1,4 @@
-import BreadcrumbBar from "../global/BreadcrumbBar";
+import BreadcrumbBar from "./BreadcrumbBar";
 
 export default function MainHeader() {
   return (

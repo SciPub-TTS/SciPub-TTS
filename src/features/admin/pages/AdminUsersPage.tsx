@@ -39,14 +39,14 @@ export default function AdminUsersPage() {
   } = useAdminUsersPage();
 
   return (
-    <section className="rounded-xl border border-slate-200 bg-white shadow-sm">
-      <div className="flex flex-col gap-4 border-b border-slate-100 p-5 xl:flex-row xl:items-center xl:justify-between">
+    <section className="rounded-xl border border-black bg-white shadow-sm">
+      <div className="flex flex-col gap-4 border-b border-black p-5 xl:flex-row xl:items-center xl:justify-between">
         <div>
-          <h2 className="text-lg font-bold text-slate-950">
+          <h2 className="font-title text-lg font-bold text-slate-950">
             User Account Management
           </h2>
           {accountStatusErrorMessage && (
-            <p className="mt-2 text-sm font-semibold text-red-600">
+            <p className="font-subtext mt-2 text-sm font-semibold text-red-600">
               {accountStatusErrorMessage}
             </p>
           )}
@@ -57,7 +57,7 @@ export default function AdminUsersPage() {
             <span className="sr-only">Search users</span>
             <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
             <input
-              className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-11 pr-4 text-sm font-medium text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-blue-300 focus:ring-4 focus:ring-blue-50"
+              className="font-subtext h-11 w-full rounded-xl border border-black bg-white pl-11 pr-4 text-sm font-medium text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-black focus:ring-4 focus:ring-blue-50"
               onChange={(event) =>
                 handleSearchQueryChange(event.target.value)
               }
@@ -70,7 +70,7 @@ export default function AdminUsersPage() {
           <label className="block">
             <span className="sr-only">Sort users</span>
             <select
-              className="h-11 rounded-xl border border-slate-200 bg-white px-3 text-sm font-bold text-slate-700 outline-none transition focus:border-blue-300 focus:ring-4 focus:ring-blue-50"
+              className="font-subtext h-11 rounded-xl border border-black bg-white px-3 text-sm font-bold text-slate-700 outline-none transition focus:border-black focus:ring-4 focus:ring-blue-50"
               onChange={(event) =>
                 handleSortChange(event.target.value as AdminUsersSort)
               }
@@ -89,7 +89,7 @@ export default function AdminUsersPage() {
       <div className="overflow-x-auto">
         <table className="w-full min-w-[840px] border-collapse text-left">
           <thead>
-            <tr className="bg-slate-50 text-xs font-bold text-slate-500">
+            <tr className="font-subtext bg-slate-50 text-xs font-bold text-slate-500">
               <th className="px-5 py-4">STT</th>
               <th className="px-5 py-4">Name</th>
               <th className="px-5 py-4">Email</th>
@@ -104,7 +104,7 @@ export default function AdminUsersPage() {
               filteredUsers.map((user, index) => (
                   <tr
                     key={user.id}
-                    className="cursor-pointer text-sm font-medium text-slate-700 transition hover:bg-blue-50/60 focus-within:bg-blue-50/60"
+                    className="font-subtext cursor-pointer text-sm font-medium text-slate-700 transition hover:bg-blue-50/60 focus-within:bg-blue-50/60"
                     onClick={() => navigate(routePaths.adminUserDetail(user.id))}
                     onKeyDown={(event) => {
                       if (event.key === "Enter" || event.key === " ") {
@@ -150,13 +150,13 @@ export default function AdminUsersPage() {
         </table>
 
         {isLoadingUsers && (
-          <div className="border-t border-slate-100 px-5 py-10 text-center text-sm font-medium text-slate-500">
+          <div className="font-subtext border-t border-black px-5 py-10 text-center text-sm font-medium text-slate-500">
             Loading users...
           </div>
         )}
 
         {!isLoadingUsers && listErrorMessage && (
-          <div className="border-t border-slate-100 px-5 py-10 text-center text-sm font-medium text-red-600">
+          <div className="font-subtext border-t border-black px-5 py-10 text-center text-sm font-medium text-red-600">
             {listErrorMessage}
           </div>
         )}
@@ -164,7 +164,7 @@ export default function AdminUsersPage() {
         {!isLoadingUsers &&
           !listErrorMessage &&
           filteredUsers.length === 0 && (
-            <div className="border-t border-slate-100 px-5 py-10 text-center text-sm font-medium text-slate-500">
+            <div className="font-subtext border-t border-black px-5 py-10 text-center text-sm font-medium text-slate-500">
               No users found.
             </div>
           )}

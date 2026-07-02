@@ -41,6 +41,8 @@ const variantStyles: Record<
 export function SafeActionDialog({
   cancelLabel = "Cancel",
   confirmLabel,
+  description,
+  eyebrow,
   isPending = false,
   onClose,
   onConfirm,
@@ -106,12 +108,22 @@ export function SafeActionDialog({
 
         <div className="relative z-10 flex items-start justify-between gap-4">
           <div className="min-w-0">
+            {eyebrow ? (
+              <p className="font-subtext text-[11px] font-bold uppercase tracking-[0.24em] text-black/45">
+                {eyebrow}
+              </p>
+            ) : null}
             <h2
               id="safe-action-dialog-title"
               className="font-title text-[1.8rem] leading-tight text-black"
             >
               {title}
             </h2>
+            {description ? (
+              <p className="font-subtext mt-3 max-w-md text-sm leading-6 text-black/65">
+                {description}
+              </p>
+            ) : null}
           </div>
 
           <button

@@ -80,7 +80,6 @@ export default function ResearchFeedPage() {
 
         <FeedSidebar
           authors={feedData.followedAuthors}
-          suggestedTopics={feedData.suggestedTopics}
           topics={feedData.followedTopics}
         />
       </div>

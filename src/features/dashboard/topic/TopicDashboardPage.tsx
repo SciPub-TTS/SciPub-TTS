@@ -51,7 +51,7 @@ export default function TopicDashboardPage() {
             <p className="text-xs font-extrabold uppercase tracking-[0.32em] text-[#14532D]">
                 Analyze - Topic + Keyword Trends
             </p>
-            <h1 className="font-search-title mt-3 text-4xl font-normal leading-[1.05] text-[#14532D] md:text-5xl xl:whitespace-nowrap">
+            <h1 className="font-title-page mt-3 text-4xl font-normal leading-[1.05] text-[#14532D] md:text-5xl xl:whitespace-nowrap">
                 Read the Research Pulse.
             </h1>
             <p className="font-subtext mt-3 max-w-4xl text-base leading-7 text-slate-500">

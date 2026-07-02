@@ -43,7 +43,7 @@ export function BookmarkTopBar({
         <p className="text-xs font-extrabold uppercase tracking-[0.32em] text-[#14532D]">
           Bookmark - Workspace
         </p>
-        <h2 className="font-search-title mt-3 text-4xl font-normal leading-[1.15] tracking-normal text-[#14532D] md:text-5xl">
+        <h2 className="font-title-page mt-3 text-4xl font-normal leading-[1.15] tracking-normal text-[#14532D] md:text-5xl">
           Search titles, build collections, and browse your saved works
           faster.
         </h2>
