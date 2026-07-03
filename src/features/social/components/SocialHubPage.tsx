@@ -396,6 +396,7 @@ function normalizeSocialPost(post: SocialPostSummary): SocialPostSummary {
     author: {
       id: authorId,
       fullName: authorName,
+      avatarUrl: post.author?.avatarUrl ?? null,
     },
     createdAt: post.createdAt || new Date().toISOString(),
     references: Array.isArray(post.references)
@@ -417,18 +418,20 @@ function normalizeSocialPost(post: SocialPostSummary): SocialPostSummary {
 }
 
 function SocialAvatar({
+  avatarUrl,
   fullName,
   seed,
   sizeClassName,
 }: {
+  avatarUrl?: string | null;
   fullName: string;
   seed: string;
   sizeClassName: string;
 }) {
-  const avatarUrl = buildSocialAvatarUrl(seed);
+  const resolvedAvatarUrl = avatarUrl?.trim() || buildSocialAvatarUrl(seed);
   const initials = getAuthorInitials(fullName) || "U";
 
-  if (!avatarUrl) {
+  if (!resolvedAvatarUrl) {
     return (
       <div
         className={`flex items-center justify-center rounded-full bg-[#14532D] text-sm font-semibold text-white ${sizeClassName}`}
@@ -441,7 +444,7 @@ function SocialAvatar({
   return (
     <div className={`overflow-hidden rounded-full bg-[#EEF6FF] ${sizeClassName}`}>
       <img
-        src={avatarUrl}
+        src={resolvedAvatarUrl}
         alt={fullName}
         className="h-full w-full object-cover"
         onError={(event) => {
@@ -791,6 +794,7 @@ function PostCard({
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-center gap-3">
           <SocialAvatar
+            avatarUrl={post.author.avatarUrl}
             fullName={post.author.fullName}
             seed={post.author.id}
             sizeClassName="h-12 w-12"
@@ -1389,6 +1393,7 @@ export default function SocialHubPage() {
                   <div className="mt-6 flex items-start justify-between gap-4">
                     <div className="flex items-center gap-3">
                       <SocialAvatar
+                        avatarUrl={featuredPost.author.avatarUrl}
                         fullName={featuredPost.author.fullName}
                         seed={featuredPost.author.id}
                         sizeClassName="h-12 w-12"
@@ -1526,6 +1531,7 @@ export default function SocialHubPage() {
                       </div>
 
                       <SocialAvatar
+                        avatarUrl={entry.author.avatarUrl}
                         fullName={entry.author.fullName}
                         seed={entry.author.id}
                         sizeClassName="h-11 w-11 shrink-0"
