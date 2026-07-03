@@ -98,6 +98,18 @@ function patchCollectionCounts(
   });
 }
 
+function patchCollectionRemovalOnBookmarks(
+  cachedData: InfiniteData<BookmarkPageResponse> | undefined,
+  collectionId: string,
+) {
+  return updateInfiniteBookmarkPages(cachedData, (bookmark) => ({
+    ...bookmark,
+    collections: bookmark.collections.filter(
+      (collection) => collection.id !== collectionId,
+    ),
+  }));
+}
+
 export function useBookmarks() {
   const queryClient = useQueryClient();
   const [filters, setFilters] = useState<BookmarkFilters>(
@@ -216,6 +228,74 @@ export function useBookmarks() {
           "Cannot create collection right now.",
         ),
       );
+    },
+    onSuccess: () => {
+      invalidateBookmarkLibrary();
+    },
+  });
+
+  const deleteCollectionMutation = useMutation<
+    Awaited<ReturnType<typeof bookmarkApi.deleteCollection>>,
+    Error,
+    string,
+    BookmarkMutationContext
+  >({
+    mutationFn: (collectionId) => bookmarkApi.deleteCollection(collectionId),
+    onError: (mutationError, collectionId, context) => {
+      if (context?.previousBookmarks) {
+        queryClient.setQueryData(bookmarkListQueryKey, context.previousBookmarks);
+      }
+
+      if (context?.previousCollections) {
+        queryClient.setQueryData(
+          bookmarkQueryKeys.collections(),
+          context.previousCollections,
+        );
+      }
+
+      setError(
+        getMutationErrorMessage(
+          mutationError,
+          `Cannot delete collection ${collectionId}. Please try again.`,
+        ),
+      );
+    },
+    onMutate: async (collectionId) => {
+      setError(null);
+      await Promise.all([
+        queryClient.cancelQueries({ queryKey: bookmarkListQueryKey }),
+        queryClient.cancelQueries({ queryKey: bookmarkQueryKeys.collections() }),
+      ]);
+
+      const previousBookmarks = queryClient.getQueryData<
+        InfiniteData<BookmarkPageResponse>
+      >(bookmarkListQueryKey);
+      const previousCollections = queryClient.getQueryData<
+        BookmarkCollectionResponse[]
+      >(bookmarkQueryKeys.collections());
+
+      queryClient.setQueryData<InfiniteData<BookmarkPageResponse> | undefined>(
+        bookmarkListQueryKey,
+        (cachedData) => patchCollectionRemovalOnBookmarks(cachedData, collectionId),
+      );
+
+      queryClient.setQueryData<BookmarkCollectionResponse[] | undefined>(
+        bookmarkQueryKeys.collections(),
+        (collections) =>
+          collections?.filter((collection) => collection.id !== collectionId),
+      );
+
+      if (filters.collectionId === collectionId) {
+        setFilters((previousFilters) => ({
+          ...previousFilters,
+          collectionId: null,
+        }));
+      }
+
+      return {
+        previousBookmarks,
+        previousCollections,
+      };
     },
     onSuccess: () => {
       invalidateBookmarkLibrary();
@@ -393,6 +473,7 @@ export function useBookmarks() {
     if (
       !deleteBookmarkMutation.isError &&
       !createCollectionMutation.isError &&
+      !deleteCollectionMutation.isError &&
       !addToCollectionMutation.isError &&
       !removeFromCollectionMutation.isError
     ) {
@@ -403,6 +484,7 @@ export function useBookmarks() {
     bookmarkCollectionsQuery.error,
     bookmarkListQuery.error,
     createCollectionMutation.isError,
+    deleteCollectionMutation.isError,
     deleteBookmarkMutation.isError,
     removeFromCollectionMutation.isError,
   ]);
@@ -460,6 +542,10 @@ export function useBookmarks() {
     });
   }
 
+  async function deleteCollection(collectionId: string) {
+    await deleteCollectionMutation.mutateAsync(collectionId);
+  }
+
   const reload = useCallback(() => {
     void queryClient.invalidateQueries({ queryKey: bookmarkListQueryKey });
   }, [bookmarkListQueryKey, queryClient]);
@@ -468,6 +554,7 @@ export function useBookmarks() {
     addBookmarkToCollection,
     collections: bookmarkCollectionsQuery.data ?? [],
     createCollection,
+    deleteCollection,
     deleteBookmark,
     error,
     filterOptions: bookmarkFilterOptionsQuery.data ?? null,
@@ -475,9 +562,11 @@ export function useBookmarks() {
     hasNext,
     isCollectionMutating:
       createCollectionMutation.isPending ||
+      deleteCollectionMutation.isPending ||
       addToCollectionMutation.isPending ||
       removeFromCollectionMutation.isPending,
     isCreatingCollection: createCollectionMutation.isPending,
+    isDeletingCollection: deleteCollectionMutation.isPending,
     isLoadingMore,
     isRefreshing,
     items,

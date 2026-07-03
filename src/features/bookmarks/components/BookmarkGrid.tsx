@@ -25,7 +25,6 @@ interface BookmarkGridProps {
   ) => Promise<void>;
   searchQuery: string;
   selectedCollectionId: string | null;
-  selectedCollectionName: string | null;
 }
 
 function SkeletonCard() {
@@ -68,7 +67,6 @@ export function BookmarkGrid({
   onRemoveFromCollection,
   searchQuery,
   selectedCollectionId,
-  selectedCollectionName,
 }: BookmarkGridProps) {
   const sentinelRef = useInfiniteScroll(
     onLoadMore,
@@ -122,18 +120,16 @@ export function BookmarkGrid({
             />
           </svg>
         </div>
-        <h3 className="font-title text-lg text-[#00AEEF]">
+        <h3 className="font-title text-lg text-black">
           {hasCollectionFilter || hasSearchQuery
             ? "No works matched this view"
             : "No bookmarks yet"}
         </h3>
-        <p className="font-subtext max-w-sm text-sm leading-relaxed text-black/55">
-          {hasCollectionFilter || hasSearchQuery
-            ? `Try another title search or switch collections${
-                selectedCollectionName ? ` from ${selectedCollectionName}` : ""
-              }.`
-            : "Save papers while reading to build a colorful, searchable personal research library."}
-        </p>
+        {hasCollectionFilter || hasSearchQuery ? null : (
+          <p className="font-subtext max-w-sm text-sm leading-relaxed text-black/55">
+            Save papers while reading to build a colorful, searchable personal research library.
+          </p>
+        )}
       </div>
     );
   }

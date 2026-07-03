@@ -17,6 +17,7 @@ import { useEntityDetailNavigation } from "../hooks/useEntityDetailNavigation";
 import { useEntityDetailPageState } from "../hooks/useEntityDetailPageState";
 import type { TopicDetailData } from "../types";
 import {
+  type DetailClickHandler,
   type DetailHrefBuilder,
   EntityDetailHero,
   EntityWorksSection,
@@ -26,7 +27,7 @@ import {
 } from "./EntityDetailShared";
 
 export default function TopicDetailPage() {
-  const { buildDetailHref } = useEntityDetailNavigation();
+  const { buildDetailHref, handleDetailClick } = useEntityDetailNavigation();
   const { detail, errorMessage, isLoading } =
     useEntityDetailPageState("topics");
 
@@ -44,8 +45,15 @@ export default function TopicDetailPage() {
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.65fr)_minmax(320px,1fr)]">
         <div className="space-y-6">
-          <TopicOverviewSection detail={detail} buildDetailHref={buildDetailHref} />
-          <EntityWorksSection detail={detail} buildDetailHref={buildDetailHref} />
+          <TopicOverviewSection
+            detail={detail}
+            buildDetailHref={buildDetailHref}
+            handleDetailClick={handleDetailClick}
+          />
+          <EntityWorksSection
+            detail={detail}
+            buildDetailHref={buildDetailHref}
+          />
         </div>
 
         <div className="space-y-6">
@@ -54,6 +62,7 @@ export default function TopicDetailPage() {
           <TopicTypeBreakdownSection
             detail={detail}
             buildDetailHref={buildDetailHref}
+            handleDetailClick={handleDetailClick}
           />
         </div>
       </div>
@@ -64,8 +73,10 @@ export default function TopicDetailPage() {
 function TopicOverviewSection({
   detail,
   buildDetailHref,
+  handleDetailClick,
 }: {
   buildDetailHref: DetailHrefBuilder;
+  handleDetailClick: DetailClickHandler;
   detail: TopicDetailData;
 }) {
   return (
@@ -88,6 +99,9 @@ function TopicOverviewSection({
               <Link
                 key={topic.id}
                 to={buildDetailHref("topics", topic.id)}
+                onClick={() => {
+                  handleDetailClick("topics", topic.id);
+                }}
                 className="inline-flex items-center gap-2 rounded-full border border-[#00A859] bg-[#ECFFF5] px-3.5 py-1.5 text-xs font-semibold text-[#007A41] transition hover:-translate-y-0.5"
               >
                 <Tags className="h-3.5 w-3.5" />
@@ -145,8 +159,10 @@ function TopicMetricsSection({ detail }: { detail: TopicDetailData }) {
 function TopicTypeBreakdownSection({
   detail,
   buildDetailHref,
+  handleDetailClick,
 }: {
   buildDetailHref: DetailHrefBuilder;
+  handleDetailClick: DetailClickHandler;
   detail: TopicDetailData;
 }) {
   if (detail.typeBreakdown.length === 0) {
@@ -193,6 +209,7 @@ function TopicTypeBreakdownSection({
           <div className="mt-3">
             <RelatedTopicList
               buildDetailHref={buildDetailHref}
+              handleDetailClick={handleDetailClick}
               items={detail.siblingTopics}
               emptyLabel="No sibling topics are available."
             />

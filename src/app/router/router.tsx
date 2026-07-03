@@ -18,8 +18,7 @@ import {
 } from "@/features/auth/constants/roles";
 import {
   buildDetailTrailUrl,
-  parseDetailOrigin,
-  parseDetailTrail,
+  getDetailNavigationState,
   type DetailTrailEntityType,
 } from "@/features/detail/detailTrail";
 import { markSearchPageRestorePending } from "@/features/search/utils/navigationState";
@@ -113,8 +112,11 @@ function getDetailBreadcrumb(
   entityType: DetailTrailEntityType,
   entityId: string,
 ): AppRouteHandle["breadcrumb"] {
-  const detailTrail = parseDetailTrail(location.search);
-  const detailOrigin = parseDetailOrigin(location.search);
+  const { origin: detailOrigin, trail: detailTrail } = getDetailNavigationState(
+    location.search,
+    entityType,
+    entityId,
+  );
   const trailItems = detailTrail.map((trailEntry, index) => ({
     label: getDetailBreadcrumbLabel(trailEntry.entityType, trailEntry.entityId),
     to: buildDetailTrailUrl(

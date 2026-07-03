@@ -3,6 +3,7 @@ import { Link, useLocation, useParams } from "react-router-dom";
 
 import {
   buildNextDetailUrl,
+  persistNextDetailNavigation,
 } from "@/features/detail/detailTrail";
 
 import type { PaperDetailWorkLink } from "../../types";
@@ -77,6 +78,15 @@ function WorkReferenceList(props: WorkReferenceListProps) {
               {items.map((item) => (
                 <Link
                   key={`${title}-${item.id}`}
+                  onClick={() => {
+                    persistNextDetailNavigation(
+                      location.search,
+                      "works",
+                      paperId,
+                      "works",
+                      item.id,
+                    );
+                  }}
                   to={buildNextDetailUrl(
                     location.search,
                     "works",

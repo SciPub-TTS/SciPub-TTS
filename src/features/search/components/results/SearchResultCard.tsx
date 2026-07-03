@@ -11,7 +11,10 @@ import {
 import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
 
-import { routePaths } from "@/app/router";
+import {
+  buildDetailTrailUrl,
+  persistRootDetailNavigation,
+} from "@/features/detail/detailTrail";
 import { useEntityFollow } from "@/features/follows/hooks/useEntityFollow";
 import type { FollowTargetType } from "@/features/follows/types/follow.types";
 import { markSearchPageRestorePending } from "@/features/search/utils/navigationState";
@@ -43,7 +46,10 @@ export function SearchResultCard({
     case "authors":
       return (
         <EntityCardLayout
-          detailHref={routePaths.authorDetail(item.id)}
+          detailHref={buildDetailTrailUrl("authors", item.id, [], "search")}
+          onDetailClick={() => {
+            persistRootDetailNavigation("authors", item.id, "search");
+          }}
           followTargetId={item.id}
           followTargetType="AUTHOR"
           heroIcon={<User className="h-5 w-5" />}
@@ -65,7 +71,10 @@ export function SearchResultCard({
     case "topics":
       return (
         <EntityCardLayout
-          detailHref={routePaths.topicDetail(item.id)}
+          detailHref={buildDetailTrailUrl("topics", item.id, [], "search")}
+          onDetailClick={() => {
+            persistRootDetailNavigation("topics", item.id, "search");
+          }}
           followTargetId={item.id}
           followTargetType="TOPIC"
           heroIcon={<Layers3 className="h-5 w-5" />}
@@ -93,6 +102,7 @@ export function SearchResultCard({
 
 type EntityCardLayoutProps = {
   detailHref: string;
+  onDetailClick?: () => void;
   followTargetId?: string;
   followTargetType?: FollowTargetType;
   heroIcon: ReactNode;
@@ -107,6 +117,7 @@ type EntityCardLayoutProps = {
 
 function EntityCardLayout({
   detailHref,
+  onDetailClick,
   followTargetId,
   followTargetType,
   heroIcon,
@@ -186,7 +197,10 @@ function EntityCardLayout({
 
           <Link
             to={detailHref}
-            onClick={markSearchPageRestorePending}
+            onClick={() => {
+              onDetailClick?.();
+              markSearchPageRestorePending();
+            }}
             className="inline-flex items-center gap-2 rounded-xl border border-black bg-white px-3.5 py-2 text-xs font-semibold text-black transition hover:border-[#14532D] hover:bg-[#14532D] hover:text-white"
           >
             <Eye className="h-4 w-4" />

@@ -23,7 +23,7 @@ import {
 } from "./EntityDetailShared";
 
 export default function AuthorDetailPage() {
-  const { buildDetailHref } = useEntityDetailNavigation();
+  const { buildDetailHref, handleDetailClick } = useEntityDetailNavigation();
   const { detail, errorMessage, isLoading } =
     useEntityDetailPageState("authors");
 
@@ -42,7 +42,10 @@ export default function AuthorDetailPage() {
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.65fr)_minmax(320px,1fr)]">
         <div className="space-y-6">
           <AuthorOverviewSection detail={detail} />
-          <EntityWorksSection detail={detail} buildDetailHref={buildDetailHref} />
+          <EntityWorksSection
+            detail={detail}
+            buildDetailHref={buildDetailHref}
+          />
         </div>
 
         <div className="space-y-6">
@@ -51,6 +54,7 @@ export default function AuthorDetailPage() {
           <AuthorTopicHighlightsSection
             detail={detail}
             buildDetailHref={buildDetailHref}
+            handleDetailClick={handleDetailClick}
           />
         </div>
       </div>
@@ -141,11 +145,16 @@ function AuthorMetricsSection({ detail }: { detail: AuthorDetailData }) {
 function AuthorTopicHighlightsSection({
   detail,
   buildDetailHref,
+  handleDetailClick,
 }: {
   buildDetailHref: (
     entityType: "authors" | "topics" | "works",
     entityId: string,
   ) => string;
+  handleDetailClick: (
+    entityType: "authors" | "topics" | "works",
+    entityId: string,
+  ) => void;
   detail: AuthorDetailData;
 }) {
   if (detail.topicHighlights.length === 0) {
@@ -159,6 +168,7 @@ function AuthorTopicHighlightsSection({
     >
       <RelatedTopicList
         buildDetailHref={buildDetailHref}
+        handleDetailClick={handleDetailClick}
         items={detail.topicHighlights}
         emptyLabel="No topics are available for this author."
       />
