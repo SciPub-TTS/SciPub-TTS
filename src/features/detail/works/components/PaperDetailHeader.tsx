@@ -5,6 +5,8 @@ import { useWorkBookmark } from "@/features/bookmarks/hooks/useWorkBookmark";
 import {
   buildNextDetailUrl,
   getDetailContextFromRouteParams,
+  persistNextDetailNavigation,
+  persistRootDetailNavigation,
 } from "@/features/detail/detailTrail";
 import {
   Bookmark,
@@ -54,6 +56,24 @@ export default function PaperDetailHeader(props: PaperDetailHeaderProps) {
           badge.entityType === "topic" && badge.entityId ? (
             <Link
               key={`${badge.entityType}-${badge.entityId}`}
+              onClick={() => {
+                if (!badge.entityId) {
+                  return;
+                }
+
+                if (currentDetailContext) {
+                  persistNextDetailNavigation(
+                    location.search,
+                    currentDetailContext.entityType,
+                    currentDetailContext.entityId,
+                    "topics",
+                    badge.entityId,
+                  );
+                  return;
+                }
+
+                persistRootDetailNavigation("topics", badge.entityId);
+              }}
               to={
                 currentDetailContext
                   ? buildNextDetailUrl(

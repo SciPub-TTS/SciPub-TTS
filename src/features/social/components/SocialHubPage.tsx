@@ -22,11 +22,15 @@ import {
 } from "lucide-react";
 
 import { SafeActionDialog } from "@/layout/global/SafeActionDialog";
+import { DICEBEAR_ADVENTURER_AVATAR_URL } from "@/lib/avatar";
 import { useAuthSession } from "@/features/auth/hooks/useAuthSession";
 import { getApiErrorMessage } from "@/features/auth/utils/getApiErrorMessage";
 import { bookmarkApi } from "@/features/bookmarks/services/bookmark.api";
 import type { BookmarkResponse } from "@/features/bookmarks/types/bookmark.types";
-import { buildDetailTrailUrl } from "@/features/detail/detailTrail";
+import {
+  buildDetailTrailUrl,
+  persistRootDetailNavigation,
+} from "@/features/detail/detailTrail";
 import { socialApi } from "@/features/social/services/social.api";
 import {
   decodeJwtSubject,
@@ -104,8 +108,6 @@ const tabs: { label: string; value: FeedTab }[] = [
   { label: "My Posts", value: "my-posts" },
 ];
 
-const DICEBEAR_ADVENTURER_BASE_URL = "https://api.dicebear.com/9.x/adventurer/svg";
-
 const initialBlogForm: BlogFormState = {
   title: "",
   body: "",
@@ -135,7 +137,7 @@ function buildSocialAvatarUrl(seed?: string | null) {
     return null;
   }
 
-  return `${DICEBEAR_ADVENTURER_BASE_URL}?seed=${encodeURIComponent(normalizedSeed)}`;
+  return `${DICEBEAR_ADVENTURER_AVATAR_URL}?seed=${encodeURIComponent(normalizedSeed)}`;
 }
 
 function getDisplayTime(createdAt: string, updatedAt?: string | null) {
@@ -258,6 +260,9 @@ function SocialReferenceCard({
             topicId ? (
               <Link
                 to={buildSocialDetailHref("topics", topicId)}
+                onClick={() => {
+                  persistRootDetailNavigation("topics", topicId, "social-hub");
+                }}
                 className={topicBadgeClassName}
               >
                 {topicLabel}
@@ -276,6 +281,9 @@ function SocialReferenceCard({
       <p className={`${hasMetadataBadges ? "mt-2" : ""} ${titleClassName}`}>
         <Link
           to={buildSocialDetailHref("works", reference.openalexId)}
+          onClick={() => {
+            persistRootDetailNavigation("works", reference.openalexId, "social-hub");
+          }}
           className="transition hover:text-[#0EA5E9] hover:underline"
         >
           {workTitle}
@@ -287,12 +295,21 @@ function SocialReferenceCard({
           ? visibleAuthors.map((author, index) => (
               <span key={`${reference.id}-author-${author.name}-${index}`}>
                 {author.id ? (
-                  <Link
-                    to={buildSocialDetailHref("authors", author.id)}
-                    className="transition hover:text-[#92400E] hover:underline"
-                  >
-                    {author.name}
-                  </Link>
+                  (() => {
+                    const authorId = author.id;
+
+                    return (
+                      <Link
+                        to={buildSocialDetailHref("authors", authorId)}
+                        onClick={() => {
+                          persistRootDetailNavigation("authors", authorId, "social-hub");
+                        }}
+                        className="transition hover:text-[#92400E] hover:underline"
+                      >
+                        {author.name}
+                      </Link>
+                    );
+                  })()
                 ) : (
                   <span className="text-inherit">
                     {author.name}

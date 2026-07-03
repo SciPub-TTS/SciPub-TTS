@@ -93,6 +93,12 @@ export const bookmarkApi = {
       .then((res) => res.data);
   },
 
+  deleteCollection(collectionId: string) {
+    return http
+      .delete<ApiResponse<null>>(`${BASE}/collections/${collectionId}`)
+      .then((res) => res.data);
+  },
+
   addToCollection(
     collectionId: string,
     payload: UpdateBookmarkCollectionItemsRequest,

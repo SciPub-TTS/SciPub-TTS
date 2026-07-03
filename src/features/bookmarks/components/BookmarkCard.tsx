@@ -20,7 +20,10 @@ import {
   formatCitationCount,
   formatSavedAt,
 } from "@/features/bookmarks/utils/bookmark.utils";
-import { buildDetailTrailUrl } from "@/features/detail/detailTrail";
+import {
+  buildDetailTrailUrl,
+  persistRootDetailNavigation,
+} from "@/features/detail/detailTrail";
 
 interface BookmarkCardProps {
   availableCollections: BookmarkCollectionResponse[];
@@ -265,6 +268,9 @@ export function BookmarkCard({
         <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto_auto] items-center gap-2">
           <Link
             to={detailPath}
+            onClick={() => {
+              persistRootDetailNavigation("works", bookmark.openAlexId, "bookmarks");
+            }}
             className="inline-flex h-10 min-w-0 items-center justify-center gap-2 whitespace-nowrap rounded-lg border border-black bg-white px-3.5 text-[13px] font-semibold text-black transition hover:border-[#14532D] hover:bg-[#14532D] hover:text-white"
             title="View detail"
           >

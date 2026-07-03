@@ -6,18 +6,21 @@ import { BookmarkPageHeader } from "@/features/bookmarks/components/BookmarkPage
 import { BookmarkTopBar } from "@/features/bookmarks/components/BookmarkTopBar";
 import { CreateCollectionModal } from "@/features/bookmarks/components/CreateCollectionModal";
 import { useBookmarks } from "@/features/bookmarks/hooks/UseBookmarks";
+import type { BookmarkCollectionResponse } from "@/features/bookmarks/types/bookmark.types";
 
 export default function BookmarkLibraryPage() {
   const {
     addBookmarkToCollection,
     collections,
     createCollection,
+    deleteCollection,
     deleteBookmark,
     error,
     filters,
     hasNext,
     isCollectionMutating,
     isCreatingCollection,
+    isDeletingCollection,
     isLoadingMore,
     isRefreshing,
     items,
@@ -31,6 +34,8 @@ export default function BookmarkLibraryPage() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [collectionName, setCollectionName] = useState("");
   const [collectionError, setCollectionError] = useState<string | null>(null);
+  const [collectionPendingDelete, setCollectionPendingDelete] =
+    useState<BookmarkCollectionResponse | null>(null);
   const [deleteDialogBookmarkId, setDeleteDialogBookmarkId] = useState<
     string | null
   >(null);
@@ -41,13 +46,6 @@ export default function BookmarkLibraryPage() {
   useEffect(() => {
     setSearchValue(filters.keyword);
   }, [filters.keyword]);
-
-  const selectedCollection = useMemo(
-    () =>
-      collections.find((collection) => collection.id === filters.collectionId) ??
-      null,
-    [collections, filters.collectionId],
-  );
 
   const bookmarkPendingDelete = useMemo(
     () =>
@@ -111,6 +109,20 @@ export default function BookmarkLibraryPage() {
     }
   }
 
+  async function handleConfirmDeleteCollection() {
+    if (!collectionPendingDelete || isDeletingCollection) {
+      return;
+    }
+
+    try {
+      await deleteCollection(collectionPendingDelete.id);
+    } catch {
+      // The hook already exposes the mutation error to the page state.
+    } finally {
+      setCollectionPendingDelete(null);
+    }
+  }
+
   return (
     <>
       <div className="min-h-screen bg-white">
@@ -127,6 +139,13 @@ export default function BookmarkLibraryPage() {
               setCollectionError(null);
               setCollectionName("");
               setIsCreateModalOpen(true);
+            }}
+            onDeleteCollectionClick={(collection) => {
+              if (isDeletingCollection) {
+                return;
+              }
+
+              setCollectionPendingDelete(collection);
             }}
             onSearchChange={setSearchValue}
             onSearchClear={handleSearchClear}
@@ -151,7 +170,6 @@ export default function BookmarkLibraryPage() {
             onRemoveFromCollection={removeBookmarkFromCollection}
             searchQuery={filters.keyword}
             selectedCollectionId={filters.collectionId}
-            selectedCollectionName={selectedCollection?.name ?? null}
           />
         </div>
 
@@ -175,6 +193,23 @@ export default function BookmarkLibraryPage() {
           }}
         />
       </div>
+
+      <SafeActionDialog
+        confirmLabel="Delete collection"
+        isPending={isDeletingCollection}
+        onClose={() => {
+          if (!isDeletingCollection) {
+            setCollectionPendingDelete(null);
+          }
+        }}
+        onConfirm={() => {
+          void handleConfirmDeleteCollection();
+        }}
+        open={collectionPendingDelete !== null}
+        pendingLabel="Deleting collection..."
+        title="Delete this collection?"
+        variant="danger"
+      />
 
       <SafeActionDialog
         confirmLabel="Delete bookmark"

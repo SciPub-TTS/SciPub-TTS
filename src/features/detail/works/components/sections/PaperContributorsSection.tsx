@@ -5,6 +5,8 @@ import { routePaths } from "@/app/router";
 import {
   buildNextDetailUrl,
   getDetailContextFromRouteParams,
+  persistNextDetailNavigation,
+  persistRootDetailNavigation,
 } from "@/features/detail/detailTrail";
 import type {
   PaperDetailAuthor,
@@ -95,22 +97,42 @@ function AuthorList(props: AuthorListProps) {
           className="flex flex-wrap items-center gap-x-2 gap-y-2 text-base text-black"
         >
           {author.entityId ? (
-            <Link
-              to={
-                currentDetailContext
-                  ? buildNextDetailUrl(
-                      location.search,
-                      currentDetailContext.entityType,
-                      currentDetailContext.entityId,
-                      "authors",
-                      author.entityId,
-                    )
-                  : routePaths.authorDetail(author.entityId)
-              }
-              className="text-sm font-semibold text-blue-700 transition hover:text-blue-900 hover:underline"
-            >
-              {author.name}
-            </Link>
+            (() => {
+              const authorEntityId = author.entityId;
+
+              return (
+                <Link
+                  onClick={() => {
+                    if (currentDetailContext) {
+                      persistNextDetailNavigation(
+                        location.search,
+                        currentDetailContext.entityType,
+                        currentDetailContext.entityId,
+                        "authors",
+                        authorEntityId,
+                      );
+                      return;
+                    }
+
+                    persistRootDetailNavigation("authors", authorEntityId);
+                  }}
+                  to={
+                    currentDetailContext
+                      ? buildNextDetailUrl(
+                          location.search,
+                          currentDetailContext.entityType,
+                          currentDetailContext.entityId,
+                          "authors",
+                          authorEntityId,
+                        )
+                      : routePaths.authorDetail(authorEntityId)
+                  }
+                  className="text-sm font-semibold text-blue-700 transition hover:text-blue-900 hover:underline"
+                >
+                  {author.name}
+                </Link>
+              );
+            })()
           ) : (
             <span className="text-sm font-semibold text-black">{author.name}</span>
           )}

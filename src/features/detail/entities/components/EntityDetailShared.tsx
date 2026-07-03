@@ -32,6 +32,10 @@ export type DetailHrefBuilder = (
   entityType: DetailTrailEntityType,
   entityId: string,
 ) => string;
+export type DetailClickHandler = (
+  entityType: DetailTrailEntityType,
+  entityId: string,
+) => void;
 
 type YearChartTooltipProps = {
   active?: boolean;
@@ -223,10 +227,12 @@ export function EntityYearChartSection({ detail }: { detail: EntityDetailData })
 
 export function RelatedTopicList({
   buildDetailHref,
+  handleDetailClick,
   items,
   emptyLabel,
 }: {
   buildDetailHref: DetailHrefBuilder;
+  handleDetailClick: DetailClickHandler;
   items: EntityDetailRelatedItem[];
   emptyLabel: string;
 }) {
@@ -240,6 +246,9 @@ export function RelatedTopicList({
         <Link
           key={item.id}
           to={buildDetailHref("topics", item.id)}
+          onClick={() => {
+            handleDetailClick("topics", item.id);
+          }}
           className="inline-flex items-center gap-2 rounded-full border border-[#00A859] bg-[#ECFFF5] px-3.5 py-1.5 text-xs font-semibold text-[#007A41] transition hover:-translate-y-0.5"
         >
           <Tags className="h-3.5 w-3.5" />
