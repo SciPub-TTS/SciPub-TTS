@@ -4,7 +4,6 @@ import {
     Bar,
     BarChart,
     CartesianGrid,
-    LabelList,
     Legend, ResponsiveContainer, Scatter, ScatterChart,
     Tooltip, type TooltipContentProps,
     XAxis,
@@ -461,7 +460,7 @@ function MomentumPart({
 
                         <YAxis />
 
-                        <Tooltip />
+                        <Tooltip content={<CustomTooltip />} />
 
                         <Bar
                             dataKey="pastAverage"
@@ -478,15 +477,6 @@ function MomentumPart({
                             barSize={18}
                             radius={[5, 5, 0, 0]}
                         >
-                            <LabelList
-                                dataKey="growthPercentage"
-                                position="top"
-                                formatter={(value) =>
-                                    Number(value) > 0
-                                        ? `+${value}%`
-                                        : `${value}%`
-                                }
-                            />
                         </Bar>
 
                         <Legend align="right" />
@@ -496,3 +486,53 @@ function MomentumPart({
         </div>
     );
 }
+
+type MomentumDataPoint = {
+    name: string;
+    currentAverage: number;
+    pastAverage: number;
+    growthPercentage: number;
+};
+
+interface CustomTooltipProps {
+    active?: boolean;
+    payload?: Array<{
+        payload: MomentumDataPoint;
+        [key: string]: any;
+    }>;
+}
+
+const CustomTooltip = ({ active, payload }: CustomTooltipProps) => {
+    if (active && payload && payload.length) {
+        const data = payload[0].payload;
+        const growth = Number(data.growthPercentage);
+        const formattedGrowth = growth > 0 ? `+${growth}%` : `${growth}%`;
+
+        return (
+            <div style={{
+                backgroundColor: '#fff',
+                padding: '10px 15px',
+                border: '1px solid #ccc',
+                borderRadius: '4px',
+                boxShadow: '0px 2px 8px rgba(0,0,0,0.15)'
+            }}>
+                <p style={{ margin: '0 0 5px', fontWeight: 'bold', fontSize: '14px', color: '#333' }}>
+                    {data.name}
+                </p>
+
+                <p style={{ margin: '0 0 5px', fontSize: '13px', color: '#16A34A' }}>
+                    Current Average : {data.currentAverage}
+                </p>
+
+                <p style={{ margin: '0 0 5px', fontSize: '13px', color: '#2563EB' }}>
+                    Past Average : {data.pastAverage}
+                </p>
+
+                <p style={{ margin: '5px 0 0', fontSize: '13px', fontWeight: '600', color: '#4B5563', borderTop: '1px solid #eee', paddingTop: '5px' }}>
+                    Growth : {formattedGrowth}
+                </p>
+            </div>
+        );
+    }
+    return null;
+};
