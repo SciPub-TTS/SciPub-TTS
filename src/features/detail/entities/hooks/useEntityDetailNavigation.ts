@@ -4,6 +4,8 @@ import { routePaths } from "@/app/router";
 import {
   buildNextDetailUrl,
   getDetailContextFromRouteParams,
+  persistNextDetailNavigation,
+  persistRootDetailNavigation,
   type DetailTrailEntityType,
 } from "@/features/detail/detailTrail";
 
@@ -45,8 +47,26 @@ export function useEntityDetailNavigation() {
     );
   }
 
+  function handleDetailClick(
+    targetEntityType: DetailTrailEntityType,
+    targetEntityId: string,
+  ) {
+    if (!currentDetailContext) {
+      persistRootDetailNavigation(targetEntityType, targetEntityId);
+      return;
+    }
+
+    persistNextDetailNavigation(
+      location.search,
+      currentDetailContext.entityType,
+      currentDetailContext.entityId,
+      targetEntityType,
+      targetEntityId,
+    );
+  }
+
   return {
     buildDetailHref,
+    handleDetailClick,
   };
 }
-

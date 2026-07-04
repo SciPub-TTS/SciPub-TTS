@@ -1,6 +1,7 @@
 export interface SocialAuthorInfo {
   id: string;
   fullName: string;
+  avatarUrl?: string | null;
 }
 
 export interface SocialPostReferenceInfo {

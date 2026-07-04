@@ -18,13 +18,16 @@ import { SafeActionDialog } from "@/layout/global/SafeActionDialog";
 import { useAuthSession } from "@/features/auth/hooks/useAuthSession";
 import { submitLogout } from "@/features/auth/services/authFlows";
 import { parseDetailOrigin } from "@/features/detail/detailTrail";
+import { ENABLE_SOCIAL_HUB } from "@/features/social/socialFeature";
 
 const workspaceMenuItems = [
   { label: "Discovery", path: ROUTES.SEARCH, icon: Search },
   { label: "Trending", path: ROUTES.TRENDING_TOPIC, icon: LayoutDashboard },
   { label: "Bookmarks", path: ROUTES.BOOKMARKS, icon: Bookmark },
   { label: "New Feed", path: ROUTES.FEED, icon: Rss },
-  { label: "Social Hub", path: ROUTES.SOCIAL_HUB, icon: MessagesSquare },
+  ...(ENABLE_SOCIAL_HUB
+    ? [{ label: "Social Hub", path: ROUTES.SOCIAL_HUB, icon: MessagesSquare }]
+    : []),
   { label: "Report", path: ROUTES.REPORT, icon: FileText },
   { label: "Guide & Help", path: ROUTES.GUIDE, icon: CircleHelp },
 ];

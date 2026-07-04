@@ -43,6 +43,7 @@
 
 import { AUTH_ROLES, normalizeRole, type AuthRole } from "@/features/auth/constants/roles";
 import type { AuthResponse, UserPrincipal } from "@/features/auth/types/auth.types";
+import { DICEBEAR_ADVENTURER_AVATAR_URL } from "@/lib/avatar";
 
 const ACCESS_TOKEN_KEY = "owlreka.access_token";
 const ACCESS_TOKEN_EXPIRES_AT_KEY = "owlreka.access_token_expires_at";
@@ -51,7 +52,6 @@ const PASSWORD_RECOVERY_EMAIL_KEY = "owlreka.password_recovery.email";
 const PASSWORD_RECOVERY_GRANT_TOKEN_KEY = "owlreka.password_recovery.grant_token";
 const LOGOUT_MARKER_KEY = "owlreka.logged_out";
 const AUTH_STATE_EVENT = "owlreka-auth-state";
-const DICEBEAR_ADVENTURER_BASE_URL = "https://api.dicebear.com/9.x/adventurer/svg";
 let isAuthSessionRestoring = false;
 
 function notifyAuthStateChanged() {
@@ -93,7 +93,7 @@ function buildDefaultAvatarUrl(userId: string | number | null | undefined) {
 
   if (!seed) return null;
 
-  return `${DICEBEAR_ADVENTURER_BASE_URL}?seed=${encodeURIComponent(seed)}`;
+  return `${DICEBEAR_ADVENTURER_AVATAR_URL}?seed=${encodeURIComponent(seed)}`;
 }
 
 function resolveRole(source: Record<string, unknown>): AuthRole {

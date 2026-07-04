@@ -6,6 +6,8 @@ import { routePaths } from "@/app/router";
 import {
   buildNextDetailUrl,
   getDetailContextFromRouteParams,
+  persistNextDetailNavigation,
+  persistRootDetailNavigation,
 } from "@/features/detail/detailTrail";
 import MetadataBadge from "@/layout/global/MetadataBadge";
 
@@ -173,6 +175,20 @@ function EntityTagCluster(props: EntityTagClusterProps) {
           item.type === "topic" ? (
             <Link
               key={`${item.type}-${item.id}`}
+              onClick={() => {
+                if (currentDetailContext) {
+                  persistNextDetailNavigation(
+                    location.search,
+                    currentDetailContext.entityType,
+                    currentDetailContext.entityId,
+                    "topics",
+                    item.id,
+                  );
+                  return;
+                }
+
+                persistRootDetailNavigation("topics", item.id);
+              }}
               to={
                 currentDetailContext
                   ? buildNextDetailUrl(

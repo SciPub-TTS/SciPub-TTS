@@ -11,6 +11,7 @@ interface BookmarkTopBarProps {
   error: string | null;
   onCollectionChange: (collectionId: string | null) => void;
   onCreateCollectionClick: () => void;
+  onDeleteCollectionClick: (collection: BookmarkCollectionResponse) => void;
   onSearchChange: (value: string) => void;
   onSearchClear: () => void;
   onSearchSubmit: () => void;
@@ -25,6 +26,7 @@ export function BookmarkTopBar({
   error,
   onCollectionChange,
   onCreateCollectionClick,
+  onDeleteCollectionClick,
   onSearchChange,
   onSearchClear,
   onSearchSubmit,
@@ -100,7 +102,7 @@ export function BookmarkTopBar({
 
       <div className="mt-5">
         <div className="mb-3 flex items-center justify-between gap-3">
-          <p className="font-subtext text-xs font-semibold uppercase tracking-[0.22em] text-black/55">
+          <p className="font-subtext text-sm font-semibold uppercase tracking-[0.22em] text-black">
             Collections
           </p>
           <p className="font-subtext text-sm text-black/60">
@@ -111,7 +113,8 @@ export function BookmarkTopBar({
           </p>
         </div>
 
-        <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
+        <div className="overflow-x-auto overflow-y-hidden pb-2 pt-3">
+          <div className="flex w-max min-w-full gap-2">
           <button
             type="button"
             onClick={() => onCollectionChange(null)}
@@ -129,24 +132,41 @@ export function BookmarkTopBar({
             const isActive = collection.id === selectedCollectionId;
 
             return (
-              <button
-                key={collection.id}
-                type="button"
-                onClick={() => onCollectionChange(isActive ? null : collection.id)}
-                className={[
-                  "inline-flex shrink-0 items-center gap-2 rounded-2xl border px-4 py-3 text-sm font-semibold transition focus-visible:outline-none",
-                  isActive
-                    ? "border-[#14532D] bg-[#14532D] text-white"
-                    : "border-black bg-white text-black hover:border-[#14532D] hover:bg-[#DCFCE7] hover:text-[#14532D]",
-                ].join(" ")}
-              >
-                <span className="whitespace-nowrap">{collection.name}</span>
-                <span className="rounded-full border border-black bg-white px-2 py-0.5 text-xs text-black/70">
-                  {collection.workCount}
-                </span>
-              </button>
+              <div key={collection.id} className="relative shrink-0">
+                <button
+                  type="button"
+                  onClick={() => onCollectionChange(isActive ? null : collection.id)}
+                  className={[
+                    "inline-flex shrink-0 items-center justify-center rounded-2xl border px-5 py-3 text-sm font-semibold transition focus-visible:outline-none",
+                    isActive
+                      ? "border-[#14532D] bg-[#14532D] text-white"
+                      : "border-black bg-white text-black hover:border-[#14532D] hover:bg-[#DCFCE7] hover:text-[#14532D]",
+                  ].join(" ")}
+                >
+                  <span className="whitespace-nowrap">{collection.name}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onMouseDown={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                  }}
+                  onClick={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    onDeleteCollectionClick(collection);
+                  }}
+                  className="absolute -right-2 -top-2 z-20 inline-flex h-6 w-6 items-center justify-center rounded-full border border-black bg-white text-xs text-black shadow-sm transition hover:bg-red-500 hover:text-white"
+                  title={`Delete ${collection.name}`}
+                  aria-label={`Delete ${collection.name}`}
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </div>
             );
           })}
+          </div>
         </div>
       </div>
 

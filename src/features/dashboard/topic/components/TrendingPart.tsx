@@ -3,7 +3,10 @@ import {Check} from "lucide-react";
 import type {TopicData} from "@/features/dashboard/topic/types/topic.ts";
 import {useTopicRanking} from "@/features/dashboard/topic/hooks/useTopicRanking.ts";
 import {useEntityFollow} from "@/features/follows/hooks/useEntityFollow.ts";
-import {buildDetailTrailUrl} from "@/features/detail/detailTrail.ts";
+import {
+    buildDetailTrailUrl,
+    persistRootDetailNavigation,
+} from "@/features/detail/detailTrail.ts";
 
 type TrendingPartProps = {
     startDate: string;
@@ -79,6 +82,11 @@ function Topic({topic, id}:
 
                 <div className="flex flex-col text-xs">
                     <Link to={link}
+                        onClick={() => {
+                            if (topicId) {
+                                persistRootDetailNavigation("topics", topicId, "trending");
+                            }
+                        }}
                         className="text-blue-700 font-semibold text-base"
                     >
                         {topic.name}

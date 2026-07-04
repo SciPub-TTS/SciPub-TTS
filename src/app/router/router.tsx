@@ -18,8 +18,7 @@ import {
 } from "@/features/auth/constants/roles";
 import {
   buildDetailTrailUrl,
-  parseDetailOrigin,
-  parseDetailTrail,
+  getDetailNavigationState,
   type DetailTrailEntityType,
 } from "@/features/detail/detailTrail";
 import { markSearchPageRestorePending } from "@/features/search/utils/navigationState";
@@ -46,6 +45,7 @@ import { KeywordDashboardPage } from "@/features/dashboard/keyword/KeywordDashbo
 import BookmarkLibraryPage from "@/features/bookmarks/components/BookmarkLibraryPage.tsx";
 import GoogleRegisterCompletePage from "@/features/auth/components/pages/GoogleRegisterCompletePage.tsx";
 import SocialHubPage from "@/features/social/components/SocialHubPage.tsx";
+import { ENABLE_SOCIAL_HUB } from "@/features/social/socialFeature";
 import LandingPage from "@/features/landing/components/LandingPage";
 
 const ROUTER_PATHS = {
@@ -112,8 +112,11 @@ function getDetailBreadcrumb(
   entityType: DetailTrailEntityType,
   entityId: string,
 ): AppRouteHandle["breadcrumb"] {
-  const detailTrail = parseDetailTrail(location.search);
-  const detailOrigin = parseDetailOrigin(location.search);
+  const { origin: detailOrigin, trail: detailTrail } = getDetailNavigationState(
+    location.search,
+    entityType,
+    entityId,
+  );
   const trailItems = detailTrail.map((trailEntry, index) => ({
     label: getDetailBreadcrumbLabel(trailEntry.entityType, trailEntry.entityId),
     to: buildDetailTrailUrl(
@@ -130,7 +133,7 @@ function getDetailBreadcrumb(
           label: "Bookmarks",
           to: ROUTES.BOOKMARKS,
         }
-      : detailOrigin === "social-hub"
+      : detailOrigin === "social-hub" && ENABLE_SOCIAL_HUB
         ? {
             label: "Social Hub",
             to: ROUTES.SOCIAL_HUB,
@@ -297,13 +300,17 @@ export const router = createBrowserRouter([
                   breadcrumb: "Feed",
                 },
               },
-              {
-                path: ROUTER_PATHS.socialHub,
-                element: <SocialHubPage />,
-                handle: {
-                  breadcrumb: "Social Hub",
-                },
-              },
+              ...(ENABLE_SOCIAL_HUB
+                ? [
+                    {
+                      path: ROUTER_PATHS.socialHub,
+                      element: <SocialHubPage />,
+                      handle: {
+                        breadcrumb: "Social Hub",
+                      },
+                    },
+                  ]
+                : []),
               {
                 path: ROUTER_PATHS.profile,
                 element: <ProfilePage />,

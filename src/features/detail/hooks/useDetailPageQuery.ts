@@ -1,10 +1,12 @@
 import { useEffect } from "react";
 import { useQuery, type QueryKey } from "@tanstack/react-query";
+import { useLocation } from "react-router-dom";
 
 import {
   setDetailTitle,
   type DetailTitleEntityType,
 } from "@/features/detail/store/detailTitleStore";
+import { syncDetailNavigationState } from "@/features/detail/detailTrail";
 
 type UseDetailPageQueryParams<TData> = {
   entityId: string;
@@ -38,11 +40,20 @@ export function useDetailPageQuery<TData>(
     queryFn,
     queryKey,
   } = params;
+  const location = useLocation();
   const detailQuery = useQuery<TData>({
     enabled: Boolean(entityId),
     queryFn: () => queryFn(entityId),
     queryKey,
   });
+
+  useEffect(() => {
+    if (!entityId) {
+      return;
+    }
+
+    syncDetailNavigationState(location.search, entityType, entityId);
+  }, [entityId, entityType, location.search]);
 
   useEffect(() => {
     const title = detailQuery.data ? getTitle(detailQuery.data) : null;
@@ -62,4 +73,3 @@ export function useDetailPageQuery<TData>(
     isLoading: Boolean(entityId) && detailQuery.isPending,
   };
 }
-

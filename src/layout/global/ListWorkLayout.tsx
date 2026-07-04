@@ -22,6 +22,8 @@ import {
   buildDetailTrailUrl,
   buildNextDetailUrl,
   getDetailContextFromRouteParams,
+  persistNextDetailNavigation,
+  persistRootDetailNavigation,
   type DetailOrigin,
 } from "@/features/detail/detailTrail";
 import { markSearchPageRestorePending } from "@/features/search/utils/navigationState";
@@ -250,6 +252,24 @@ export default function ListWorkLayout({
     );
   }
 
+  function handleDetailNavigation(
+    entityType: "authors" | "topics" | "works",
+    entityId: string,
+  ) {
+    if (!currentDetailContext) {
+      persistRootDetailNavigation(entityType, entityId, detailOrigin);
+      return;
+    }
+
+    persistNextDetailNavigation(
+      location.search,
+      currentDetailContext.entityType,
+      currentDetailContext.entityId,
+      entityType,
+      entityId,
+    );
+  }
+
   async function handleBookmarkButtonClick() {
     if (savedState || !accessToken) {
       void handleWorkBookmarkClick();
@@ -319,9 +339,16 @@ export default function ListWorkLayout({
           <MetadataBadge tone="accent" label={subField} />
 
           {topicRef?.id ? (
+            (() => {
+              const topicId = topicRef.id;
+
+              return (
             <Link
-              to={buildEntityHref("topics", topicRef.id)}
-              onClick={entityNavigationOnClick}
+              to={buildEntityHref("topics", topicId)}
+              onClick={() => {
+                handleDetailNavigation("topics", topicId);
+                entityNavigationOnClick?.();
+              }}
               className="transition hover:-translate-y-0.5"
             >
               <MetadataBadge
@@ -330,6 +357,8 @@ export default function ListWorkLayout({
                 tone={isTrendTopic ? "topicTrend" : "topic"}
               />
             </Link>
+              );
+            })()
           ) : (
             <MetadataBadge
               label={topic}
@@ -358,9 +387,16 @@ export default function ListWorkLayout({
             {visibleAuthors.map((author, index) => (
               <span key={`${author.name}-${author.id || index}`}>
                 {author.id ? (
+                  (() => {
+                    const authorId = author.id;
+
+                    return (
                   <Link
-                    to={buildEntityHref("authors", author.id)}
-                    onClick={entityNavigationOnClick}
+                    to={buildEntityHref("authors", authorId)}
+                    onClick={() => {
+                      handleDetailNavigation("authors", authorId);
+                      entityNavigationOnClick?.();
+                    }}
                     className={[
                       "text-blue-700 transition hover:text-blue-900 hover:underline",
                       isFollowedAuthor(author.name)
@@ -370,6 +406,8 @@ export default function ListWorkLayout({
                   >
                     {author.name}
                   </Link>
+                    );
+                  })()
                 ) : (
                   <span
                     className={
@@ -589,7 +627,10 @@ export default function ListWorkLayout({
 
           <Link
             to={resolvedDetailHref}
-            onClick={entityNavigationOnClick}
+            onClick={() => {
+              handleDetailNavigation("works", workId);
+              entityNavigationOnClick?.();
+            }}
             className="inline-flex items-center gap-2 rounded-lg border border-black bg-white px-3 py-2 text-xs font-bold text-black transition hover:border-[#14532D] hover:bg-[#14532D] hover:text-white"
           >
             <Eye className="h-4 w-4" />
