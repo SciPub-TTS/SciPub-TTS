@@ -7,10 +7,11 @@ import logoImage from "@/assets/images/logo.png";
 import { AUTH_ROLES } from "@/features/auth/constants/roles";
 import { useAuthSession } from "@/features/auth/hooks/useAuthSession";
 import { ENABLE_SOCIAL_HUB } from "@/features/social/socialFeature";
+import { LANDING_SECTION_LINKS } from "./LandingSections";
 
 const publicNavLinks = [
-  { label: "Trending Topics", to: ROUTES.TRENDING_TOPIC },
-  { label: "Trending Keywords", to: ROUTES.TRENDING_KEYWORD },
+  { label: "Discovery", to: ROUTES.SEARCH },
+  { label: "Trending Dashboard", to: ROUTES.TRENDING_TOPIC },
   { label: "Guide", to: ROUTES.GUIDE },
 ] as const;
 
@@ -18,11 +19,14 @@ const workspaceLinks = [
   { label: "Feed", to: ROUTES.FEED },
   { label: "Bookmarks", to: ROUTES.BOOKMARKS },
   { label: "Report", to: ROUTES.REPORT },
-  ...(ENABLE_SOCIAL_HUB ? [{ label: "Social Hub", to: ROUTES.SOCIAL_HUB }] : []),
+  ...(ENABLE_SOCIAL_HUB
+    ? [{ label: "Social Hub", to: ROUTES.SOCIAL_HUB }]
+    : []),
 ] as const;
 
 export function Header() {
   const [isExploreMenuOpen, setIsExploreMenuOpen] = useState(false);
+  const [isSectionsMenuOpen, setIsSectionsMenuOpen] = useState(false);
   const [isWorkspaceMenuOpen, setIsWorkspaceMenuOpen] = useState(false);
   const { currentUser, isAuthenticated } = useAuthSession();
 
@@ -39,6 +43,20 @@ export function Header() {
     .join("")
     .toUpperCase();
 
+  function scrollToSection(sectionId: string) {
+    const sectionElement = document.getElementById(sectionId);
+
+    if (!sectionElement) {
+      return;
+    }
+
+    sectionElement.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+    setIsSectionsMenuOpen(false);
+  }
+
   return (
     <header className="dynamic-divider-bottom sticky top-0 z-40 border-b border-slate-200/80 bg-white/95 px-6 py-4 shadow-[0_10px_30px_rgba(15,23,42,0.06)] backdrop-blur">
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
@@ -51,22 +69,52 @@ export function Header() {
           <span className="font-brand text-3xl font-normal">Owlreka</span>
         </Link>
 
-        <nav className="hidden items-center gap-4 text-sm font-medium text-slate-600 lg:flex xl:gap-6">
-          <Link
-            to={ROUTES.SEARCH}
-            className="rounded-full bg-slate-50 px-4 py-2 whitespace-nowrap text-black transition hover:text-emerald-700"
-          >
-            Discovery
-          </Link>
+        <nav className="hidden items-center gap-2 text-sm font-medium text-slate-600 lg:flex xl:gap-3">
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => {
+                setIsSectionsMenuOpen((isOpen) => !isOpen);
+                setIsExploreMenuOpen(false);
+                setIsWorkspaceMenuOpen(false);
+              }}
+              className="inline-flex items-center gap-2 rounded-full bg-white px-3.5 py-2 text-black transition hover:text-emerald-700"
+            >
+              Sections
+              <ChevronDown
+                className={`h-4 w-4 transition ${
+                  isSectionsMenuOpen ? "rotate-180" : ""
+                }`}
+              />
+            </button>
+
+            {isSectionsMenuOpen ? (
+              <div className="absolute left-0 top-12 z-30 w-64 rounded-[28px] border border-black bg-[#fcfdfb] p-3 shadow-[0_18px_38px_rgba(15,23,42,0.16)]">
+                {LANDING_SECTION_LINKS.map((section) => (
+                  <button
+                    key={section.id}
+                    type="button"
+                    onClick={() => {
+                      scrollToSection(section.id);
+                    }}
+                    className="mb-1.5 flex w-full items-center border-b border-black px-3 py-2.5 text-left text-sm font-semibold text-slate-700 transition hover:bg-emerald-50 hover:text-emerald-700 last:mb-0 last:border-b-0"
+                  >
+                    {section.label}
+                  </button>
+                ))}
+              </div>
+            ) : null}
+          </div>
 
           <div className="relative">
             <button
               type="button"
               onClick={() => {
                 setIsExploreMenuOpen((isOpen) => !isOpen);
+                setIsSectionsMenuOpen(false);
                 setIsWorkspaceMenuOpen(false);
               }}
-              className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-black transition hover:text-emerald-700"
+              className="inline-flex items-center gap-2 rounded-full bg-white px-3.5 py-2 text-black transition hover:text-emerald-700"
             >
               Explore
               <ChevronDown
@@ -98,8 +146,9 @@ export function Header() {
               onClick={() => {
                 setIsWorkspaceMenuOpen((isOpen) => !isOpen);
                 setIsExploreMenuOpen(false);
+                setIsSectionsMenuOpen(false);
               }}
-              className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-black transition hover:text-emerald-700"
+              className="inline-flex items-center gap-2 rounded-full bg-white px-3.5 py-2 text-black transition hover:text-emerald-700"
             >
               Workspace
               <ChevronDown

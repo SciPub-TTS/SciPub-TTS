@@ -20,6 +20,7 @@ type UseWorkBookmarkOptions = {
   authorOpenAlexIds?: Array<string | null>;
   citations?: number | null;
   initialSaved?: boolean;
+  knownCollections?: BookmarkCollectionSummary[];
   openAlexId: string;
   source?: string | null;
   title?: string | null;
@@ -143,6 +144,7 @@ export function useWorkBookmark(options: UseWorkBookmarkOptions) {
     authorOpenAlexIds,
     citations,
     initialSaved = false,
+    knownCollections = [],
     openAlexId,
     onSuccess,
     source,
@@ -197,7 +199,7 @@ export function useWorkBookmark(options: UseWorkBookmarkOptions) {
   }
 
   const bookmarkMutation = useMutation({
-    mutationFn: async (targetCollectionId: string | null | undefined) => {
+    mutationFn: async (targetCollectionIds: string[] | null | undefined) => {
       if (!normalizedOpenAlexId) {
         throw new Error("OpenAlex ID is missing.");
       }
@@ -222,14 +224,37 @@ export function useWorkBookmark(options: UseWorkBookmarkOptions) {
       });
       const response = await bookmarkApi.add(payload);
 
-      if (targetCollectionId && response.data.id) {
-        await bookmarkApi.addToCollection(targetCollectionId, {
-          bookmarkIds: [response.data.id],
-        });
+      const normalizedCollectionIds = (targetCollectionIds ?? []).filter(Boolean);
+
+      if (normalizedCollectionIds.length > 0 && response.data.id) {
+        await Promise.all(
+          normalizedCollectionIds.map((collectionId) =>
+            bookmarkApi.addToCollection(collectionId, {
+              bookmarkIds: [response.data.id],
+            })
+          ),
+        );
       }
 
       const statusResponse = await bookmarkApi.getStatus(normalizedOpenAlexId);
-      return statusResponse.data;
+      const nextStatus = statusResponse.data;
+
+      if (
+        nextStatus.bookmarked &&
+        normalizedCollectionIds.length > 0 &&
+        nextStatus.collections.length === 0
+      ) {
+        return createBookmarkStatus(
+          normalizedOpenAlexId,
+          true,
+          response.data.id,
+          knownCollections.filter((collection) =>
+            normalizedCollectionIds.includes(collection.id),
+          ),
+        );
+      }
+
+      return nextStatus;
     },
     onError: (error) => {
       if (
@@ -251,13 +276,13 @@ export function useWorkBookmark(options: UseWorkBookmarkOptions) {
     },
   });
 
-  async function handleBookmarkClick(targetCollectionId?: string | null) {
+  async function handleBookmarkClick(targetCollectionIds?: string[] | null) {
     if (bookmarkMutation.isPending) {
       return false;
     }
 
     try {
-      await bookmarkMutation.mutateAsync(targetCollectionId ?? null);
+      await bookmarkMutation.mutateAsync(targetCollectionIds ?? null);
       return true;
     } catch {
       // React Query already routes the UI feedback through onError.

@@ -26,6 +26,7 @@ export async function invalidateBookmarkLibraryQueries(
     queryClient.invalidateQueries({ queryKey: bookmarkQueryKeys.lists() }),
     queryClient.invalidateQueries({ queryKey: bookmarkQueryKeys.collections() }),
     queryClient.invalidateQueries({ queryKey: bookmarkQueryKeys.stats() }),
+    queryClient.invalidateQueries({ queryKey: bookmarkQueryKeys.statuses() }),
     queryClient.invalidateQueries({
       queryKey: bookmarkQueryKeys.filterOptions(),
     }),

@@ -16,10 +16,12 @@ import {
 } from "@/features/bookmarks/services/bookmarkQueryHelpers";
 import { bookmarkQueryKeys } from "@/features/bookmarks/services/bookmarkQueryKeys";
 import type {
+  BookmarkCollectionSummary,
   BookmarkCollectionResponse,
   BookmarkFilters,
   BookmarkPageResponse,
   BookmarkResponse,
+  BookmarkStatusResponse,
 } from "@/features/bookmarks/types/bookmark.types";
 
 type BookmarkMutationContext = {
@@ -108,6 +110,58 @@ function patchCollectionRemovalOnBookmarks(
       (collection) => collection.id !== collectionId,
     ),
   }));
+}
+
+function patchCollectionMembershipOnStatuses(
+  currentStatus: BookmarkStatusResponse | undefined,
+  options: {
+    bookmarkId: string;
+    collectionId: string;
+    collectionName?: string;
+    mode: "add" | "remove";
+  },
+) {
+  if (!currentStatus || currentStatus.bookmarkId !== options.bookmarkId) {
+    return currentStatus;
+  }
+
+  const nextCollections =
+    options.mode === "add"
+      ? currentStatus.collections.some(
+          (collection) => collection.id === options.collectionId,
+        )
+        ? currentStatus.collections
+        : [
+            ...currentStatus.collections,
+            {
+              id: options.collectionId,
+              name: options.collectionName ?? "Collection",
+            } satisfies BookmarkCollectionSummary,
+          ]
+      : currentStatus.collections.filter(
+          (collection) => collection.id !== options.collectionId,
+        );
+
+  return {
+    ...currentStatus,
+    collections: nextCollections,
+  } satisfies BookmarkStatusResponse;
+}
+
+function patchCollectionRemovalOnStatuses(
+  currentStatus: BookmarkStatusResponse | undefined,
+  collectionId: string,
+) {
+  if (!currentStatus) {
+    return currentStatus;
+  }
+
+  return {
+    ...currentStatus,
+    collections: currentStatus.collections.filter(
+      (collection) => collection.id !== collectionId,
+    ),
+  } satisfies BookmarkStatusResponse;
 }
 
 export function useBookmarks() {
@@ -279,6 +333,12 @@ export function useBookmarks() {
         (cachedData) => patchCollectionRemovalOnBookmarks(cachedData, collectionId),
       );
 
+      queryClient.setQueriesData<BookmarkStatusResponse | undefined>(
+        { queryKey: bookmarkQueryKeys.statuses() },
+        (currentStatus) =>
+          patchCollectionRemovalOnStatuses(currentStatus, collectionId),
+      );
+
       queryClient.setQueryData<BookmarkCollectionResponse[] | undefined>(
         bookmarkQueryKeys.collections(),
         (collections) =>
@@ -362,6 +422,17 @@ export function useBookmarks() {
           }),
       );
 
+      queryClient.setQueriesData<BookmarkStatusResponse | undefined>(
+        { queryKey: bookmarkQueryKeys.statuses() },
+        (currentStatus) =>
+          patchCollectionMembershipOnStatuses(currentStatus, {
+            bookmarkId,
+            collectionId,
+            collectionName: targetCollection?.name,
+            mode: "add",
+          }),
+      );
+
       queryClient.setQueryData<BookmarkCollectionResponse[] | undefined>(
         bookmarkQueryKeys.collections(),
         (collections) => patchCollectionCounts(collections, collectionId, "add"),
@@ -425,6 +496,16 @@ export function useBookmarks() {
         bookmarkListQueryKey,
         (cachedData) =>
           patchCollectionMembershipOnBookmarks(cachedData, {
+            bookmarkId,
+            collectionId,
+            mode: "remove",
+          }),
+      );
+
+      queryClient.setQueriesData<BookmarkStatusResponse | undefined>(
+        { queryKey: bookmarkQueryKeys.statuses() },
+        (currentStatus) =>
+          patchCollectionMembershipOnStatuses(currentStatus, {
             bookmarkId,
             collectionId,
             mode: "remove",
