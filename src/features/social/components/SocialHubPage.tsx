@@ -790,7 +790,7 @@ function PostCard({
   const references = post.references ?? [];
 
   return (
-    <article className="rounded-[1.85rem] border border-black bg-white p-6 shadow-[0_18px_45px_rgba(15,23,42,0.05)]">
+    <article className="overflow-hidden rounded-[1.85rem] border border-black bg-white p-6 shadow-[0_18px_45px_rgba(15,23,42,0.05)]">
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-center gap-3">
           <SocialAvatar
@@ -800,8 +800,8 @@ function PostCard({
             sizeClassName="h-12 w-12"
           />
 
-          <div>
-            <p className="text-[1.08rem] font-semibold text-black">
+          <div className="min-w-0">
+            <p className="break-words [overflow-wrap:anywhere] text-[1.08rem] font-semibold text-black">
               {post.author.fullName}
             </p>
           </div>
@@ -813,11 +813,11 @@ function PostCard({
         </div>
       </div>
 
-      <h3 className="font-brand mt-6 text-[2.35rem] font-normal leading-[1.08] text-[#14532D]">
+      <h3 className="font-brand mt-6 break-words [overflow-wrap:anywhere] text-[2.35rem] font-normal leading-[1.08] text-[#14532D]">
         {post.title}
       </h3>
 
-      <p className="font-subtext mt-4 text-[1.1rem] leading-9 text-slate-500">
+      <p className="font-subtext mt-4 break-words [overflow-wrap:anywhere] whitespace-pre-wrap text-[1.1rem] leading-9 text-slate-500">
         {post.bodyPreview}
       </p>
 

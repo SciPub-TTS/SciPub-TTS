@@ -1,49 +1,23 @@
-export interface LandingSummaryRequest {
-  startTime: string;
-  endTime: string;
-  fieldId: string;
-  formula: string;
-}
-
-export interface LandingKeyword {
-  id: number;
-  keywordId: string;
+export type LandingTopicPreviewItem = {
+  topicId: string | null;
   name: string;
-  fieldId: string;
-  score: number;
-  cagr: number;
-  ps: number;
-  worksCount: number;
-  citedByCount: number;
-}
+  fieldId: number | null;
+  works: number | null;
+  citations: number | null;
+};
 
-export interface LandingTopic {
+export type LandingKeywordPreviewItem = {
+  keywordId: string | null;
   name: string;
-  topicId: string;
-  works: number;
-  citations: number;
-  score: number;
-  change: number | null;
-  state: string | null;
-  isFollowed: boolean;
-}
+  fieldId: number | null;
+  works: number | null;
+  citations: number | null;
+};
 
-export interface LandingTrendingPaper {
-  openAlexId: string;
-  title: string;
-  authors: string;
-  topic: string;
-  citations: number;
-  saveCount: number;
-}
-
-export interface LandingSummaryData {
-  totalPapers?: number;
-  totalTopics?: number;
-  totalAuthors?: number;
-  totalFields?: number;
-  top1Keyword: LandingKeyword | null;
-  top6Keywords: LandingKeyword[];
-  top10Topics: LandingTopic[];
-  top6TrendingPapers: LandingTrendingPaper[];
-}
+export type LandingTrendPreview = {
+  snapshotDate: string;
+  totalTrendingTopics: number;
+  totalTrendingKeywords: number;
+  topTopics: LandingTopicPreviewItem[];
+  topKeywords: LandingKeywordPreviewItem[];
+};

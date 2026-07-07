@@ -2,6 +2,7 @@ import {
   Bookmark,
   Building2,
   CalendarDays,
+  Check,
   Eye,
   ExternalLink,
   FileText,
@@ -151,33 +152,9 @@ export default function ListWorkLayout({
   const [showAllAuthors, setShowAllAuthors] = useState(false);
   const [showFullAbstract, setShowFullAbstract] = useState(false);
   const [showBookmarkDialog, setShowBookmarkDialog] = useState(false);
-  const [selectedCollectionId, setSelectedCollectionId] = useState("");
+  const [selectedCollectionIds, setSelectedCollectionIds] = useState<string[]>([]);
   const [shareLabel, setShareLabel] = useState("Share");
   const shareResetTimeoutRef = useRef<number | null>(null);
-  const authorItems =
-    authorRefs.length > 0
-      ? authorRefs
-      : authors.map((authorName) => ({ id: null, name: authorName }));
-
-  const {
-    bookmarkButtonLabel,
-    handleBookmarkClick: handleWorkBookmarkClick,
-    isBookmarkActionPending,
-    isSaved: savedState,
-  } = useWorkBookmark({
-    authors,
-    authorOpenAlexIds: authorItems.map((author) => author.id),
-    citations,
-    initialSaved: isSaved,
-    onSuccess: onBookmarkClick,
-    openAlexId: workId,
-    source,
-    title,
-    topic: topicRef?.name || topic,
-    topicOpenAlexId: topicRef?.id ?? null,
-    workType: field,
-    year,
-  });
   const collectionsQuery = useQuery({
     enabled: Boolean(accessToken) && showBookmarkDialog,
     queryFn: async () => {
@@ -186,6 +163,32 @@ export default function ListWorkLayout({
     },
     queryKey: bookmarkQueryKeys.collections(),
     staleTime: 60_000,
+  });
+  const authorItems =
+    authorRefs.length > 0
+      ? authorRefs
+      : authors.map((authorName) => ({ id: null, name: authorName }));
+
+  const {
+    bookmarkButtonLabel,
+    collections,
+    handleBookmarkClick: handleWorkBookmarkClick,
+    isBookmarkActionPending,
+    isSaved: savedState,
+  } = useWorkBookmark({
+    authors,
+    authorOpenAlexIds: authorItems.map((author) => author.id),
+    citations,
+    initialSaved: isSaved,
+    knownCollections: collectionsQuery.data ?? [],
+    onSuccess: onBookmarkClick,
+    openAlexId: workId,
+    source,
+    title,
+    topic: topicRef?.name || topic,
+    topicOpenAlexId: topicRef?.id ?? null,
+    workType: field,
+    year,
   });
 
   const bookmarkClassName = savedState
@@ -276,17 +279,25 @@ export default function ListWorkLayout({
       return;
     }
 
-    setSelectedCollectionId("");
+    setSelectedCollectionIds([]);
     setShowBookmarkDialog(true);
   }
 
   async function handleBookmarkConfirm() {
-    const didSave = await handleWorkBookmarkClick(selectedCollectionId || null);
+    const didSave = await handleWorkBookmarkClick(selectedCollectionIds);
 
     if (didSave) {
       setShowBookmarkDialog(false);
-      setSelectedCollectionId("");
+      setSelectedCollectionIds([]);
     }
+  }
+
+  function toggleCollectionSelection(collectionId: string) {
+    setSelectedCollectionIds((currentCollectionIds) =>
+      currentCollectionIds.includes(collectionId)
+        ? currentCollectionIds.filter((id) => id !== collectionId)
+        : [...currentCollectionIds, collectionId],
+    );
   }
 
   useEffect(
@@ -446,6 +457,20 @@ export default function ListWorkLayout({
         </span>
       </div>
 
+      {collections.length > 0 ? (
+        <div className="mt-3 flex flex-wrap items-start gap-2">
+          {collections.map((collection) => (
+            <span
+              key={collection.id}
+              className="inline-flex max-w-full items-center break-words rounded-md border border-black bg-black px-3 py-1.5 text-[11px] font-semibold text-white"
+              title={collection.name}
+            >
+              {collection.name}
+            </span>
+          ))}
+        </div>
+      ) : null}
+
       {feedReasonText ? (
         <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium leading-6 text-black">
           <div className="mb-1 flex items-center gap-1 font-bold text-black">
@@ -551,30 +576,65 @@ export default function ListWorkLayout({
                   Save bookmark
                 </p>
                 <p className="mt-1 text-sm font-medium leading-6 text-black/70">
-                  Choose a collection for this paper, or keep it in All library.
+                  Choose one or more collections for this paper, or keep it in
+                  All library.
                 </p>
 
-                <label
-                  htmlFor={`bookmark-collection-${workId}`}
-                  className="mt-3 block text-xs font-bold uppercase tracking-[0.18em] text-black"
-                >
-                  Collection
-                </label>
-                <select
-                  id={`bookmark-collection-${workId}`}
-                  value={selectedCollectionId}
-                  onChange={(event) => {
-                    setSelectedCollectionId(event.target.value);
-                  }}
-                  className="mt-2 w-full rounded-xl border border-black bg-white px-3 py-2.5 text-sm font-semibold text-black outline-none transition focus:border-[#14532D]"
-                >
-                  <option value="">All library</option>
-                  {(collectionsQuery.data ?? []).map((collection) => (
-                    <option key={collection.id} value={collection.id}>
-                      {collection.name}
-                    </option>
-                  ))}
-                </select>
+                <div className="mt-3">
+                  <p className="block text-xs font-bold uppercase tracking-[0.18em] text-black">
+                    Collections
+                  </p>
+
+                  {collectionsQuery.data && collectionsQuery.data.length > 0 ? (
+                    <div className="mt-2 max-h-56 space-y-2 overflow-y-auto pr-1">
+                      {collectionsQuery.data.map((collection) => {
+                        const isSelected = selectedCollectionIds.includes(
+                          collection.id,
+                        );
+
+                        return (
+                          <button
+                            key={collection.id}
+                            type="button"
+                            onClick={() => {
+                              toggleCollectionSelection(collection.id);
+                            }}
+                            className={[
+                              "flex w-full items-center justify-between gap-3 rounded-xl border px-3 py-2.5 text-left transition",
+                              isSelected
+                                ? "border-[#14532D] bg-[#EEF9EC]"
+                                : "border-black/20 bg-white hover:border-black hover:bg-slate-50",
+                            ].join(" ")}
+                          >
+                            <div className="min-w-0">
+                              <p className="truncate text-sm font-semibold text-black">
+                                {collection.name}
+                              </p>
+                              <p className="text-xs font-medium text-black/55">
+                                {collection.workCount} works
+                              </p>
+                            </div>
+                            <span
+                              className={[
+                                "inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-sm border transition",
+                                isSelected
+                                  ? "border-[#14532D] bg-[#14532D] text-white"
+                                  : "border-black/35 bg-white text-transparent",
+                              ].join(" ")}
+                            >
+                              <Check className="h-3.5 w-3.5" />
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  ) : collectionsQuery.isPending ? null : (
+                    <p className="mt-2 text-xs font-medium text-black/55">
+                      No collections yet. This paper will be saved to All
+                      library.
+                    </p>
+                  )}
+                </div>
 
                 {collectionsQuery.isPending ? (
                   <p className="mt-2 text-xs font-medium text-black/55">
@@ -594,6 +654,7 @@ export default function ListWorkLayout({
                     type="button"
                     onClick={() => {
                       setShowBookmarkDialog(false);
+                      setSelectedCollectionIds([]);
                     }}
                     className="inline-flex items-center rounded-lg border border-black bg-white px-3 py-2 text-xs font-bold text-black transition hover:border-[#14532D] hover:bg-[#14532D] hover:text-white"
                   >
