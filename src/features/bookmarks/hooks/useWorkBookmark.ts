@@ -8,6 +8,7 @@ import { bookmarkApi } from "@/features/bookmarks/services/bookmark.api";
 import { invalidateBookmarkLibraryQueries } from "@/features/bookmarks/services/bookmarkQueryHelpers";
 import { bookmarkQueryKeys } from "@/features/bookmarks/services/bookmarkQueryKeys";
 import type {
+  BookmarkCollectionSummary,
   BookmarkStatusResponse,
   CreateBookmarkRequest,
 } from "@/features/bookmarks/types/bookmark.types";
@@ -126,10 +127,12 @@ function createBookmarkStatus(
   openAlexId: string,
   isSaved: boolean,
   bookmarkId: string | null,
+  collections: BookmarkCollectionSummary[] = [],
 ): BookmarkStatusResponse {
   return {
     bookmarked: isSaved,
     bookmarkId,
+    collections,
     openAlexId,
   };
 }
@@ -202,7 +205,7 @@ export function useWorkBookmark(options: UseWorkBookmarkOptions) {
       if (isSaved) {
         await bookmarkApi.deleteByOpenAlexId(normalizedOpenAlexId);
 
-        return createBookmarkStatus(normalizedOpenAlexId, false, null);
+        return createBookmarkStatus(normalizedOpenAlexId, false, null, []);
       }
 
       const payload = buildCreateBookmarkPayload({
@@ -225,11 +228,8 @@ export function useWorkBookmark(options: UseWorkBookmarkOptions) {
         });
       }
 
-      return createBookmarkStatus(
-        normalizedOpenAlexId,
-        true,
-        response.data.id,
-      );
+      const statusResponse = await bookmarkApi.getStatus(normalizedOpenAlexId);
+      return statusResponse.data;
     },
     onError: (error) => {
       if (
@@ -273,6 +273,7 @@ export function useWorkBookmark(options: UseWorkBookmarkOptions) {
 
   return {
     bookmarkButtonLabel: buttonLabel,
+    collections: bookmarkStatusQuery.data?.collections ?? [],
     handleBookmarkClick,
     isBookmarkActionPending: bookmarkMutation.isPending,
     isSaved,

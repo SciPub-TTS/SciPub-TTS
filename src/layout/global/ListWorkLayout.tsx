@@ -161,6 +161,7 @@ export default function ListWorkLayout({
 
   const {
     bookmarkButtonLabel,
+    collections,
     handleBookmarkClick: handleWorkBookmarkClick,
     isBookmarkActionPending,
     isSaved: savedState,
@@ -368,6 +369,14 @@ export default function ListWorkLayout({
           )}
 
           <MetadataBadge tone="default" label={field} />
+
+          {collections.map((collection) => (
+            <MetadataBadge
+              key={collection.id}
+              tone="keyword"
+              label={collection.name}
+            />
+          ))}
         </div>
 
         <span className="inline-flex shrink-0 items-center gap-1 text-[11px] font-extrabold tracking-[0.24em] text-black">
