@@ -1,28 +1,90 @@
 // Domain data types returned by the backend or mock services.
+export type SearchEntityType =
+  | "works"
+  | "authors"
+  | "topics";
+
 export type SavedSearch = {
+  id: string;
   query: string;
   savedAt: string;
 };
 
+export type SaveSearchFeedback = {
+  kind: "error" | "success";
+  message: string;
+};
+
+export type PaperResultEntityRef = {
+  id: string | null;
+  name: string;
+};
+
 export type PaperResult = {
   id: string;
+  entityType: "works";
   title: string;
   authors: string[];
-  venue: string;
+  authorRefs: PaperResultEntityRef[];
+  source: string;
   citations: number;
   year: number;
   abstract: string;
   fullText: string;
   doi: string;
   pdfUrl: string | null;
-  tags: string[];
+  keywords: string[];
   field: string;
   topic: string;
+  topicRef: PaperResultEntityRef | null;
   subField: string;
+  matchesTrendingKeyword: boolean;
+  matchesTrendingTopic: boolean;
+  trendingScore: number;
   growthPercent: number;
   isTrendTopic?: boolean;
   saved?: boolean;
-  trend?: boolean;
+};
+
+export type AuthorResult = {
+  id: string;
+  entityType: "authors";
+  displayName: string;
+  primaryInstitutionName: string | null;
+  primaryTopicName: string | null;
+  worksCount: number;
+};
+
+export type TopicResult = {
+  id: string;
+  entityType: "topics";
+  displayName: string;
+  subfieldName: string | null;
+  fieldName: string | null;
+  domainName: string | null;
+  worksCount: number;
+};
+
+export type SearchResultItem =
+  | PaperResult
+  | AuthorResult
+  | TopicResult;
+
+export type SearchTrendingMode = "none" | "keyword" | "topic" | "both";
+
+export type SearchSortBy =
+  | "relevance"
+  | "citation"
+  | "published"
+  | "works"
+  | "alphabetical";
+
+export type SearchSortDirection = "asc" | "desc";
+
+export type SearchSortState = {
+  sortBy: SearchSortBy;
+  sortDirection: SearchSortDirection;
+  trendingMode: SearchTrendingMode;
 };
 
 export type SearchFilters = {
@@ -37,6 +99,8 @@ export type SearchFilters = {
   institution: string[];
   pdf: boolean;
   country: string[];
+  primaryTopic: string[];
+  field: string[];
   citationMode: "range" | "exact";
   citationMin: string;
   citationMax: string;
@@ -55,15 +119,21 @@ export type SearchFilterWidgetKey =
   | "institution"
   | "pdf"
   | "country"
+  | "primaryTopic"
+  | "field"
   | "citation"
   | "source"
   | "award"
   | "indexedByOrcid";
 
 export type RemoteOptionFilterKey =
+  | "type"
+  | "subField"
   | "author"
   | "institution"
   | "country"
+  | "primaryTopic"
+  | "field"
   | "award"
   | "source";
 
@@ -76,6 +146,8 @@ export type SearchFilterOptions = {
   author: string[];
   institution: string[];
   country: string[];
+  primaryTopic: string[];
+  field: string[];
   source: string[];
   award: string[];
 };
@@ -92,40 +164,53 @@ export type UpdateSearchFilter = (
   value: SearchFilters[keyof SearchFilters],
 ) => void;
 
-export type SearchSummaryStats = {
-  totalIndexedPapers: number;
-  matchedPapers: number;
-  latestUpdatedMinutesAgo: number;
-  resultCount: number;
-  responseTimeSeconds: number;
-};
-
 // Component prop types live here so JSX files stay focused on rendering.
 export type PaperResultCardProps = {
   paper: PaperResult;
+  trendingKeywordNames: string[];
+  trendingTopicNames: string[];
 };
 
 export type SearchPanelProps = {
+  activeEntityType: SearchEntityType;
   activeFilterCount: number;
   appliedFilterSummary: string[];
+  canSaveSearch: boolean;
   filterOptions: SearchFilterOptions;
   filters: SearchFilters;
   filtersOpen: boolean;
   hasFormError: boolean;
   isLoadingResults: boolean;
+  isSavingSearch: boolean;
   isLoadingFilterOptions: RemoteOptionStateMap;
   isLoadingMoreFilterOptions: RemoteOptionStateMap;
   hasMoreFilterOptions: RemoteOptionStateMap;
   matchedPaperCount: number;
+  recentSearches: SavedSearch[];
+  saveSearchFeedback: SaveSearchFeedback | null;
+  saveSearchNotice: string | null;
+  saveSearchSuccessToken: number;
+  hasLoadedTrendSnapshot: boolean;
+  topicHotSearches: string[];
   searchQuery: string;
-  totalIndexedPapers: number;
+  searchPlaceholder: string;
+  showFilters: boolean;
+  totalIndexedCount: number;
+  isIndexedCountExact: boolean;
   visibleFilterWidgets: SearchFilterWidgetKey[];
+  showFilterAddMenu: boolean;
+  isClearingRecentSearches: boolean;
+  isDeletingRecentSearch: boolean;
   onApplyFilters: () => void;
+  onClearRecentSearches: () => void;
+  onDeleteRecentSearch: (query: string) => void;
   onFilterOptionSearch: (filterKey: RemoteOptionFilterKey, keyword: string) => void;
   onLoadMoreFilterOptions: (filterKey: RemoteOptionFilterKey) => void;
   onResetFilters: () => void;
+  onEntityTypeChange: (entityType: SearchEntityType) => void;
   onSearch: () => void;
   onSearchQueryChange: (query: string) => void;
+  onSaveSearch: () => void;
   onSuggestedSearchSelect: (query: string) => void;
   onToggleFilters: () => void;
   onToggleVisibleFilterWidget: (widgetKey: SearchFilterWidgetKey) => void;
@@ -133,14 +218,19 @@ export type SearchPanelProps = {
 };
 
 export type SearchInputRowProps = {
+  activeEntityType: SearchEntityType;
   isLoadingResults: boolean;
+  recentSearches: SavedSearch[];
+  saveSearchSuccessToken: number;
   searchQuery: string;
+  searchPlaceholder: string;
+  isClearingRecentSearches: boolean;
+  isDeletingRecentSearch: boolean;
+  onClearSuggestions: () => void;
+  onDeleteSuggestion: (query: string) => void;
   onSearch: () => void;
   onSearchQueryChange: (query: string) => void;
-};
-
-export type SuggestedSearchListProps = {
-  onSelect: (query: string) => void;
+  onSelectSuggestion: (query: string) => void;
 };
 
 export type SearchFiltersPanelProps = {
@@ -156,6 +246,7 @@ export type SearchFiltersPanelProps = {
   isLoadingResults: boolean;
   matchedPaperCount: number;
   visibleFilterWidgets: SearchFilterWidgetKey[];
+  showFilterAddMenu: boolean;
   onApplyFilters: () => void;
   onFilterOptionSearch: (filterKey: RemoteOptionFilterKey, keyword: string) => void;
   onLoadMoreFilterOptions: (filterKey: RemoteOptionFilterKey) => void;
@@ -208,6 +299,8 @@ export type MultiSelectFilterProps = {
     | "author"
     | "institution"
     | "country"
+    | "primaryTopic"
+    | "field"
     | "source"
     | "award";
   label: string;
@@ -243,23 +336,27 @@ export type OrcidFilterProps = {
 };
 
 export type SearchResultsProps = {
+  activeEntityType: SearchEntityType;
   appliedSearchQuery: string;
   autoLoadAnchorIndex: number;
   canLoadMoreResults: boolean;
   hasSearched: boolean;
+  isTotalResultCountExact: boolean;
   isLoadingResults: boolean;
   isLoadingMoreResults: boolean;
   responseTimeSeconds: number;
-  selectedSorts: string[];
+  sortState: SearchSortState;
   totalResultCount: number;
-  visiblePaperResults: PaperResult[];
+  trendingKeywordNames: string[];
+  trendingTopicNames: string[];
+  visibleResults: SearchResultItem[];
   onLoadMoreResults: () => void;
   onClearSorts: () => void;
-  onToggleSort: (sortOption: string) => void;
+  onSelectSort: (sortOption: string) => void;
 };
 
 export type ResultsListProps = {
   autoLoadAnchorIndex: number;
-  visiblePaperResults: PaperResult[];
+  visibleResults: SearchResultItem[];
 };
 

@@ -1,6 +1,7 @@
 // src/features/auth/components/layout/AuthResetLayout.tsx
 import { Link } from "react-router-dom";
 import { ROUTES } from "@/app/router";
+import logoImage from "@/assets/images/logo.png";
 
 type AuthSimpleLayoutProps = {
     children: React.ReactNode;
@@ -14,15 +15,15 @@ export default function AuthResetLayout({ children, backTo, backLabel }: AuthSim
             {/* Header */}
             <header className="flex items-center justify-between px-8 h-14 border-b border-slate-100">
                 <Link to={ROUTES.HOME} className="flex items-center gap-2.5">
-                    <div className="w-7 h-7 rounded-md bg-emerald-800 flex items-center justify-center">
-                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                            <path d="M2 10 Q7 2 12 10" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" fill="none" />
-                            <circle cx="7" cy="5.5" r="1.2" fill="#6ee7b7" />
-                        </svg>
+                    <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-lg bg-white shadow-sm">
+                        <img
+                            src={logoImage}
+                            alt="Owlreka logo"
+                            className="h-full w-full object-cover"
+                        />
                     </div>
                     <div>
-                        <div className="text-sm font-semibold text-slate-900 leading-none">Research Trend Tracker</div>
-                        <div className="text-[10px] tracking-widest text-slate-400 leading-none mt-0.5">RTT · V2.4</div>
+                        <div className="text-sm font-semibold text-slate-900 leading-none">Owlreka</div>
                     </div>
                 </Link>
                 <Link to={backTo} className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-800 transition-colors">

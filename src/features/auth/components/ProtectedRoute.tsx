@@ -4,7 +4,7 @@ import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { ROUTES } from "@/app/router";
 import type { AuthRole } from "@/features/auth/constants/roles";
 import { AUTH_ROLES } from "@/features/auth/constants/roles";
-import { getCurrentUser, isAuthenticated } from "@/features/auth/utils/authStorage";
+import { useAuthSession } from "@/features/auth/hooks/useAuthSession";
 
 type ProtectedRouteProps = {
     allowedRoles: AuthRole[];
@@ -12,9 +12,13 @@ type ProtectedRouteProps = {
 
 export default function ProtectedRoute({ allowedRoles }: ProtectedRouteProps) {
     const location = useLocation();
-    const currentUser = getCurrentUser();
+    const { currentUser, isAuthenticated, isAuthSessionRestoring } = useAuthSession();
 
-    if (!isAuthenticated() || !currentUser) {
+    if (isAuthSessionRestoring) {
+        return null;
+    }
+
+    if (!isAuthenticated || !currentUser) {
         return <Navigate to={ROUTES.LOGIN} replace state={{ from: location }} />;
     }
 

@@ -1,10 +1,7 @@
-import {
-  SEARCH_MIN_CITATION,
-  SEARCH_VISIBLE_SAVED_SEARCH_LIMIT,
-} from "../constants";
+import { SEARCH_MIN_CITATION } from "../constants";
 import { mockSearchYearRange } from "../services";
 import type {
-  SavedSearch,
+  SearchEntityType,
   SearchFilters,
   SearchFilterWidgetKey,
 } from "../types";
@@ -19,7 +16,7 @@ const compactNumberFormatter = new Intl.NumberFormat("en", {
 
 const fullNumberFormatter = new Intl.NumberFormat("en");
 
-const searchFilterWidgetKeyMap = {
+const searchFilterWidgetKeyMap: Record<string, SearchFilterWidgetKey> = {
   year: "year",
   type: "type",
   openaccess: "openAccess",
@@ -28,12 +25,14 @@ const searchFilterWidgetKeyMap = {
   institution: "institution",
   pdf: "pdf",
   country: "country",
+  primarytopic: "primaryTopic",
+  field: "field",
   citation: "citation",
   citationcount: "citation",
   source: "source",
   award: "award",
   indexedbyorcid: "indexedByOrcid",
-} satisfies Record<string, SearchFilterWidgetKey>;
+};
 
 export function formatCompactNumber(value: number) {
   return compactNumberFormatter.format(value);
@@ -68,6 +67,23 @@ export function normalizeSearchFilterWidgetKeys(values: string[]) {
   }
 
   return normalizedValues;
+}
+
+export function normalizeTrendLabel(value: string) {
+  return value
+    .trim()
+    .toLocaleLowerCase()
+    .replace(/^#/, "")
+    .replace(/[()]/g, "")
+    .replace(/\s+/g, " ");
+}
+
+export function buildNormalizedTrendLabelSet(values: string[]) {
+  return new Set(values.map(normalizeTrendLabel));
+}
+
+export function isExactTrendMatch(value: string, normalizedTrendLabels: Set<string>) {
+  return normalizedTrendLabels.has(normalizeTrendLabel(value));
 }
 
 export function formatLatestUpdate(minutesAgo: number) {
@@ -139,7 +155,38 @@ export function hasInvalidCitationRange(filters: SearchFilters) {
   return citationMin > citationMax;
 }
 
-export function countActiveFilters(filters: SearchFilters) {
+export function countActiveFilters(
+  entityType: SearchEntityType,
+  filters: SearchFilters,
+) {
+  if (entityType === "authors") {
+    let activeFilterCount = 0;
+
+    if (filters.institution.length > 0) {
+      activeFilterCount += 1;
+    }
+
+    if (filters.country.length > 0) {
+      activeFilterCount += 1;
+    }
+
+    return activeFilterCount;
+  }
+
+  if (entityType === "topics") {
+    let activeFilterCount = 0;
+
+    if (filters.subField.length > 0) {
+      activeFilterCount += 1;
+    }
+
+    if (filters.field.length > 0) {
+      activeFilterCount += 1;
+    }
+
+    return activeFilterCount;
+  }
+
   let activeFilterCount = 0;
 
   if (hasYearFilter(filters)) {
@@ -193,8 +240,23 @@ export function countActiveFilters(filters: SearchFilters) {
   return activeFilterCount;
 }
 
-export function buildAppliedFilterSummary(filters: SearchFilters) {
+export function buildAppliedFilterSummary(
+  entityType: SearchEntityType,
+  filters: SearchFilters,
+) {
   const summary: string[] = [];
+
+  if (entityType === "authors") {
+    addListFilterSummary(summary, "Institution", filters.institution);
+    addListFilterSummary(summary, "Country", filters.country);
+    return summary;
+  }
+
+  if (entityType === "topics") {
+    addListFilterSummary(summary, "SubField", filters.subField);
+    addListFilterSummary(summary, "Field", filters.field);
+    return summary;
+  }
 
   addYearSummary(summary, filters);
   addListFilterSummary(summary, "Type", filters.type);
@@ -221,30 +283,6 @@ export function buildAppliedFilterSummary(filters: SearchFilters) {
   }
 
   return summary;
-}
-
-export function getVisibleSearchSuggestions(
-  savedSearches: SavedSearch[],
-  keyword: string,
-  showAll: boolean,
-) {
-  const normalizedKeyword = keyword.trim().toLowerCase();
-  let matchedSearches = savedSearches;
-
-  // Empty keyword shows all saved searches; typed keyword filters them.
-  if (normalizedKeyword) {
-    matchedSearches = [];
-
-    for (const savedSearch of savedSearches) {
-      if (savedSearchMatchesKeyword(savedSearch, normalizedKeyword)) {
-        matchedSearches.push(savedSearch);
-      }
-    }
-  }
-
-  return showAll
-    ? matchedSearches
-    : matchedSearches.slice(0, SEARCH_VISIBLE_SAVED_SEARCH_LIMIT);
 }
 
 function hasYearFilter(filters: SearchFilters) {
@@ -302,12 +340,5 @@ function addListFilterSummary(
   }
 
   summary.push(`${label}: ${values.join(", ")}`);
-}
-
-function savedSearchMatchesKeyword(
-  savedSearch: SavedSearch,
-  normalizedKeyword: string,
-) {
-  return savedSearch.query.toLowerCase().includes(normalizedKeyword);
 }
 

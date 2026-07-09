@@ -1,100 +1,161 @@
 import axios, { type InternalAxiosRequestConfig } from "axios";
 
 import {
-    clearAuthStorage,
-    getAccessToken,
-    setAccessToken,
+  clearAuthStorage,
+  getAccessToken,
+  setAccessTokenExpiry,
+  setAccessToken,
 } from "@/features/auth/utils/authStorage";
-import type {AuthResponse } from "@/features/auth/types/auth.types";
-import type {ApiResponse} from "@/types/common.types.ts";
+import type { AuthResponse } from "@/features/auth/types/auth.types";
+import type { ApiResponse } from "@/types/common.types.ts";
 
-const API_BASE_URL =
-    import.meta.env.VITE_BACKEND_URL;
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
 
 export const http = axios.create({
-    baseURL: API_BASE_URL,
-    withCredentials: true,
+  baseURL: apiBaseUrl,
+  withCredentials: true,
 });
 
 const refreshClient = axios.create({
-    baseURL: API_BASE_URL,
-    withCredentials: true,
+  baseURL: apiBaseUrl,
+  withCredentials: true,
+});
+
+export const publicHttp = axios.create({
+  baseURL: apiBaseUrl,
+  withCredentials: true,
 });
 
 function shouldSkipRefresh(url?: string) {
-    if (!url) return true;
+  if (!url) return true;
 
-    return (
-        url.includes("/auth/login") ||
-        url.includes("/auth/register") ||
-        url.includes("/auth/refresh") ||
-        url.includes("/auth/forgot-password")
-    );
+  return (
+    url.includes("/auth/login") ||
+    url.includes("/auth/register") ||
+    url.includes("/auth/refresh") ||
+    url.includes("/auth/forgot-password")
+  );
 }
 
 http.interceptors.request.use((config) => {
-    const accessToken = getAccessToken();
+  const accessToken = getAccessToken();
 
-    if (accessToken) {
-        config.headers = config.headers ?? {};
-        config.headers.Authorization = `Bearer ${accessToken}`;
-    }
+  if (accessToken) {
+    config.headers = config.headers ?? {};
+    config.headers.Authorization = `Bearer ${accessToken}`;
+  }
 
-    return config;
+  return config;
 });
 
-let refreshPromise: Promise<string | null> | null = null;
+type RefreshedAccessSession = {
+  accessToken: string | null;
+  expiresInSeconds?: number;
+};
+
+let refreshPromise: Promise<RefreshedAccessSession> | null = null;
+
+async function wait(ms: number) {
+  await new Promise((resolve) => {
+    window.setTimeout(resolve, ms);
+  });
+}
+
+function isRetriableRefreshError(error: unknown) {
+  if (!axios.isAxiosError(error)) {
+    return false;
+  }
+
+  if (!error.response) {
+    return true;
+  }
+
+  return error.response.status >= 500;
+}
+
+function isTerminalRefreshError(error: unknown) {
+  if (!axios.isAxiosError(error)) {
+    return false;
+  }
+
+  const status = error.response?.status;
+
+  return status === 400 || status === 401 || status === 403;
+}
+
+async function requestRefreshedAccessToken() {
+  let lastError: unknown = null;
+
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    try {
+      const response =
+        await refreshClient.post<ApiResponse<AuthResponse>>("/auth/refresh");
+      const nextToken = response.data.data?.accessToken ?? null;
+      const expiresInSeconds = response.data.data?.expiresInSeconds;
+
+      if (nextToken) {
+        setAccessToken(nextToken);
+        setAccessTokenExpiry(expiresInSeconds);
+      }
+
+      return {
+        accessToken: nextToken,
+        expiresInSeconds,
+      };
+    } catch (error) {
+      lastError = error;
+
+      if (!isRetriableRefreshError(error) || attempt === 1) {
+        if (isTerminalRefreshError(error)) {
+          clearAuthStorage();
+        }
+
+        throw error;
+      }
+
+      await wait(600);
+    }
+  }
+
+  throw lastError;
+}
 
 http.interceptors.response.use(
-    (response) => response,
-    async (error) => {
-        const originalRequest = error.config as
-            | (InternalAxiosRequestConfig & { _retry?: boolean })
-            | undefined;
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config as
+      | (InternalAxiosRequestConfig & { _retry?: boolean })
+      | undefined;
 
-        if (
-            error.response?.status !== 401 ||
-            !originalRequest ||
-            originalRequest._retry ||
-            shouldSkipRefresh(originalRequest.url)
-        ) {
-            return Promise.reject(error);
-        }
+    if (
+      error.response?.status !== 401 ||
+      !originalRequest ||
+      originalRequest._retry ||
+      shouldSkipRefresh(originalRequest.url)
+    ) {
+      return Promise.reject(error);
+    }
 
-        originalRequest._retry = true;
+    originalRequest._retry = true;
 
-        refreshPromise ??= refreshClient
-            .post<ApiResponse<AuthResponse>>("/auth/refresh")
-            .then((response) => {
-                const nextToken = response.data.data?.accessToken ?? null;
+    refreshPromise ??= requestRefreshedAccessToken()
+      .finally(() => {
+        refreshPromise = null;
+      });
 
-                if (nextToken) {
-                    setAccessToken(nextToken);
-                }
+    const refreshedSession = await refreshPromise;
+    const nextToken = refreshedSession.accessToken;
 
-                return nextToken;
-            })
-            .catch((refreshError) => {
-                clearAuthStorage();
-                throw refreshError;
-            })
-            .finally(() => {
-                refreshPromise = null;
-            });
+    if (!nextToken) {
+      return Promise.reject(error);
+    }
 
-        const nextToken = await refreshPromise;
+    originalRequest.headers = originalRequest.headers ?? {};
+    originalRequest.headers.Authorization = `Bearer ${nextToken}`;
 
-        if (!nextToken) {
-            return Promise.reject(error);
-        }
-
-        originalRequest.headers = originalRequest.headers ?? {};
-        originalRequest.headers.Authorization = `Bearer ${nextToken}`;
-
-        return http(originalRequest);
-    },
+    return http(originalRequest);
+  },
 );
-
 
 //User gọi API
 //     ↓

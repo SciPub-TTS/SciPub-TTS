@@ -52,10 +52,10 @@ export default function ForgotPasswordPage() {
                 Password recovery · Step 1 of 3
             </p>
 
-            <h1 className="font-serif text-[2.2rem] leading-[1.15] text-slate-950 mb-1">
+            <h1 className="font-title-page text-[2.2rem] leading-[1.15] text-slate-950 mb-1">
                 Forgot your
             </h1>
-            <h1 className="font-serif text-[2.2rem] leading-[1.15] italic text-emerald-700 mb-3">
+            <h1 className="font-title-page text-[2.2rem] leading-[1.15] italic text-emerald-700 mb-3">
                 password?
             </h1>
             <p className="text-sm text-slate-500 mb-8 leading-relaxed">

@@ -1,23 +1,69 @@
 import {
   Activity,
-  CalendarDays,
   Layers,
-  RefreshCw,
   Tags,
   TrendingUp,
   UserRoundX,
   Users,
-  WalletCards,
 } from "lucide-react";
 
+import type { AdminApiUsagePoint, AdminUserBanSummary } from "../types";
 import AdminStatCard, { type AdminStatCardProps } from "./AdminStatCard";
 
-const adminStats: AdminStatCardProps[] = [
+type AdminStatsGridProps = {
+  apiUsageOverTime: AdminApiUsagePoint[];
+  banSummary?: AdminUserBanSummary;
+  isApiUsageOverTimeError: boolean;
+  isApiUsageOverTimeLoading: boolean;
+  isBanSummaryError: boolean;
+  isBanSummaryLoading: boolean;
+};
+
+function getSummaryValue(
+  value: number | undefined,
+  isLoading: boolean,
+  isError: boolean,
+) {
+  if (isLoading) return "...";
+  if (isError || value === undefined) return "Unavailable";
+
+  return new Intl.NumberFormat("en").format(value);
+}
+
+function buildAdminStats({
+  apiUsageOverTime,
+  banSummary,
+  isApiUsageOverTimeError,
+  isApiUsageOverTimeLoading,
+  isBanSummaryError,
+  isBanSummaryLoading,
+}: AdminStatsGridProps): AdminStatCardProps[] {
+  const totalUsersValue = getSummaryValue(
+    banSummary?.total,
+    isBanSummaryLoading,
+    isBanSummaryError,
+  );
+  const bannedUsersValue = getSummaryValue(
+    banSummary?.banned,
+    isBanSummaryLoading,
+    isBanSummaryError,
+  );
+  const totalApiCalls = apiUsageOverTime.reduce(
+    (total, item) => total + Math.max(0, item.callCount),
+    0,
+  );
+  const apiCallsUsedValue = getSummaryValue(
+    totalApiCalls,
+    isApiUsageOverTimeLoading,
+    isApiUsageOverTimeError,
+  );
+
+  return [
   {
     label: "Total Users",
-    value: "128",
+    value: totalUsersValue,
     description: "Registered accounts",
-    accent: "+6 this week",
+    accent: banSummary ? `${banSummary.active} active accounts` : undefined,
     tone: "blue",
     icon: Users,
   },
@@ -31,35 +77,23 @@ const adminStats: AdminStatCardProps[] = [
   },
   {
     label: "Banned Users",
-    value: "16",
+    value: bannedUsersValue,
     description: "Restricted accounts",
-    accent: "+2 this month",
+    accent: banSummary
+      ? `${banSummary.bannedPercentage}% of accounts`
+      : undefined,
     tone: "red",
     icon: UserRoundX,
   },
   {
     label: "API Calls Used",
-    value: "24,580",
-    description: "This month",
-    accent: "+12% vs last month",
+    value: apiCallsUsedValue,
+    description: "Last 7 days",
+    accent: isApiUsageOverTimeError
+      ? undefined
+      : `${apiUsageOverTime.length} tracked days`,
     tone: "indigo",
     icon: Activity,
-  },
-  {
-    label: "API Calls Today",
-    value: "1,240",
-    description: "Today",
-    accent: "Within daily quota",
-    tone: "purple",
-    icon: CalendarDays,
-  },
-  {
-    label: "Total API Credit",
-    value: "100,000",
-    description: "Daily usage",
-    accent: "All",
-    tone: "purple",
-    icon: WalletCards,
   },
   {
     label: "Total Subfields",
@@ -76,16 +110,12 @@ const adminStats: AdminStatCardProps[] = [
     tone: "emerald",
     icon: Tags,
   },
-  {
-    label: "Last Synchronization",
-    value: "Today, 09:30 AM",
-    description: "Latest data update",
-    tone: "teal",
-    icon: RefreshCw,
-  },
-];
+  ];
+}
 
-export default function AdminStatsGrid() {
+export default function AdminStatsGrid(props: AdminStatsGridProps) {
+  const adminStats = buildAdminStats(props);
+
   return (
     <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
       {adminStats.map((stat) => (

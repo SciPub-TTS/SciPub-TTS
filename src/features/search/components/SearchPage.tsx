@@ -1,6 +1,5 @@
-import { SearchPageContent } from "@/features/search/components";
+import SearchPageContent from "./page/SearchPageContent";
 
 export default function SearchPage() {
   return <SearchPageContent />;
 }
-

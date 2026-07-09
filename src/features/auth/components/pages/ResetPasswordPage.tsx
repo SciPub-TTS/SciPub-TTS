@@ -3,7 +3,6 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { ROUTES } from "@/app/router";
 import { submitResetPassword } from "@/features/auth/services/authFlows.ts";
 import { getApiErrorMessage } from "@/features/auth/utils/getApiErrorMessage.ts";
-import PasswordStrength from "@/features/auth/components/form/PasswordStrength.tsx";
 import AuthResetLayout from "@/features/auth/components/common/AuthResetLayout.tsx";
 import AuthMessage from "@/features/auth/components/common/AuthMessage.tsx";
 
@@ -22,11 +21,6 @@ export default function ResetPasswordPage() {
 
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
-
-        if (newPassword.length < 10) {
-            setError("Password must be at least 10 characters long.");
-            return;
-        }
 
         if (newPassword !== confirmNewPassword) {
             setError("Password confirmation does not match.");
@@ -73,14 +67,14 @@ export default function ResetPasswordPage() {
                 Password recovery · Step 3 of 3
             </p>
 
-            <h1 className="font-serif text-[2.2rem] leading-[1.15] text-slate-950 mb-1">
+            <h1 className="font-title-page text-[2.2rem] leading-[1.15] text-slate-950 mb-1">
                 Set a new
             </h1>
-            <h1 className="font-serif text-[2.2rem] leading-[1.15] italic text-emerald-700 mb-3">
+            <h1 className="font-title-page text-[2.2rem] leading-[1.15] italic text-emerald-700 mb-3">
                 password.
             </h1>
             <p className="text-sm text-slate-500 mb-7 leading-relaxed">
-                Choose a strong password for your account. You'll use it to sign in next time.
+                Set a new password for your account. You'll use it to sign in next time.
             </p>
 
             <AuthMessage type="error" message={error} />
@@ -98,7 +92,7 @@ export default function ResetPasswordPage() {
                             type={showNew ? "text" : "password"}
                             value={newPassword}
                             onChange={(e) => setNewPassword(e.target.value)}
-                            placeholder="At least 10 characters"
+                            placeholder="Enter your new password"
                             required
                             autoFocus
                             className="w-full h-11 pl-9 pr-10 rounded-lg border border-slate-200 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
@@ -117,7 +111,6 @@ export default function ResetPasswordPage() {
                             )}
                         </button>
                     </div>
-                    <PasswordStrength password={newPassword} />
                 </div>
 
                 <div>
@@ -189,3 +182,4 @@ export default function ResetPasswordPage() {
         </AuthResetLayout>
     );
 }
+

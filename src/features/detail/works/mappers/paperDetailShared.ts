@@ -1,0 +1,167 @@
+import type { OpenAlexAbstractInvertedIndex } from "../types";
+import {
+  extractPathId,
+  normalizeIdentifierLabel as normalizeResourceIdentifierLabel,
+  normalizePubmedUrl as normalizeResourcePubmedUrl,
+  trimToEmpty,
+} from "@/lib/resourceFormatting";
+
+const languageDisplayNames = new Intl.DisplayNames(["en"], {
+  type: "language",
+});
+const countryDisplayNames = new Intl.DisplayNames(["en"], {
+  type: "region",
+});
+
+export function reconstructAbstractText(
+  abstractInvertedIndex: OpenAlexAbstractInvertedIndex | null,
+) {
+  if (!abstractInvertedIndex) {
+    return "";
+  }
+
+  const orderedTokens: string[] = [];
+
+  for (const [token, positions] of Object.entries(abstractInvertedIndex)) {
+    for (const position of positions) {
+      orderedTokens[position] = token;
+    }
+  }
+
+  return orderedTokens.filter(Boolean).join(" ").replace(/\s+/g, " ").trim();
+}
+
+export function formatTypeLabel(value: string) {
+  const normalizedValue = trimToEmpty(value);
+  if (!normalizedValue) {
+    return "";
+  }
+
+  return normalizedValue
+    .replaceAll("-", " ")
+    .replaceAll("_", " ")
+    .replace(/\b\w/g, (character) => character.toUpperCase());
+}
+
+export function formatLanguageLabel(languageCode: string | null) {
+  if (!languageCode?.trim()) {
+    return "";
+  }
+
+  return languageDisplayNames.of(languageCode) || languageCode.toUpperCase();
+}
+
+export function formatCountryLabel(countryCode: string | null | undefined) {
+  const normalizedCountryCode = countryCode?.trim().toUpperCase();
+
+  if (!normalizedCountryCode) {
+    return "";
+  }
+
+  return (
+    countryDisplayNames.of(normalizedCountryCode) || normalizedCountryCode
+  );
+}
+
+export function formatPublishedLabel(
+  publicationYear: number | null,
+  publicationDate: string | null,
+) {
+  if (publicationDate?.trim()) {
+    const date = new Date(publicationDate);
+    if (!Number.isNaN(date.getTime())) {
+      return `Published ${new Intl.DateTimeFormat("en-US", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      }).format(date)}`;
+    }
+  }
+
+  if (publicationYear) {
+    return `Published ${publicationYear}`;
+  }
+
+  return "";
+}
+
+export function normalizeIdentifierLabel(value: string | null) {
+  return normalizeResourceIdentifierLabel(value);
+}
+
+export function normalizePubmedUrl(value: string | null | undefined) {
+  return normalizeResourcePubmedUrl(value);
+}
+
+export function formatOpenAccessStatus(status: string | null) {
+  if (!status?.trim()) {
+    return "";
+  }
+
+  return `${status.toUpperCase()} OA`;
+}
+
+export function formatLicenseLabel(license: string | null) {
+  if (!license?.trim()) {
+    return "";
+  }
+
+  return license.toUpperCase();
+}
+
+export function formatAvailabilityLabel(isAvailable: boolean) {
+  return isAvailable ? "Available" : "Not available";
+}
+
+export function formatCurrency(
+  value: number | null | undefined,
+  currency: string | null | undefined,
+) {
+  if (value === null || value === undefined) {
+    return "";
+  }
+
+  return new Intl.NumberFormat("en-US", {
+    currency: currency || "USD",
+    maximumFractionDigits: 0,
+    style: "currency",
+  }).format(value);
+}
+
+export function formatHostnameLabel(value: string) {
+  try {
+    const hostname = new URL(value).hostname.replace(/^www\./i, "");
+    return hostname || value;
+  } catch {
+    return value;
+  }
+}
+
+export function extractLastSegment(value: string) {
+  return extractPathId(value);
+}
+
+export function normalizeOpenAlexWorkId(value: string) {
+  return extractLastSegment(value).toUpperCase();
+}
+
+export function formatDecimalValue(value: number | null) {
+  if (value === null || value === undefined) {
+    return "";
+  }
+
+  return new Intl.NumberFormat("en-US", {
+    maximumFractionDigits: 2,
+  }).format(value);
+}
+
+export function formatCitationPercentile(value: number | null | undefined) {
+  if (value === null || value === undefined) {
+    return "";
+  }
+
+  return new Intl.NumberFormat("en-US", {
+    maximumFractionDigits: 1,
+    style: "percent",
+  }).format(value);
+}
