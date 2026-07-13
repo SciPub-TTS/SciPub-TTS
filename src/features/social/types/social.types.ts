@@ -77,3 +77,15 @@ export interface LikeToggleResponse {
   liked: boolean;
   likeCount: number;
 }
+
+export type FeedTab = "all" | "my-posts";
+
+export type SortMode = "newest" | "most-liked";
+
+export type BlogModalMode = "create" | "edit";
+
+export type BlogFormState = {
+  title: string;
+  body: string;
+  selectedOpenAlexIds: string[];
+};
