@@ -93,4 +93,27 @@ export type AdminApiUsagePoint = {
   date: string;
 };
 
+export type AdminCronConfig = {
+  configKey: string;
+  createdAt: string | null;
+  dayOfMonth: string | null;
+  dayOfWeek: string | null;
+  description: string | null;
+  fullCronExpression: string;
+  hour: string | null;
+  minute: string | null;
+  month: string | null;
+  second: string | null;
+  updateAt: string | null;
+};
+
+export type AdminCronConfigUpdateInput = {
+  dayOfMonth: string;
+  dayOfWeek: string;
+  hour: string;
+  minute: string;
+  month: string;
+  second: string;
+};
+
 

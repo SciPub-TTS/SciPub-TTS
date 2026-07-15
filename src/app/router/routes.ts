@@ -33,6 +33,7 @@ export const ROUTES = {
   ADMIN_DASHBOARD: "/admin/dashboard",
   ADMIN_USERS: "/admin/users",
   ADMIN_USER_DETAIL: "/admin/users/:userId",
+  ADMIN_SYSTEM_SETTINGS: "/admin/system-settings",
 } as const;
 
 function encodePathSegment(value: string | number) {
