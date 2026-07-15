@@ -68,12 +68,19 @@ export type AdminUsersPageData = {
   totalPages: number;
 };
 
-export type AdminUserBanSummary = {
-  active: number;
-  activePercentage: number;
-  banned: number;
-  bannedPercentage: number;
-  total: number;
+export type AdminMetricValue = {
+  value: number;
+};
+
+export type AdminDashboardMetric = AdminMetricValue | number | undefined;
+
+export type AdminDashboardStatistics = {
+  bannedUser?: AdminDashboardMetric;
+  totalSubfields?: AdminDashboardMetric;
+  totalTopics?: AdminDashboardMetric;
+  totalKeywordTrend?: AdminDashboardMetric;
+  totalTopicTrend?: AdminDashboardMetric;
+  totalUsers?: AdminDashboardMetric;
 };
 
 export type AdminTopApiConsumer = {
@@ -85,3 +92,5 @@ export type AdminApiUsagePoint = {
   callCount: number;
   date: string;
 };
+
+

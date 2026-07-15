@@ -9,8 +9,8 @@ import {
 import {
   banAdminUser,
   getAdminApiUsageOverTime,
+  getAdminDashboardStatistics,
   getAdminTopApiConsumers,
-  getAdminUserBanSummary,
   getAdminUserDetail,
   getAdminUsers,
   getAdminUserSearchHistory,
@@ -44,9 +44,9 @@ export const adminUsersSortOptions: Array<{
 ];
 
 export function useAdminDashboardData() {
-  const banSummaryQuery = useQuery({
-    queryKey: ["admin-user-ban-summary"],
-    queryFn: getAdminUserBanSummary,
+  const dashboardStatisticsQuery = useQuery({
+    queryKey: ["admin-dashboard-statistics"],
+    queryFn: getAdminDashboardStatistics,
   });
   const topApiConsumersQuery = useQuery({
     queryKey: ["admin-top-api-consumers"],
@@ -59,11 +59,11 @@ export function useAdminDashboardData() {
 
   return {
     apiUsageOverTime: apiUsageOverTimeQuery.data ?? [],
-    banSummary: banSummaryQuery.data,
+    dashboardStatistics: dashboardStatisticsQuery.data,
     isApiUsageOverTimeError: apiUsageOverTimeQuery.isError,
     isApiUsageOverTimeLoading: apiUsageOverTimeQuery.isLoading,
-    isBanSummaryError: banSummaryQuery.isError,
-    isBanSummaryLoading: banSummaryQuery.isLoading,
+    isDashboardStatisticsError: dashboardStatisticsQuery.isError,
+    isDashboardStatisticsLoading: dashboardStatisticsQuery.isLoading,
     isTopApiConsumersError: topApiConsumersQuery.isError,
     isTopApiConsumersLoading: topApiConsumersQuery.isLoading,
     topApiConsumers: topApiConsumersQuery.data ?? [],
@@ -342,3 +342,5 @@ function getAccountStatusConfirmationMessage(
     ? `Are you sure you want to unban ${fullName}?`
     : `Are you sure you want to ban ${fullName}?`;
 }
+
+

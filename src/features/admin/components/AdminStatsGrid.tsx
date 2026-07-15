@@ -1,115 +1,101 @@
-import {
-  Activity,
-  Layers,
-  Tags,
-  TrendingUp,
-  UserRoundX,
-  Users,
-} from "lucide-react";
-
-import type { AdminApiUsagePoint, AdminUserBanSummary } from "../types";
+import type {
+  AdminDashboardMetric,
+  AdminDashboardStatistics,
+} from "../types";
 import AdminStatCard, { type AdminStatCardProps } from "./AdminStatCard";
 
 type AdminStatsGridProps = {
-  apiUsageOverTime: AdminApiUsagePoint[];
-  banSummary?: AdminUserBanSummary;
-  isApiUsageOverTimeError: boolean;
-  isApiUsageOverTimeLoading: boolean;
-  isBanSummaryError: boolean;
-  isBanSummaryLoading: boolean;
+  dashboardStatistics?: AdminDashboardStatistics;
+  isDashboardStatisticsError: boolean;
+  isDashboardStatisticsLoading: boolean;
 };
 
 function getSummaryValue(
-  value: number | undefined,
+  metric: AdminDashboardMetric,
   isLoading: boolean,
   isError: boolean,
 ) {
+  const value = getMetricValue(metric);
+
   if (isLoading) return "...";
   if (isError || value === undefined) return "Unavailable";
 
   return new Intl.NumberFormat("en").format(value);
 }
 
+function getMetricValue(metric: AdminDashboardMetric) {
+  if (typeof metric === "number") return metric;
+
+  return metric?.value;
+}
+
 function buildAdminStats({
-  apiUsageOverTime,
-  banSummary,
-  isApiUsageOverTimeError,
-  isApiUsageOverTimeLoading,
-  isBanSummaryError,
-  isBanSummaryLoading,
+  dashboardStatistics,
+  isDashboardStatisticsError,
+  isDashboardStatisticsLoading,
 }: AdminStatsGridProps): AdminStatCardProps[] {
   const totalUsersValue = getSummaryValue(
-    banSummary?.total,
-    isBanSummaryLoading,
-    isBanSummaryError,
+    dashboardStatistics?.totalUsers,
+    isDashboardStatisticsLoading,
+    isDashboardStatisticsError,
   );
   const bannedUsersValue = getSummaryValue(
-    banSummary?.banned,
-    isBanSummaryLoading,
-    isBanSummaryError,
+    dashboardStatistics?.bannedUser,
+    isDashboardStatisticsLoading,
+    isDashboardStatisticsError,
   );
-  const totalApiCalls = apiUsageOverTime.reduce(
-    (total, item) => total + Math.max(0, item.callCount),
-    0,
+  const totalTrendingTopicValue = getSummaryValue(
+    dashboardStatistics?.totalTopicTrend,
+    isDashboardStatisticsLoading,
+    isDashboardStatisticsError,
   );
-  const apiCallsUsedValue = getSummaryValue(
-    totalApiCalls,
-    isApiUsageOverTimeLoading,
-    isApiUsageOverTimeError,
+  const totalTrendingKeywordValue = getSummaryValue(
+    dashboardStatistics?.totalKeywordTrend,
+    isDashboardStatisticsLoading,
+    isDashboardStatisticsError,
+  );
+  const totalTopicsValue = getSummaryValue(
+    dashboardStatistics?.totalTopics,
+    isDashboardStatisticsLoading,
+    isDashboardStatisticsError,
+  );
+  const totalSubfieldsValue = getSummaryValue(
+    dashboardStatistics?.totalSubfields,
+    isDashboardStatisticsLoading,
+    isDashboardStatisticsError,
   );
 
   return [
-  {
-    label: "Total Users",
-    value: totalUsersValue,
-    description: "Registered accounts",
-    accent: banSummary ? `${banSummary.active} active accounts` : undefined,
-    tone: "blue",
-    icon: Users,
-  },
-  {
-    label: "Active Trends",
-    value: "42",
-    description: "Detected trend signals",
-    accent: "+5 this week",
-    tone: "amber",
-    icon: TrendingUp,
-  },
-  {
-    label: "Banned Users",
-    value: bannedUsersValue,
-    description: "Restricted accounts",
-    accent: banSummary
-      ? `${banSummary.bannedPercentage}% of accounts`
-      : undefined,
-    tone: "red",
-    icon: UserRoundX,
-  },
-  {
-    label: "API Calls Used",
-    value: apiCallsUsedValue,
-    description: "Last 7 days",
-    accent: isApiUsageOverTimeError
-      ? undefined
-      : `${apiUsageOverTime.length} tracked days`,
-    tone: "indigo",
-    icon: Activity,
-  },
-  {
-    label: "Total Subfields",
-    value: "12",
-    description: "Research subfields",
-    tone: "green",
-    icon: Layers,
-  },
-  {
-    label: "Total Topics",
-    value: "186",
-    description: "Generated from 12 fields",
-    accent: "+18 after last sync",
-    tone: "emerald",
-    icon: Tags,
-  },
+    {
+      label: "Total Users",
+      value: totalUsersValue,
+      tone: "blue",
+    },
+    {
+      label: "Banned Users",
+      value: bannedUsersValue,
+      tone: "red",
+    },
+    {
+      label: "Total Trending Topic",
+      value: totalTrendingTopicValue,
+      tone: "indigo",
+    },
+    {
+      label: "Total Trending Keyword",
+      value: totalTrendingKeywordValue,
+      tone: "purple",
+    },
+    {
+      label: "Total Topics",
+      value: totalTopicsValue,
+      tone: "amber",
+    },
+    {
+      label: "Total Subfields",
+      value: totalSubfieldsValue,
+      tone: "green",
+    },
   ];
 }
 
