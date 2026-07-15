@@ -3,6 +3,8 @@ import type { ApiResponse } from "@/types/common.types";
 
 import type {
   AdminApiUsagePoint,
+  AdminCronConfig,
+  AdminCronConfigUpdateInput,
   AdminDashboardStatistics,
   AdminTopApiConsumer,
   AdminUserApi,
@@ -56,6 +58,27 @@ export function getAdminApiUsageOverTime() {
   return http
     .get<ApiResponse<AdminApiUsagePoint[]>>(
       `${ADMIN_API_BASE}/dashboard/api-calls/usage-over-time`,
+    )
+    .then((response) => response.data.data);
+}
+
+export function getAdminSyncCronConfigs() {
+  return http
+    .get<ApiResponse<AdminCronConfig[]>>(`${ADMIN_API_BASE}/config/sync-cron`)
+    .then((response) => response.data.data);
+}
+
+export function updateAdminSyncCronConfig({
+  configKey,
+  payload,
+}: {
+  configKey: string;
+  payload: AdminCronConfigUpdateInput;
+}) {
+  return http
+    .patch<ApiResponse<AdminCronConfig>>(
+      `${ADMIN_API_BASE}/config/sync-cron/${encodeURIComponent(configKey)}`,
+      payload,
     )
     .then((response) => response.data.data);
 }

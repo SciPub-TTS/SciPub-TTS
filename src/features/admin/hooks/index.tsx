@@ -10,13 +10,16 @@ import {
   banAdminUser,
   getAdminApiUsageOverTime,
   getAdminDashboardStatistics,
+  getAdminSyncCronConfigs,
   getAdminTopApiConsumers,
   getAdminUserDetail,
   getAdminUsers,
   getAdminUserSearchHistory,
   unbanAdminUser,
+  updateAdminSyncCronConfig,
 } from "../services";
 import type {
+  AdminCronConfigUpdateInput,
   AdminUserApi,
   AdminUserDetail,
   AdminUsersPageData,
@@ -271,6 +274,49 @@ export function useAdminUserDetailPage(userId: string | undefined) {
     searchHistoryErrorMessage,
     searchHistoryPage,
     searchHistoryPageSize: ADMIN_USER_SEARCH_HISTORY_PAGE_SIZE,
+  };
+}
+
+export function useAdminSystemSettingsPage() {
+  const queryClient = useQueryClient();
+  const syncCronConfigsQuery = useQuery({
+    queryKey: ["admin-sync-cron-configs"],
+    queryFn: getAdminSyncCronConfigs,
+  });
+  const updateCronConfigMutation = useMutation({
+    mutationFn: updateAdminSyncCronConfig,
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: ["admin-sync-cron-configs"],
+      });
+    },
+  });
+
+  async function handleUpdateCronConfig(
+    configKey: string,
+    payload: AdminCronConfigUpdateInput,
+  ) {
+    await updateCronConfigMutation.mutateAsync({ configKey, payload });
+  }
+
+  return {
+    cronConfigErrorMessage: syncCronConfigsQuery.isError
+      ? getErrorMessage(
+          syncCronConfigsQuery.error,
+          "Cannot load sync schedules right now.",
+        )
+      : "",
+    cronConfigs: syncCronConfigsQuery.data ?? [],
+    handleUpdateCronConfig,
+    isLoadingCronConfigs: syncCronConfigsQuery.isLoading,
+    isUpdatingCronConfig: updateCronConfigMutation.isPending,
+    updateCronConfigErrorMessage: updateCronConfigMutation.isError
+      ? getErrorMessage(
+          updateCronConfigMutation.error,
+          "Cannot update sync schedule right now.",
+        )
+      : "",
+    updatingCronConfigKey: updateCronConfigMutation.variables?.configKey ?? null,
   };
 }
 

@@ -1,4 +1,4 @@
-import { LayoutDashboard, LogOut, Users } from "lucide-react";
+import { LayoutDashboard, LogOut, Settings, Users } from "lucide-react";
 import { useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 
@@ -18,6 +18,11 @@ const adminMenuItems = [
     label: "User Management",
     path: ROUTES.ADMIN_USERS,
     icon: Users,
+  },
+  {
+    label: "System Settings",
+    path: ROUTES.ADMIN_SYSTEM_SETTINGS,
+    icon: Settings,
   },
 ];
 
