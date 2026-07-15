@@ -34,6 +34,7 @@ import ChangePasswordPage from "@/features/profile/components/ChangePasswordPage
 import FeedPage from "@/features/newfeeds/pages/FeedPage";
 import ReportPage from "@/features/reports/components/ReportPage";
 import AdminDashboardPage from "@/features/admin/components/AdminDashboardPage.tsx";
+import AdminSystemSettingsPage from "@/features/admin/pages/AdminSystemSettingsPage.tsx";
 import AdminUserDetailPage from "@/features/admin/pages/AdminUserDetailPage.tsx";
 import AdminUsersPage from "@/features/admin/pages/AdminUsersPage.tsx";
 import ForgotPasswordPage from "@/features/auth/components/pages/ForgotPasswordPage.tsx";
@@ -65,6 +66,7 @@ const ROUTER_PATHS = {
   adminDashboard: "dashboard",
   adminUsers: "users",
   adminUserDetail: "users/:userId",
+  adminSystemSettings: "system-settings",
 } as const;
 
 function getProfileBreadcrumb(search: string): AppRouteHandle["breadcrumb"] {
@@ -373,6 +375,13 @@ export const router = createBrowserRouter([
             element: <AdminUsersPage />,
             handle: {
               breadcrumb: "User Management",
+            },
+          },
+          {
+            path: ROUTER_PATHS.adminSystemSettings,
+            element: <AdminSystemSettingsPage />,
+            handle: {
+              breadcrumb: "System Settings",
             },
           },
           {

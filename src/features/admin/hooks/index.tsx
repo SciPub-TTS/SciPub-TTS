@@ -9,14 +9,17 @@ import {
 import {
   banAdminUser,
   getAdminApiUsageOverTime,
+  getAdminDashboardStatistics,
+  getAdminSyncCronConfigs,
   getAdminTopApiConsumers,
-  getAdminUserBanSummary,
   getAdminUserDetail,
   getAdminUsers,
   getAdminUserSearchHistory,
   unbanAdminUser,
+  updateAdminSyncCronConfig,
 } from "../services";
 import type {
+  AdminCronConfigUpdateInput,
   AdminUserApi,
   AdminUserDetail,
   AdminUsersPageData,
@@ -44,9 +47,9 @@ export const adminUsersSortOptions: Array<{
 ];
 
 export function useAdminDashboardData() {
-  const banSummaryQuery = useQuery({
-    queryKey: ["admin-user-ban-summary"],
-    queryFn: getAdminUserBanSummary,
+  const dashboardStatisticsQuery = useQuery({
+    queryKey: ["admin-dashboard-statistics"],
+    queryFn: getAdminDashboardStatistics,
   });
   const topApiConsumersQuery = useQuery({
     queryKey: ["admin-top-api-consumers"],
@@ -59,11 +62,11 @@ export function useAdminDashboardData() {
 
   return {
     apiUsageOverTime: apiUsageOverTimeQuery.data ?? [],
-    banSummary: banSummaryQuery.data,
+    dashboardStatistics: dashboardStatisticsQuery.data,
     isApiUsageOverTimeError: apiUsageOverTimeQuery.isError,
     isApiUsageOverTimeLoading: apiUsageOverTimeQuery.isLoading,
-    isBanSummaryError: banSummaryQuery.isError,
-    isBanSummaryLoading: banSummaryQuery.isLoading,
+    isDashboardStatisticsError: dashboardStatisticsQuery.isError,
+    isDashboardStatisticsLoading: dashboardStatisticsQuery.isLoading,
     isTopApiConsumersError: topApiConsumersQuery.isError,
     isTopApiConsumersLoading: topApiConsumersQuery.isLoading,
     topApiConsumers: topApiConsumersQuery.data ?? [],
@@ -274,6 +277,49 @@ export function useAdminUserDetailPage(userId: string | undefined) {
   };
 }
 
+export function useAdminSystemSettingsPage() {
+  const queryClient = useQueryClient();
+  const syncCronConfigsQuery = useQuery({
+    queryKey: ["admin-sync-cron-configs"],
+    queryFn: getAdminSyncCronConfigs,
+  });
+  const updateCronConfigMutation = useMutation({
+    mutationFn: updateAdminSyncCronConfig,
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: ["admin-sync-cron-configs"],
+      });
+    },
+  });
+
+  async function handleUpdateCronConfig(
+    configKey: string,
+    payload: AdminCronConfigUpdateInput,
+  ) {
+    await updateCronConfigMutation.mutateAsync({ configKey, payload });
+  }
+
+  return {
+    cronConfigErrorMessage: syncCronConfigsQuery.isError
+      ? getErrorMessage(
+          syncCronConfigsQuery.error,
+          "Cannot load sync schedules right now.",
+        )
+      : "",
+    cronConfigs: syncCronConfigsQuery.data ?? [],
+    handleUpdateCronConfig,
+    isLoadingCronConfigs: syncCronConfigsQuery.isLoading,
+    isUpdatingCronConfig: updateCronConfigMutation.isPending,
+    updateCronConfigErrorMessage: updateCronConfigMutation.isError
+      ? getErrorMessage(
+          updateCronConfigMutation.error,
+          "Cannot update sync schedule right now.",
+        )
+      : "",
+    updatingCronConfigKey: updateCronConfigMutation.variables?.configKey ?? null,
+  };
+}
+
 export function getAdminUserFullName(user: AdminUserApi | AdminUserDetail["user"]) {
   const fullName = [user.firstName, user.lastName].filter(Boolean).join(" ");
   const username = "username" in user ? user.username : null;
@@ -342,3 +388,5 @@ function getAccountStatusConfirmationMessage(
     ? `Are you sure you want to unban ${fullName}?`
     : `Are you sure you want to ban ${fullName}?`;
 }
+
+
