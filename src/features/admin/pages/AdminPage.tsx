@@ -8,20 +8,14 @@ export default function AdminPage() {
   return (
     <section className="space-y-5">
       <AdminStatsGrid
-        apiUsageOverTime={dashboardData.apiUsageOverTime}
-        banSummary={dashboardData.banSummary}
-        isApiUsageOverTimeError={dashboardData.isApiUsageOverTimeError}
-        isApiUsageOverTimeLoading={dashboardData.isApiUsageOverTimeLoading}
-        isBanSummaryError={dashboardData.isBanSummaryError}
-        isBanSummaryLoading={dashboardData.isBanSummaryLoading}
+        dashboardStatistics={dashboardData.dashboardStatistics}
+        isDashboardStatisticsError={dashboardData.isDashboardStatisticsError}
+        isDashboardStatisticsLoading={dashboardData.isDashboardStatisticsLoading}
       />
       <AdminDashboardInsights
         apiUsageOverTime={dashboardData.apiUsageOverTime}
-        banSummary={dashboardData.banSummary}
         isApiUsageOverTimeError={dashboardData.isApiUsageOverTimeError}
         isApiUsageOverTimeLoading={dashboardData.isApiUsageOverTimeLoading}
-        isBanSummaryError={dashboardData.isBanSummaryError}
-        isBanSummaryLoading={dashboardData.isBanSummaryLoading}
         isTopApiConsumersError={dashboardData.isTopApiConsumersError}
         isTopApiConsumersLoading={dashboardData.isTopApiConsumersLoading}
         topApiConsumers={dashboardData.topApiConsumers}
