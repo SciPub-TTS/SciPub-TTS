@@ -7,11 +7,11 @@ import logoImage from "@/assets/images/logo.png";
 import { AUTH_ROLES } from "@/features/auth/constants/roles";
 import { useAuthSession } from "@/features/auth/hooks/useAuthSession";
 import { ENABLE_SOCIAL_HUB } from "@/features/social/socialFeature";
-import { LANDING_SECTION_LINKS } from "./LandingSections";
+import { LANDING_SECTION_LINKS } from "../constants/landing.constants";
 
 const publicNavLinks = [
   { label: "Discovery", to: ROUTES.SEARCH },
-  { label: "Trending Dashboard", to: ROUTES.TRENDING_TOPIC },
+  { label: "Trending Dashboard", to: ROUTES.TRENDING },
   { label: "Guide", to: ROUTES.GUIDE },
 ] as const;
 

@@ -22,7 +22,11 @@ import { ENABLE_SOCIAL_HUB } from "@/features/social/socialFeature";
 
 const workspaceMenuItems = [
   { label: "Discovery", path: ROUTES.SEARCH, icon: Search },
-  { label: "Trending", path: ROUTES.TRENDING_TOPIC, icon: LayoutDashboard },
+  {
+    label: "Trending Dashboard",
+    path: ROUTES.TRENDING,
+    icon: LayoutDashboard,
+  },
   { label: "Bookmarks", path: ROUTES.BOOKMARKS, icon: Bookmark },
   { label: "New Feed", path: ROUTES.FEED, icon: Rss },
   ...(ENABLE_SOCIAL_HUB
@@ -117,9 +121,8 @@ export default function MainSidebar() {
                 (location.pathname === ROUTES.SOCIAL_HUB ||
                   (isDetailPage && detailOrigin === "social-hub"));
               const isTrendingSectionActive =
-                item.path === ROUTES.TRENDING_TOPIC &&
-                (location.pathname === ROUTES.TRENDING_TOPIC ||
-                  location.pathname === ROUTES.TRENDING_KEYWORD ||
+                item.path === ROUTES.TRENDING &&
+                (location.pathname === ROUTES.TRENDING ||
                   (isDetailPage && detailOrigin === "trending"));
               const isFeedSectionActive =
                 item.path === ROUTES.FEED &&

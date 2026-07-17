@@ -14,7 +14,7 @@ export default function MainLayout() {
 
   if (
     currentUser?.role === AUTH_ROLES.ADMIN &&
-    location.pathname === ROUTES.TRENDING_TOPIC
+    location.pathname === ROUTES.TRENDING
   ) {
     return <Navigate to={ROUTES.ADMIN_DASHBOARD} replace />;
   }
