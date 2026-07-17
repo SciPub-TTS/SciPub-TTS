@@ -562,7 +562,7 @@ function HeroSection() {
             to={ROUTES.GUIDE}
             className="inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/10 px-6 py-3 text-white backdrop-blur transition-colors hover:bg-white/20"
           >
-            View Scope
+            View Trending
           </Link>
         </motion.div>
       </div>
@@ -593,7 +593,7 @@ function MetricsSection() {
         totalWorks === null
           ? "2.4M+"
           : formatCompactCount(totalWorks) +
-            (worksSummaryQuery.data?.totalCountExact ? "" : "+"),
+          (worksSummaryQuery.data?.totalCountExact ? "" : "+"),
       cap: "indexed research works",
     },
     {
@@ -881,19 +881,19 @@ function PreviewSection() {
               <div className="space-y-3">
                 {!hasLoadedTrendSnapshot
                   ? Array.from({ length: 3 }).map((_, index) => (
-                      <div
-                        key={`loading-topic-${index + 1}`}
-                        className="flex items-start gap-4 rounded-xl border border-slate-200 bg-white p-4"
-                      >
-                        <div className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-lg bg-[#0F75BC]/10 text-[#0F75BC]">
-                          <FileText className="size-4" />
-                        </div>
-                        <div className="space-y-2">
-                          <div className="h-4 w-52 animate-pulse rounded bg-slate-200" />
-                          <div className="h-3 w-32 animate-pulse rounded bg-slate-100" />
-                        </div>
+                    <div
+                      key={`loading-topic-${index + 1}`}
+                      className="flex items-start gap-4 rounded-xl border border-slate-200 bg-white p-4"
+                    >
+                      <div className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-lg bg-[#0F75BC]/10 text-[#0F75BC]">
+                        <FileText className="size-4" />
                       </div>
-                    ))
+                      <div className="space-y-2">
+                        <div className="h-4 w-52 animate-pulse rounded bg-slate-200" />
+                        <div className="h-3 w-32 animate-pulse rounded bg-slate-100" />
+                      </div>
+                    </div>
+                  ))
                   : null}
 
                 {hasLoadedTrendSnapshot && !hasTrendingThisWeek ? (
@@ -1132,8 +1132,8 @@ function PreviewSection() {
                     {!hasLoadedTrendSnapshot
                       ? "Loading this week's trend snapshot."
                       : hasTrendingThisWeek
-                      ? `${formatCompactNumber(landingTrendPreview?.totalTrendingTopics ?? null)} trending topics - ${formatSnapshotDate(landingTrendPreview?.snapshotDate)}.`
-                      : `No trending snapshot data for ${formatSnapshotDate(landingTrendPreview?.snapshotDate)}.`}
+                        ? `${formatCompactNumber(landingTrendPreview?.totalTrendingTopics ?? null)} trending topics - ${formatSnapshotDate(landingTrendPreview?.snapshotDate)}.`
+                        : `No trending snapshot data for ${formatSnapshotDate(landingTrendPreview?.snapshotDate)}.`}
                   </p>
                   <div className="mt-3 flex gap-2">
                     <button
