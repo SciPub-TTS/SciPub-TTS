@@ -80,6 +80,8 @@ export const defaultSearchSortState: SearchSortState = {
   sortBy: "relevance",
   sortDirection: "desc",
   trendingMode: "none",
+  citationDirection: null,
+  publishedDirection: null,
 };
 
 const worksSearchResultSortGroups: SearchResultSortGroup[] = [
@@ -106,7 +108,7 @@ const entitySearchResultSortGroups: SearchResultSortGroup[] = [
     key: "entity",
     label: "Sort",
     options: [
-      { value: "relevance", label: "Relevance" },
+      { value: "", label: "None" },
       { value: "works_most_works", label: "Most works" },
       { value: "alphabetical_az", label: "A-Z" },
     ],
@@ -166,6 +168,8 @@ export function hasActiveSearchSort(sortState: SearchSortState) {
   return (
     sortState.sortBy !== defaultSearchSortState.sortBy
     || sortState.sortDirection !== defaultSearchSortState.sortDirection
+    || Boolean(sortState.citationDirection)
+    || Boolean(sortState.publishedDirection)
   );
 }
 
@@ -180,10 +184,21 @@ export function normalizeSearchSortState(
     return normalizeLegacySearchSortState(value);
   }
 
+  const sortBy = normalizeSortBy(value.sortBy);
+  const sortDirection = normalizeSortDirection(value.sortDirection);
+  const citationDirection =
+    normalizeNullableSortDirection(value.citationDirection)
+    ?? (sortBy === "citation" ? sortDirection : null);
+  const publishedDirection =
+    normalizeNullableSortDirection(value.publishedDirection)
+    ?? (sortBy === "published" ? sortDirection : null);
+
   return {
-    sortBy: normalizeSortBy(value.sortBy),
-    sortDirection: normalizeSortDirection(value.sortDirection),
+    sortBy,
+    sortDirection,
     trendingMode: "none",
+    citationDirection,
+    publishedDirection,
   };
 }
 
@@ -191,6 +206,7 @@ export function createSearchSortStateFromOption(
   sortOption: string,
 ): SearchSortState {
   switch (sortOption.trim().toLowerCase()) {
+    case "":
     case "relevance":
       return { ...defaultSearchSortState };
     case "works_most_works":
@@ -198,40 +214,90 @@ export function createSearchSortStateFromOption(
         sortBy: "works",
         sortDirection: "desc",
         trendingMode: "none",
+        citationDirection: null,
+        publishedDirection: null,
       };
     case "citation_most_cited":
       return {
         sortBy: "citation",
         sortDirection: "desc",
         trendingMode: "none",
+        citationDirection: "desc",
+        publishedDirection: null,
       };
     case "citation_least_cited":
       return {
         sortBy: "citation",
         sortDirection: "asc",
         trendingMode: "none",
+        citationDirection: "asc",
+        publishedDirection: null,
       };
     case "published_latest":
       return {
         sortBy: "published",
         sortDirection: "desc",
         trendingMode: "none",
+        citationDirection: null,
+        publishedDirection: "desc",
       };
     case "published_oldest":
       return {
         sortBy: "published",
         sortDirection: "asc",
         trendingMode: "none",
+        citationDirection: null,
+        publishedDirection: "asc",
       };
     case "alphabetical_az":
       return {
         sortBy: "alphabetical",
         sortDirection: "asc",
         trendingMode: "none",
+        citationDirection: null,
+        publishedDirection: null,
       };
     default:
       return { ...defaultSearchSortState };
   }
+}
+
+export function updateSearchSortStateFromOption(
+  currentSortState: SearchSortState,
+  sortOption: string,
+): SearchSortState {
+  const normalizedOption = sortOption.trim().toLowerCase();
+
+  if (!normalizedOption || normalizedOption === "relevance") {
+    return { ...defaultSearchSortState };
+  }
+
+  if (
+    normalizedOption === "works_most_works"
+    || normalizedOption === "alphabetical_az"
+  ) {
+    return createSearchSortStateFromOption(normalizedOption);
+  }
+
+  const current = normalizeSearchSortState(currentSortState);
+
+  if (normalizedOption === "citation_most_cited") {
+    return buildWorkSortState(current, "citation", "desc");
+  }
+
+  if (normalizedOption === "citation_least_cited") {
+    return buildWorkSortState(current, "citation", "asc");
+  }
+
+  if (normalizedOption === "published_latest") {
+    return buildWorkSortState(current, "published", "desc");
+  }
+
+  if (normalizedOption === "published_oldest") {
+    return buildWorkSortState(current, "published", "asc");
+  }
+
+  return current;
 }
 
 export function getSearchSortOptionValue(
@@ -247,17 +313,17 @@ export function getSearchSortOptionValue(
       return "alphabetical_az";
     }
 
-    return "relevance";
+    return "";
   }
 
-  if (groupKey === "citation" && sortState.sortBy === "citation") {
-    return sortState.sortDirection === "asc"
+  if (groupKey === "citation" && sortState.citationDirection) {
+    return sortState.citationDirection === "asc"
       ? "citation_least_cited"
       : "citation_most_cited";
   }
 
-  if (groupKey === "published" && sortState.sortBy === "published") {
-    return sortState.sortDirection === "asc"
+  if (groupKey === "published" && sortState.publishedDirection) {
+    return sortState.publishedDirection === "asc"
       ? "published_oldest"
       : "published_latest";
   }
@@ -266,16 +332,13 @@ export function getSearchSortOptionValue(
 
 function normalizeLegacySearchSortState(values: string[] | string) {
   const rawValues = Array.isArray(values) ? values : [values];
+  let normalizedState = { ...defaultSearchSortState };
 
   for (const value of rawValues) {
-    const normalizedSortState = createSearchSortStateFromOption(value);
-
-    if (hasActiveSearchSort(normalizedSortState)) {
-      return normalizedSortState;
-    }
+    normalizedState = updateSearchSortStateFromOption(normalizedState, value);
   }
 
-  return { ...defaultSearchSortState };
+  return normalizedState;
 }
 
 function normalizeSortBy(value?: string | null): SearchSortBy {
@@ -295,5 +358,42 @@ function normalizeSortBy(value?: string | null): SearchSortBy {
 
 function normalizeSortDirection(value?: string | null): SearchSortDirection {
   return value?.trim().toLowerCase() === "asc" ? "asc" : "desc";
+}
+
+function normalizeNullableSortDirection(
+  value?: string | null,
+): SearchSortDirection | null {
+  if (value?.trim().toLowerCase() === "asc") {
+    return "asc";
+  }
+
+  if (value?.trim().toLowerCase() === "desc") {
+    return "desc";
+  }
+
+  return null;
+}
+
+function buildWorkSortState(
+  currentSortState: SearchSortState,
+  sortBy: "citation" | "published",
+  sortDirection: SearchSortDirection,
+): SearchSortState {
+  const citationDirection =
+    sortBy === "citation"
+      ? sortDirection
+      : currentSortState.citationDirection ?? null;
+  const publishedDirection =
+    sortBy === "published"
+      ? sortDirection
+      : currentSortState.publishedDirection ?? null;
+
+  return {
+    sortBy,
+    sortDirection,
+    trendingMode: "none",
+    citationDirection,
+    publishedDirection,
+  };
 }
 

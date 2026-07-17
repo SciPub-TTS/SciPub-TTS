@@ -25,22 +25,16 @@ import { PaperResultCard } from "./PaperResultCard";
 
 type SearchResultCardProps = {
   item: SearchResultItem;
-  trendingKeywordNames: string[];
-  trendingTopicNames: string[];
 };
 
 export function SearchResultCard({
   item,
-  trendingKeywordNames,
-  trendingTopicNames,
 }: SearchResultCardProps) {
   switch (item.entityType) {
     case "works":
       return (
         <PaperResultCard
           paper={item}
-          trendingKeywordNames={trendingKeywordNames}
-          trendingTopicNames={trendingTopicNames}
         />
       );
     case "authors":

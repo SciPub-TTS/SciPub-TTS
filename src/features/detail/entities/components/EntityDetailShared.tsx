@@ -129,7 +129,6 @@ export function EntityWorksSection({
               doi={work.doi}
               field={work.field}
               isSaved={work.saved}
-              isTrendTopic={work.isTrendTopic}
               keywords={work.keywords}
               pdfUrl={work.pdfUrl}
               preserveSearchStateOnDetailClick={false}

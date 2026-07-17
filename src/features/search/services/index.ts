@@ -12,6 +12,7 @@ export {
   normalizeSearchSortState,
   searchScopeLabel,
   searchTabs,
+  updateSearchSortStateFromOption,
 } from "./metadata";
 export {
   mapOptionsToLabels,
@@ -22,8 +23,6 @@ export {
 export {
   getFilterOptionPage,
   getSearchSummary,
-  getTrendingKeywords,
-  getTrendingTopics,
 } from "./filterOptionsApi";
 export {
   clearSearchHistory,
@@ -33,14 +32,9 @@ export {
 } from "./searchHistoryApi";
 export { searchEntities } from "./searchEntitiesApi";
 export { mapApiWorkToPaperResult } from "./searchWorksMapper";
-export { sortPaperResults } from "./searchWorksSorting";
 export { searchWorks } from "./searchWorksApi";
 export type {
   FilterOptionPageApiData,
-  HotKeywordApiItem,
-  HotKeywordApiResponse,
-  HotTopicApiItem,
-  HotTopicApiResponse,
   OptionItem,
   SearchHistoryApiItem,
   SearchOptionGroupKey,
@@ -55,7 +49,6 @@ export type {
   SearchSummaryApiData,
   SearchSummaryState,
   SearchResultsPage,
-  SearchResultState,
   SearchWorksApiItem,
   SearchWorksApiResponse,
   SearchWorksRequest,

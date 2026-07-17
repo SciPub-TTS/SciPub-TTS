@@ -427,12 +427,12 @@ function AppliedFilterSummary({ summary }: AppliedFilterSummaryProps) {
 
       <div className="flex flex-wrap gap-2">
         {summary.map((item) => (
-          <span
-            key={item}
-            className="rounded-full bg-[#A3E635]/20 px-3 py-1 text-xs font-bold text-[#14532D] ring-1 ring-[#059669]"
-          >
-            {item}
-          </span>
+            <span
+              key={item}
+              className="max-w-full rounded-full bg-[#A3E635]/20 px-3 py-1 text-xs font-bold leading-relaxed text-[#14532D] ring-1 ring-[#059669]"
+            >
+              {item}
+            </span>
         ))}
       </div>
     </div>

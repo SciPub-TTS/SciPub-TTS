@@ -20,7 +20,6 @@ export function FeedArticleCard({ article }: FeedArticleCardProps) {
       field={article.field}
       feedReasonText={article.reason}
       isSaved={article.saved}
-      isTrendTopic={Boolean(article.isTrendTopic)}
       keywords={article.keywords}
       pdfUrl={article.pdfUrl}
       preserveSearchStateOnDetailClick={false}
@@ -28,7 +27,6 @@ export function FeedArticleCard({ article }: FeedArticleCardProps) {
       title={article.title}
       topic={article.topic}
       topicRef={article.topicRef}
-      trendingKeywords={[]}
       source={article.source}
       workId={article.id}
       year={article.year}
