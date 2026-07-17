@@ -11,12 +11,14 @@ import {
   getSearchSummary,
   searchEntities,
   searchWorks,
-  sortPaperResults,
   type SearchResultsPage,
 } from "../services";
-import type { SearchEntityType, SearchSortState } from "../types";
+import type {
+  SearchEntityType,
+  SearchSortState,
+} from "../types";
 import type { SubmittedSearch } from "./stateHelpers";
-import type { PaperResult, SearchResultItem } from "../types";
+import type { SearchResultItem } from "../types";
 
 type UseSearchResultsStateParams = {
   activeEntityType: SearchEntityType;
@@ -77,11 +79,10 @@ export function useSearchResultsState(params: UseSearchResultsStateParams) {
   const appliedSearchQuery = submittedSearch?.appliedSearchQuery || "";
   const appliedEntityType = submittedSearch?.entityType || activeEntityType;
   const appliedFilters = submittedSearch?.appliedFilters || initialFilters;
-  const appliedSortState = submittedSearch?.sortState || currentSortState;
+  const appliedSortState =
+    submittedSearch?.sortState || currentSortState;
   const visibleResults = flattenSearchResultPages(
     searchResultsQuery.data?.pages || [],
-    appliedEntityType,
-    appliedSortState,
   );
   const latestResultsPage =
     searchResultsQuery.data?.pages[
@@ -117,9 +118,6 @@ export function useSearchResultsState(params: UseSearchResultsStateParams) {
         ? true
         : latestResultsPage?.totalCountExact ?? true,
     matchedResultCount: latestResultsPage?.totalCount || 0,
-    responseTimeSeconds: getSearchResponseTime(
-      searchResultsQuery.data?.pages || [],
-    ),
     totalIndexedCount: searchSummaryQuery.data?.totalIndexedCount || 0,
     visibleResults,
   };
@@ -127,8 +125,6 @@ export function useSearchResultsState(params: UseSearchResultsStateParams) {
 
 function flattenSearchResultPages(
   pages: SearchResultsPage[],
-  entityType: SearchEntityType,
-  sortState: SearchSortState,
 ) {
   let mergedResults: SearchResultItem[] = [];
 
@@ -137,11 +133,7 @@ function flattenSearchResultPages(
     mergedResults = mergeUniqueSearchResults(mergedResults, pageItems);
   }
 
-  if (entityType !== "works") {
-    return mergedResults;
-  }
-
-  return sortPaperResults(mergedResults as PaperResult[], sortState);
+  return mergedResults;
 }
 
 function getNextSearchResultsPage(
@@ -167,14 +159,6 @@ function getNextSearchResultsPage(
   }
 
   return lastPage.page + 1;
-}
-
-function getSearchResponseTime(pages: SearchResultsPage[]) {
-  if (pages.length === 0) {
-    return 0;
-  }
-
-  return pages[pages.length - 1].responseTimeSeconds;
 }
 
 function getAutoLoadAnchorIndex(

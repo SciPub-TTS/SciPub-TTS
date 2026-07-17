@@ -1,5 +1,3 @@
-import type { ComponentType } from "react";
-
 export type AdminStatCardTone =
   | "blue"
   | "amber"
@@ -11,9 +9,6 @@ export type AdminStatCardTone =
   | "teal";
 
 export type AdminStatCardProps = {
-  accent?: string;
-  description: string;
-  icon: ComponentType<{ className?: string }>;
   label: string;
   tone: AdminStatCardTone;
   value: string;
@@ -30,21 +25,7 @@ const toneClassMap: Record<AdminStatCardTone, string> = {
   teal: "border-black bg-teal-50 text-teal-900",
 };
 
-const iconToneClassMap: Record<AdminStatCardTone, string> = {
-  blue: "bg-blue-100 text-blue-700",
-  amber: "bg-amber-100 text-amber-700",
-  red: "bg-red-100 text-red-700",
-  indigo: "bg-indigo-100 text-indigo-700",
-  purple: "bg-purple-100 text-purple-700",
-  green: "bg-green-100 text-green-700",
-  emerald: "bg-emerald-100 text-emerald-700",
-  teal: "bg-teal-100 text-teal-700",
-};
-
 export default function AdminStatCard({
-  accent,
-  description,
-  icon: Icon,
   label,
   tone,
   value,
@@ -52,27 +33,14 @@ export default function AdminStatCard({
   return (
     <article
       className={[
-        "min-h-36 rounded-xl border p-4 shadow-sm",
+        "min-h-28 rounded-xl border p-4 shadow-sm",
         toneClassMap[tone],
       ].join(" ")}
     >
-      <div className="flex items-start justify-between gap-4">
-        <p className="font-subtext text-[11px] font-medium uppercase tracking-[0.16em] text-slate-600">
-          {label}
-        </p>
-        <span
-          className={[
-            "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg",
-            iconToneClassMap[tone],
-          ].join(" ")}
-        >
-          <Icon className="h-4 w-4" />
-        </span>
-      </div>
-
+      <p className="font-subtext text-[11px] font-medium uppercase tracking-[0.16em] text-slate-600">
+        {label}
+      </p>
       <p className="font-title mt-6 text-2xl font-bold">{value}</p>
-      <p className="font-subtext mt-2 text-xs font-medium text-slate-600">{description}</p>
-      {accent && <p className="font-subtext mt-2 text-xs font-semibold">{accent}</p>}
     </article>
   );
 }

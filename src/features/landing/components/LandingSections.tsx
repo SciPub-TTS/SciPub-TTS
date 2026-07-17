@@ -45,35 +45,116 @@ export const LANDING_SECTION_LINKS = [
 ] as const;
 
 const CS_TAGS = [
-  "Artificial Intelligence",
-  "Computational Theory and Mathematics",
-  "Computer Graphics and Computer-Aided Design",
-  "Computer Networks and Communications",
-  "Computer Science Applications",
-  "Computer Vision and Pattern Recognition",
-  "Hardware and Architecture",
-  "Human-Computer Interaction",
-  "Information Systems",
-  "Signal Processing",
-  "Software",
+  {
+    name: "Artificial Intelligence",
+    description: "Learning, reasoning, and autonomous decision systems.",
+  },
+  {
+    name: "Computational Theory and Mathematics",
+    description: "Algorithms, complexity, models, and formal methods.",
+  },
+  {
+    name: "Computer Graphics and Computer-Aided Design",
+    description: "Visual computing, rendering, modeling, and CAD workflows.",
+  },
+  {
+    name: "Computer Networks and Communications",
+    description: "Network protocols, distributed systems, and connectivity.",
+  },
+  {
+    name: "Computer Science Applications",
+    description: "Applied computing methods across real-world domains.",
+  },
+  {
+    name: "Computer Vision and Pattern Recognition",
+    description: "Image understanding, detection, recognition, and perception.",
+  },
+  {
+    name: "Hardware and Architecture",
+    description: "Processors, systems architecture, and computing hardware.",
+  },
+  {
+    name: "Human-Computer Interaction",
+    description: "User experience, interaction design, and usability research.",
+  },
+  {
+    name: "Information Systems",
+    description: "Data systems, enterprise platforms, and information flow.",
+  },
+  {
+    name: "Signal Processing",
+    description: "Signal analysis, filtering, compression, and transformation.",
+  },
+  {
+    name: "Software",
+    description: "Software engineering, development methods, and quality.",
+  },
 ] as const;
 const ENG_TAGS = [
-  "General Engineering",
-  "Aerospace Engineering",
-  "Automotive Engineering",
-  "Biomedical Engineering",
-  "Civil and Structural Engineering",
-  "Computational Mechanics",
-  "Control and Systems Engineering",
-  "Electrical and Electronic Engineering",
-  "Industrial and Manufacturing Engineering",
-  "Mechanical Engineering",
-  "Mechanics of Materials",
-  "Ocean Engineering",
-  "Safety, Risk, Reliability and Quality",
-  "Media Technology",
-  "Building and Construction",
-  "Architecture",
+  {
+    name: "General Engineering",
+    description: "Cross-disciplinary engineering methods and systems.",
+  },
+  {
+    name: "Aerospace Engineering",
+    description: "Aircraft, spacecraft, propulsion, and flight systems.",
+  },
+  {
+    name: "Automotive Engineering",
+    description: "Vehicle design, mobility systems, and powertrains.",
+  },
+  {
+    name: "Biomedical Engineering",
+    description: "Engineering methods for healthcare and biological systems.",
+  },
+  {
+    name: "Civil and Structural Engineering",
+    description: "Infrastructure, structures, materials, and resilience.",
+  },
+  {
+    name: "Computational Mechanics",
+    description: "Simulation and numerical methods for physical systems.",
+  },
+  {
+    name: "Control and Systems Engineering",
+    description: "Control theory, automation, and dynamic systems.",
+  },
+  {
+    name: "Electrical and Electronic Engineering",
+    description: "Circuits, electronics, energy systems, and devices.",
+  },
+  {
+    name: "Industrial and Manufacturing Engineering",
+    description: "Production systems, operations, and manufacturing processes.",
+  },
+  {
+    name: "Mechanical Engineering",
+    description: "Machines, thermal systems, mechanics, and design.",
+  },
+  {
+    name: "Mechanics of Materials",
+    description: "Material behavior, stress, deformation, and failure.",
+  },
+  {
+    name: "Ocean Engineering",
+    description: "Marine structures, offshore systems, and ocean technology.",
+  },
+  {
+    name: "Safety, Risk, Reliability and Quality",
+    description: "Risk analysis, reliability modeling, and quality assurance.",
+  },
+  {
+    name: "Media Technology",
+    description: "Engineering for media systems, production, and delivery.",
+  },
+  {
+    name: "Building and Construction",
+    description: "Construction methods, building systems, and project delivery.",
+  },
+  {
+    name: "Architecture",
+    description: "Built environment design, planning, and spatial systems.",
+  },
 ] as const;
 const FEATURES = [
   {
@@ -267,7 +348,10 @@ function ScopeCard({
   title: string;
   count: string;
   desc: string;
-  tags: readonly string[];
+  tags: readonly {
+    name: string;
+    description: string;
+  }[];
 }) {
   return (
     <div className="group relative h-full overflow-hidden rounded-[1.75rem] border border-slate-300 bg-white p-8 shadow-[0_2px_16px_rgba(15,23,42,0.05)] transition-all duration-300 hover:-translate-y-1 hover:border-[#14532D] hover:shadow-[0_16px_40px_rgba(15,23,42,0.12)]">
@@ -307,15 +391,20 @@ function ScopeCard({
         {desc}
       </p>
 
-      <div className="mt-6 flex flex-wrap gap-2">
+      <div className="mt-6 grid gap-2 sm:grid-cols-2">
         {tags.map((tag) => (
-          <span
-            key={tag}
-            className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-[0.82rem] text-slate-700 transition-colors group-hover:border-[#166534]/30 group-hover:bg-[#14532D]/5"
+          <div
+            key={tag.name}
+            className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 transition-colors group-hover:border-[#166534]/30 group-hover:bg-[#14532D]/5"
             style={{ fontFamily: "'Be Vietnam Pro', sans-serif" }}
           >
-            {tag}
-          </span>
+            <p className="text-[0.82rem] font-semibold leading-snug text-slate-800">
+              {tag.name}
+            </p>
+            <p className="mt-1 text-[0.72rem] leading-snug text-slate-500">
+              {tag.description}
+            </p>
+          </div>
         ))}
       </div>
     </div>
@@ -740,7 +829,10 @@ function PreviewSection() {
   const landingTrendPreview = landingTrendPreviewQuery.data;
   const hasLoadedTrendSnapshot = landingTrendPreviewQuery.status !== "pending";
   const topicResults = landingTrendPreview?.topTopics ?? [];
-  const hasTrendingThisWeek = topicResults.length > 0;
+  const keywordResults = landingTrendPreview?.topKeywords ?? [];
+  const hasTrendingTopics = topicResults.length > 0;
+  const hasTrendingKeywords = keywordResults.length > 0;
+  const hasTrendingThisWeek = hasTrendingTopics || hasTrendingKeywords;
   const yearOptions = Array.from(
     { length: MAX_PREVIEW_YEAR - MIN_PREVIEW_YEAR + 1 },
     (_, index) => String(MIN_PREVIEW_YEAR + index),
@@ -843,21 +935,66 @@ function PreviewSection() {
                   </div>
                 ))}
 
-                {hasLoadedTrendSnapshot && hasTrendingThisWeek ? (
+                {!hasLoadedTrendSnapshot ? (
                   <div className="rounded-[1.2rem] border border-slate-200 bg-[#F8FBFF] p-4">
-                    <p
-                      className="text-[0.72rem] uppercase tracking-[0.2em] text-[#0F75BC]"
-                      style={{ fontFamily: "'Be Vietnam Pro', sans-serif" }}
-                    >
-                      Trending Dashboard
-                    </p>
-                    <p
-                      className="mt-2 text-[0.88rem] leading-relaxed text-slate-500"
-                      style={{ fontFamily: "'Manrope', sans-serif" }}
-                    >
-                      Weekly topic snapshot for the main dashboard, highlighting the
-                      strongest research directions in the current cycle.
-                    </p>
+                    <div className="h-3 w-36 animate-pulse rounded bg-slate-200" />
+                    <div className="mt-4 space-y-2">
+                      {Array.from({ length: 3 }).map((_, index) => (
+                        <div
+                          key={`loading-keyword-${index + 1}`}
+                          className="h-8 animate-pulse rounded-lg bg-white"
+                        />
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+
+                {hasLoadedTrendSnapshot && hasTrendingKeywords ? (
+                  <div className="rounded-[1.2rem] border border-slate-200 bg-[#F8FBFF] p-4">
+                    <div className="flex items-center justify-between gap-3">
+                      <p
+                        className="text-[0.72rem] uppercase tracking-[0.2em] text-[#0F75BC]"
+                        style={{ fontFamily: "'Be Vietnam Pro', sans-serif" }}
+                      >
+                        Trending Keywords
+                      </p>
+                      <span
+                        className="rounded-full border border-[#0F75BC]/20 bg-white px-2.5 py-1 text-[0.72rem] font-semibold text-[#0F75BC]"
+                        style={{ fontFamily: "'Manrope', sans-serif" }}
+                      >
+                        Top {keywordResults.length}
+                      </span>
+                    </div>
+
+                    <div className="mt-3 space-y-2">
+                      {keywordResults.map((keyword) => (
+                        <div
+                          key={keyword.keywordId ?? keyword.name}
+                          className="flex items-start gap-3 rounded-lg border border-slate-200 bg-white px-3 py-2.5"
+                        >
+                          <div className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-md bg-[#F37021]/10 text-[#F37021]">
+                            <TrendingUp className="size-3.5" />
+                          </div>
+                          <div className="min-w-0">
+                            <p
+                              className="break-words text-[0.9rem] text-[#0F172A]"
+                              style={{ fontFamily: "'Manrope', sans-serif", fontWeight: 700 }}
+                            >
+                              #{keyword.name}
+                            </p>
+                            <p
+                              className="mt-0.5 text-[0.78rem] text-slate-500"
+                              style={{ fontFamily: "'Manrope', sans-serif" }}
+                            >
+                              {formatCompactNumber(keyword.works)} works -{" "}
+                              <span className="text-[#F37021]">
+                                {formatCompactNumber(keyword.citations)} citations
+                              </span>
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 ) : null}
               </div>
@@ -996,7 +1133,7 @@ function PreviewSection() {
                       ? "Loading this week's trend snapshot."
                       : hasTrendingThisWeek
                       ? `${formatCompactNumber(landingTrendPreview?.totalTrendingTopics ?? null)} trending topics - ${formatSnapshotDate(landingTrendPreview?.snapshotDate)}.`
-                      : `No trending this week. Waiting for Monday ${formatSnapshotDate(landingTrendPreview?.snapshotDate)}.`}
+                      : `No trending snapshot data for ${formatSnapshotDate(landingTrendPreview?.snapshotDate)}.`}
                   </p>
                   <div className="mt-3 flex gap-2">
                     <button

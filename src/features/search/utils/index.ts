@@ -69,33 +69,12 @@ export function normalizeSearchFilterWidgetKeys(values: string[]) {
   return normalizedValues;
 }
 
-export function normalizeTrendLabel(value: string) {
-  return value
-    .trim()
-    .toLocaleLowerCase()
-    .replace(/^#/, "")
-    .replace(/[()]/g, "")
-    .replace(/\s+/g, " ");
-}
-
-export function buildNormalizedTrendLabelSet(values: string[]) {
-  return new Set(values.map(normalizeTrendLabel));
-}
-
-export function isExactTrendMatch(value: string, normalizedTrendLabels: Set<string>) {
-  return normalizedTrendLabels.has(normalizeTrendLabel(value));
-}
-
 export function formatLatestUpdate(minutesAgo: number) {
   if (minutesAgo < 1) {
     return "just now";
   }
 
   return `${minutesAgo} min ago`;
-}
-
-export function formatResponseTime(seconds: number) {
-  return `${seconds.toFixed(2)}s`;
 }
 
 export function hasInvalidYearRange(filters: SearchFilters) {
@@ -339,6 +318,11 @@ function addListFilterSummary(
     return;
   }
 
-  summary.push(`${label}: ${values.join(", ")}`);
+  if (values.length <= 3) {
+    summary.push(`${label}: ${values.join(", ")}`);
+    return;
+  }
+
+  summary.push(`${label}: ${values.slice(0, 2).join(", ")} +${values.length - 2} more`);
 }
 

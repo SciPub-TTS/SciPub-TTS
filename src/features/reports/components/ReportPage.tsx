@@ -4,6 +4,7 @@ import {
   BookMarked,
   Check,
   CheckCircle2,
+  CalendarDays,
   ChevronDown,
   Database,
   Download,
@@ -12,7 +13,6 @@ import {
   LoaderCircle,
   RefreshCw,
   Search,
-  Sparkles,
   X,
 } from "lucide-react";
 
@@ -87,7 +87,7 @@ function BookmarkOption({
         "group relative block rounded-[1.5rem] border p-4 transition-all",
         isSelected
           ? "border-black bg-[#EFFAF1] shadow-[0_12px_30px_rgba(20,83,45,0.11)]"
-          : "border-black/20 bg-white hover:-translate-y-0.5 hover:border-black hover:shadow-[0_12px_30px_rgba(0,0,0,0.06)]",
+          : "border-black bg-white hover:-translate-y-0.5 hover:border-black hover:shadow-[0_12px_30px_rgba(0,0,0,0.06)]",
         isDisabled ? "cursor-not-allowed opacity-45" : "cursor-pointer",
       ].join(" ")}
     >
@@ -116,7 +116,8 @@ function BookmarkOption({
             <span className="rounded-full border border-[#005CB9] bg-[#EEF6FF] px-2.5 py-1 font-subtext text-[10px] font-bold uppercase tracking-[0.12em] text-[#005CB9]">
               {bookmark.openAlexId}
             </span>
-            <span className="font-subtext text-xs font-semibold text-black/50">
+            <span className="inline-flex items-center gap-1.5 font-subtext text-xs font-semibold text-black">
+              <CalendarDays className="h-3.5 w-3.5 text-black/55" />
               {bookmark.publicationYear ?? "Unknown year"}
             </span>
           </div>
@@ -132,7 +133,7 @@ function BookmarkOption({
             <span className="rounded-full border border-[#F37021] bg-[#FFF4EC] px-2.5 py-1 font-subtext text-[11px] font-semibold text-[#C24E0A]">
               {bookmark.topic}
             </span>
-            <span className="rounded-full border border-black/15 bg-white px-2.5 py-1 font-subtext text-[11px] font-semibold text-black/60">
+            <span className="rounded-full border border-[#00A859] bg-[#ECFFF5] text-[#007A41] px-2.5 py-1 font-subtext text-[11px] font-semibold">
               {(bookmark.citationCount ?? 0).toLocaleString()} citations
             </span>
           </div>
@@ -149,9 +150,7 @@ export default function ReportPage() {
   >(null);
   const [selectedBookmarks, setSelectedBookmarks] = useState<
     Map<string, BookmarkResponse>
-  >(
-    () => new Map(),
-  );
+  >(() => new Map());
   const [selectedFields, setSelectedFields] = useState<Set<string>>(
     () => new Set(DEFAULT_REPORT_FIELDS),
   );
@@ -253,18 +252,16 @@ export default function ReportPage() {
         <div className="relative flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
           <div className="max-w-3xl">
             <p className="flex items-center gap-2 text-xs font-extrabold uppercase tracking-[0.32em] text-[#14532D]">
-              <Sparkles className="h-3.5 w-3.5 text-[#7AC143]" />
               Export - Report Workspace
             </p>
             <h1 className="font-title-page mt-5 text-[2.55rem] font-normal leading-[1.05] tracking-normal text-[#14532D] sm:text-[3.45rem]">
               Turn your saved research into a portable dataset.
             </h1>
             <p className="mt-3 max-w-2xl text-sm leading-7 text-black/70 md:text-[15px]">
-              Select bookmarked papers, choose the metadata you need, and
-              export a clean report for spreadsheets, pipelines, or sharing.
+              Select bookmarked papers, choose the metadata you need, and export
+              a clean report for spreadsheets, pipelines, or sharing.
             </p>
           </div>
-
         </div>
       </section>
 
@@ -275,7 +272,7 @@ export default function ReportPage() {
               <div>
                 <div className="flex items-center gap-2">
                   <div>
-                    <p className="font-subtext text-[10px] font-bold uppercase tracking-[0.2em] text-[#00A859]">
+                    <p className="font-subtext text-[16px] font-bold uppercase tracking-[0.2em] text-[#00A859]">
                       Step 01
                     </p>
                     <h2 className="font-title text-xl font-semibold text-black">
@@ -293,12 +290,14 @@ export default function ReportPage() {
                     : "border-black bg-white",
                 ].join(" ")}
               >
-                <span className="font-subtext text-xs font-semibold text-black/55">
+                <span className="font-subtext text-xs font-semibold text-black">
                   Selected
                 </span>
                 <span className="font-title text-lg font-bold text-black">
                   {selectedCount}
-                  <span className="text-black/35">/{MAX_SELECTED_BOOKMARKS}</span>
+                  <span className="text-black/35">
+                    /{MAX_SELECTED_BOOKMARKS}
+                  </span>
                 </span>
               </div>
             </div>
@@ -335,7 +334,9 @@ export default function ReportPage() {
                   className="h-full w-full appearance-none rounded-[1rem] bg-transparent pl-11 pr-10 text-sm font-semibold text-black focus:outline-none"
                 >
                   <option value="">
-                    {isLoadingCollections ? "Loading collections..." : "All library"}
+                    {isLoadingCollections
+                      ? "Loading collections..."
+                      : "All library"}
                   </option>
                   {collections.map((collection) => (
                     <option key={collection.id} value={collection.id}>
@@ -351,7 +352,8 @@ export default function ReportPage() {
               <div className="mt-4 flex items-start gap-2 rounded-xl border border-[#F37021]/40 bg-[#FFF4EC] px-3.5 py-3">
                 <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-[#C24E0A]" />
                 <p className="font-subtext text-xs leading-5 text-[#8A3D0B]">
-                  Selection limit reached. Remove one paper before choosing another.
+                  Selection limit reached. Remove one paper before choosing
+                  another.
                 </p>
               </div>
             ) : null}
@@ -418,7 +420,7 @@ export default function ReportPage() {
             {!isLoading && !bookmarksError && bookmarks.length > 0 ? (
               <>
                 <div className="mb-4 flex items-center justify-between gap-4">
-                  <p className="font-subtext text-xs font-semibold text-black/50">
+                  <p className="font-subtext text-xs font-semibold text-black">
                     Showing {bookmarks.length} of {totalElements} papers
                   </p>
                   {selectedCount > 0 ? (
@@ -455,13 +457,13 @@ export default function ReportPage() {
                     type="button"
                     disabled={isLoadingMore}
                     onClick={() => void loadMore()}
-                    className="mt-5 flex h-12 w-full items-center justify-center gap-2 rounded-[1rem] border border-black bg-white text-sm font-semibold text-black transition hover:bg-black hover:text-white disabled:cursor-wait disabled:opacity-60"
+                    className="mt-5 flex h-12 w-full items-center justify-center gap-2 rounded-[1rem] border border-black bg-white text-sm font-semibold text-black transition hover:bg-[#14532D] hover:text-white cursor-pointer disabled:opacity-60"
                   >
                     {isLoadingMore ? (
                       <LoaderCircle className="h-4 w-4 animate-spin" />
                     ) : null}
                     {isLoadingMore ? "Loading papers..." : "Load more papers"}
-                    <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-black">
+                    <span className="rounded-full bg-slate-200 px-1 py-1 border border-black/60 text-xs text-black">
                       {Math.max(totalElements - bookmarks.length, 0)}
                     </span>
                   </button>
@@ -474,20 +476,23 @@ export default function ReportPage() {
         <aside className="space-y-6 xl:sticky xl:top-24">
           <section className="overflow-hidden rounded-[2rem] border border-black bg-white shadow-[0_18px_55px_rgba(15,23,42,0.06)]">
             <div className="border-b border-black bg-[linear-gradient(110deg,#FFF9F4_0%,#FFFFFF_55%,#F4FBFF_100%)] p-5 sm:p-6">
-              <p className="font-subtext text-[10px] font-bold uppercase tracking-[0.2em] text-[#F37021]">
+              <p className="font-subtext text-[16px] font-bold uppercase tracking-[0.2em] text-[#F37021]">
                 Step 02
               </p>
               <h2 className="font-title mt-1 text-xl font-semibold text-black">
                 Shape your export
               </h2>
-              <p className="font-subtext mt-2 text-sm leading-6 text-black/55">
-                Pick a format and include only the fields your next workflow needs.
+              <p className="font-subtext mt-2 text-sm leading-6 text-gray-600">
+                Pick a format and include only the fields your next workflow
+                needs.
               </p>
             </div>
 
             <div className="space-y-6 p-5 sm:p-6">
               <div>
-                <p className="mb-3 text-sm font-semibold text-black">File format</p>
+                <p className="mb-3 text-sm font-semibold text-black">
+                  File format
+                </p>
                 <div className="grid grid-cols-2 gap-3">
                   {(["CSV", "JSON"] as ReportExportFormat[]).map((option) => {
                     const isActive = format === option;
@@ -520,9 +525,13 @@ export default function ReportPage() {
                         >
                           <Icon className="h-5 w-5" />
                         </span>
-                        <p className="mt-3 text-sm font-bold text-black">{option}</p>
+                        <p className="mt-3 text-sm font-bold text-black">
+                          {option}
+                        </p>
                         <p className="font-subtext mt-1 text-[11px] leading-4 text-black/50">
-                          {option === "CSV" ? "Spreadsheet ready" : "Structured data"}
+                          {option === "CSV"
+                            ? "Spreadsheet ready"
+                            : "Structured data"}
                         </p>
                         {isActive ? (
                           <span className="absolute right-3 top-3 inline-flex h-6 w-6 items-center justify-center rounded-full bg-black text-white">
@@ -538,9 +547,12 @@ export default function ReportPage() {
               <div>
                 <div className="mb-3 flex items-center justify-between gap-3">
                   <div>
-                    <p className="text-sm font-semibold text-black">Data fields</p>
-                    <p className="font-subtext mt-0.5 text-xs text-black/45">
-                      {selectedFields.size} of {REPORT_EXPORT_FIELDS.length} selected
+                    <p className="text-sm font-semibold text-black">
+                      Data fields
+                    </p>
+                    <p className="font-subtext mt-0.5 text-xs text-black font-bold">
+                      {selectedFields.size} of {REPORT_EXPORT_FIELDS.length}{" "}
+                      selected
                     </p>
                   </div>
                   <div className="flex gap-3">
@@ -548,7 +560,9 @@ export default function ReportPage() {
                       type="button"
                       onClick={() =>
                         setSelectedFields(
-                          new Set(REPORT_EXPORT_FIELDS.map((field) => field.key)),
+                          new Set(
+                            REPORT_EXPORT_FIELDS.map((field) => field.key),
+                          ),
                         )
                       }
                       className="text-xs font-semibold text-[#005CB9] hover:underline"
@@ -557,7 +571,9 @@ export default function ReportPage() {
                     </button>
                     <button
                       type="button"
-                      onClick={() => setSelectedFields(new Set(DEFAULT_REPORT_FIELDS))}
+                      onClick={() =>
+                        setSelectedFields(new Set(DEFAULT_REPORT_FIELDS))
+                      }
                       className="text-xs font-semibold text-black/50 hover:text-black hover:underline"
                     >
                       Reset
@@ -565,10 +581,11 @@ export default function ReportPage() {
                   </div>
                 </div>
 
+                {/* Section chọn data fields để export */}
                 <div className="max-h-[410px] space-y-4 overflow-y-auto pr-1">
                   {FIELD_GROUPS.map((group) => (
                     <div key={group}>
-                      <p className="font-subtext mb-2 text-[10px] font-bold uppercase tracking-[0.17em] text-black/40">
+                      <p className="font-subtext mb-2 text-[10px] font-bold uppercase tracking-[0.17em] text-black">
                         {group}
                       </p>
                       <div className="space-y-2">
@@ -580,7 +597,7 @@ export default function ReportPage() {
                             <label
                               key={field.key}
                               className={[
-                                "flex cursor-pointer items-center gap-3 rounded-[1rem] border px-3.5 py-3 transition",
+                                "relative flex cursor-pointer items-center gap-3 rounded-[1rem] border px-3.5 py-3 transition",
                                 isSelected
                                   ? "border-black bg-[#F8FBF8]"
                                   : "border-black/15 bg-white hover:border-black/40",
@@ -590,7 +607,7 @@ export default function ReportPage() {
                                 type="checkbox"
                                 checked={isSelected}
                                 onChange={() => toggleField(field.key)}
-                                className="sr-only"
+                                className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
                               />
                               <span
                                 className={[
@@ -600,7 +617,10 @@ export default function ReportPage() {
                                     : "border-black/25 bg-white text-transparent",
                                 ].join(" ")}
                               >
-                                <Check className="h-3.5 w-3.5" strokeWidth={3} />
+                                <Check
+                                  className="h-3.5 w-3.5"
+                                  strokeWidth={3}
+                                />
                               </span>
                               <span className="min-w-0">
                                 <span className="block text-[13px] font-semibold text-black">
@@ -639,15 +659,25 @@ export default function ReportPage() {
 
               <div className="mt-5 grid grid-cols-3 gap-2">
                 <div className="rounded-xl border border-white/15 bg-white/8 px-3 py-3">
-                  <p className="font-subtext text-[10px] uppercase tracking-wider text-white/50">Papers</p>
-                  <p className="font-title mt-1 text-xl font-bold">{selectedCount}</p>
+                  <p className="font-subtext text-[10px] uppercase tracking-wider text-white/50">
+                    Papers
+                  </p>
+                  <p className="font-title mt-1 text-xl font-bold">
+                    {selectedCount}
+                  </p>
                 </div>
                 <div className="rounded-xl border border-white/15 bg-white/8 px-3 py-3">
-                  <p className="font-subtext text-[10px] uppercase tracking-wider text-white/50">Fields</p>
-                  <p className="font-title mt-1 text-xl font-bold">{selectedFields.size}</p>
+                  <p className="font-subtext text-[10px] uppercase tracking-wider text-white/50">
+                    Fields
+                  </p>
+                  <p className="font-title mt-1 text-xl font-bold">
+                    {selectedFields.size}
+                  </p>
                 </div>
                 <div className="rounded-xl border border-white/15 bg-white/8 px-3 py-3">
-                  <p className="font-subtext text-[10px] uppercase tracking-wider text-white/50">Format</p>
+                  <p className="font-subtext text-[10px] uppercase tracking-wider text-white/50">
+                    Format
+                  </p>
                   <p className="font-title mt-1 text-xl font-bold">{format}</p>
                 </div>
               </div>
@@ -667,13 +697,14 @@ export default function ReportPage() {
                   ))}
                   {selectedCount > selectedBookmarkPreview.length ? (
                     <p className="px-1 font-subtext text-[11px] text-white/45">
-                      +{selectedCount - selectedBookmarkPreview.length} more selected papers
+                      +{selectedCount - selectedBookmarkPreview.length} more
+                      selected papers
                     </p>
                   ) : null}
                 </div>
               ) : (
-                <p className="font-subtext mt-4 rounded-xl border border-dashed border-white/20 px-4 py-3 text-xs leading-5 text-white/50">
-                  Choose at least one bookmarked paper to prepare your report.
+                <p className="font-subtext mt-4 rounded-xl border border-white/50 px-4 py-3 text-xs leading-5 text-white/50">
+                  Choose at least one bookmarked paper.
                 </p>
               )}
 

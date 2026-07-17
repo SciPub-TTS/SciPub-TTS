@@ -52,7 +52,11 @@ export function SafeActionDialog({
   variant = "danger",
 }: SafeActionDialogProps) {
   useEffect(() => {
-    if (!open || typeof window === "undefined" || typeof document === "undefined") {
+    if (
+      !open ||
+      typeof window === "undefined" ||
+      typeof document === "undefined"
+    ) {
       return;
     }
 
@@ -98,9 +102,7 @@ export function SafeActionDialog({
         className="absolute inset-0"
       />
 
-      <div
-        className="relative w-full max-w-lg overflow-hidden rounded-[1.8rem] border border-black bg-white p-6 shadow-[0_24px_80px_rgba(0,0,0,0.18)]"
-      >
+      <div className="relative w-full max-w-lg overflow-hidden rounded-[1.8rem] border border-black bg-white p-6 shadow-[0_24px_80px_rgba(0,0,0,0.18)]">
         <div
           aria-hidden="true"
           className={`pointer-events-none absolute inset-0 ${styles.panelAccentClassName}`}
@@ -154,14 +156,6 @@ export function SafeActionDialog({
             {isPending ? resolvedPendingLabel : confirmLabel}
           </button>
         </div>
-
-        {isPending ? (
-          <div className="pointer-events-none absolute inset-x-6 bottom-3 rounded-full bg-black/5 px-4 py-2">
-            <p className="font-subtext text-center text-xs font-semibold uppercase tracking-[0.22em] text-black/45">
-              Securing your action...
-            </p>
-          </div>
-        ) : null}
       </div>
     </div>
   );

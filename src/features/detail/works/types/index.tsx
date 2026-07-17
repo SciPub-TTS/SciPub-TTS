@@ -188,7 +188,7 @@ export type PaperDetailWorkLink = {
 
 export type PaperDetailBadge = {
   label: string;
-  tone: "default" | "accent" | "topic" | "topicTrend";
+  tone: "default" | "accent" | "topic";
   entityId?: string;
   entityType?: "topic";
 };

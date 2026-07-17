@@ -38,11 +38,7 @@ export type PaperResult = {
   topic: string;
   topicRef: PaperResultEntityRef | null;
   subField: string;
-  matchesTrendingKeyword: boolean;
-  matchesTrendingTopic: boolean;
-  trendingScore: number;
   growthPercent: number;
-  isTrendTopic?: boolean;
   saved?: boolean;
 };
 
@@ -85,6 +81,8 @@ export type SearchSortState = {
   sortBy: SearchSortBy;
   sortDirection: SearchSortDirection;
   trendingMode: SearchTrendingMode;
+  citationDirection?: SearchSortDirection | null;
+  publishedDirection?: SearchSortDirection | null;
 };
 
 export type SearchFilters = {
@@ -167,8 +165,6 @@ export type UpdateSearchFilter = (
 // Component prop types live here so JSX files stay focused on rendering.
 export type PaperResultCardProps = {
   paper: PaperResult;
-  trendingKeywordNames: string[];
-  trendingTopicNames: string[];
 };
 
 export type SearchPanelProps = {
@@ -190,8 +186,6 @@ export type SearchPanelProps = {
   saveSearchFeedback: SaveSearchFeedback | null;
   saveSearchNotice: string | null;
   saveSearchSuccessToken: number;
-  hasLoadedTrendSnapshot: boolean;
-  topicHotSearches: string[];
   searchQuery: string;
   searchPlaceholder: string;
   showFilters: boolean;
@@ -344,13 +338,11 @@ export type SearchResultsProps = {
   isTotalResultCountExact: boolean;
   isLoadingResults: boolean;
   isLoadingMoreResults: boolean;
-  responseTimeSeconds: number;
   sortState: SearchSortState;
   totalResultCount: number;
-  trendingKeywordNames: string[];
-  trendingTopicNames: string[];
   visibleResults: SearchResultItem[];
   onLoadMoreResults: () => void;
+  onApplySort: () => void;
   onClearSorts: () => void;
   onSelectSort: (sortOption: string) => void;
 };

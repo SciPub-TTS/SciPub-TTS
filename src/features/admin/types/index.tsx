@@ -68,12 +68,19 @@ export type AdminUsersPageData = {
   totalPages: number;
 };
 
-export type AdminUserBanSummary = {
-  active: number;
-  activePercentage: number;
-  banned: number;
-  bannedPercentage: number;
-  total: number;
+export type AdminMetricValue = {
+  value: number;
+};
+
+export type AdminDashboardMetric = AdminMetricValue | number | undefined;
+
+export type AdminDashboardStatistics = {
+  bannedUser?: AdminDashboardMetric;
+  totalSubfields?: AdminDashboardMetric;
+  totalTopics?: AdminDashboardMetric;
+  totalKeywordTrend?: AdminDashboardMetric;
+  totalTopicTrend?: AdminDashboardMetric;
+  totalUsers?: AdminDashboardMetric;
 };
 
 export type AdminTopApiConsumer = {
@@ -85,3 +92,28 @@ export type AdminApiUsagePoint = {
   callCount: number;
   date: string;
 };
+
+export type AdminCronConfig = {
+  configKey: string;
+  createdAt: string | null;
+  dayOfMonth: string | null;
+  dayOfWeek: string | null;
+  description: string | null;
+  fullCronExpression: string;
+  hour: string | null;
+  minute: string | null;
+  month: string | null;
+  second: string | null;
+  updateAt: string | null;
+};
+
+export type AdminCronConfigUpdateInput = {
+  dayOfMonth: string;
+  dayOfWeek: string;
+  hour: string;
+  minute: string;
+  month: string;
+  second: string;
+};
+
+

@@ -39,7 +39,6 @@ export async function searchEntities(
     items: rawResults.map(mapApiEntityToResult),
     page: data.meta?.page || request.page,
     perPage: data.meta?.perPage || SEARCH_WORKS_PER_PAGE,
-    responseTimeSeconds: (data.meta?.dbResponseTimeMs || 0) / 1000,
     totalCount: data.meta?.totalCount || 0,
     totalCountExact: data.meta?.totalCountExact ?? true,
   };

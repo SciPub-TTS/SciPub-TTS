@@ -3,7 +3,6 @@ import type { ApiResponse } from "@/types/common.types";
 import { SEARCH_WORKS_PER_PAGE } from "../constants";
 import type { SearchFilters } from "../types";
 import { mapApiWorkToPaperResult } from "./searchWorksMapper";
-import { sortPaperResults } from "./searchWorksSorting";
 import type {
   SearchWorksApiResponse,
   SearchWorksRequest,
@@ -25,9 +24,8 @@ export async function searchWorks(
     entityType: "works",
     page: data.meta.page,
     perPage: data.meta.perPage,
-    responseTimeSeconds: data.meta.dbResponseTimeMs / 1000,
     totalCount: data.meta.totalCount,
-    works: sortPaperResults(works, request.sortState),
+    works,
   };
 }
 
@@ -110,15 +108,47 @@ function buildSearchWorksParams(request: SearchWorksRequest) {
   );
   appendIfFilled(params, "indexedByOrcid", filters.indexedByOrcid);
 
-  if (sortState.sortBy !== "relevance") {
-    appendIfFilled(params, "sortBy", sortState.sortBy);
-    appendIfFilled(params, "sortDirection", sortState.sortDirection);
-  }
+  appendSearchWorksSortParams(params, sortState);
 
   params.set("page", String(request.page));
   params.set("perPage", String(SEARCH_WORKS_PER_PAGE));
 
   return params;
+}
+
+function appendSearchWorksSortParams(
+  params: URLSearchParams,
+  sortState: SearchWorksRequest["sortState"],
+) {
+  const sortBy: string[] = [];
+  const sortDirection: string[] = [];
+
+  if (sortState.citationDirection) {
+    sortBy.push("citation");
+    sortDirection.push(sortState.citationDirection);
+  }
+
+  if (sortState.publishedDirection) {
+    sortBy.push("published");
+    sortDirection.push(sortState.publishedDirection);
+  }
+
+  if (sortBy.length === 0 && sortState.sortBy !== "relevance") {
+    sortBy.push(sortState.sortBy);
+    sortDirection.push(sortState.sortDirection);
+  }
+
+  if (sortBy.length === 0) {
+    return;
+  }
+
+  for (const value of sortBy) {
+    appendIfFilled(params, "sortBy", value);
+  }
+
+  for (const value of sortDirection) {
+    appendIfFilled(params, "sortDirection", value);
+  }
 }
 
 function hasActiveYearFilter(filters: SearchFilters) {

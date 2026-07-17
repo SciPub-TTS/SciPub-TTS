@@ -22,7 +22,5 @@ export const queryClient = new QueryClient({
 queryClient.setQueryDefaults(["searchSummary"], OPEN_ALEX_QUERY_DEFAULTS);
 queryClient.setQueryDefaults(["searchResults"], OPEN_ALEX_QUERY_DEFAULTS);
 queryClient.setQueryDefaults(["searchFilterOptions"], OPEN_ALEX_QUERY_DEFAULTS);
-queryClient.setQueryDefaults(["searchTrendingTopics"], OPEN_ALEX_QUERY_DEFAULTS);
-queryClient.setQueryDefaults(["searchTrendingKeywords"], OPEN_ALEX_QUERY_DEFAULTS);
 queryClient.setQueryDefaults(["paperDetail"], OPEN_ALEX_QUERY_DEFAULTS);
 queryClient.setQueryDefaults(["entityDetail"], OPEN_ALEX_QUERY_DEFAULTS);

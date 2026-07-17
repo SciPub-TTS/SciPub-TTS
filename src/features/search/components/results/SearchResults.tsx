@@ -9,7 +9,7 @@ import {
   type SearchResultSortGroup,
 } from "@/features/search/services";
 import type { SearchResultsProps } from "@/features/search/types";
-import { formatFullNumber, formatResponseTime } from "@/features/search/utils";
+import { formatFullNumber } from "@/features/search/utils";
 
 import { SearchResultCard } from "./SearchResultCard";
 
@@ -22,13 +22,11 @@ export function SearchResults({
   isTotalResultCountExact,
   isLoadingResults,
   isLoadingMoreResults,
-  responseTimeSeconds,
   sortState,
   totalResultCount,
-  trendingKeywordNames,
-  trendingTopicNames,
   visibleResults,
   onLoadMoreResults,
+  onApplySort,
   onClearSorts,
   onSelectSort,
 }: SearchResultsProps) {
@@ -41,8 +39,7 @@ export function SearchResults({
     totalResultCount,
     isTotalResultCountExact,
   );
-  const formattedResponseTime = formatResponseTime(responseTimeSeconds);
-  const resultMetaText = `${formattedResultCount} ${entityMetadata.resultLabelPlural} - ${formattedResponseTime}.`;
+  const resultMetaText = `${formattedResultCount} ${entityMetadata.resultLabelPlural}.`;
   const sortGroups = getSearchResultSortGroups(activeEntityType);
   const canSortResults =
     hasSearched
@@ -124,6 +121,7 @@ export function SearchResults({
                 canSortResults={canSortResults}
                 sortGroups={sortGroups}
                 sortState={sortState}
+                onApplySort={onApplySort}
                 onClearSorts={onClearSorts}
                 onSelectSort={onSelectSort}
               />
@@ -149,8 +147,6 @@ export function SearchResults({
           <ResultsList
             autoLoadAnchorIndex={autoLoadAnchorIndex}
             lazyLoadAnchorRef={lazyLoadAnchorRef}
-            trendingKeywordNames={trendingKeywordNames}
-            trendingTopicNames={trendingTopicNames}
             visibleResults={visibleResults}
           />
         )}
@@ -190,6 +186,7 @@ type SortActionsProps = {
   canSortResults: boolean;
   sortGroups: SearchResultSortGroup[];
   sortState: SearchResultsProps["sortState"];
+  onApplySort: () => void;
   onClearSorts: () => void;
   onSelectSort: (sortOption: string) => void;
 };
@@ -197,8 +194,6 @@ type SortActionsProps = {
 type ResultsListProps = {
   autoLoadAnchorIndex: number;
   lazyLoadAnchorRef: { current: HTMLDivElement | null };
-  trendingKeywordNames: SearchResultsProps["trendingKeywordNames"];
-  trendingTopicNames: SearchResultsProps["trendingTopicNames"];
   visibleResults: SearchResultsProps["visibleResults"];
 };
 
@@ -207,6 +202,7 @@ function SortActions(props: SortActionsProps) {
     canSortResults,
     sortGroups,
     sortState,
+    onApplySort,
     onClearSorts,
     onSelectSort,
   } = props;
@@ -223,6 +219,19 @@ function SortActions(props: SortActionsProps) {
           onSelectSort={onSelectSort}
         />
       ))}
+      <button
+        type="button"
+        onClick={onApplySort}
+        disabled={!canSortResults}
+        className={[
+          "h-10 rounded-lg border px-4 text-sm font-bold transition disabled:cursor-not-allowed disabled:opacity-50",
+          canSortResults
+            ? "border-[#14532D] bg-[#14532D] text-white hover:bg-[#15803D]"
+            : "border-black bg-slate-200 text-slate-500",
+        ].join(" ")}
+      >
+        Sort
+      </button>
       <button
         type="button"
         onClick={onClearSorts}
@@ -355,8 +364,6 @@ function ResultsList(props: ResultsListProps) {
   const {
     autoLoadAnchorIndex,
     lazyLoadAnchorRef,
-    trendingKeywordNames,
-    trendingTopicNames,
     visibleResults,
   } = props;
   const resultItems = [];
@@ -378,8 +385,6 @@ function ResultsList(props: ResultsListProps) {
       <SearchResultCard
         key={`${item.entityType}:${item.id}`}
         item={item}
-        trendingKeywordNames={trendingKeywordNames}
-        trendingTopicNames={trendingTopicNames}
       />,
     );
   }

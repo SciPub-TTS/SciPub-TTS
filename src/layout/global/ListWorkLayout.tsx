@@ -44,9 +44,7 @@ type ListWorkLayoutProps = {
   feedReasonText?: string;
   followedAuthors?: string[];
   isSaved?: boolean;
-  isTrendTopic?: boolean;
   keywords: string[];
-  trendingKeywords?: string[];
   workId: string;
   pdfUrl: string | null;
   preserveSearchStateOnDetailClick?: boolean;
@@ -132,9 +130,7 @@ export default function ListWorkLayout({
   feedReasonText,
   followedAuthors = [],
   isSaved = false,
-  isTrendTopic = false,
   keywords,
-  trendingKeywords = [],
   workId,
   pdfUrl,
   preserveSearchStateOnDetailClick = true,
@@ -215,9 +211,6 @@ export default function ListWorkLayout({
       };
   const normalizedFollowedAuthors = followedAuthors.map((author) =>
     author.trim().toLocaleLowerCase(),
-  );
-  const normalizedTrendingKeywords = trendingKeywords.map((keyword) =>
-    keyword.trim().toLocaleLowerCase(),
   );
   const entityNavigationOnClick = preserveSearchStateOnDetailClick
     ? markSearchPageRestorePending
@@ -364,8 +357,7 @@ export default function ListWorkLayout({
             >
               <MetadataBadge
                 label={topicRef.name}
-                showTrendIcon={isTrendTopic}
-                tone={isTrendTopic ? "topicTrend" : "topic"}
+                tone="topic"
               />
             </Link>
               );
@@ -373,8 +365,7 @@ export default function ListWorkLayout({
           ) : (
             <MetadataBadge
               label={topic}
-              showTrendIcon={isTrendTopic}
-              tone={isTrendTopic ? "topicTrend" : "topic"}
+              tone="topic"
             />
           )}
 
@@ -508,16 +499,7 @@ export default function ListWorkLayout({
           <MetadataBadge
             key={keyword}
             label={`#${keyword}`}
-            showTrendIcon={normalizedTrendingKeywords.includes(
-              keyword.trim().toLocaleLowerCase(),
-            )}
-            tone={
-              normalizedTrendingKeywords.includes(
-                keyword.trim().toLocaleLowerCase(),
-              )
-                ? "keywordTrend"
-                : "keyword"
-            }
+            tone="keyword"
           />
         ))}
       </div>
