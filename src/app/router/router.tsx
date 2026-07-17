@@ -4,7 +4,7 @@ import type { DetailTitleEntityType } from "@/features/detail/store/detailTitleS
 import { getDetailTitle } from "@/features/detail/store/detailTitleStore";
 
 import { ROUTES } from "./routes";
-import type {AppRouteHandle} from "@/app/router/breadcrumbs.ts";
+import type { AppRouteHandle } from "@/app/router/breadcrumbs.ts";
 
 import MainLayout from "@/layout/user/MainLayout";
 import AdminLayout from "@/layout/admin/AdminLayout";
@@ -42,32 +42,11 @@ import VerifyResetCodePage from "@/features/auth/components/pages/VerifyResetCod
 import ResetPasswordPage from "@/features/auth/components/pages/ResetPasswordPage.tsx";
 import OAuth2SuccessPage from "@/features/auth/components/pages/OAuth2SuccessPage.tsx";
 import TopicDashboardPage from "@/features/dashboard/topic/TopicDashboardPage.tsx";
-import { KeywordDashboardPage } from "@/features/dashboard/keyword/KeywordDashboard.tsx";
 import BookmarkLibraryPage from "@/features/bookmarks/components/BookmarkLibraryPage.tsx";
 import GoogleRegisterCompletePage from "@/features/auth/components/pages/GoogleRegisterCompletePage.tsx";
 import SocialHubPage from "@/features/social/components/SocialHubPage.tsx";
 import { ENABLE_SOCIAL_HUB } from "@/features/social/socialFeature";
 import LandingPage from "@/features/landing/components/LandingPage";
-
-const ROUTER_PATHS = {
-  guide: "guide",
-  search: "search",
-  trendingTopic: "trending-topic",
-  trendingKeyword: "trending-keyword",
-  paperDetail: "papers/:paperId",
-  authorDetail: "authors/:authorId",
-  topicDetail: "topics/:topicId",
-  profile: "profile",
-  profileSecurity: "profile/security",
-  bookmarks: "bookmarks",
-  feed: "feed",
-  report: "report",
-  socialHub: "social-hub",
-  adminDashboard: "dashboard",
-  adminUsers: "users",
-  adminUserDetail: "users/:userId",
-  adminSystemSettings: "system-settings",
-} as const;
 
 function getProfileBreadcrumb(search: string): AppRouteHandle["breadcrumb"] {
   const params = new URLSearchParams(search);
@@ -81,10 +60,7 @@ function getProfileBreadcrumb(search: string): AppRouteHandle["breadcrumb"] {
   }
 
   if (activeTab === "security") {
-    return [
-      { label: "Profile", to: ROUTES.PROFILE },
-      { label: "Security" },
-    ];
+    return [{ label: "Profile", to: ROUTES.PROFILE }, { label: "Security" }];
   }
 
   return "Profile";
@@ -106,7 +82,9 @@ function getDetailBreadcrumbLabel(
   entityType: DetailTitleEntityType,
   entityId: string,
 ) {
-  return getDetailTitle(entityType, entityId) || getDetailFallbackLabel(entityType);
+  return (
+    getDetailTitle(entityType, entityId) || getDetailFallbackLabel(entityType)
+  );
 }
 
 function getDetailBreadcrumb(
@@ -143,18 +121,18 @@ function getDetailBreadcrumb(
         : detailOrigin === "trending"
           ? {
               label: "Trending",
-              to: ROUTES.TRENDING_TOPIC,
+              to: ROUTES.TRENDING,
             }
-        : detailOrigin === "feed" || detailOrigin === "newfeed"
-          ? {
-              label: "New Feed",
-              to: ROUTES.FEED
-            }
-      : {
-          label: "Discovery",
-          to: ROUTES.SEARCH,
-          onClick: markSearchPageRestorePending,
-        };
+          : detailOrigin === "feed" || detailOrigin === "newfeed"
+            ? {
+                label: "New Feed",
+                to: ROUTES.FEED,
+              }
+            : {
+                label: "Discovery",
+                to: ROUTES.SEARCH,
+                onClick: markSearchPageRestorePending,
+              };
 
   return [
     rootItem,
@@ -190,7 +168,7 @@ export const router = createBrowserRouter([
       {
         path: ROUTES.GOOGLE_REGISTER_COMPLETE,
         element: <GoogleRegisterCompletePage />,
-      }
+      },
     ],
   },
 
@@ -205,7 +183,7 @@ export const router = createBrowserRouter([
   },
 
   {
-    path: "/oauth2/success",
+    path: ROUTES.OAUTH2_SUCCESS,
     element: <OAuth2SuccessPage />,
   },
 
@@ -217,38 +195,29 @@ export const router = createBrowserRouter([
         element: <MainLayout />,
         children: [
           {
-            path: ROUTER_PATHS.guide,
+            path: "guide",
             element: <GuideHelpPage />,
             handle: {
               breadcrumb: "Guide",
             },
           },
           {
-            path: ROUTER_PATHS.search,
+            path: "search",
             element: <SearchPage />,
             handle: {
               breadcrumb: "Discovery",
             },
           },
           {
-            path: ROUTER_PATHS.trendingTopic,
+            path: "trending",
             element: <TopicDashboardPage />,
             handle: {
               breadcrumb: "Trending",
             },
           },
+
           {
-            path: ROUTER_PATHS.trendingKeyword,
-            element: <KeywordDashboardPage />,
-            handle: {
-              breadcrumb: [
-                { label: "Trending", to: ROUTES.TRENDING_TOPIC },
-                { label: "Keyword Dashboard" },
-              ],
-            },
-          },
-          {
-            path: ROUTER_PATHS.paperDetail,
+            path: "papers/:paperId",
             element: <PaperDetailPage />,
             handle: {
               breadcrumb: ({
@@ -261,11 +230,16 @@ export const router = createBrowserRouter([
                     paperId?: string;
                   };
                 };
-              }) => getDetailBreadcrumb(location, "works", match.params.paperId || ""),
+              }) =>
+                getDetailBreadcrumb(
+                  location,
+                  "works",
+                  match.params.paperId || "",
+                ),
             },
           },
           {
-            path: ROUTER_PATHS.authorDetail,
+            path: "authors/:authorId",
             element: <AuthorDetailPage />,
             handle: {
               breadcrumb: ({
@@ -275,11 +249,15 @@ export const router = createBrowserRouter([
                 location: Location;
                 match: { params: { authorId?: string } };
               }) =>
-                getDetailBreadcrumb(location, "authors", match.params.authorId || ""),
+                getDetailBreadcrumb(
+                  location,
+                  "authors",
+                  match.params.authorId || "",
+                ),
             },
           },
           {
-            path: ROUTER_PATHS.topicDetail,
+            path: "topics/:topicId",
             element: <TopicDetailPage />,
             handle: {
               breadcrumb: ({
@@ -289,14 +267,18 @@ export const router = createBrowserRouter([
                 location: Location;
                 match: { params: { topicId?: string } };
               }) =>
-                getDetailBreadcrumb(location, "topics", match.params.topicId || ""),
+                getDetailBreadcrumb(
+                  location,
+                  "topics",
+                  match.params.topicId || "",
+                ),
             },
           },
           {
             element: <ProtectedRoute allowedRoles={AUTHENTICATED_ROLES} />,
             children: [
               {
-                path: ROUTER_PATHS.feed,
+                path: "feed",
                 element: <FeedPage />,
                 handle: {
                   breadcrumb: "Feed",
@@ -305,7 +287,7 @@ export const router = createBrowserRouter([
               ...(ENABLE_SOCIAL_HUB
                 ? [
                     {
-                      path: ROUTER_PATHS.socialHub,
+                      path: "social-hub",
                       element: <SocialHubPage />,
                       handle: {
                         breadcrumb: "Social Hub",
@@ -314,7 +296,7 @@ export const router = createBrowserRouter([
                   ]
                 : []),
               {
-                path: ROUTER_PATHS.profile,
+                path: "profile",
                 element: <ProfilePage />,
                 handle: {
                   breadcrumb: ({ location }: { location: Location }) =>
@@ -322,7 +304,7 @@ export const router = createBrowserRouter([
                 },
               },
               {
-                path: ROUTER_PATHS.profileSecurity,
+                path: "profile/security",
                 element: <ChangePasswordPage />,
                 handle: {
                   breadcrumb: [
@@ -332,14 +314,14 @@ export const router = createBrowserRouter([
                 },
               },
               {
-                path: ROUTER_PATHS.bookmarks,
+                path: "bookmarks",
                 element: <BookmarkLibraryPage />,
                 handle: {
                   breadcrumb: "Bookmarks",
                 },
               },
               {
-                path: ROUTER_PATHS.report,
+                path: "report",
                 element: <ReportPage />,
                 handle: {
                   breadcrumb: "Reports",
@@ -364,28 +346,28 @@ export const router = createBrowserRouter([
             element: <Navigate to={ROUTES.ADMIN_DASHBOARD} replace />,
           },
           {
-            path: ROUTER_PATHS.adminDashboard,
+            path: "dashboard",
             element: <AdminDashboardPage />,
             handle: {
               breadcrumb: "Dashboard",
             },
           },
           {
-            path: ROUTER_PATHS.adminUsers,
+            path: "users",
             element: <AdminUsersPage />,
             handle: {
               breadcrumb: "User Management",
             },
           },
           {
-            path: ROUTER_PATHS.adminSystemSettings,
+            path: "system-settings",
             element: <AdminSystemSettingsPage />,
             handle: {
               breadcrumb: "System Settings",
             },
           },
           {
-            path: ROUTER_PATHS.adminUserDetail,
+            path: "users/:userId",
             element: <AdminUserDetailPage />,
             handle: {
               breadcrumb: [
