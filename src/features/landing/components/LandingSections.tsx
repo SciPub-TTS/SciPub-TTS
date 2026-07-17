@@ -559,7 +559,7 @@ function HeroSection() {
             <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
           </Link>
           <Link
-            to={ROUTES.GUIDE}
+            to={ROUTES.TRENDING_TOPIC}
             className="inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/10 px-6 py-3 text-white backdrop-blur transition-colors hover:bg-white/20"
           >
             View Trending
