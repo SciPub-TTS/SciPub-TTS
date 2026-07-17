@@ -28,10 +28,10 @@ const workflowSteps = [
     id: "01",
     eyebrow: "Start Wide",
     title: "Discover a topic or question worth exploring",
-    description: "Begin with Search or Trending Topic.",
+    description: "Begin with Search or Trending Dashboard",
     checkpoints: [
       "Search for a known keyword, author, or topic.",
-      "Use Trending Topic for discovery first.",
+      "Use Trending Dashboard ery first.",
       "Choose one thread to explore.",
     ],
     icon: Radar,
@@ -117,9 +117,9 @@ const routeMapCards = [
     icon: FileSearch,
   },
   {
-    title: "Trending Topic",
-    subtitle: "Discovery dashboard",
-    description: "Best for discovery first.",
+    title: "Trending Dashboard",
+    subtitle: "Find your favorite trend here",
+    description: "Best for staring your trip here in our website",
     href: ROUTES.TRENDING,
     icon: TrendingUp,
   },
@@ -231,7 +231,7 @@ export default function GuideHelpPage() {
                     to={ROUTES.TRENDING}
                     className="inline-flex items-center gap-2 rounded-2xl border border-black bg-white px-5 py-3 text-sm font-semibold text-black transition hover:bg-slate-100"
                   >
-                    View Trending Topic
+                    View Trending DashBoard
                   </Link>
                 </div>
               </div>
