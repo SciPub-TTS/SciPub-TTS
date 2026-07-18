@@ -5,8 +5,7 @@ import {
   getAccessToken,
   getAccessTokenExpiresAt,
   setAccessTokenExpiry,
-  setAccessToken,
-  setAccessTokenExpiry,
+  setAccessToken
 } from "@/features/auth/utils/authStorage";
 import type { AuthResponse } from "@/features/auth/types/auth.types";
 import type { ApiResponse } from "@/types/common.types";
