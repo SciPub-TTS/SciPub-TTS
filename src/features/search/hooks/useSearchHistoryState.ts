@@ -119,6 +119,16 @@ export function useSearchHistoryState(params: UseSearchHistoryStateParams) {
     },
   });
 
+  const recordSearchMutation = useMutation({
+    mutationFn: saveSearchHistory,
+    onError: (error) => {
+      console.error("Cannot record search history:", error);
+    },
+    onSuccess: () => {
+      refreshRecentSearches();
+    },
+  });
+
   useEffect(() => {
     const timerId = window.setTimeout(() => {
       setDebouncedRecentSearchKeyword(
@@ -157,7 +167,11 @@ export function useSearchHistoryState(params: UseSearchHistoryStateParams) {
   }, [saveSearchFeedback]);
 
   function handleSaveSearch() {
-    if (!normalizedSearchQuery || saveSearchMutation.isPending) {
+    if (
+      !isSearchHistoryEnabled ||
+      !normalizedSearchQuery ||
+      saveSearchMutation.isPending
+    ) {
       return;
     }
 
@@ -176,10 +190,28 @@ export function useSearchHistoryState(params: UseSearchHistoryStateParams) {
     void saveSearchMutation.mutateAsync(normalizedSearchQuery);
   }
 
+  function recordSearchHistory(query: string) {
+    if (!isSearchHistoryEnabled || recordSearchMutation.isPending) {
+      return;
+    }
+
+    const normalizedQuery = query.trim();
+
+    if (!normalizedQuery) {
+      return;
+    }
+
+    void recordSearchMutation.mutateAsync(normalizedQuery);
+  }
+
   function handleDeleteRecentSearch(query: string) {
     const normalizedQuery = query.trim();
 
-    if (!normalizedQuery || deleteSearchMutation.isPending) {
+    if (
+      !isSearchHistoryEnabled ||
+      !normalizedQuery ||
+      deleteSearchMutation.isPending
+    ) {
       return;
     }
 
@@ -187,7 +219,7 @@ export function useSearchHistoryState(params: UseSearchHistoryStateParams) {
   }
 
   function handleClearRecentSearches() {
-    if (clearSearchMutation.isPending) {
+    if (!isSearchHistoryEnabled || clearSearchMutation.isPending) {
       return;
     }
 
@@ -207,6 +239,7 @@ export function useSearchHistoryState(params: UseSearchHistoryStateParams) {
     isDeletingRecentSearch: deleteSearchMutation.isPending,
     isSavingSearch: saveSearchMutation.isPending,
     recentSearches: recentSearchesQuery.data || [],
+    recordSearchHistory,
     saveSearchFeedback,
     saveSearchNotice:
       !isSearchHistoryEnabled && Boolean(normalizedSearchQuery)

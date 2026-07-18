@@ -3,8 +3,9 @@ import axios, { type InternalAxiosRequestConfig } from "axios";
 import {
   clearAuthStorage,
   getAccessToken,
-  setAccessToken,
+  getAccessTokenExpiresAt,
   setAccessTokenExpiry,
+  setAccessToken
 } from "@/features/auth/utils/authStorage";
 import type { AuthResponse } from "@/features/auth/types/auth.types";
 import type { ApiResponse } from "@/types/common.types";
@@ -30,7 +31,22 @@ export const publicHttp = axios.create({
   withCredentials: true,
 });
 
-// Những API này không cần refresh token khi bị 401
+function getUsableAccessToken() {
+  const accessToken = getAccessToken();
+
+  if (!accessToken) {
+    return null;
+  }
+
+  const expiresAt = getAccessTokenExpiresAt();
+
+  if (expiresAt !== null && expiresAt <= Date.now()) {
+    return null;
+  }
+
+  return accessToken;
+}
+
 function shouldSkipRefresh(url?: string) {
   if (!url) return true;
 
@@ -46,7 +62,18 @@ function shouldSkipRefresh(url?: string) {
 
 // Trước mỗi request, tự động gắn access token vào header
 http.interceptors.request.use((config) => {
-  const accessToken = getAccessToken();
+  const accessToken = getUsableAccessToken();
+
+  if (accessToken) {
+    config.headers = config.headers ?? {};
+    config.headers.Authorization = `Bearer ${accessToken}`;
+  }
+
+  return config;
+});
+
+publicHttp.interceptors.request.use((config) => {
+  const accessToken = getUsableAccessToken();
 
   if (accessToken) {
     config.headers = config.headers ?? {};
