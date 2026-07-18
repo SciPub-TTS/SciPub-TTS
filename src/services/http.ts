@@ -3,6 +3,7 @@ import axios, { type InternalAxiosRequestConfig } from "axios";
 import {
   clearAuthStorage,
   getAccessToken,
+  getAccessTokenExpiresAt,
   setAccessTokenExpiry,
   setAccessToken,
 } from "@/features/auth/utils/authStorage";
@@ -26,6 +27,22 @@ export const publicHttp = axios.create({
   withCredentials: true,
 });
 
+function getUsableAccessToken() {
+  const accessToken = getAccessToken();
+
+  if (!accessToken) {
+    return null;
+  }
+
+  const expiresAt = getAccessTokenExpiresAt();
+
+  if (expiresAt !== null && expiresAt <= Date.now()) {
+    return null;
+  }
+
+  return accessToken;
+}
+
 function shouldSkipRefresh(url?: string) {
   if (!url) return true;
 
@@ -38,7 +55,18 @@ function shouldSkipRefresh(url?: string) {
 }
 
 http.interceptors.request.use((config) => {
-  const accessToken = getAccessToken();
+  const accessToken = getUsableAccessToken();
+
+  if (accessToken) {
+    config.headers = config.headers ?? {};
+    config.headers.Authorization = `Bearer ${accessToken}`;
+  }
+
+  return config;
+});
+
+publicHttp.interceptors.request.use((config) => {
+  const accessToken = getUsableAccessToken();
 
   if (accessToken) {
     config.headers = config.headers ?? {};
