@@ -6,22 +6,27 @@ import {
   getAccessTokenExpiresAt,
   setAccessTokenExpiry,
   setAccessToken,
+  setAccessTokenExpiry,
 } from "@/features/auth/utils/authStorage";
 import type { AuthResponse } from "@/features/auth/types/auth.types";
-import type { ApiResponse } from "@/types/common.types.ts";
+import type { ApiResponse } from "@/types/common.types";
 
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
 
+// Axios dùng cho các API cần đăng nhập
 export const http = axios.create({
   baseURL: apiBaseUrl,
   withCredentials: true,
 });
 
+// Axios chỉ dùng để gọi /auth/refresh
+// Không dùng http để tránh vòng lặp interceptor
 const refreshClient = axios.create({
   baseURL: apiBaseUrl,
   withCredentials: true,
 });
 
+// Axios cho các API public (login, register,...)
 export const publicHttp = axios.create({
   baseURL: apiBaseUrl,
   withCredentials: true,
@@ -54,6 +59,9 @@ function shouldSkipRefresh(url?: string) {
   );
 }
 
+// ================= REQUEST INTERCEPTOR =================
+
+// Trước mỗi request, tự động gắn access token vào header
 http.interceptors.request.use((config) => {
   const accessToken = getUsableAccessToken();
 
@@ -81,19 +89,20 @@ type RefreshedAccessSession = {
   expiresInSeconds?: number;
 };
 
+// Lưu promise refresh hiện tại để nhiều request 401
+// chỉ gọi /auth/refresh đúng một lần
 let refreshPromise: Promise<RefreshedAccessSession> | null = null;
 
-async function wait(ms: number) {
-  await new Promise((resolve) => {
-    window.setTimeout(resolve, ms);
-  });
-}
-
+// Kiểm tra lỗi có nên thử refresh lại không
+// Retry khi:
+// - Mất mạng
+// - Lỗi server (5xx)
 function isRetriableRefreshError(error: unknown) {
   if (!axios.isAxiosError(error)) {
     return false;
   }
 
+  // Không có response => lỗi mạng
   if (!error.response) {
     return true;
   }
@@ -101,26 +110,20 @@ function isRetriableRefreshError(error: unknown) {
   return error.response.status >= 500;
 }
 
-function isTerminalRefreshError(error: unknown) {
-  if (!axios.isAxiosError(error)) {
-    return false;
-  }
-
-  const status = error.response?.status;
-
-  return status === 400 || status === 401 || status === 403;
-}
-
+// Gọi API refresh để lấy access token mới
 async function requestRefreshedAccessToken() {
   let lastError: unknown = null;
 
-  for (let attempt = 0; attempt < 2; attempt += 1) {
+  // Thử tối đa 2 lần
+  for (let attempt = 0; attempt < 2; attempt++) {
     try {
       const response =
         await refreshClient.post<ApiResponse<AuthResponse>>("/auth/refresh");
+
       const nextToken = response.data.data?.accessToken ?? null;
       const expiresInSeconds = response.data.data?.expiresInSeconds;
 
+      // Nếu refresh thành công thì lưu token mới
       if (nextToken) {
         setAccessToken(nextToken);
         setAccessTokenExpiry(expiresInSeconds);
@@ -133,44 +136,68 @@ async function requestRefreshedAccessToken() {
     } catch (error) {
       lastError = error;
 
+      // Nếu không nên retry hoặc đã retry đủ 2 lần
       if (!isRetriableRefreshError(error) || attempt === 1) {
-        if (isTerminalRefreshError(error)) {
+        const status = axios.isAxiosError(error)
+          ? error.response?.status
+          : undefined;
+
+        // Refresh token hết hạn => logout
+        if (status === 400 || status === 401 || status === 403) {
           clearAuthStorage();
         }
 
         throw error;
       }
 
-      await wait(600);
+      // Đợi 600ms rồi thử refresh lại
+      await new Promise((resolve) => setTimeout(resolve, 500));
     }
   }
 
   throw lastError;
 }
 
+// ================= RESPONSE INTERCEPTOR =================
+
 http.interceptors.response.use(
   (response) => response,
+
   async (error) => {
     const originalRequest = error.config as
       | (InternalAxiosRequestConfig & { _retry?: boolean })
       | undefined;
 
-    if (
-      error.response?.status !== 401 ||
-      !originalRequest ||
-      originalRequest._retry ||
-      shouldSkipRefresh(originalRequest.url)
-    ) {
+    // Không phải lỗi 401
+    if (error.response?.status !== 401) {
+      return Promise.reject(error);
+    }
+
+    // Không có request gốc
+    if (!originalRequest) {
+      return Promise.reject(error);
+    }
+
+    // Request đã retry rồi
+    if (originalRequest._retry) {
+      return Promise.reject(error);
+    }
+
+    // Không refresh cho login, register,...
+    if (shouldSkipRefresh(originalRequest.url)) {
       return Promise.reject(error);
     }
 
     originalRequest._retry = true;
 
-    refreshPromise ??= requestRefreshedAccessToken()
-      .finally(() => {
+    // Nếu chưa có request refresh nào thì tạo mới
+    if (!refreshPromise) {
+      refreshPromise = requestRefreshedAccessToken().finally(() => {
         refreshPromise = null;
       });
+    }
 
+    // Chờ refresh hoàn thành
     const refreshedSession = await refreshPromise;
     const nextToken = refreshedSession.accessToken;
 
@@ -178,9 +205,11 @@ http.interceptors.response.use(
       return Promise.reject(error);
     }
 
+    // Gắn access token mới vào request cũ
     originalRequest.headers = originalRequest.headers ?? {};
     originalRequest.headers.Authorization = `Bearer ${nextToken}`;
 
+    // Gửi lại request ban đầu
     return http(originalRequest);
   },
 );

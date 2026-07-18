@@ -34,16 +34,6 @@ import MainFooter from "@/layout/global/Footer";
 
 import { getLandingTrendPreview } from "../services/landingApi";
 
-export const LANDING_SECTION_LINKS = [
-  { id: "landing-hero", label: "Overview" },
-  { id: "landing-metrics", label: "Metrics" },
-  { id: "landing-scope", label: "Scope" },
-  { id: "landing-features", label: "Capabilities" },
-  { id: "landing-workflow", label: "Workflow" },
-  { id: "landing-preview", label: "Product Preview" },
-  { id: "landing-cta", label: "Get Started" },
-] as const;
-
 const CS_TAGS = [
   {
     name: "Artificial Intelligence",
@@ -149,7 +139,8 @@ const ENG_TAGS = [
   },
   {
     name: "Building and Construction",
-    description: "Construction methods, building systems, and project delivery.",
+    description:
+      "Construction methods, building systems, and project delivery.",
   },
   {
     name: "Architecture",
@@ -179,10 +170,26 @@ const FEATURES = [
   },
 ] as const;
 const STEPS = [
-  { icon: Search, title: "Discover", desc: "Search scoped works, topics, and authors from the main discovery workspace." },
-  { icon: LineChart, title: "Track", desc: "Open the trending dashboard to read signals, momentum, and publication movement." },
-  { icon: Bookmark, title: "Collect", desc: "Bookmark papers into collections so the same works stay organized across search, bookmarks, and detail views." },
-  { icon: Download, title: "Turn into output", desc: "Build reports, follow the feed, or publish bookmark-driven notes through Social Hub." },
+  {
+    icon: Search,
+    title: "Discover",
+    desc: "Search scoped works, topics, and authors from the main discovery workspace.",
+  },
+  {
+    icon: LineChart,
+    title: "Track",
+    desc: "Open the trending dashboard to read signals, momentum, and publication movement.",
+  },
+  {
+    icon: Bookmark,
+    title: "Collect",
+    desc: "Bookmark papers into collections so the same works stay organized across search, bookmarks, and detail views.",
+  },
+  {
+    icon: Download,
+    title: "Turn into output",
+    desc: "Build reports, follow the feed, or publish bookmark-driven notes through Social Hub.",
+  },
 ] as const;
 const MIN_PREVIEW_YEAR = 2000;
 const MAX_PREVIEW_YEAR = 2026;
@@ -539,9 +546,9 @@ function HeroSection() {
           }}
         >
           Owlreka helps researchers discover papers, analyze trends, and turn
-          academic activity into scoped insight across Computer Science
-          (field 17) and Engineering (field 22), with bookmarks, reports,
-          feeds, and social note sharing in one workspace.
+          academic activity into scoped insight across Computer Science (field
+          17) and Engineering (field 22), with bookmarks, reports, feeds, and
+          social note sharing in one workspace.
         </motion.p>
 
         <motion.div
@@ -559,10 +566,10 @@ function HeroSection() {
             <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
           </Link>
           <Link
-            to={ROUTES.TRENDING_TOPIC}
+            to={ROUTES.TRENDING}
             className="inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/10 px-6 py-3 text-white backdrop-blur transition-colors hover:bg-white/20"
           >
-            View Trending
+            View Trending Dashboard
           </Link>
         </motion.div>
       </div>
@@ -593,7 +600,7 @@ function MetricsSection() {
         totalWorks === null
           ? "2.4M+"
           : formatCompactCount(totalWorks) +
-          (worksSummaryQuery.data?.totalCountExact ? "" : "+"),
+            (worksSummaryQuery.data?.totalCountExact ? "" : "+"),
       cap: "indexed research works",
     },
     {
@@ -614,7 +621,10 @@ function MetricsSection() {
   ] as const;
 
   return (
-    <section id="landing-metrics" className="mx-auto max-w-7xl px-5 py-16 sm:px-8">
+    <section
+      id="landing-metrics"
+      className="mx-auto max-w-7xl px-5 py-16 sm:px-8"
+    >
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
         {cards.map((card, index) => (
           <Reveal key={card.label} delay={index * 0.08}>
@@ -726,7 +736,10 @@ function FeaturesSection() {
           </span>
           <h2
             className="mt-3 text-[2.2rem] leading-tight text-[#0F172A] sm:text-[2.6rem]"
-            style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600 }}
+            style={{
+              fontFamily: "'Space Grotesk', sans-serif",
+              fontWeight: 600,
+            }}
           >
             Built around the workflow already in the product.
           </h2>
@@ -741,7 +754,10 @@ function FeaturesSection() {
                 </div>
                 <h3
                   className="mt-5 text-[1.3rem] text-[#0F172A]"
-                  style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600 }}
+                  style={{
+                    fontFamily: "'Space Grotesk', sans-serif",
+                    fontWeight: 600,
+                  }}
                 >
                   {feature.title}
                 </h3>
@@ -774,7 +790,10 @@ function WorkflowSection() {
           </span>
           <h2
             className="mt-3 text-[2.2rem] leading-tight text-[#0F172A] sm:text-[2.6rem]"
-            style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600 }}
+            style={{
+              fontFamily: "'Space Grotesk', sans-serif",
+              fontWeight: 600,
+            }}
           >
             Search, trend, collect, report, and share.
           </h2>
@@ -787,7 +806,10 @@ function WorkflowSection() {
                 <div className="flex items-center justify-between">
                   <span
                     className="text-[2.2rem] leading-none text-black transition-colors group-hover:text-[#14532D]"
-                    style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700 }}
+                    style={{
+                      fontFamily: "'Space Grotesk', sans-serif",
+                      fontWeight: 700,
+                    }}
                   >
                     0{index + 1}
                   </span>
@@ -797,7 +819,10 @@ function WorkflowSection() {
                 </div>
                 <h3
                   className="mt-5 text-[1.2rem] text-[#0F172A]"
-                  style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600 }}
+                  style={{
+                    fontFamily: "'Space Grotesk', sans-serif",
+                    fontWeight: 600,
+                  }}
                 >
                   {step.title}
                 </h3>
@@ -857,7 +882,10 @@ function PreviewSection() {
           </span>
           <h2
             className="mt-3 text-[2.2rem] leading-tight text-[#0F172A] sm:text-[2.6rem]"
-            style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600 }}
+            style={{
+              fontFamily: "'Space Grotesk', sans-serif",
+              fontWeight: 600,
+            }}
           >
             One workspace connecting search to action.
           </h2>
@@ -881,19 +909,19 @@ function PreviewSection() {
               <div className="space-y-3">
                 {!hasLoadedTrendSnapshot
                   ? Array.from({ length: 3 }).map((_, index) => (
-                    <div
-                      key={`loading-topic-${index + 1}`}
-                      className="flex items-start gap-4 rounded-xl border border-slate-200 bg-white p-4"
-                    >
-                      <div className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-lg bg-[#0F75BC]/10 text-[#0F75BC]">
-                        <FileText className="size-4" />
+                      <div
+                        key={`loading-topic-${index + 1}`}
+                        className="flex items-start gap-4 rounded-xl border border-slate-200 bg-white p-4"
+                      >
+                        <div className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-lg bg-[#0F75BC]/10 text-[#0F75BC]">
+                          <FileText className="size-4" />
+                        </div>
+                        <div className="space-y-2">
+                          <div className="h-4 w-52 animate-pulse rounded bg-slate-200" />
+                          <div className="h-3 w-32 animate-pulse rounded bg-slate-100" />
+                        </div>
                       </div>
-                      <div className="space-y-2">
-                        <div className="h-4 w-52 animate-pulse rounded bg-slate-200" />
-                        <div className="h-3 w-32 animate-pulse rounded bg-slate-100" />
-                      </div>
-                    </div>
-                  ))
+                    ))
                   : null}
 
                 {hasLoadedTrendSnapshot && !hasTrendingThisWeek ? (
@@ -918,7 +946,10 @@ function PreviewSection() {
                     <div className="min-w-0">
                       <p
                         className="break-words text-[0.98rem] text-[#0F172A]"
-                        style={{ fontFamily: "'Manrope', sans-serif", fontWeight: 600 }}
+                        style={{
+                          fontFamily: "'Manrope', sans-serif",
+                          fontWeight: 600,
+                        }}
                       >
                         {topic.name}
                       </p>
@@ -978,7 +1009,10 @@ function PreviewSection() {
                           <div className="min-w-0">
                             <p
                               className="break-words text-[0.9rem] text-[#0F172A]"
-                              style={{ fontFamily: "'Manrope', sans-serif", fontWeight: 700 }}
+                              style={{
+                                fontFamily: "'Manrope', sans-serif",
+                                fontWeight: 700,
+                              }}
                             >
                               #{keyword.name}
                             </p>
@@ -988,7 +1022,8 @@ function PreviewSection() {
                             >
                               {formatCompactNumber(keyword.works)} works -{" "}
                               <span className="text-[#F37021]">
-                                {formatCompactNumber(keyword.citations)} citations
+                                {formatCompactNumber(keyword.citations)}{" "}
+                                citations
                               </span>
                             </p>
                           </div>
@@ -1005,7 +1040,10 @@ function PreviewSection() {
                     <div>
                       <h3
                         className="text-[1.6rem] leading-tight text-[#0F172A] sm:text-[1.8rem]"
-                        style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600 }}
+                        style={{
+                          fontFamily: "'Space Grotesk', sans-serif",
+                          fontWeight: 600,
+                        }}
                       >
                         Publication Trend Over Time
                       </h3>
@@ -1062,8 +1100,16 @@ function PreviewSection() {
                               x2="0"
                               y2="1"
                             >
-                              <stop offset="5%" stopColor="#2563EB" stopOpacity={0.2} />
-                              <stop offset="95%" stopColor="#2563EB" stopOpacity={0} />
+                              <stop
+                                offset="5%"
+                                stopColor="#2563EB"
+                                stopOpacity={0.2}
+                              />
+                              <stop
+                                offset="95%"
+                                stopColor="#2563EB"
+                                stopOpacity={0}
+                              />
                             </linearGradient>
                           </defs>
                           <CartesianGrid
@@ -1091,7 +1137,9 @@ function PreviewSection() {
                             axisLine={false}
                             tickLine={false}
                             tick={{ fontSize: 12, fill: "#64748B" }}
-                            tickFormatter={(value) => formatMillions(Number(value))}
+                            tickFormatter={(value) =>
+                              formatMillions(Number(value))
+                            }
                           />
                           <Tooltip
                             formatter={(value) => [
@@ -1170,7 +1218,10 @@ function CtaSection() {
             <div className="relative">
               <h2
                 className="mx-auto w-full max-w-none text-[2.2rem] leading-tight text-[#0F172A] sm:text-[3rem]"
-                style={{ fontFamily: "'Cormorant Garamond', serif", fontWeight: 600 }}
+                style={{
+                  fontFamily: "'Cormorant Garamond', serif",
+                  fontWeight: 600,
+                }}
               >
                 Turn academic data into research direction.
               </h2>
