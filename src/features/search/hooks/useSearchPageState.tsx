@@ -167,6 +167,7 @@ export function useSearchPageState() {
     nextFilters: SearchFilters,
     nextSortState = sortState,
     nextOptionValueLookup = optionValueLookup,
+    shouldRecordSearchHistory = true,
   ) {
     const normalizedQuery = nextQuery.trim();
 
@@ -182,6 +183,10 @@ export function useSearchPageState() {
       nextSortState,
       nextOptionValueLookup,
     );
+
+    if (shouldRecordSearchHistory) {
+      searchHistory.recordSearchHistory(normalizedQuery);
+    }
   }
 
   function handleEntityTypeChange(nextEntityType: SearchEntityType) {
@@ -271,6 +276,7 @@ export function useSearchPageState() {
       searchResults.appliedFilters,
       sortState,
       submittedSearch.optionValueLookup,
+      false,
     );
   }
 
@@ -293,6 +299,7 @@ export function useSearchPageState() {
       resetFilterState,
       sortState,
       optionValueLookup,
+      false,
     );
   }
 
