@@ -70,7 +70,6 @@ export async function fetchSocialBookmarkOptions() {
     const response = await bookmarkApi.getList({
       page,
       size: SOCIAL_BOOKMARK_OPTIONS_PAGE_SIZE,
-      sort: "RECENT",
     });
 
     items.push(...response.data.items);

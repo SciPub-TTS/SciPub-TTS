@@ -230,9 +230,7 @@ export default function MainSidebar() {
             setIsLogoutDialogOpen(false);
           }
         }}
-        onConfirm={() => {
-          void handleConfirmLogout();
-        }}
+        onConfirm={handleConfirmLogout}
         open={isLogoutDialogOpen}
         pendingLabel="Logging out..."
         title="Log out of Owlreka?"

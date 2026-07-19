@@ -442,14 +442,14 @@ export function useSocialHub() {
       setDeleteDialogPostId(null);
     }
   
-    function handleConfirmDeletePost() {
-      if (!deleteDialogPostId || deletePostMutation.isPending) {
-        return;
-      }
-  
-      setBlogError(null);
-      deletePostMutation.mutate(deleteDialogPostId);
-    }
+    async function handleConfirmDeletePost() {
+      if (!deleteDialogPostId || deletePostMutation.isPending) {
+        return;
+      }
+  
+      setBlogError(null);
+      await deletePostMutation.mutateAsync(deleteDialogPostId);
+    }
   
     function handleBlogModalKeyDown(event: KeyboardEvent<HTMLInputElement>) {
       if (event.key === "Enter") {
