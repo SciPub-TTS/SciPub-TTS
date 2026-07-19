@@ -56,7 +56,7 @@ function buildSocialDetailHref(
 
   entityId: string,
 ) {
-  return buildDetailTrailUrl(entityType, entityId, [], "social-hub");
+  return buildDetailTrailUrl(entityType, entityId, "social-hub");
 }
 
 function SocialReferenceCard({

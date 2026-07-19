@@ -11,21 +11,21 @@ import {
 import DetailSectionCard from "@/features/detail/works/components/sections/DetailSectionCard";
 import { formatFullNumber } from "@/features/search/utils";
 
-import { useEntityDetailNavigation } from "../hooks/useEntityDetailNavigation";
-import { useEntityDetailPageState } from "../hooks/useEntityDetailPageState";
-import type { AuthorDetailData } from "../types";
+import { useDetailNavigation } from "@/features/detail/hooks/useDetailNavigation";
 import {
-  EntityDetailHero,
-  EntityWorksSection,
-  EntityYearChartSection,
+  DetailHero,
+  DetailWorksSection,
+  DetailYearChartSection,
   OverviewRow,
   RelatedTopicList,
-} from "./EntityDetailShared";
+} from "@/features/detail/detailShared";
+
+import { useAuthorDetailPageState } from "../hooks/useAuthorDetailPageState";
+import type { AuthorDetailData } from "../types";
 
 export default function AuthorDetailPage() {
-  const { buildDetailHref, handleDetailClick } = useEntityDetailNavigation();
-  const { detail, errorMessage, isLoading } =
-    useEntityDetailPageState("authors");
+  const { buildDetailHref, handleDetailClick } = useDetailNavigation();
+  const { detail, errorMessage, isLoading } = useAuthorDetailPageState();
 
   if (isLoading) {
     return <PaperDetailLoadingState />;
@@ -37,12 +37,12 @@ export default function AuthorDetailPage() {
 
   return (
     <section className="space-y-6">
-      <EntityDetailHero detail={detail} />
+      <DetailHero detail={detail} />
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.65fr)_minmax(320px,1fr)]">
         <div className="space-y-6">
           <AuthorOverviewSection detail={detail} />
-          <EntityWorksSection
+          <DetailWorksSection
             detail={detail}
             buildDetailHref={buildDetailHref}
           />
@@ -50,7 +50,7 @@ export default function AuthorDetailPage() {
 
         <div className="space-y-6">
           <AuthorMetricsSection detail={detail} />
-          <EntityYearChartSection detail={detail} />
+          <DetailYearChartSection detail={detail} />
           <AuthorTopicHighlightsSection
             detail={detail}
             buildDetailHref={buildDetailHref}

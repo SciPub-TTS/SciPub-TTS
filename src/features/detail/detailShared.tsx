@@ -23,10 +23,11 @@ import DetailSectionCard from "@/features/detail/works/components/sections/Detai
 import { formatCompactNumber, formatFullNumber } from "@/features/search/utils";
 import ListWorkLayout from "@/layout/global/ListWorkLayout";
 
-import type {
-  EntityDetailData,
-  EntityDetailRelatedItem,
-} from "../types";
+import type { AuthorDetailData, AuthorRelatedTopic } from "./authors/types";
+import type { TopicDetailData, TopicRelatedItem } from "./topics/types";
+
+type DetailData = AuthorDetailData | TopicDetailData;
+type RelatedTopicItem = AuthorRelatedTopic | TopicRelatedItem;
 
 export type DetailHrefBuilder = (
   entityType: DetailTrailEntityType,
@@ -43,9 +44,11 @@ type YearChartTooltipProps = {
   payload?: Array<{ value?: number }>;
 };
 
-export function EntityDetailHero({ detail }: { detail: EntityDetailData }) {
+export function DetailHero({ detail }: { detail: DetailData }) {
   const followTargetType: FollowTargetType =
     detail.entityType === "authors" ? "AUTHOR" : "TOPIC";
+  const followTargetLabel =
+    detail.entityType === "authors" ? "author" : "topic";
   const {
     buttonLabel: followButtonLabel,
     handleFollowClick,
@@ -72,7 +75,11 @@ export function EntityDetailHero({ detail }: { detail: EntityDetailData }) {
           onClick={() => {
             void handleFollowClick();
           }}
-          title={isFollowed ? "Unfollow this entity" : "Follow this entity"}
+          title={
+            isFollowed
+              ? `Unfollow this ${followTargetLabel}`
+              : `Follow this ${followTargetLabel}`
+          }
           className={[
             "inline-flex items-center gap-2 rounded-xl px-3.5 py-2 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-70",
             followButtonClassName,
@@ -85,12 +92,12 @@ export function EntityDetailHero({ detail }: { detail: EntityDetailData }) {
   );
 }
 
-export function EntityWorksSection({
+export function DetailWorksSection({
   detail,
   buildDetailHref,
 }: {
   buildDetailHref: DetailHrefBuilder;
-  detail: EntityDetailData;
+  detail: DetailData;
 }) {
   const title =
     detail.entityType === "authors"
@@ -147,7 +154,7 @@ export function EntityWorksSection({
   );
 }
 
-export function EntityYearChartSection({ detail }: { detail: EntityDetailData }) {
+export function DetailYearChartSection({ detail }: { detail: DetailData }) {
   if (detail.countsByYear.length === 0) {
     return null;
   }
@@ -173,7 +180,7 @@ export function EntityYearChartSection({ detail }: { detail: EntityDetailData })
             >
               <defs>
                 <linearGradient
-                  id="entityYearBarGradient"
+                  id="detailYearBarGradient"
                   x1="0"
                   y1="0"
                   x2="0"
@@ -206,11 +213,11 @@ export function EntityYearChartSection({ detail }: { detail: EntityDetailData })
               <Bar
                 dataKey="worksCount"
                 radius={[10, 10, 0, 0]}
-                fill="url(#entityYearBarGradient)"
+                fill="url(#detailYearBarGradient)"
               >
                 {detail.countsByYear.map((item) => (
                   <Cell
-                    key={`entity-year-bar-${item.year}`}
+                    key={`detail-year-bar-${item.year}`}
                     stroke="#0f3d22"
                     strokeWidth={1}
                   />
@@ -232,7 +239,7 @@ export function RelatedTopicList({
 }: {
   buildDetailHref: DetailHrefBuilder;
   handleDetailClick: DetailClickHandler;
-  items: EntityDetailRelatedItem[];
+  items: RelatedTopicItem[];
   emptyLabel: string;
 }) {
   if (items.length === 0) {

@@ -210,7 +210,7 @@ function TopicRowItem({ topic }: { topic: FollowedTopic }) {
     return (
         <div className="flex min-w-0 items-center justify-between gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
             <Link
-                to={buildDetailTrailUrl("topics", topic.id, [], "newfeed")}
+                to={buildDetailTrailUrl("topics", topic.id, "newfeed")}
                 onClick={() => {
                     persistRootDetailNavigation("topics", topic.id, "newfeed");
                 }}
@@ -405,7 +405,7 @@ function AuthorRowItem({ author }: { author: FollowedAuthor }) {
         <div className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
             <div className="min-w-0">
               <Link
-                to={buildDetailTrailUrl("authors", author.id, [], "newfeed")}
+                to={buildDetailTrailUrl("authors", author.id, "newfeed")}
                 onClick={() => {
                     persistRootDetailNavigation("authors", author.id, "newfeed");
                 }}
