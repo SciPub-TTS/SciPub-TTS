@@ -9,8 +9,6 @@ import {
 } from "./filterOptionMapping";
 import type {
   FilterOptionPageApiData,
-  HotKeywordApiResponse,
-  HotTopicApiResponse,
   RemoteFilterOptionsPage,
   SearchSummaryApiData,
   SearchSummaryState,
@@ -69,34 +67,6 @@ export async function getFilterOptionPage(
     page,
     valueLookup,
   };
-}
-
-export async function getTrendingKeywords(snapshotDate?: string, limit = 12) {
-  const response = await publicHttp.get<ApiResponse<HotKeywordApiResponse>>(
-    "/api/search/trending-keywords",
-    {
-      params: {
-        limit,
-        ...(snapshotDate ? { snapshotDate } : {}),
-      },
-    },
-  );
-
-  return response.data.data;
-}
-
-export async function getTrendingTopics(snapshotDate?: string, limit = 8) {
-  const response = await publicHttp.get<ApiResponse<HotTopicApiResponse>>(
-    "/api/search/trending-topics",
-    {
-      params: {
-        limit,
-        ...(snapshotDate ? { snapshotDate } : {}),
-      },
-    },
-  );
-
-  return response.data.data;
 }
 
 function appendIfFilled(params: URLSearchParams, key: string, value: string) {

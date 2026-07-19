@@ -62,6 +62,7 @@ export interface BookmarkStatusResponse {
   bookmarked: boolean;
   bookmarkId: string | null;
   openAlexId: string;
+  collections: BookmarkCollectionSummary[];
 }
 
 export interface FilterOptionsResponse {

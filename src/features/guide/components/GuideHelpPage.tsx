@@ -28,10 +28,10 @@ const workflowSteps = [
     id: "01",
     eyebrow: "Start Wide",
     title: "Discover a topic or question worth exploring",
-    description: "Begin with Search or Trending Topic.",
+    description: "Begin with Search or Trending Dashboard",
     checkpoints: [
       "Search for a known keyword, author, or topic.",
-      "Use Trending Topic for discovery first.",
+      "Use Trending Dashboard ery first.",
       "Choose one thread to explore.",
     ],
     icon: Radar,
@@ -117,10 +117,10 @@ const routeMapCards = [
     icon: FileSearch,
   },
   {
-    title: "Trending Topic",
-    subtitle: "Discovery dashboard",
-    description: "Best for discovery first.",
-    href: ROUTES.TRENDING_TOPIC,
+    title: "Trending Dashboard",
+    subtitle: "Find your favorite trend here",
+    description: "Best for staring your trip here in our website",
+    href: ROUTES.TRENDING,
     icon: TrendingUp,
   },
   {
@@ -215,7 +215,8 @@ export default function GuideHelpPage() {
                   Learn Owlreka. Research Smarter.
                 </h1>
                 <p className="font-subtext mt-3 max-w-3xl text-base leading-7 text-slate-500">
-                  Follow the product flow from discovery to bookmarking, monitoring, and sharing.
+                  Follow the product flow from discovery to bookmarking,
+                  monitoring, and sharing.
                 </p>
 
                 <div className="mt-7 flex flex-wrap gap-3">
@@ -227,10 +228,10 @@ export default function GuideHelpPage() {
                     <ArrowRight className="h-4 w-4" />
                   </Link>
                   <Link
-                    to={ROUTES.TRENDING_TOPIC}
+                    to={ROUTES.TRENDING}
                     className="inline-flex items-center gap-2 rounded-2xl border border-black bg-white px-5 py-3 text-sm font-semibold text-black transition hover:bg-slate-100"
                   >
-                    View Trending Topic
+                    View Trending DashBoard
                   </Link>
                 </div>
               </div>
@@ -416,18 +417,18 @@ export default function GuideHelpPage() {
                   className="flex items-center justify-between rounded-2xl border border-white/15 bg-white/10 px-4 py-3 text-sm font-semibold transition hover:bg-white/15"
                 >
                   <span className="inline-flex items-center gap-2">
-                    <Search className="h-4 w-4 text-emerald-200" />
-                    I need to find papers now
+                    <Search className="h-4 w-4 text-emerald-200" />I need to
+                    find papers now
                   </span>
                   <ArrowRight className="h-4 w-4" />
                 </Link>
                 <Link
-                  to={ROUTES.TRENDING_TOPIC}
+                  to={ROUTES.TRENDING}
                   className="flex items-center justify-between rounded-2xl border border-white/15 bg-white/10 px-4 py-3 text-sm font-semibold transition hover:bg-white/15"
                 >
                   <span className="inline-flex items-center gap-2">
-                    <TrendingUp className="h-4 w-4 text-amber-200" />
-                    I need discovery first
+                    <TrendingUp className="h-4 w-4 text-amber-200" />I need
+                    discovery first
                   </span>
                   <ArrowRight className="h-4 w-4" />
                 </Link>
@@ -436,16 +437,15 @@ export default function GuideHelpPage() {
                   className="flex items-center justify-between rounded-2xl border border-white/15 bg-white/10 px-4 py-3 text-sm font-semibold transition hover:bg-white/15"
                 >
                   <span className="inline-flex items-center gap-2">
-                    <Bookmark className="h-4 w-4 text-sky-200" />
-                    I want my saved works
+                    <Bookmark className="h-4 w-4 text-sky-200" />I want my saved
+                    works
                   </span>
                   <ArrowRight className="h-4 w-4" />
                 </Link>
               </div>
 
               <div className="mt-8 rounded-[24px] border border-white/15 bg-white/10 p-4 text-sm leading-7 text-emerald-50/90">
-                The strongest product loop is:
-                {" "}
+                The strongest product loop is:{" "}
                 <span className="font-semibold text-white">
                   {ENABLE_SOCIAL_HUB
                     ? "Search -> Detail -> Bookmark -> Social Hub -> Feed/Report"
@@ -453,7 +453,6 @@ export default function GuideHelpPage() {
                 </span>
                 .
               </div>
-
             </article>
           </section>
         </section>

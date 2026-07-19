@@ -17,9 +17,10 @@ import {
 } from "@/features/search/store/searchPageSlice";
 import { initialFilters } from "../constants";
 import {
+  createSearchSortStateFromOption,
   defaultSearchSortState,
   getSearchEntityMetadata,
-  normalizeSearchSortState,
+  updateSearchSortStateFromOption,
 } from "../services";
 import type {
   SearchEntityType,
@@ -43,7 +44,6 @@ import { useSearchHistoryState } from "./useSearchHistoryState";
 import { useSearchPagePersistence } from "./useSearchPagePersistence";
 import { useSearchResultsState } from "./useSearchResultsState";
 import { useRemoteFilterOptions } from "./useRemoteFilterOptions";
-import { useTrendingSnapshotState } from "./useTrendingSnapshotState";
 
 const authorFilterWidgets: SearchFilterWidgetKey[] = [
   "institution",
@@ -116,16 +116,9 @@ export function useSearchPageState() {
     isLoadingResults,
     isTotalResultCountExact,
     matchedResultCount,
-    responseTimeSeconds,
     totalIndexedCount,
     visibleResults,
   } = searchResults;
-  const {
-    hasLoadedTrendSnapshot,
-    topicHotSearches,
-    trendingKeywordNames,
-    trendingTopicNames,
-  } = useTrendingSnapshotState();
   const visibleFilterWidgets = getVisibleFilterWidgets(
     activeEntityType,
     storedVisibleFilterWidgets,
@@ -174,6 +167,7 @@ export function useSearchPageState() {
     nextFilters: SearchFilters,
     nextSortState = sortState,
     nextOptionValueLookup = optionValueLookup,
+    shouldRecordSearchHistory = true,
   ) {
     const normalizedQuery = nextQuery.trim();
 
@@ -189,6 +183,10 @@ export function useSearchPageState() {
       nextSortState,
       nextOptionValueLookup,
     );
+
+    if (shouldRecordSearchHistory) {
+      searchHistory.recordSearchHistory(normalizedQuery);
+    }
   }
 
   function handleEntityTypeChange(nextEntityType: SearchEntityType) {
@@ -259,11 +257,15 @@ export function useSearchPageState() {
 
   function handleSelectSort(nextSort: string) {
     const nextSortState = nextSort
-      ? normalizeSearchSortState(nextSort)
+      ? activeEntityType === "works"
+        ? updateSearchSortStateFromOption(sortState, nextSort)
+        : createSearchSortStateFromOption(nextSort)
       : { ...defaultSearchSortState };
 
     dispatch(setSortState(nextSortState));
+  }
 
+  function handleApplySort() {
     if (!submittedSearch) {
       return;
     }
@@ -272,25 +274,14 @@ export function useSearchPageState() {
       submittedSearch.entityType,
       searchResults.appliedSearchQuery,
       searchResults.appliedFilters,
-      nextSortState,
+      sortState,
       submittedSearch.optionValueLookup,
+      false,
     );
   }
 
   function handleClearSorts() {
     dispatch(setSortState({ ...defaultSearchSortState }));
-
-    if (!submittedSearch) {
-      return;
-    }
-
-    runSearchOrClear(
-      submittedSearch.entityType,
-      searchResults.appliedSearchQuery,
-      searchResults.appliedFilters,
-      defaultSearchSortState,
-      submittedSearch.optionValueLookup,
-    );
   }
 
   function resetFilters() {
@@ -308,6 +299,7 @@ export function useSearchPageState() {
       resetFilterState,
       sortState,
       optionValueLookup,
+      false,
     );
   }
 
@@ -330,6 +322,7 @@ export function useSearchPageState() {
     filters,
     filtersOpen,
     handleApplyFilters,
+    handleApplySort,
     handleClearRecentSearches: searchHistory.handleClearRecentSearches,
     handleClearSorts,
     handleDeleteRecentSearch: searchHistory.handleDeleteRecentSearch,
@@ -359,14 +352,9 @@ export function useSearchPageState() {
     matchedResultCount,
     recentSearches: searchHistory.recentSearches,
     resetFilters,
-    responseTimeSeconds,
     saveSearchFeedback: searchHistory.saveSearchFeedback,
     saveSearchNotice: searchHistory.saveSearchNotice,
     saveSearchSuccessToken: searchHistory.saveSearchSuccessToken,
-    hasLoadedTrendSnapshot,
-    topicHotSearches,
-    trendingKeywordNames,
-    trendingTopicNames,
     searchPlaceholder: activeEntityMetadata.placeholder,
     searchQuery,
     showFilters,

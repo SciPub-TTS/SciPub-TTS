@@ -51,11 +51,7 @@ export function mapApiWorkToPaperResult(work: SearchWorksApiItem): PaperResult {
     topic: normalizedTopic,
     topicRef,
     subField: normalizedSubField,
-    matchesTrendingKeyword: Boolean(work.matchesTrendingKeyword),
-    matchesTrendingTopic: Boolean(work.matchesTrendingTopic),
-    trendingScore: work.trendingScore || 0,
     growthPercent: 0,
-    isTrendTopic: false,
     saved: false,
   };
 }

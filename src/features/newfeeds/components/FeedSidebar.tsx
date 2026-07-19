@@ -1,7 +1,11 @@
 import { useCallback, useEffect, useState } from "react";
 import { Plus, Check, X } from "lucide-react";
 import { Link } from "react-router-dom";
-import { ROUTES, routePaths } from "@/app/router";
+import { ROUTES } from "@/app/router";
+import {
+  buildDetailTrailUrl,
+  persistRootDetailNavigation,
+} from "@/features/detail/detailTrail";
 import { http } from "@/services/http";
 import { useInfiniteScroll } from "../hooks/UseInfiniteScroll";
 
@@ -206,7 +210,10 @@ function TopicRowItem({ topic }: { topic: FollowedTopic }) {
     return (
         <div className="flex min-w-0 items-center justify-between gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
             <Link
-                to={routePaths.topicDetail(topic.id)}
+                to={buildDetailTrailUrl("topics", topic.id, [], "newfeed")}
+                onClick={() => {
+                    persistRootDetailNavigation("topics", topic.id, "newfeed");
+                }}
                 className="truncate text-xs font-semibold text-slate-700 hover:text-emerald-600 hover:underline"
             >
                 {topic.name}
@@ -398,7 +405,10 @@ function AuthorRowItem({ author }: { author: FollowedAuthor }) {
         <div className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
             <div className="min-w-0">
               <Link
-                to={routePaths.authorDetail(author.id)}
+                to={buildDetailTrailUrl("authors", author.id, [], "newfeed")}
+                onClick={() => {
+                    persistRootDetailNavigation("authors", author.id, "newfeed");
+                }}
                 className="truncate text-xs font-semibold text-slate-700 hover:text-emerald-600 hover:underline block"
               >
                 {author.name}

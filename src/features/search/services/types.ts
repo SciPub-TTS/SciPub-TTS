@@ -4,7 +4,6 @@ import type {
   RemoteOptionFilterKey,
   SearchEntityType,
   SearchFilters,
-  SearchResultItem,
   SearchSortState,
   TopicResult,
 } from "../types";
@@ -70,9 +69,6 @@ export type SearchWorksApiItem = {
     id: string | null;
     displayName: string;
   } | null;
-  matchesTrendingKeyword: boolean | null;
-  matchesTrendingTopic: boolean | null;
-  trendingScore: number | null;
 };
 
 export type SearchWorksApiResponse = {
@@ -80,7 +76,6 @@ export type SearchWorksApiResponse = {
     totalCount: number;
     page: number;
     perPage: number;
-    dbResponseTimeMs: number;
     costUsd: number;
     appliedFilter: string;
     appliedSort: string;
@@ -105,9 +100,10 @@ export type SearchEntitiesApiResponse = {
     totalCount: number;
     page: number;
     perPage: number;
-    dbResponseTimeMs: number;
     costUsd: number;
     entityType: Exclude<SearchEntityType, "works">;
+    appliedFilter?: string | null;
+    appliedSort?: string | null;
     hasMore: boolean;
     totalCountExact: boolean;
   };
@@ -118,32 +114,6 @@ export type SearchSummaryState = {
   entityType: SearchEntityType;
   totalIndexedCount: number;
   totalCountExact: boolean;
-};
-
-export type HotTopicApiItem = {
-  topicId: string | null;
-  name: string;
-  fieldId: number | null;
-  works: number | null;
-  citations: number | null;
-};
-
-export type HotTopicApiResponse = {
-  snapshotDate: string;
-  topics: HotTopicApiItem[];
-};
-
-export type HotKeywordApiItem = {
-  keywordId: string | null;
-  name: string;
-  fieldId: number | null;
-  works: number | null;
-  citations: number | null;
-};
-
-export type HotKeywordApiResponse = {
-  snapshotDate: string;
-  keywords: HotKeywordApiItem[];
 };
 
 export type SearchOptionValueLookup = Record<
@@ -172,7 +142,6 @@ export type SearchWorksState = {
   entityType: "works";
   page: number;
   perPage: number;
-  responseTimeSeconds: number;
   totalCount: number;
   works: PaperResult[];
 };
@@ -182,22 +151,12 @@ export type SearchEntitiesState = {
   items: Array<AuthorResult | TopicResult>;
   page: number;
   perPage: number;
-  responseTimeSeconds: number;
   totalCount: number;
   hasMore: boolean;
   totalCountExact: boolean;
 };
 
 export type SearchResultsPage = SearchWorksState | SearchEntitiesState;
-
-export type SearchResultState = {
-  entityType: SearchEntityType;
-  items: SearchResultItem[];
-  page: number;
-  perPage: number;
-  responseTimeSeconds: number;
-  totalCount: number;
-};
 
 export type RemoteFilterOptionsPage = {
   hasMore: boolean;
