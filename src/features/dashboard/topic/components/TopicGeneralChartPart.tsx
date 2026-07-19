@@ -17,7 +17,7 @@ import {useTopicMomentum} from "@/features/dashboard/topic/hooks/useTopicMomentu
 import type {TopicBubble} from "@/features/dashboard/topic/types/scatter.ts";
 import {useTopicScatter} from "@/features/dashboard/topic/hooks/useTopicScatter.ts";
 
-const MIN_YEAR = 2000;
+const MIN_YEAR = 1900;
 const MAX_YEAR = new Date().getFullYear();
 
 type TopicGeneralChartPartProps = {

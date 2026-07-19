@@ -27,18 +27,18 @@ export default function TopicDashboardPage() {
         return formatDate(date);
     }, [endDate]);
 
-    const longStartDate = useMemo(() => {
-        const date = new Date(endDate);
-        date.setFullYear(date.getFullYear() - 5);
-        return formatDate(date);
-    }, [endDate]);
+    // const longStartDate = useMemo(() => {
+    //     const date = new Date(endDate);
+    //     date.setFullYear(date.getFullYear() - 5);
+    //     return formatDate(date);
+    // }, [endDate]);
     const [fieldId, setFieldId] = useState("17");
     const [topicFormula, setTopicFormula] = useState("balanced");
     const [keywordFormula, setKeywordFormula] = useState<KeywordFormulaType>("balanced");
 
     const {keywordList, isLoading} = useHotKeyword(
         {
-            recentStart: longStartDate,
+            recentStart: shortStartDate,
             recentEnd: endDate,
             fieldId,
             formula: keywordFormula
@@ -70,14 +70,14 @@ export default function TopicDashboardPage() {
 
         <MetricPart startDate={shortStartDate} endDate={endDate}/>
 
-        <TopicGeneralChartPart startDate={longStartDate}
+        <TopicGeneralChartPart startDate={shortStartDate}
                                endDate={endDate}
                                fieldId={fieldId}
                                formula={topicFormula}
         />
 
         <div className="grid grid-cols-1 lg:grid-cols-[7fr_3fr] gap-6">
-            <TrendingPart startDate={longStartDate}
+            <TrendingPart startDate={shortStartDate}
                           endDate={endDate}
                           fieldId={fieldId}
                           formula={topicFormula}
@@ -91,7 +91,7 @@ export default function TopicDashboardPage() {
             />
         </div>
 
-        <TopicSpecificChartPart startDate={longStartDate}
+        <TopicSpecificChartPart startDate={shortStartDate}
                                 endDate={endDate}
                                 fieldId={fieldId}
         />
