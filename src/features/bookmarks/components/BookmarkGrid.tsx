@@ -88,7 +88,9 @@ export function BookmarkGrid({
             <circle cx="12" cy="16.5" r="1.2" fill="#ef4444" />
           </svg>
         </div>
-        <p className="text-sm font-medium text-black">Could not load bookmarks</p>
+        <p className="text-sm font-medium text-black">
+          Could not load bookmarks
+        </p>
         <p className="mt-1 text-xs text-black/45">{error}</p>
       </div>
     );
@@ -127,7 +129,8 @@ export function BookmarkGrid({
         </h3>
         {hasCollectionFilter || hasSearchQuery ? null : (
           <p className="font-subtext max-w-sm text-sm leading-relaxed text-black/55">
-            Save papers while reading to build a colorful, searchable personal research library.
+            Save papers while reading to build a colorful, searchable personal
+            research library.
           </p>
         )}
       </div>
@@ -150,7 +153,9 @@ export function BookmarkGrid({
         ))}
 
         {isLoadingMore &&
-          Array.from({ length: 3 }).map((_, i) => <SkeletonCard key={`skeleton-${i}`} />)}
+          Array.from({ length: 3 }).map((_, i) => (
+            <SkeletonCard key={`skeleton-${i}`} />
+          ))}
       </div>
 
       {hasNext && !isRefreshing && (
