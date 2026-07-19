@@ -2,7 +2,6 @@ import {
   Bookmark,
   Building2,
   CalendarDays,
-  Check,
   Eye,
   ExternalLink,
   FileText,
@@ -30,6 +29,8 @@ import {
 import { markSearchPageRestorePending } from "@/features/search/utils/navigationState";
 import type { PaperResultEntityRef } from "@/features/search/types";
 import MetadataBadge from "./MetadataBadge";
+import { SafeActionDialog } from "./SafeActionDialog";
+import WorkBookmarkCollectionDialog from "./WorkBookmarkCollectionDialog";
 
 type ListWorkLayoutProps = {
   abstractText: string;
@@ -148,6 +149,7 @@ export default function ListWorkLayout({
   const [showAllAuthors, setShowAllAuthors] = useState(false);
   const [showFullAbstract, setShowFullAbstract] = useState(false);
   const [showBookmarkDialog, setShowBookmarkDialog] = useState(false);
+  const [showRemoveBookmarkDialog, setShowRemoveBookmarkDialog] = useState(false);
   const [selectedCollectionIds, setSelectedCollectionIds] = useState<string[]>([]);
   const [shareLabel, setShareLabel] = useState("Share");
   const shareResetTimeoutRef = useRef<number | null>(null);
@@ -230,7 +232,7 @@ export default function ListWorkLayout({
     entityId: string,
   ) {
     if (!currentDetailContext) {
-      return buildDetailTrailUrl(entityType, entityId, [], detailOrigin);
+      return buildDetailTrailUrl(entityType, entityId, detailOrigin);
     }
 
     return buildNextDetailUrl(
@@ -267,7 +269,12 @@ export default function ListWorkLayout({
   }
 
   async function handleBookmarkButtonClick() {
-    if (savedState || !accessToken) {
+    if (savedState) {
+      setShowRemoveBookmarkDialog(true);
+      return;
+    }
+
+    if (!accessToken) {
       void handleWorkBookmarkClick();
       return;
     }
@@ -282,6 +289,14 @@ export default function ListWorkLayout({
     if (didSave) {
       setShowBookmarkDialog(false);
       setSelectedCollectionIds([]);
+    }
+  }
+
+  async function handleRemoveBookmarkConfirm() {
+    const didRemove = await handleWorkBookmarkClick();
+
+    if (didRemove) {
+      setShowRemoveBookmarkDialog(false);
     }
   }
 
@@ -337,6 +352,7 @@ export default function ListWorkLayout({
   }
 
   return (
+    <>
     <article className="rounded-2xl border border-black bg-white p-5 shadow-sm">
       <div className="mb-3 flex items-start justify-between gap-3">
         <div className="flex flex-wrap gap-2">
@@ -526,13 +542,20 @@ export default function ListWorkLayout({
         <div className="flex flex-wrap items-center gap-2">
           <div className="relative">
             {showBookmarkDialog ? (
-              <button
-                type="button"
-                aria-label="Close bookmark dialog"
-                className="fixed inset-0 z-10"
-                onClick={() => {
+              <WorkBookmarkCollectionDialog
+                collections={collectionsQuery.data}
+                isError={collectionsQuery.isError}
+                isLoading={collectionsQuery.isPending}
+                isPending={isBookmarkActionPending}
+                onCancel={() => {
                   setShowBookmarkDialog(false);
+                  setSelectedCollectionIds([]);
                 }}
+                onConfirm={() => {
+                  void handleBookmarkConfirm();
+                }}
+                onToggleCollection={toggleCollectionSelection}
+                selectedCollectionIds={selectedCollectionIds}
               />
             ) : null}
 
@@ -551,110 +574,6 @@ export default function ListWorkLayout({
               <Bookmark className="h-4 w-4" />
               {bookmarkButtonLabel}
             </button>
-
-            {showBookmarkDialog ? (
-              <div className="absolute bottom-[calc(100%+0.75rem)] left-0 z-20 w-72 max-w-[calc(100vw-3rem)] rounded-2xl border border-black bg-white p-4 shadow-[0_18px_40px_rgba(0,0,0,0.12)]">
-                <p className="text-[11px] font-extrabold uppercase tracking-[0.22em] text-[#14532D]">
-                  Save bookmark
-                </p>
-                <p className="mt-1 text-sm font-medium leading-6 text-black/70">
-                  Choose one or more collections for this paper, or keep it in
-                  All library.
-                </p>
-
-                <div className="mt-3">
-                  <p className="block text-xs font-bold uppercase tracking-[0.18em] text-black">
-                    Collections
-                  </p>
-
-                  {collectionsQuery.data && collectionsQuery.data.length > 0 ? (
-                    <div className="mt-2 max-h-56 space-y-2 overflow-y-auto pr-1">
-                      {collectionsQuery.data.map((collection) => {
-                        const isSelected = selectedCollectionIds.includes(
-                          collection.id,
-                        );
-
-                        return (
-                          <button
-                            key={collection.id}
-                            type="button"
-                            onClick={() => {
-                              toggleCollectionSelection(collection.id);
-                            }}
-                            className={[
-                              "flex w-full items-center justify-between gap-3 rounded-xl border px-3 py-2.5 text-left transition",
-                              isSelected
-                                ? "border-[#14532D] bg-[#EEF9EC]"
-                                : "border-black/20 bg-white hover:border-black hover:bg-slate-50",
-                            ].join(" ")}
-                          >
-                            <div className="min-w-0">
-                              <p className="truncate text-sm font-semibold text-black">
-                                {collection.name}
-                              </p>
-                              <p className="text-xs font-medium text-black/55">
-                                {collection.workCount} works
-                              </p>
-                            </div>
-                            <span
-                              className={[
-                                "inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-sm border transition",
-                                isSelected
-                                  ? "border-[#14532D] bg-[#14532D] text-white"
-                                  : "border-black/35 bg-white text-transparent",
-                              ].join(" ")}
-                            >
-                              <Check className="h-3.5 w-3.5" />
-                            </span>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  ) : collectionsQuery.isPending ? null : (
-                    <p className="mt-2 text-xs font-medium text-black/55">
-                      No collections yet. This paper will be saved to All
-                      library.
-                    </p>
-                  )}
-                </div>
-
-                {collectionsQuery.isPending ? (
-                  <p className="mt-2 text-xs font-medium text-black/55">
-                    Loading collections...
-                  </p>
-                ) : null}
-
-                {collectionsQuery.isError ? (
-                  <p className="mt-2 text-xs font-medium text-red-600">
-                    Cannot load collections right now. You can still save to All
-                    library.
-                  </p>
-                ) : null}
-
-                <div className="mt-4 flex items-center justify-end gap-2">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowBookmarkDialog(false);
-                      setSelectedCollectionIds([]);
-                    }}
-                    className="inline-flex items-center rounded-lg border border-black bg-white px-3 py-2 text-xs font-bold text-black transition hover:border-[#14532D] hover:bg-[#14532D] hover:text-white"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="button"
-                    disabled={isBookmarkActionPending}
-                    onClick={() => {
-                      void handleBookmarkConfirm();
-                    }}
-                    className="inline-flex items-center rounded-lg border border-[#14532D] bg-[#14532D] px-3 py-2 text-xs font-bold text-white transition hover:border-[#0f3d22] hover:bg-[#0f3d22] disabled:cursor-not-allowed disabled:opacity-70"
-                  >
-                    Save
-                  </button>
-                </div>
-              </div>
-            ) : null}
           </div>
 
           <button
@@ -703,5 +622,28 @@ export default function ListWorkLayout({
         </div>
       </div>
     </article>
+
+    <SafeActionDialog
+      confirmLabel="Delete bookmark"
+      description={
+        <>
+          <p>Remove "{title}" from your bookmark library?</p>
+          <p>This action cannot be undone.</p>
+        </>
+      }
+      eyebrow="Safe delete"
+      isPending={isBookmarkActionPending}
+      onClose={() => {
+        if (!isBookmarkActionPending) {
+          setShowRemoveBookmarkDialog(false);
+        }
+      }}
+      onConfirm={handleRemoveBookmarkConfirm}
+      open={showRemoveBookmarkDialog}
+      pendingLabel="Deleting bookmark..."
+      title="Delete this bookmark?"
+      variant="danger"
+    />
+    </>
   );
 }

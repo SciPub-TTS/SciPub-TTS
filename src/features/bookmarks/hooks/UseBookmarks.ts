@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
   useInfiniteQuery,
   useMutation,
@@ -12,22 +12,12 @@ import {
   BOOKMARK_PAGE_SIZE,
   DEFAULT_BOOKMARK_FILTERS,
   invalidateBookmarkLibraryQueries,
-  updateInfiniteBookmarkPages,
 } from "@/features/bookmarks/services/bookmarkQueryHelpers";
 import { bookmarkQueryKeys } from "@/features/bookmarks/services/bookmarkQueryKeys";
 import type {
-  BookmarkCollectionSummary,
-  BookmarkCollectionResponse,
   BookmarkFilters,
   BookmarkPageResponse,
-  BookmarkResponse,
-  BookmarkStatusResponse,
 } from "@/features/bookmarks/types/bookmark.types";
-
-type BookmarkMutationContext = {
-  previousBookmarks?: InfiniteData<BookmarkPageResponse>;
-  previousCollections?: BookmarkCollectionResponse[];
-};
 
 function getMutationErrorMessage(error: unknown, fallbackMessage: string) {
   return error instanceof Error ? error.message : fallbackMessage;
@@ -40,140 +30,16 @@ function mapQueryErrorToMessage(error: unknown) {
   );
 }
 
-function patchCollectionMembershipOnBookmarks(
-  cachedData: InfiniteData<BookmarkPageResponse> | undefined,
-  options: {
-    bookmarkId: string;
-    collectionId: string;
-    collectionName?: string;
-    mode: "add" | "remove";
-  },
-) {
-  const { bookmarkId, collectionId, collectionName, mode } = options;
-
-  return updateInfiniteBookmarkPages(cachedData, (bookmark) => {
-    if (bookmark.id !== bookmarkId) {
-      return bookmark;
-    }
-
-    const nextCollections =
-      mode === "add"
-        ? bookmark.collections.some((collection) => collection.id === collectionId)
-          ? bookmark.collections
-          : [
-              ...bookmark.collections,
-              {
-                id: collectionId,
-                name: collectionName ?? "Collection",
-              },
-            ]
-        : bookmark.collections.filter((collection) => collection.id !== collectionId);
-
-    return {
-      ...bookmark,
-      collections: nextCollections,
-    } satisfies BookmarkResponse;
-  });
-}
-
-function patchCollectionCounts(
-  collections: BookmarkCollectionResponse[] | undefined,
-  collectionId: string,
-  mode: "add" | "remove",
-) {
-  if (!collections) {
-    return collections;
-  }
-
-  return collections.map((collection) => {
-    if (collection.id !== collectionId) {
-      return collection;
-    }
-
-    return {
-      ...collection,
-      workCount:
-        mode === "add"
-          ? collection.workCount + 1
-          : Math.max(0, collection.workCount - 1),
-    };
-  });
-}
-
-function patchCollectionRemovalOnBookmarks(
-  cachedData: InfiniteData<BookmarkPageResponse> | undefined,
-  collectionId: string,
-) {
-  return updateInfiniteBookmarkPages(cachedData, (bookmark) => ({
-    ...bookmark,
-    collections: bookmark.collections.filter(
-      (collection) => collection.id !== collectionId,
-    ),
-  }));
-}
-
-function patchCollectionMembershipOnStatuses(
-  currentStatus: BookmarkStatusResponse | undefined,
-  options: {
-    bookmarkId: string;
-    collectionId: string;
-    collectionName?: string;
-    mode: "add" | "remove";
-  },
-) {
-  if (!currentStatus || currentStatus.bookmarkId !== options.bookmarkId) {
-    return currentStatus;
-  }
-
-  const nextCollections =
-    options.mode === "add"
-      ? currentStatus.collections.some(
-          (collection) => collection.id === options.collectionId,
-        )
-        ? currentStatus.collections
-        : [
-            ...currentStatus.collections,
-            {
-              id: options.collectionId,
-              name: options.collectionName ?? "Collection",
-            } satisfies BookmarkCollectionSummary,
-          ]
-      : currentStatus.collections.filter(
-          (collection) => collection.id !== options.collectionId,
-        );
-
-  return {
-    ...currentStatus,
-    collections: nextCollections,
-  } satisfies BookmarkStatusResponse;
-}
-
-function patchCollectionRemovalOnStatuses(
-  currentStatus: BookmarkStatusResponse | undefined,
-  collectionId: string,
-) {
-  if (!currentStatus) {
-    return currentStatus;
-  }
-
-  return {
-    ...currentStatus,
-    collections: currentStatus.collections.filter(
-      (collection) => collection.id !== collectionId,
-    ),
-  } satisfies BookmarkStatusResponse;
-}
-
 export function useBookmarks() {
   const queryClient = useQueryClient();
   const [filters, setFilters] = useState<BookmarkFilters>(
     DEFAULT_BOOKMARK_FILTERS,
   );
-  const [error, setError] = useState<string | null>(null);
+  const [mutationError, setMutationError] = useState<string | null>(null);
   const bookmarkListQueryKey = bookmarkQueryKeys.list(filters);
 
   const invalidateBookmarkLibrary = useCallback(() => {
-    void invalidateBookmarkLibraryQueries(queryClient);
+    return invalidateBookmarkLibraryQueries(queryClient);
   }, [queryClient]);
 
   const bookmarkListQuery = useInfiniteQuery<
@@ -199,15 +65,6 @@ export function useBookmarks() {
     retry: false,
   });
 
-  const bookmarkStatsQuery = useQuery({
-    queryFn: async () => {
-      const response = await bookmarkApi.getStats();
-      return response.data;
-    },
-    queryKey: bookmarkQueryKeys.stats(),
-    retry: false,
-  });
-
   const bookmarkCollectionsQuery = useQuery({
     queryFn: async () => {
       const response = await bookmarkApi.getCollections();
@@ -217,55 +74,26 @@ export function useBookmarks() {
     retry: false,
   });
 
-  const bookmarkFilterOptionsQuery = useQuery({
-    queryFn: async () => {
-      const response = await bookmarkApi.getFilterOptions();
-      return response.data;
-    },
-    queryKey: bookmarkQueryKeys.filterOptions(),
-    retry: false,
-  });
-
   const deleteBookmarkMutation = useMutation<
     Awaited<ReturnType<typeof bookmarkApi.deleteById>>,
     Error,
-    string,
-    BookmarkMutationContext
+    string
   >({
     mutationFn: (bookmarkId) => bookmarkApi.deleteById(bookmarkId),
-    onError: (mutationError, bookmarkId, context) => {
-      if (context?.previousBookmarks) {
-        queryClient.setQueryData(bookmarkListQueryKey, context.previousBookmarks);
-      }
-
-      invalidateBookmarkLibrary();
-      setError(
+    onError: (mutationError, bookmarkId) => {
+      setMutationError(
         getMutationErrorMessage(
           mutationError,
           `Cannot delete bookmark ${bookmarkId}. Please try again.`,
         ),
       );
     },
-    onMutate: async (bookmarkId) => {
-      setError(null);
-      await queryClient.cancelQueries({ queryKey: bookmarkListQueryKey });
-
-      const previousBookmarks = queryClient.getQueryData<
-        InfiniteData<BookmarkPageResponse>
-      >(bookmarkListQueryKey);
-
-      queryClient.setQueryData<InfiniteData<BookmarkPageResponse> | undefined>(
-        bookmarkListQueryKey,
-        (cachedData) =>
-          updateInfiniteBookmarkPages(cachedData, (bookmark) =>
-            bookmark.id === bookmarkId ? null : bookmark,
-          ),
-      );
-
-      return { previousBookmarks };
+    onMutate: () => {
+      setMutationError(null);
     },
-    onSettled: () => {
-      invalidateBookmarkLibrary();
+    onSuccess: () => {
+      setMutationError(null);
+      return invalidateBookmarkLibrary();
     },
   });
 
@@ -276,7 +104,7 @@ export function useBookmarks() {
   >({
     mutationFn: (name) => bookmarkApi.createCollection({ name }),
     onError: (mutationError) => {
-      setError(
+      setMutationError(
         getMutationErrorMessage(
           mutationError,
           "Cannot create collection right now.",
@@ -284,67 +112,30 @@ export function useBookmarks() {
       );
     },
     onSuccess: () => {
-      invalidateBookmarkLibrary();
+      setMutationError(null);
+      return invalidateBookmarkLibrary();
     },
   });
 
   const deleteCollectionMutation = useMutation<
     Awaited<ReturnType<typeof bookmarkApi.deleteCollection>>,
     Error,
-    string,
-    BookmarkMutationContext
+    string
   >({
     mutationFn: (collectionId) => bookmarkApi.deleteCollection(collectionId),
-    onError: (mutationError, collectionId, context) => {
-      if (context?.previousBookmarks) {
-        queryClient.setQueryData(bookmarkListQueryKey, context.previousBookmarks);
-      }
-
-      if (context?.previousCollections) {
-        queryClient.setQueryData(
-          bookmarkQueryKeys.collections(),
-          context.previousCollections,
-        );
-      }
-
-      setError(
+    onError: (mutationError, collectionId) => {
+      setMutationError(
         getMutationErrorMessage(
           mutationError,
           `Cannot delete collection ${collectionId}. Please try again.`,
         ),
       );
     },
-    onMutate: async (collectionId) => {
-      setError(null);
-      await Promise.all([
-        queryClient.cancelQueries({ queryKey: bookmarkListQueryKey }),
-        queryClient.cancelQueries({ queryKey: bookmarkQueryKeys.collections() }),
-      ]);
-
-      const previousBookmarks = queryClient.getQueryData<
-        InfiniteData<BookmarkPageResponse>
-      >(bookmarkListQueryKey);
-      const previousCollections = queryClient.getQueryData<
-        BookmarkCollectionResponse[]
-      >(bookmarkQueryKeys.collections());
-
-      queryClient.setQueryData<InfiniteData<BookmarkPageResponse> | undefined>(
-        bookmarkListQueryKey,
-        (cachedData) => patchCollectionRemovalOnBookmarks(cachedData, collectionId),
-      );
-
-      queryClient.setQueriesData<BookmarkStatusResponse | undefined>(
-        { queryKey: bookmarkQueryKeys.statuses() },
-        (currentStatus) =>
-          patchCollectionRemovalOnStatuses(currentStatus, collectionId),
-      );
-
-      queryClient.setQueryData<BookmarkCollectionResponse[] | undefined>(
-        bookmarkQueryKeys.collections(),
-        (collections) =>
-          collections?.filter((collection) => collection.id !== collectionId),
-      );
-
+    onMutate: () => {
+      setMutationError(null);
+    },
+    onSuccess: (_response, collectionId) => {
+      setMutationError(null);
       if (filters.collectionId === collectionId) {
         setFilters((previousFilters) => ({
           ...previousFilters,
@@ -352,13 +143,7 @@ export function useBookmarks() {
         }));
       }
 
-      return {
-        previousBookmarks,
-        previousCollections,
-      };
-    },
-    onSuccess: () => {
-      invalidateBookmarkLibrary();
+      return invalidateBookmarkLibrary();
     },
   });
 
@@ -368,83 +153,26 @@ export function useBookmarks() {
     {
       bookmarkId: string;
       collectionId: string;
-    },
-    BookmarkMutationContext
+    }
   >({
     mutationFn: ({ bookmarkId, collectionId }) =>
       bookmarkApi.addToCollection(collectionId, {
         bookmarkIds: [bookmarkId],
       }),
-    onError: (mutationError, _variables, context) => {
-      if (context?.previousBookmarks) {
-        queryClient.setQueryData(bookmarkListQueryKey, context.previousBookmarks);
-      }
-
-      if (context?.previousCollections) {
-        queryClient.setQueryData(
-          bookmarkQueryKeys.collections(),
-          context.previousCollections,
-        );
-      }
-
-      setError(
+    onError: (mutationError) => {
+      setMutationError(
         getMutationErrorMessage(
           mutationError,
           "Cannot add this work to the collection.",
         ),
       );
     },
-    onMutate: async ({ bookmarkId, collectionId }) => {
-      setError(null);
-      await Promise.all([
-        queryClient.cancelQueries({ queryKey: bookmarkListQueryKey }),
-        queryClient.cancelQueries({ queryKey: bookmarkQueryKeys.collections() }),
-      ]);
-
-      const previousBookmarks = queryClient.getQueryData<
-        InfiniteData<BookmarkPageResponse>
-      >(bookmarkListQueryKey);
-      const previousCollections = queryClient.getQueryData<
-        BookmarkCollectionResponse[]
-      >(bookmarkQueryKeys.collections());
-      const targetCollection = previousCollections?.find(
-        (collection) => collection.id === collectionId,
-      );
-
-      queryClient.setQueryData<InfiniteData<BookmarkPageResponse> | undefined>(
-        bookmarkListQueryKey,
-        (cachedData) =>
-          patchCollectionMembershipOnBookmarks(cachedData, {
-            bookmarkId,
-            collectionId,
-            collectionName: targetCollection?.name,
-            mode: "add",
-          }),
-      );
-
-      queryClient.setQueriesData<BookmarkStatusResponse | undefined>(
-        { queryKey: bookmarkQueryKeys.statuses() },
-        (currentStatus) =>
-          patchCollectionMembershipOnStatuses(currentStatus, {
-            bookmarkId,
-            collectionId,
-            collectionName: targetCollection?.name,
-            mode: "add",
-          }),
-      );
-
-      queryClient.setQueryData<BookmarkCollectionResponse[] | undefined>(
-        bookmarkQueryKeys.collections(),
-        (collections) => patchCollectionCounts(collections, collectionId, "add"),
-      );
-
-      return {
-        previousBookmarks,
-        previousCollections,
-      };
+    onMutate: () => {
+      setMutationError(null);
     },
     onSuccess: () => {
-      invalidateBookmarkLibrary();
+      setMutationError(null);
+      return invalidateBookmarkLibrary();
     },
   });
 
@@ -454,76 +182,24 @@ export function useBookmarks() {
     {
       bookmarkId: string;
       collectionId: string;
-    },
-    BookmarkMutationContext
+    }
   >({
     mutationFn: ({ bookmarkId, collectionId }) =>
       bookmarkApi.removeFromCollection(collectionId, bookmarkId),
-    onError: (mutationError, _variables, context) => {
-      if (context?.previousBookmarks) {
-        queryClient.setQueryData(bookmarkListQueryKey, context.previousBookmarks);
-      }
-
-      if (context?.previousCollections) {
-        queryClient.setQueryData(
-          bookmarkQueryKeys.collections(),
-          context.previousCollections,
-        );
-      }
-
-      setError(
+    onError: (mutationError) => {
+      setMutationError(
         getMutationErrorMessage(
           mutationError,
           "Cannot remove this work from the collection.",
         ),
       );
     },
-    onMutate: async ({ bookmarkId, collectionId }) => {
-      setError(null);
-      await Promise.all([
-        queryClient.cancelQueries({ queryKey: bookmarkListQueryKey }),
-        queryClient.cancelQueries({ queryKey: bookmarkQueryKeys.collections() }),
-      ]);
-
-      const previousBookmarks = queryClient.getQueryData<
-        InfiniteData<BookmarkPageResponse>
-      >(bookmarkListQueryKey);
-      const previousCollections = queryClient.getQueryData<
-        BookmarkCollectionResponse[]
-      >(bookmarkQueryKeys.collections());
-
-      queryClient.setQueryData<InfiniteData<BookmarkPageResponse> | undefined>(
-        bookmarkListQueryKey,
-        (cachedData) =>
-          patchCollectionMembershipOnBookmarks(cachedData, {
-            bookmarkId,
-            collectionId,
-            mode: "remove",
-          }),
-      );
-
-      queryClient.setQueriesData<BookmarkStatusResponse | undefined>(
-        { queryKey: bookmarkQueryKeys.statuses() },
-        (currentStatus) =>
-          patchCollectionMembershipOnStatuses(currentStatus, {
-            bookmarkId,
-            collectionId,
-            mode: "remove",
-          }),
-      );
-
-      queryClient.setQueryData<BookmarkCollectionResponse[] | undefined>(
-        bookmarkQueryKeys.collections(),
-        (collections) => patchCollectionCounts(collections, collectionId, "remove"),
-      );
-
-      return {
-        previousBookmarks,
-        previousCollections,
-      };
+    onMutate: () => {
+      setMutationError(null);
     },
     onSuccess: () => {
-      invalidateBookmarkLibrary();
+      setMutationError(null);
+      return invalidateBookmarkLibrary();
     },
   });
 
@@ -540,35 +216,21 @@ export function useBookmarks() {
     bookmarkListQuery.isPending ||
     (bookmarkListQuery.isFetching && !bookmarkListQuery.isFetchingNextPage);
 
-  useEffect(() => {
+  const queryError = useMemo(() => {
     if (bookmarkListQuery.error) {
-      setError(mapQueryErrorToMessage(bookmarkListQuery.error));
-      return;
+      return mapQueryErrorToMessage(bookmarkListQuery.error);
     }
 
     if (bookmarkCollectionsQuery.error) {
-      setError(mapQueryErrorToMessage(bookmarkCollectionsQuery.error));
-      return;
+      return mapQueryErrorToMessage(bookmarkCollectionsQuery.error);
     }
 
-    if (
-      !deleteBookmarkMutation.isError &&
-      !createCollectionMutation.isError &&
-      !deleteCollectionMutation.isError &&
-      !addToCollectionMutation.isError &&
-      !removeFromCollectionMutation.isError
-    ) {
-      setError(null);
-    }
+    return null;
   }, [
-    addToCollectionMutation.isError,
     bookmarkCollectionsQuery.error,
     bookmarkListQuery.error,
-    createCollectionMutation.isError,
-    deleteCollectionMutation.isError,
-    deleteBookmarkMutation.isError,
-    removeFromCollectionMutation.isError,
   ]);
+  const error = queryError ?? mutationError;
 
   const loadMore = useCallback(() => {
     if (!hasNext || isLoadingMore || isRefreshing) {
@@ -582,7 +244,7 @@ export function useBookmarks() {
     key: K,
     value: BookmarkFilters[K],
   ) {
-    setError(null);
+    setMutationError(null);
     setFilters((previousFilters) => ({
       ...previousFilters,
       [key]: value,
@@ -590,7 +252,7 @@ export function useBookmarks() {
   }
 
   function resetFilters() {
-    setError(null);
+    setMutationError(null);
     setFilters(DEFAULT_BOOKMARK_FILTERS);
   }
 
@@ -638,7 +300,6 @@ export function useBookmarks() {
     deleteCollection,
     deleteBookmark,
     error,
-    filterOptions: bookmarkFilterOptionsQuery.data ?? null,
     filters,
     hasNext,
     isCollectionMutating:
@@ -655,7 +316,6 @@ export function useBookmarks() {
     reload,
     removeBookmarkFromCollection,
     resetFilters,
-    stats: bookmarkStatsQuery.data ?? null,
     totalElements,
     updateFilter,
   };

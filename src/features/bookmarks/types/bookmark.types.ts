@@ -72,22 +72,11 @@ export interface FilterOptionsResponse {
   authors: string[];
 }
 
-export type SortOption =
-  | "RECENT"
-  | "OLDEST"
-  | "YEAR_DESC"
-  | "YEAR_ASC"
-  | "CITATION_DESC"
-  | "CITATION_ASC"
-  | "TITLE_ASC"
-  | "TITLE_DESC";
-
 export interface BookmarkFilters {
   keyword: string;
   topic: string;
   source: string;
   author: string;
   year: number | null;
-  sort: SortOption;
   collectionId: string | null;
 }

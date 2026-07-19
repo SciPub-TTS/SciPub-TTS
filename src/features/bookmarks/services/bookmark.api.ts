@@ -9,7 +9,6 @@ import type {
   CreateBookmarkCollectionRequest,
   CreateBookmarkRequest,
   FilterOptionsResponse,
-  SortOption,
   UpdateBookmarkCollectionItemsRequest,
 } from "@/features/bookmarks/types/bookmark.types";
 
@@ -24,7 +23,6 @@ type BookmarkListParams = {
   source?: string;
   author?: string;
   year?: number | null;
-  sort?: SortOption;
   collectionId?: string | null;
 };
 
@@ -49,7 +47,6 @@ export const bookmarkApi = {
           keyword: normalizeQueryText(params.keyword),
           page: params.page,
           size: params.size ?? DEFAULT_PAGE_SIZE,
-          sort: params.sort ?? "RECENT",
           source: normalizeQueryText(params.source),
           topic: normalizeQueryText(params.topic),
           year: params.year ?? undefined,

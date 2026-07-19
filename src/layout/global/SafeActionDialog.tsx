@@ -1,16 +1,17 @@
 import { X } from "lucide-react";
-import { useEffect } from "react";
+import type { ReactNode } from "react";
+import { useEffect, useState } from "react";
 
 type SafeActionDialogVariant = "danger" | "logout";
 
 interface SafeActionDialogProps {
   cancelLabel?: string;
   confirmLabel: string;
-  description?: string;
+  description?: ReactNode;
   eyebrow?: string;
   isPending?: boolean;
   onClose: () => void;
-  onConfirm: () => void;
+  onConfirm: () => void | Promise<void>;
   open: boolean;
   pendingLabel?: string;
   title: string;
@@ -51,6 +52,9 @@ export function SafeActionDialog({
   title,
   variant = "danger",
 }: SafeActionDialogProps) {
+  const [isConfirming, setIsConfirming] = useState(false);
+  const effectivePending = isPending || isConfirming;
+
   useEffect(() => {
     if (
       !open ||
@@ -64,7 +68,7 @@ export function SafeActionDialog({
     document.body.style.overflow = "hidden";
 
     function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape" && !isPending) {
+      if (event.key === "Escape" && !effectivePending) {
         onClose();
       }
     }
@@ -75,7 +79,7 @@ export function SafeActionDialog({
       document.body.style.overflow = previousOverflow;
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [isPending, onClose, open]);
+  }, [effectivePending, onClose, open]);
 
   if (!open) {
     return null;
@@ -83,6 +87,38 @@ export function SafeActionDialog({
 
   const styles = variantStyles[variant];
   const resolvedPendingLabel = pendingLabel ?? `${confirmLabel}...`;
+
+  function handleClose() {
+    if (!effectivePending) {
+      onClose();
+    }
+  }
+
+  function handleConfirmClick() {
+    if (effectivePending) {
+      return;
+    }
+
+    setIsConfirming(true);
+
+    try {
+      const confirmResult = onConfirm();
+
+      if (confirmResult instanceof Promise) {
+        void confirmResult
+          .catch(() => undefined)
+          .finally(() => {
+            setIsConfirming(false);
+          });
+        return;
+      }
+
+      setIsConfirming(false);
+    } catch (confirmError) {
+      setIsConfirming(false);
+      throw confirmError;
+    }
+  }
 
   return (
     <div
@@ -94,11 +130,8 @@ export function SafeActionDialog({
       <button
         type="button"
         aria-label="Close safe action dialog"
-        onClick={() => {
-          if (!isPending) {
-            onClose();
-          }
-        }}
+        onClick={handleClose}
+        aria-disabled={effectivePending}
         className="absolute inset-0"
       />
 
@@ -109,7 +142,7 @@ export function SafeActionDialog({
         />
 
         <div className="relative z-10 flex items-start justify-between gap-4">
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             {eyebrow ? (
               <p className="font-subtext text-[11px] font-bold uppercase tracking-[0.24em] text-black/45">
                 {eyebrow}
@@ -122,16 +155,16 @@ export function SafeActionDialog({
               {title}
             </h2>
             {description ? (
-              <p className="font-subtext mt-3 max-w-md text-sm leading-6 text-black/65">
+              <div className="font-subtext mt-3 max-w-none text-sm leading-6 text-black/65">
                 {description}
-              </p>
+              </div>
             ) : null}
           </div>
 
           <button
             type="button"
-            onClick={onClose}
-            disabled={isPending}
+            onClick={handleClose}
+            disabled={effectivePending}
             className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-black bg-white text-black transition hover:bg-black hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
           >
             <X className="h-5 w-5" />
@@ -141,19 +174,19 @@ export function SafeActionDialog({
         <div className="relative z-10 mt-8 flex flex-wrap items-center justify-end gap-3">
           <button
             type="button"
-            onClick={onClose}
-            disabled={isPending}
+            onClick={handleClose}
+            disabled={effectivePending}
             className="inline-flex h-12 items-center rounded-2xl border border-black bg-white px-5 text-sm font-semibold text-black transition hover:bg-black hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
           >
             {cancelLabel}
           </button>
           <button
             type="button"
-            onClick={onConfirm}
-            disabled={isPending}
+            onClick={handleConfirmClick}
+            disabled={effectivePending}
             className={`inline-flex h-12 items-center rounded-2xl border px-5 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-70 ${styles.confirmButtonClassName}`}
           >
-            {isPending ? resolvedPendingLabel : confirmLabel}
+            {effectivePending ? resolvedPendingLabel : confirmLabel}
           </button>
         </div>
       </div>

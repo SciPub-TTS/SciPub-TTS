@@ -13,7 +13,6 @@ export const DEFAULT_BOOKMARK_FILTERS: BookmarkFilters = {
   author: "",
   collectionId: null,
   keyword: "",
-  sort: "RECENT",
   source: "",
   topic: "",
   year: null,
