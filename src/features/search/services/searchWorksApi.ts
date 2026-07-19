@@ -2,7 +2,6 @@ import { publicHttp } from "@/services/http";
 import type { ApiResponse } from "@/types/common.types";
 import { SEARCH_WORKS_PER_PAGE } from "../constants";
 import type { SearchFilters } from "../types";
-import { mapApiWorkToPaperResult } from "./searchWorksMapper";
 import type {
   SearchWorksApiResponse,
   SearchWorksRequest,
@@ -18,14 +17,13 @@ export async function searchWorks(
     { params },
   );
   const data = response.data.data;
-  const works = data.results.map(mapApiWorkToPaperResult);
 
   return {
     entityType: "works",
     page: data.meta.page,
     perPage: data.meta.perPage,
     totalCount: data.meta.totalCount,
-    works,
+    works: data.results,
   };
 }
 

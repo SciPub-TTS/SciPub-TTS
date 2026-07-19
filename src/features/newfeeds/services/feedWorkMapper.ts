@@ -3,10 +3,37 @@ import {
   normalizeDoiValue,
   toPlainText,
 } from "@/lib/resourceFormatting";
-import type { PaperResult, PaperResultEntityRef } from "../types";
-import type { SearchWorksApiItem } from "./types";
+import type { PaperResult, PaperResultEntityRef } from "@/features/search/types";
 
-export function mapApiWorkToPaperResult(work: SearchWorksApiItem): PaperResult {
+export type FeedWorkApiItem = {
+  id: string;
+  title: string;
+  abstractText: string | null;
+  doi: string | null;
+  publicationYear: number | null;
+  citedByCount: number | null;
+  openAccess: boolean | null;
+  hasPdf: boolean | null;
+  pdfUrl: string | null;
+  hasOrcid: boolean | null;
+  type: string | null;
+  topic: string | null;
+  subFieldName: string | null;
+  sourceId: string | null;
+  sourceName: string | null;
+  authors: string[];
+  authorRefs?: Array<{
+    id: string | null;
+    displayName: string;
+  }> | null;
+  keywords: string[];
+  topicRef?: {
+    id: string | null;
+    displayName: string;
+  } | null;
+};
+
+export function mapFeedWorkToPaperResult(work: FeedWorkApiItem): PaperResult {
   const title = toPlainText(work.title) || "Untitled";
   const normalizedType = normalizeTypeLabel(work.type);
   const normalizedSource = toPlainText(work.sourceName) || "Unknown source";
@@ -28,10 +55,15 @@ export function mapApiWorkToPaperResult(work: SearchWorksApiItem): PaperResult {
   const summary =
     normalizedAbstract || `OpenAlex result from ${normalizedSource}.`;
   const authorRefs = mapAuthorRefs(work.authorRefs, work.authors);
-  const authors = authorRefs.length > 0
-    ? authorRefs.map((authorRef) => authorRef.name)
-    : mapAuthorNames(work.authors);
-  const keywords = buildKeywords(work.keywords, normalizedSubField, normalizedTopic);
+  const authors =
+    authorRefs.length > 0
+      ? authorRefs.map((authorRef) => authorRef.name)
+      : mapAuthorNames(work.authors);
+  const keywords = buildKeywords(
+    work.keywords,
+    normalizedSubField,
+    normalizedTopic,
+  );
 
   return {
     id: extractPathId(work.id),
@@ -137,7 +169,7 @@ function mapAuthorNames(authorNames: string[]) {
 }
 
 function mapAuthorRefs(
-  rawAuthorRefs: SearchWorksApiItem["authorRefs"],
+  rawAuthorRefs: FeedWorkApiItem["authorRefs"],
   fallbackAuthorNames: string[],
 ) {
   const authorRefs: PaperResultEntityRef[] = [];
@@ -166,7 +198,7 @@ function mapAuthorRefs(
 }
 
 function mapEntityRef(
-  rawEntityRef: SearchWorksApiItem["topicRef"],
+  rawEntityRef: FeedWorkApiItem["topicRef"],
 ): PaperResultEntityRef | null {
   const normalizedName = toPlainText(rawEntityRef?.displayName);
 

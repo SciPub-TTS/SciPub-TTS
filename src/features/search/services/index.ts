@@ -31,7 +31,6 @@ export {
   saveSearchHistory,
 } from "./searchHistoryApi";
 export { searchEntities } from "./searchEntitiesApi";
-export { mapApiWorkToPaperResult } from "./searchWorksMapper";
 export { searchWorks } from "./searchWorksApi";
 export type {
   FilterOptionPageApiData,
@@ -49,7 +48,6 @@ export type {
   SearchSummaryApiData,
   SearchSummaryState,
   SearchResultsPage,
-  SearchWorksApiItem,
   SearchWorksApiResponse,
   SearchWorksRequest,
   SearchWorksState,
