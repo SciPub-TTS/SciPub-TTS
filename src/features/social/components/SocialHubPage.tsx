@@ -557,7 +557,7 @@ export default function SocialHubPage() {
 
               <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
 
-                <label className="flex min-w-[320px] items-center gap-3 rounded-xl bg-white px-4 py-3 text-slate-400 shadow-sm ring-1 ring-[#2f8551]">
+                <label className="flex h-14 min-w-[320px] items-center gap-3 rounded-xl border border-black bg-white px-4 text-slate-400 shadow-sm transition focus-within:border-[#14532D]">
 
                   <Search className="h-4 w-4" />
 
@@ -585,7 +585,7 @@ export default function SocialHubPage() {
 
                   onChange={(event) => setSortMode(event.target.value as SortMode)}
 
-                  className="h-10 rounded-sm border border-black bg-white px-4 text-sm font-semibold text-black outline-none"
+                  className="h-14 rounded-xl border border-black bg-white px-4 text-sm font-semibold text-black shadow-sm outline-none transition focus:border-[#14532D]"
 
                 >
 

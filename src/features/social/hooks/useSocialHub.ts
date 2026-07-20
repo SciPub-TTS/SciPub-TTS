@@ -8,7 +8,7 @@ import { socialApi } from "@/features/social/services/social.api";
 import type { BlogFormState, BlogModalMode, CreateSocialPostRequest, FeedTab, LikeToggleResponse, SocialPostDetail, SocialPostPageResponse, SocialPostSummary, SortMode, UpdateSocialPostRequest } from "@/features/social/types/social.types";
 import { decodeJwtSubject, findSocialPostInPage, normalizeIdentityValue, updateSocialPostPageLikeState } from "@/features/social/utils/socialQueryUtils";
 import { normalizeSocialOpenAlexId } from "@/features/social/utils/socialFormatters";
-import { buildTopicLabelsFromBookmarks, buildTopicTagValue, fetchSocialBookmarkOptions, filterPosts, normalizeSocialPost, sortPosts } from "@/features/social/utils/socialPostUtils";
+import { buildTopicLabelsFromBookmarks, buildTopicTagValue, fetchSocialBookmarkOptions, filterPosts, normalizeSocialPost } from "@/features/social/utils/socialPostUtils";
 
 type ToggleLikeMutationVariables = {
   fallbackLikeCount: number;
@@ -266,7 +266,9 @@ export function useSocialHub() {
       searchQuery,
       currentUserId,
     );
-    const feedPosts = sortPosts(filteredPosts, sortMode);
+    const feedPosts = sortMode === "most-liked"
+      ? [...filteredPosts].sort((left, right) => right.likeCount - left.likeCount)
+      : filteredPosts;
     const topLikedPosts = topSourcePosts.slice(0, 5);
     const postPendingDelete = deleteDialogPostId
       ? (

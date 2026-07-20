@@ -1,9 +1,9 @@
 import { bookmarkApi } from "@/features/bookmarks/services/bookmark.api";
 import type { BookmarkResponse } from "@/features/bookmarks/types/bookmark.types";
 import { SOCIAL_BOOKMARK_OPTIONS_PAGE_SIZE } from "@/features/social/constants/socialHub.constants";
-import type { FeedTab, SocialPostSummary, SortMode } from "@/features/social/types/social.types";
+import type { FeedTab, SocialPostSummary } from "@/features/social/types/social.types";
 import { normalizeIdentityValue } from "@/features/social/utils/socialQueryUtils";
-import { normalizeSocialOpenAlexId, normalizeTags, normalizeTopicLabel } from "@/features/social/utils/socialFormatters";
+import { normalizeTags, normalizeTopicLabel } from "@/features/social/utils/socialFormatters";
 
 export function normalizeSocialPost(post: SocialPostSummary): SocialPostSummary {
   const fallbackId = post.id || crypto.randomUUID();
@@ -80,19 +80,6 @@ export async function fetchSocialBookmarkOptions() {
   return items;
 }
 
-export function sortPosts(posts: SocialPostSummary[], sortMode: SortMode) {
-  const nextPosts = [...posts];
-
-  if (sortMode === "most-liked") {
-    nextPosts.sort((left, right) => {
-      return right.likeCount - left.likeCount;
-    });
-    return nextPosts;
-  }
-
-  return nextPosts;
-}
-
 export function filterPosts(
   posts: SocialPostSummary[],
   tab: FeedTab,
@@ -119,13 +106,4 @@ export function filterPosts(
 
     return matchesTab && matchesQuery;
   });
-}
-
-export function findSelectedBookmarks(
-  bookmarks: BookmarkResponse[],
-  selectedOpenAlexIds: string[],
-) {
-  return bookmarks.filter((bookmark) =>
-    selectedOpenAlexIds.includes(normalizeSocialOpenAlexId(bookmark.openAlexId)),
-  );
 }

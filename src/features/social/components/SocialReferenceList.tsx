@@ -6,6 +6,7 @@ import {
   persistRootDetailNavigation,
 } from "@/features/detail/detailTrail";
 import type { SocialPostReferenceInfo } from "@/features/social/types/social.types";
+import { normalizeReferenceEntityId } from "@/features/social/utils/socialFormatters";
 
 function formatReferenceMetadata(authors: string, year: number | null) {
   if (authors && year) {
@@ -21,18 +22,6 @@ function formatReferenceMetadata(authors: string, year: number | null) {
   }
 
   return "Bookmarked paper";
-}
-
-function normalizeReferenceEntityId(value: string | null | undefined) {
-  const normalizedValue = value?.trim();
-
-  if (!normalizedValue) {
-    return null;
-  }
-
-  const segments = normalizedValue.split("/");
-
-  return segments[segments.length - 1].toUpperCase();
 }
 
 function buildReferenceAuthorEntries(reference: SocialPostReferenceInfo) {
