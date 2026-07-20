@@ -22,6 +22,7 @@ export function SearchResults({
   isTotalResultCountExact,
   isLoadingResults,
   isLoadingMoreResults,
+  resultErrorMessage,
   sortState,
   totalResultCount,
   visibleResults,
@@ -129,7 +130,13 @@ export function SearchResults({
           ) : null}
         </div>
 
-        {isLoadingResults ? (
+        {resultErrorMessage ? (
+          <div className="rounded-2xl border border-red-700 bg-white p-8 text-center">
+            <p className="text-lg font-bold text-red-700">
+              {resultErrorMessage}
+            </p>
+          </div>
+        ) : isLoadingResults ? (
           <SearchLoadingState loadingLabel={entityMetadata.loadingLabel} />
         ) : !hasSearched ? (
           <div className="rounded-2xl border border-slate-600 bg-white p-8 text-center">

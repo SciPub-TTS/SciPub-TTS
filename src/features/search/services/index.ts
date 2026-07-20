@@ -31,7 +31,10 @@ export {
   saveSearchHistory,
 } from "./searchHistoryApi";
 export { searchEntities } from "./searchEntitiesApi";
-export { searchWorks } from "./searchWorksApi";
+export {
+  searchWorks,
+  SearchWorksResponseContractError,
+} from "./searchWorksApi";
 export type {
   FilterOptionPageApiData,
   OptionItem,

@@ -338,6 +338,7 @@ export type SearchResultsProps = {
   isTotalResultCountExact: boolean;
   isLoadingResults: boolean;
   isLoadingMoreResults: boolean;
+  resultErrorMessage: string;
   sortState: SearchSortState;
   totalResultCount: number;
   visibleResults: SearchResultItem[];

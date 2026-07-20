@@ -1,12 +1,21 @@
 import { publicHttp } from "@/services/http";
 import type { ApiResponse } from "@/types/common.types";
 import { SEARCH_WORKS_PER_PAGE } from "../constants";
-import type { SearchFilters } from "../types";
+import type { PaperResult, SearchFilters } from "../types";
 import type {
   SearchWorksApiResponse,
   SearchWorksRequest,
   SearchWorksState,
 } from "./types";
+
+export class SearchWorksResponseContractError extends Error {
+  constructor() {
+    super(
+      "Search works response is not render-ready. Please run the updated backend search/detail branch.",
+    );
+    this.name = "SearchWorksResponseContractError";
+  }
+}
 
 export async function searchWorks(
   request: SearchWorksRequest,
@@ -17,14 +26,40 @@ export async function searchWorks(
     { params },
   );
   const data = response.data.data;
+  const works = data.results;
+
+  if (!Array.isArray(works) || !works.every(isPaperResult)) {
+    throw new SearchWorksResponseContractError();
+  }
 
   return {
     entityType: "works",
     page: data.meta.page,
     perPage: data.meta.perPage,
     totalCount: data.meta.totalCount,
-    works: data.results,
+    works,
   };
+}
+
+function isPaperResult(value: PaperResult) {
+  return (
+    value?.entityType === "works"
+    && typeof value.id === "string"
+    && typeof value.title === "string"
+    && Array.isArray(value.authors)
+    && Array.isArray(value.authorRefs)
+    && typeof value.source === "string"
+    && typeof value.citations === "number"
+    && typeof value.year === "number"
+    && typeof value.abstract === "string"
+    && typeof value.fullText === "string"
+    && typeof value.doi === "string"
+    && Array.isArray(value.keywords)
+    && typeof value.field === "string"
+    && typeof value.topic === "string"
+    && typeof value.subField === "string"
+    && typeof value.growthPercent === "number"
+  );
 }
 
 function buildSearchWorksParams(request: SearchWorksRequest) {

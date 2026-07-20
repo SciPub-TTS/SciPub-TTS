@@ -49,6 +49,7 @@ export default function SearchPageContent() {
     matchedResultCount,
     recentSearches,
     resetFilters,
+    resultErrorMessage,
     saveSearchFeedback,
     saveSearchNotice,
     saveSearchSuccessToken,
@@ -120,6 +121,7 @@ export default function SearchPageContent() {
         isLoadingMoreResults={isLoadingMoreResults}
         isLoadingResults={isLoadingResults}
         isTotalResultCountExact={isTotalResultCountExact}
+        resultErrorMessage={resultErrorMessage}
         sortState={sortState}
         totalResultCount={matchedResultCount}
         visibleResults={visibleResults}
