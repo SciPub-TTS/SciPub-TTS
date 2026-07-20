@@ -1,34 +1,29 @@
 import { useEffect, useRef } from "react";
 
-/**
- * Gắn IntersectionObserver vào sentinel element.
- * Khi sentinel vào viewport → gọi onLoadMore.
- */
-export function useInfiniteScroll(
-    onLoadMore: () => void,
-    enabled: boolean,
-) {
-    const sentinelRef = useRef<HTMLDivElement | null>(null);
+export function useInfiniteScroll(onLoadMore: () => void, enabled: boolean) {
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
 
-    useEffect(() => {
-        if (!enabled) return;
+  useEffect(() => {
+    if (!enabled) return;
 
-        const observer = new IntersectionObserver(
-            (entries) => {
-                if (entries[0].isIntersecting) {
-                    onLoadMore();
-                }
-            },
-            { rootMargin: "200px" }, // Trigger sớm 200px trước khi đến cuối
-        );
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) {
+          onLoadMore();
+        }
+      },
+      { rootMargin: "200px" },
+    );
 
-        const el = sentinelRef.current;
-        if (el) observer.observe(el);
+    const sentinel = sentinelRef.current;
+    if (sentinel) {
+      observer.observe(sentinel);
+    }
 
-        return () => {
-            if (el) observer.unobserve(el);
-        };
-    }, [onLoadMore, enabled]);
+    return () => {
+      observer.disconnect();
+    };
+  }, [enabled, onLoadMore]);
 
-    return sentinelRef;
+  return sentinelRef;
 }

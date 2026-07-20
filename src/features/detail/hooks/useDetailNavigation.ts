@@ -24,9 +24,9 @@ function buildDirectDetailUrl(
   return routePaths.topicDetail(entityId);
 }
 
-// Entity detail pages can link deeper into other detail pages while preserving
-// the breadcrumb trail. This hook keeps that navigation rule in one place.
-export function useEntityDetailNavigation() {
+// Detail pages can link deeper into other detail pages while preserving the
+// breadcrumb trail. This hook keeps that navigation rule in one place.
+export function useDetailNavigation() {
   const location = useLocation();
   const currentDetailContext = getDetailContextFromRouteParams(useParams());
 

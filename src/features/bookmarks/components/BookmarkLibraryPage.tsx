@@ -1,11 +1,11 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 import { SafeActionDialog } from "@/layout/global/SafeActionDialog";
 import { BookmarkGrid } from "@/features/bookmarks/components/BookmarkGrid";
 import { BookmarkPageHeader } from "@/features/bookmarks/components/BookmarkPageHeader";
 import { BookmarkTopBar } from "@/features/bookmarks/components/BookmarkTopBar";
 import { CreateCollectionModal } from "@/features/bookmarks/components/CreateCollectionModal";
-import { useBookmarks } from "@/features/bookmarks/hooks/UseBookmarks";
+import { useBookmarks } from "@/features/bookmarks/hooks/useBookmarks";
 import type { BookmarkCollectionResponse } from "@/features/bookmarks/types/bookmark.types";
 
 export default function BookmarkLibraryPage() {
@@ -42,10 +42,6 @@ export default function BookmarkLibraryPage() {
   const [deletingBookmarkId, setDeletingBookmarkId] = useState<string | null>(
     null,
   );
-
-  useEffect(() => {
-    setSearchValue(filters.keyword);
-  }, [filters.keyword]);
 
   const bookmarkPendingDelete = useMemo(
     () =>
@@ -196,15 +192,27 @@ export default function BookmarkLibraryPage() {
 
       <SafeActionDialog
         confirmLabel="Delete collection"
+        description={
+          collectionPendingDelete ? (
+            <>
+              <p>Delete collection "{collectionPendingDelete.name}"?</p>
+              <p>This action cannot be undone.</p>
+            </>
+          ) : (
+            <>
+              <p>Delete this collection?</p>
+              <p>This action cannot be undone.</p>
+            </>
+          )
+        }
+        eyebrow="Safe delete"
         isPending={isDeletingCollection}
         onClose={() => {
           if (!isDeletingCollection) {
             setCollectionPendingDelete(null);
           }
         }}
-        onConfirm={() => {
-          void handleConfirmDeleteCollection();
-        }}
+        onConfirm={handleConfirmDeleteCollection}
         open={collectionPendingDelete !== null}
         pendingLabel="Deleting collection..."
         title="Delete this collection?"
@@ -225,9 +233,7 @@ export default function BookmarkLibraryPage() {
             setDeleteDialogBookmarkId(null);
           }
         }}
-        onConfirm={() => {
-          void handleConfirmDeleteBookmark();
-        }}
+        onConfirm={handleConfirmDeleteBookmark}
         open={deleteDialogBookmarkId !== null}
         pendingLabel="Deleting bookmark..."
         title="Delete this bookmark?"

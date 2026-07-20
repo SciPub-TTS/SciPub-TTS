@@ -158,9 +158,7 @@ export default function AdminSidebar() {
             setIsLogoutDialogOpen(false);
           }
         }}
-        onConfirm={() => {
-          void handleConfirmLogout();
-        }}
+        onConfirm={handleConfirmLogout}
         open={isLogoutDialogOpen}
         pendingLabel="Logging out..."
         title="Log out of the admin console?"

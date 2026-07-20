@@ -74,7 +74,7 @@ function WorkReferenceList(props: WorkReferenceListProps) {
             <div className="pointer-events-none absolute inset-x-0 top-0 h-5 bg-gradient-to-b from-white to-transparent" />
             <div className="pointer-events-none absolute inset-x-0 bottom-0 h-7 bg-gradient-to-t from-white via-white/80 to-transparent" />
 
-            <div className="max-h-[26rem] space-y-2 overflow-y-auto pr-2">
+            <div className="max-h-[26rem] space-y-2 overflow-y-auto pr-2 pb-8 pt-1 scroll-pb-8">
               {items.map((item) => (
                 <Link
                   key={`${title}-${item.id}`}

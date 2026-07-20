@@ -4,12 +4,9 @@ import type {
   BookmarkCollectionResponse,
   BookmarkPageResponse,
   BookmarkResponse,
-  BookmarkStatsResponse,
   BookmarkStatusResponse,
   CreateBookmarkCollectionRequest,
   CreateBookmarkRequest,
-  FilterOptionsResponse,
-  SortOption,
   UpdateBookmarkCollectionItemsRequest,
 } from "@/features/bookmarks/types/bookmark.types";
 
@@ -20,11 +17,6 @@ type BookmarkListParams = {
   page: number;
   size?: number;
   keyword?: string;
-  topic?: string;
-  source?: string;
-  author?: string;
-  year?: number | null;
-  sort?: SortOption;
   collectionId?: string | null;
 };
 
@@ -44,15 +36,10 @@ export const bookmarkApi = {
     return http
       .get<ApiResponse<BookmarkPageResponse>>(BASE, {
         params: {
-          author: normalizeQueryText(params.author),
           collectionId: params.collectionId ?? undefined,
           keyword: normalizeQueryText(params.keyword),
           page: params.page,
           size: params.size ?? DEFAULT_PAGE_SIZE,
-          sort: params.sort ?? "RECENT",
-          source: normalizeQueryText(params.source),
-          topic: normalizeQueryText(params.topic),
-          year: params.year ?? undefined,
         },
       })
       .then((res) => res.data);
@@ -63,18 +50,6 @@ export const bookmarkApi = {
       .get<ApiResponse<BookmarkStatusResponse>>(`${BASE}/status`, {
         params: { openAlexId },
       })
-      .then((res) => res.data);
-  },
-
-  getStats() {
-    return http
-      .get<ApiResponse<BookmarkStatsResponse>>(`${BASE}/stats`)
-      .then((res) => res.data);
-  },
-
-  getFilterOptions() {
-    return http
-      .get<ApiResponse<FilterOptionsResponse>>(`${BASE}/filter-options`)
       .then((res) => res.data);
   },
 

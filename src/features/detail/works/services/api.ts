@@ -1,7 +1,6 @@
 import { publicHttp } from "@/services/http";
 import type { ApiResponse } from "@/types/common.types";
-import { mapWorkDetailToPaperDetail } from "../mappers/paperDetailMapper";
-import type { OpenAlexWorkDetailApi, PaperDetailData } from "../types";
+import type { PaperDetailData } from "../types";
 
 export async function getPaperDetail(paperId: string): Promise<PaperDetailData> {
   const normalizedPaperId = paperId.trim();
@@ -10,10 +9,8 @@ export async function getPaperDetail(paperId: string): Promise<PaperDetailData> 
     throw new Error("Paper ID is missing.");
   }
 
-  const response = await publicHttp.get<ApiResponse<OpenAlexWorkDetailApi>>(
+  const response = await publicHttp.get<ApiResponse<PaperDetailData>>(
     `/api/papers/${encodeURIComponent(normalizedPaperId)}`,
   );
-  const data = response.data.data;
-
-  return mapWorkDetailToPaperDetail(data);
+  return response.data.data;
 }

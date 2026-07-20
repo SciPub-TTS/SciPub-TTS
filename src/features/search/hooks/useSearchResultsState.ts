@@ -11,6 +11,7 @@ import {
   getSearchSummary,
   searchEntities,
   searchWorks,
+  SearchWorksResponseContractError,
   type SearchResultsPage,
 } from "../services";
 import type {
@@ -62,6 +63,13 @@ export function useSearchResultsState(params: UseSearchResultsStateParams) {
       });
     },
     queryKey: ["searchResults", submittedSearch],
+    retry(failureCount, error) {
+      if (error instanceof SearchWorksResponseContractError) {
+        return false;
+      }
+
+      return failureCount < 2;
+    },
   });
 
   useEffect(() => {
@@ -118,9 +126,22 @@ export function useSearchResultsState(params: UseSearchResultsStateParams) {
         ? true
         : latestResultsPage?.totalCountExact ?? true,
     matchedResultCount: latestResultsPage?.totalCount || 0,
+    resultErrorMessage: getSearchResultErrorMessage(searchResultsQuery.error),
     totalIndexedCount: searchSummaryQuery.data?.totalIndexedCount || 0,
     visibleResults,
   };
+}
+
+function getSearchResultErrorMessage(error: unknown) {
+  if (!error) {
+    return "";
+  }
+
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  return "Cannot load search results right now.";
 }
 
 function flattenSearchResultPages(

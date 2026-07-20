@@ -19,14 +19,10 @@ export interface UpdateBookmarkCollectionItemsRequest {
   bookmarkIds: string[];
 }
 
-export interface BookmarkCollectionSummary {
+export interface BookmarkCollectionResponse {
   id: string;
   name: string;
-}
-
-export interface BookmarkCollectionResponse extends BookmarkCollectionSummary {
   workCount: number;
-  createdAt: string;
 }
 
 export interface BookmarkResponse {
@@ -35,59 +31,28 @@ export interface BookmarkResponse {
   title: string;
   authors: string;
   workType: string | null;
-  source: string;
   topic: string;
   publicationYear: number | null;
   citationCount: number | null;
-  collections: BookmarkCollectionSummary[];
+  collections: BookmarkCollectionResponse[];
   createdAt: string;
 }
 
 export interface BookmarkPageResponse {
   items: BookmarkResponse[];
   page: number;
-  size: number;
   totalElements: number;
-  totalPages: number;
   hasNext: boolean;
-}
-
-export interface BookmarkStatsResponse {
-  totalPapers: number;
-  totalTopics: number;
-  totalAuthors: number;
 }
 
 export interface BookmarkStatusResponse {
   bookmarked: boolean;
   bookmarkId: string | null;
   openAlexId: string;
-  collections: BookmarkCollectionSummary[];
+  collections: BookmarkCollectionResponse[];
 }
-
-export interface FilterOptionsResponse {
-  topics: string[];
-  years: number[];
-  sources: string[];
-  authors: string[];
-}
-
-export type SortOption =
-  | "RECENT"
-  | "OLDEST"
-  | "YEAR_DESC"
-  | "YEAR_ASC"
-  | "CITATION_DESC"
-  | "CITATION_ASC"
-  | "TITLE_ASC"
-  | "TITLE_DESC";
 
 export interface BookmarkFilters {
   keyword: string;
-  topic: string;
-  source: string;
-  author: string;
-  year: number | null;
-  sort: SortOption;
   collectionId: string | null;
 }

@@ -40,7 +40,7 @@ export function SearchResultCard({
     case "authors":
       return (
         <EntityCardLayout
-          detailHref={buildDetailTrailUrl("authors", item.id, [], "search")}
+          detailHref={buildDetailTrailUrl("authors", item.id)}
           onDetailClick={() => {
             persistRootDetailNavigation("authors", item.id, "search");
           }}
@@ -65,7 +65,7 @@ export function SearchResultCard({
     case "topics":
       return (
         <EntityCardLayout
-          detailHref={buildDetailTrailUrl("topics", item.id, [], "search")}
+          detailHref={buildDetailTrailUrl("topics", item.id)}
           onDetailClick={() => {
             persistRootDetailNavigation("topics", item.id, "search");
           }}

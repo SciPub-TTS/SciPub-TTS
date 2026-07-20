@@ -27,8 +27,8 @@ import RegisterPage from "@/features/auth/components/pages/RegisterPage.tsx";
 import GuideHelpPage from "@/features/guide/components/GuideHelpPage";
 import SearchPage from "@/features/search/components/SearchPage";
 import PaperDetailPage from "@/features/detail/works/components/PaperDetailPage";
-import AuthorDetailPage from "@/features/detail/entities/components/AuthorDetailPage";
-import TopicDetailPage from "@/features/detail/entities/components/TopicDetailPage";
+import AuthorDetailPage from "@/features/detail/authors/components/AuthorDetailPage";
+import TopicDetailPage from "@/features/detail/topics/components/TopicDetailPage";
 import ProfilePage from "@/features/profile/components/ProfilePage";
 import ChangePasswordPage from "@/features/profile/components/ChangePasswordPage.tsx";
 import FeedPage from "@/features/newfeeds/pages/FeedPage";
@@ -97,12 +97,11 @@ function getDetailBreadcrumb(
     entityType,
     entityId,
   );
-  const trailItems = detailTrail.map((trailEntry, index) => ({
+  const trailItems = detailTrail.map((trailEntry) => ({
     label: getDetailBreadcrumbLabel(trailEntry.entityType, trailEntry.entityId),
     to: buildDetailTrailUrl(
       trailEntry.entityType,
       trailEntry.entityId,
-      detailTrail.slice(0, index),
       detailOrigin,
     ),
   }));

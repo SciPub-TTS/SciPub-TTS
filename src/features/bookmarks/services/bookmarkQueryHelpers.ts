@@ -10,13 +10,8 @@ import type {
 export const BOOKMARK_PAGE_SIZE = 12;
 
 export const DEFAULT_BOOKMARK_FILTERS: BookmarkFilters = {
-  author: "",
   collectionId: null,
   keyword: "",
-  sort: "RECENT",
-  source: "",
-  topic: "",
-  year: null,
 };
 
 export async function invalidateBookmarkLibraryQueries(
@@ -25,11 +20,7 @@ export async function invalidateBookmarkLibraryQueries(
   await Promise.all([
     queryClient.invalidateQueries({ queryKey: bookmarkQueryKeys.lists() }),
     queryClient.invalidateQueries({ queryKey: bookmarkQueryKeys.collections() }),
-    queryClient.invalidateQueries({ queryKey: bookmarkQueryKeys.stats() }),
     queryClient.invalidateQueries({ queryKey: bookmarkQueryKeys.statuses() }),
-    queryClient.invalidateQueries({
-      queryKey: bookmarkQueryKeys.filterOptions(),
-    }),
   ]);
 }
 

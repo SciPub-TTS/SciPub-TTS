@@ -18,7 +18,6 @@ import type {
 import {
   formatAuthors,
   formatCitationCount,
-  formatSavedAt,
 } from "@/features/bookmarks/utils/bookmark.utils";
 import {
   buildDetailTrailUrl,
@@ -28,8 +27,10 @@ import {
 interface BookmarkCardProps {
   availableCollections: BookmarkCollectionResponse[];
   bookmark: BookmarkResponse;
+  isCollectionMenuOpen: boolean;
   isCollectionMutating: boolean;
   onAddToCollection: (bookmarkId: string, collectionId: string) => Promise<void>;
+  onCollectionMenuOpenChange: (isOpen: boolean) => void;
   onDelete: (id: string) => void;
   onRemoveFromCollection: (
     bookmarkId: string,
@@ -73,18 +74,19 @@ async function copyText(value: string) {
 export function BookmarkCard({
   availableCollections,
   bookmark,
+  isCollectionMenuOpen,
   isCollectionMutating,
   onAddToCollection,
+  onCollectionMenuOpenChange,
   onDelete,
   onRemoveFromCollection,
 }: BookmarkCardProps) {
-  const [showCollectionMenu, setShowCollectionMenu] = useState(false);
   const [draftCollectionIds, setDraftCollectionIds] = useState<string[]>([]);
   const [isSavingCollections, setIsSavingCollections] = useState(false);
   const [shareLabel, setShareLabel] = useState("Share");
   const shareResetTimer = useRef<number | null>(null);
   const detailPath = useMemo(
-    () => buildDetailTrailUrl("works", bookmark.openAlexId, [], "bookmarks"),
+    () => buildDetailTrailUrl("works", bookmark.openAlexId, "bookmarks"),
     [bookmark.openAlexId],
   );
   useEffect(
@@ -95,14 +97,6 @@ export function BookmarkCard({
     },
     [],
   );
-
-  useEffect(() => {
-    if (!showCollectionMenu) {
-      return;
-    }
-
-    setDraftCollectionIds(bookmark.collections.map((collection) => collection.id));
-  }, [bookmark.collections, showCollectionMenu]);
 
   async function handleShare() {
     if (typeof window === "undefined") {
@@ -144,7 +138,7 @@ export function BookmarkCard({
     );
 
     if (collectionIdsToAdd.length === 0 && collectionIdsToRemove.length === 0) {
-      setShowCollectionMenu(false);
+      onCollectionMenuOpenChange(false);
       return;
     }
 
@@ -159,7 +153,7 @@ export function BookmarkCard({
           onRemoveFromCollection(bookmark.id, collectionId),
         ),
       ]);
-      setShowCollectionMenu(false);
+      onCollectionMenuOpenChange(false);
     } finally {
       setIsSavingCollections(false);
     }
@@ -175,10 +169,10 @@ export function BookmarkCard({
     <div
       className={[
         "group relative isolate flex h-full flex-col gap-4 rounded-[1.8rem] border border-black bg-[radial-gradient(circle_at_top_left,_rgba(243,112,33,0.08),_transparent_34%),white] p-5 transition-all hover:-translate-y-0.5 hover:shadow-[0_20px_44px_rgba(0,0,0,0.08)]",
-        showCollectionMenu ? "z-50" : "z-0",
+        isCollectionMenuOpen ? "z-50" : "z-0",
       ].join(" ")}
     >
-      {showCollectionMenu && (
+      {isCollectionMenuOpen && (
         <button
           type="button"
           aria-label="Close card menus"
@@ -188,7 +182,7 @@ export function BookmarkCard({
               return;
             }
 
-            setShowCollectionMenu(false);
+            onCollectionMenuOpenChange(false);
           }}
         />
       )}
@@ -199,7 +193,7 @@ export function BookmarkCard({
             {getWorkTypeLabel(bookmark.workType)}
           </span>
           <span className="font-subtext shrink-0 whitespace-nowrap pt-1 text-[13px] font-semibold text-black/65">
-            {formatSavedAt(bookmark.createdAt)}
+            {bookmark.createdAt}
           </span>
         </div>
 
@@ -290,21 +284,19 @@ export function BookmarkCard({
             {shareLabel}
           </button>
 
-          <div className={["relative shrink-0", showCollectionMenu ? "z-40" : "z-10"].join(" ")}>
+          <div className={["relative shrink-0", isCollectionMenuOpen ? "z-40" : "z-10"].join(" ")}>
             <button
               type="button"
               onClick={() => {
-                setShowCollectionMenu((value) => {
-                  const nextValue = !value;
+                const nextIsOpen = !isCollectionMenuOpen;
 
-                  if (nextValue) {
-                    setDraftCollectionIds(
-                      bookmark.collections.map((collection) => collection.id),
-                    );
-                  }
+                if (nextIsOpen) {
+                  setDraftCollectionIds(
+                    bookmark.collections.map((collection) => collection.id),
+                  );
+                }
 
-                  return nextValue;
-                });
+                onCollectionMenuOpenChange(nextIsOpen);
               }}
               className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-black bg-white text-black transition hover:border-[#14532D] hover:bg-[#14532D] hover:text-white"
               title="Manage collections"
@@ -312,7 +304,7 @@ export function BookmarkCard({
               <FolderTree className="h-4.5 w-4.5" />
             </button>
 
-            {showCollectionMenu ? (
+            {isCollectionMenuOpen ? (
               <div className="absolute bottom-12 right-0 z-30 w-72 rounded-[1.4rem] border border-black bg-white p-3 shadow-[0_18px_40px_rgba(0,0,0,0.12)]">
                 <div className="mb-2">
                   <p className="font-subtext text-[11px] font-semibold uppercase tracking-[0.22em] text-[#00AEEF]">
@@ -381,7 +373,7 @@ export function BookmarkCard({
                           setDraftCollectionIds(
                             bookmark.collections.map((collection) => collection.id),
                           );
-                          setShowCollectionMenu(false);
+                          onCollectionMenuOpenChange(false);
                         }}
                         className="inline-flex h-10 items-center justify-center rounded-xl border border-black/20 bg-white px-4 text-sm font-semibold text-black transition hover:border-black hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
                       >
@@ -408,7 +400,7 @@ export function BookmarkCard({
           <button
             type="button"
             onClick={() => {
-              setShowCollectionMenu(false);
+              onCollectionMenuOpenChange(false);
               onDelete(bookmark.id);
             }}
             className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-black bg-white text-[#14532D] transition hover:border-red-500 hover:bg-red-500 hover:text-white"

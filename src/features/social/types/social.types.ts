@@ -40,17 +40,11 @@ export interface SocialPostDetail {
   references: SocialPostReferenceInfo[];
   createdAt: string;
   updatedAt: string | null;
-  likesReset: boolean;
 }
 
 export interface SocialPostPageResponse {
   content: SocialPostSummary[];
   totalElements: number;
-  totalPages: number;
-  size: number;
-  number: number;
-  first: boolean;
-  last: boolean;
 }
 
 export interface CreateSocialPostRequest {

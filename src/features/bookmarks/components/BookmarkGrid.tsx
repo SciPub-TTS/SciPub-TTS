@@ -1,5 +1,7 @@
+import { useState } from "react";
+
 import { BookmarkCard } from "@/features/bookmarks/components/BookmarkCard";
-import { useInfiniteScroll } from "@/features/bookmarks/hooks/UseInfiniteScroll.ts";
+import { useInfiniteScroll } from "@/features/bookmarks/hooks/useInfiniteScroll";
 import type {
   BookmarkCollectionResponse,
   BookmarkResponse,
@@ -68,6 +70,8 @@ export function BookmarkGrid({
   searchQuery,
   selectedCollectionId,
 }: BookmarkGridProps) {
+  const [openCollectionMenuBookmarkId, setOpenCollectionMenuBookmarkId] =
+    useState<string | null>(null);
   const sentinelRef = useInfiniteScroll(
     onLoadMore,
     hasNext && !isLoadingMore && !isRefreshing,
@@ -145,8 +149,12 @@ export function BookmarkGrid({
             key={bookmark.id}
             availableCollections={availableCollections}
             bookmark={bookmark}
+            isCollectionMenuOpen={openCollectionMenuBookmarkId === bookmark.id}
             isCollectionMutating={isCollectionMutating}
             onAddToCollection={onAddToCollection}
+            onCollectionMenuOpenChange={(isOpen) => {
+              setOpenCollectionMenuBookmarkId(isOpen ? bookmark.id : null);
+            }}
             onDelete={onDelete}
             onRemoveFromCollection={onRemoveFromCollection}
           />

@@ -60,7 +60,7 @@ function Topic({topic, id}:
 
     const topicId = topic.topicId.split('/').at(-1);
     const link = topicId
-        ? buildDetailTrailUrl("topics", topicId, [], "trending")
+        ? buildDetailTrailUrl("topics", topicId, "trending")
         : "#";
 
     const {
