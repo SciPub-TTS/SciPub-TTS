@@ -18,7 +18,6 @@ import type {
 import {
   formatAuthors,
   formatCitationCount,
-  formatSavedAt,
 } from "@/features/bookmarks/utils/bookmark.utils";
 import {
   buildDetailTrailUrl,
@@ -194,7 +193,7 @@ export function BookmarkCard({
             {getWorkTypeLabel(bookmark.workType)}
           </span>
           <span className="font-subtext shrink-0 whitespace-nowrap pt-1 text-[13px] font-semibold text-black/65">
-            {formatSavedAt(bookmark.createdAt)}
+            {bookmark.createdAt}
           </span>
         </div>
 

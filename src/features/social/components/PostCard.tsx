@@ -5,7 +5,6 @@ import { SocialAvatar } from "@/features/social/components/SocialAvatar";
 import { SocialReferenceList } from "@/features/social/components/SocialReferenceList";
 import type { SocialPostSummary } from "@/features/social/types/social.types";
 import { normalizeIdentityValue } from "@/features/social/utils/socialQueryUtils";
-import { formatPostedAt } from "@/features/social/utils/socialFormatters";
 
 export function PostCard({
 
@@ -91,7 +90,7 @@ export function PostCard({
 
           <Clock3 className="h-4 w-4" />
 
-          <span>{formatPostedAt(post.createdAt, post.updatedAt)}</span>
+          <span>{post.updatedAt ?? post.createdAt}</span>
 
         </div>
 

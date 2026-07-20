@@ -3,7 +3,7 @@ import type { BookmarkResponse } from "@/features/bookmarks/types/bookmark.types
 import { SOCIAL_BOOKMARK_OPTIONS_PAGE_SIZE } from "@/features/social/constants/socialHub.constants";
 import type { FeedTab, SocialPostSummary, SortMode } from "@/features/social/types/social.types";
 import { normalizeIdentityValue } from "@/features/social/utils/socialQueryUtils";
-import { getDisplayTime, normalizeSocialOpenAlexId, normalizeTags, normalizeTopicLabel } from "@/features/social/utils/socialFormatters";
+import { normalizeSocialOpenAlexId, normalizeTags, normalizeTopicLabel } from "@/features/social/utils/socialFormatters";
 
 export function normalizeSocialPost(post: SocialPostSummary): SocialPostSummary {
   const fallbackId = post.id || crypto.randomUUID();
@@ -20,7 +20,7 @@ export function normalizeSocialPost(post: SocialPostSummary): SocialPostSummary 
       fullName: authorName,
       avatarUrl: post.author?.avatarUrl ?? null,
     },
-    createdAt: post.createdAt || new Date().toISOString(),
+    createdAt: post.createdAt || "",
     references: Array.isArray(post.references)
       ? post.references.map((reference) => ({
           ...reference,
@@ -85,32 +85,10 @@ export function sortPosts(posts: SocialPostSummary[], sortMode: SortMode) {
 
   if (sortMode === "most-liked") {
     nextPosts.sort((left, right) => {
-      if (right.likeCount !== left.likeCount) {
-        return right.likeCount - left.likeCount;
-      }
-
-      const rightTime = new Date(
-        getDisplayTime(right.createdAt, right.updatedAt),
-      ).getTime();
-      const leftTime = new Date(
-        getDisplayTime(left.createdAt, left.updatedAt),
-      ).getTime();
-
-      return rightTime - leftTime;
+      return right.likeCount - left.likeCount;
     });
     return nextPosts;
   }
-
-  nextPosts.sort((left, right) => {
-    const rightTime = new Date(
-      getDisplayTime(right.createdAt, right.updatedAt),
-    ).getTime();
-    const leftTime = new Date(
-      getDisplayTime(left.createdAt, left.updatedAt),
-    ).getTime();
-
-    return rightTime - leftTime;
-  });
 
   return nextPosts;
 }

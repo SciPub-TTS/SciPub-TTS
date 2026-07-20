@@ -9,7 +9,6 @@ import { HERO_GRADIENT, SECONDARY_BUTTON_CLASS, SOCIAL_TABS, SURFACE_CARD_CLASS 
 import { useSocialHub } from "@/features/social/hooks/useSocialHub";
 import type { SortMode } from "@/features/social/types/social.types";
 import { normalizeIdentityValue } from "@/features/social/utils/socialQueryUtils";
-import { formatPostedAt } from "@/features/social/utils/socialFormatters";
 
 export default function SocialHubPage() {
   const {
@@ -190,13 +189,7 @@ export default function SocialHubPage() {
 
                       <span>
 
-                        {formatPostedAt(
-
-                          featuredPost.createdAt,
-
-                          featuredPost.updatedAt,
-
-                        )}
+                        {featuredPost.updatedAt ?? featuredPost.createdAt}
 
                       </span>
 
