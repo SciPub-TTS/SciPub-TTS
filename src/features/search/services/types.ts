@@ -43,34 +43,6 @@ export type FilterOptionPageApiData = {
   options: OptionItem[];
 };
 
-export type SearchWorksApiItem = {
-  id: string;
-  title: string;
-  abstractText: string | null;
-  doi: string | null;
-  publicationYear: number | null;
-  citedByCount: number | null;
-  openAccess: boolean | null;
-  hasPdf: boolean | null;
-  pdfUrl: string | null;
-  hasOrcid: boolean | null;
-  type: string | null;
-  topic: string | null;
-  subFieldName: string | null;
-  sourceId: string | null;
-  sourceName: string | null;
-  authors: string[];
-  authorRefs?: Array<{
-    id: string | null;
-    displayName: string;
-  }> | null;
-  keywords: string[];
-  topicRef?: {
-    id: string | null;
-    displayName: string;
-  } | null;
-};
-
 export type SearchWorksApiResponse = {
   meta: {
     totalCount: number;
@@ -80,7 +52,7 @@ export type SearchWorksApiResponse = {
     appliedFilter: string;
     appliedSort: string;
   };
-  results: SearchWorksApiItem[];
+  results: PaperResult[];
 };
 
 export type SearchEntityApiItem = {

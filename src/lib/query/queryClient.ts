@@ -23,4 +23,5 @@ queryClient.setQueryDefaults(["searchSummary"], OPEN_ALEX_QUERY_DEFAULTS);
 queryClient.setQueryDefaults(["searchResults"], OPEN_ALEX_QUERY_DEFAULTS);
 queryClient.setQueryDefaults(["searchFilterOptions"], OPEN_ALEX_QUERY_DEFAULTS);
 queryClient.setQueryDefaults(["paperDetail"], OPEN_ALEX_QUERY_DEFAULTS);
-queryClient.setQueryDefaults(["entityDetail"], OPEN_ALEX_QUERY_DEFAULTS);
+queryClient.setQueryDefaults(["authorDetail"], OPEN_ALEX_QUERY_DEFAULTS);
+queryClient.setQueryDefaults(["topicDetail"], OPEN_ALEX_QUERY_DEFAULTS);

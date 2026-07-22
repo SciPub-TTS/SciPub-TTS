@@ -193,10 +193,6 @@ function buildDetailPath(
   return routePaths.topicDetail(entityId);
 }
 
-export function parseDetailTrail(search: string) {
-  return getLegacyDetailTrail(search);
-}
-
 export function parseDetailOrigin(search: string): DetailOrigin {
   const params = new URLSearchParams(search);
   return normalizeDetailOrigin(params.get(detailOriginSearchParam));
@@ -313,7 +309,6 @@ function appendDetailTrailEntry(
 export function buildDetailTrailUrl(
   entityType: DetailTrailEntityType,
   entityId: string | number,
-  _trail: DetailTrailEntry[],
   origin: DetailOrigin = "search",
 ) {
   const basePath = buildDetailPath(entityType, entityId);
@@ -413,14 +408,12 @@ export function buildNextDetailUrl(
   targetEntityId: string | number,
 ) {
   const normalizedTargetId = normalizeEntityId(String(targetEntityId));
-  const currentTrail = parseDetailTrail(search);
   const currentOrigin = parseDetailOrigin(search);
 
   if (!normalizedTargetId) {
     return buildDetailTrailUrl(
       targetEntityType,
       targetEntityId,
-      currentTrail,
       currentOrigin,
     );
   }
@@ -432,21 +425,13 @@ export function buildNextDetailUrl(
     return buildDetailTrailUrl(
       targetEntityType,
       normalizedTargetId,
-      currentTrail,
       currentOrigin,
     );
   }
 
-  const nextTrail = appendDetailTrailEntry(
-    currentTrail,
-    currentEntityType,
-    currentEntityId,
-  );
-
   return buildDetailTrailUrl(
     targetEntityType,
     normalizedTargetId,
-    nextTrail,
     currentOrigin,
   );
 }

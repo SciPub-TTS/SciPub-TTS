@@ -12,10 +12,7 @@ import {
   YAxis,
 } from "recharts";
 
-import type {
-  AdminApiUsagePoint,
-  AdminTopApiConsumer,
-} from "../types";
+import type { AdminApiUsagePoint, AdminTopApiConsumer } from "../types";
 
 type AdminDashboardInsightsProps = {
   apiUsageOverTime: AdminApiUsagePoint[];
@@ -67,8 +64,8 @@ function SectionTitle({
 }) {
   return (
     <div>
-      <h3 className="font-title text-sm font-bold text-slate-950">{title}</h3>
-      <p className="font-subtext mt-1 text-xs font-medium text-slate-500">
+      <h3 className="font-title text-sm font-bold text-black">{title}</h3>
+      <p className="font-subtext mt-1 text-xs font-medium text-gray-600">
         {subtitle}
       </p>
     </div>
@@ -104,8 +101,8 @@ export default function AdminDashboardInsights({
     <div className="grid gap-4 xl:grid-cols-[minmax(0,2fr)_minmax(260px,1fr)]">
       <ChartCard>
         <SectionTitle
-          title="API Calls by User"
-          subtitle="Top 5 consumers this month"
+          title="API Calls by User to Open Alex"
+          subtitle="Top 5 consumers this month."
         />
 
         <div className="mt-5">
@@ -220,8 +217,16 @@ export default function AdminDashboardInsights({
                         x2="0"
                         y2="1"
                       >
-                        <stop offset="0%" stopColor="#4f46e5" stopOpacity={0.35} />
-                        <stop offset="100%" stopColor="#4f46e5" stopOpacity={0.04} />
+                        <stop
+                          offset="0%"
+                          stopColor="#4f46e5"
+                          stopOpacity={0.35}
+                        />
+                        <stop
+                          offset="100%"
+                          stopColor="#4f46e5"
+                          stopOpacity={0.04}
+                        />
                       </linearGradient>
                     </defs>
                     <CartesianGrid
@@ -310,11 +315,7 @@ function shortenEmail(email: string) {
   return `${email.slice(0, 10)}...${email.slice(-10)}`;
 }
 
-function CustomTooltipShell({
-  children,
-}: {
-  children: ReactNode;
-}) {
+function CustomTooltipShell({ children }: { children: ReactNode }) {
   return (
     <div className="rounded-xl border border-black bg-white px-3 py-2 shadow-sm">
       {children}

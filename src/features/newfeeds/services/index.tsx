@@ -1,7 +1,9 @@
 import { http } from "@/services/http";
 import type { ApiResponse } from "@/types/common.types";
-import { mapApiWorkToPaperResult } from "@/features/search/services/searchWorksMapper";
-import type { SearchWorksApiItem } from "@/features/search/services/types";
+import {
+  mapFeedWorkToPaperResult,
+  type FeedWorkApiItem,
+} from "./feedWorkMapper";
 import type {
   FeedArticle,
   FeedExactMatchFilter,
@@ -9,7 +11,7 @@ import type {
   FollowedTopic
 } from "../types";
 
-type FeedArticleApiItem = SearchWorksApiItem & {
+type FeedArticleApiItem = FeedWorkApiItem & {
   reason: string;
   relevance: number | null;
   tabMatches: string[] | null;
@@ -87,7 +89,7 @@ export const apiService = {
 
 
       const items = data.items.map((item) => ({
-          ...mapApiWorkToPaperResult({
+          ...mapFeedWorkToPaperResult({
             ...item,
             id: extractRawId(item.id),
             authorRefs: (item.authorRefs || []).map((authorRef) => ({

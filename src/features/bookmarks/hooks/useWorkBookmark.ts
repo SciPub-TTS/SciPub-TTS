@@ -8,7 +8,7 @@ import { bookmarkApi } from "@/features/bookmarks/services/bookmark.api";
 import { invalidateBookmarkLibraryQueries } from "@/features/bookmarks/services/bookmarkQueryHelpers";
 import { bookmarkQueryKeys } from "@/features/bookmarks/services/bookmarkQueryKeys";
 import type {
-  BookmarkCollectionSummary,
+  BookmarkCollectionResponse,
   BookmarkStatusResponse,
   CreateBookmarkRequest,
 } from "@/features/bookmarks/types/bookmark.types";
@@ -20,7 +20,7 @@ type UseWorkBookmarkOptions = {
   authorOpenAlexIds?: Array<string | null>;
   citations?: number | null;
   initialSaved?: boolean;
-  knownCollections?: BookmarkCollectionSummary[];
+  knownCollections?: BookmarkCollectionResponse[];
   openAlexId: string;
   source?: string | null;
   title?: string | null;
@@ -128,7 +128,7 @@ function createBookmarkStatus(
   openAlexId: string,
   isSaved: boolean,
   bookmarkId: string | null,
-  collections: BookmarkCollectionSummary[] = [],
+  collections: BookmarkCollectionResponse[] = [],
 ): BookmarkStatusResponse {
   return {
     bookmarked: isSaved,

@@ -48,7 +48,6 @@ export function useReportBookmarks({
         keyword: debouncedSearchValue,
         page: Number(pageParam),
         size: REPORT_BOOKMARK_PAGE_SIZE,
-        sort: "RECENT",
       });
 
       return response.data;

@@ -1,5 +1,7 @@
+import { useState } from "react";
+
 import { BookmarkCard } from "@/features/bookmarks/components/BookmarkCard";
-import { useInfiniteScroll } from "@/features/bookmarks/hooks/UseInfiniteScroll.ts";
+import { useInfiniteScroll } from "@/features/bookmarks/hooks/useInfiniteScroll";
 import type {
   BookmarkCollectionResponse,
   BookmarkResponse,
@@ -68,6 +70,8 @@ export function BookmarkGrid({
   searchQuery,
   selectedCollectionId,
 }: BookmarkGridProps) {
+  const [openCollectionMenuBookmarkId, setOpenCollectionMenuBookmarkId] =
+    useState<string | null>(null);
   const sentinelRef = useInfiniteScroll(
     onLoadMore,
     hasNext && !isLoadingMore && !isRefreshing,
@@ -88,7 +92,9 @@ export function BookmarkGrid({
             <circle cx="12" cy="16.5" r="1.2" fill="#ef4444" />
           </svg>
         </div>
-        <p className="text-sm font-medium text-black">Could not load bookmarks</p>
+        <p className="text-sm font-medium text-black">
+          Could not load bookmarks
+        </p>
         <p className="mt-1 text-xs text-black/45">{error}</p>
       </div>
     );
@@ -127,7 +133,8 @@ export function BookmarkGrid({
         </h3>
         {hasCollectionFilter || hasSearchQuery ? null : (
           <p className="font-subtext max-w-sm text-sm leading-relaxed text-black/55">
-            Save papers while reading to build a colorful, searchable personal research library.
+            Save papers while reading to build a colorful, searchable personal
+            research library.
           </p>
         )}
       </div>
@@ -142,15 +149,21 @@ export function BookmarkGrid({
             key={bookmark.id}
             availableCollections={availableCollections}
             bookmark={bookmark}
+            isCollectionMenuOpen={openCollectionMenuBookmarkId === bookmark.id}
             isCollectionMutating={isCollectionMutating}
             onAddToCollection={onAddToCollection}
+            onCollectionMenuOpenChange={(isOpen) => {
+              setOpenCollectionMenuBookmarkId(isOpen ? bookmark.id : null);
+            }}
             onDelete={onDelete}
             onRemoveFromCollection={onRemoveFromCollection}
           />
         ))}
 
         {isLoadingMore &&
-          Array.from({ length: 3 }).map((_, i) => <SkeletonCard key={`skeleton-${i}`} />)}
+          Array.from({ length: 3 }).map((_, i) => (
+            <SkeletonCard key={`skeleton-${i}`} />
+          ))}
       </div>
 
       {hasNext && !isRefreshing && (

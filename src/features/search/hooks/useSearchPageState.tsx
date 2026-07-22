@@ -116,6 +116,7 @@ export function useSearchPageState() {
     isLoadingResults,
     isTotalResultCountExact,
     matchedResultCount,
+    resultErrorMessage,
     totalIndexedCount,
     visibleResults,
   } = searchResults;
@@ -352,6 +353,7 @@ export function useSearchPageState() {
     matchedResultCount,
     recentSearches: searchHistory.recentSearches,
     resetFilters,
+    resultErrorMessage,
     saveSearchFeedback: searchHistory.saveSearchFeedback,
     saveSearchNotice: searchHistory.saveSearchNotice,
     saveSearchSuccessToken: searchHistory.saveSearchSuccessToken,

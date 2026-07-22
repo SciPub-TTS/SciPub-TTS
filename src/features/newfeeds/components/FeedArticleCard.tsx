@@ -14,7 +14,7 @@ export function FeedArticleCard({ article }: FeedArticleCardProps) {
       authors={article.authors}
       authorRefs={article.authorRefs}
       citations={article.citations}
-      detailHref={buildDetailTrailUrl("works", article.id, [], "newfeed")}
+      detailHref={buildDetailTrailUrl("works", article.id, "newfeed")}
       detailOrigin="newfeed"
       doi={article.doi}
       field={article.field}

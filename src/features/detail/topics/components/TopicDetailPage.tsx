@@ -13,23 +13,23 @@ import {
 import DetailSectionCard from "@/features/detail/works/components/sections/DetailSectionCard";
 import { formatFullNumber } from "@/features/search/utils";
 
-import { useEntityDetailNavigation } from "../hooks/useEntityDetailNavigation";
-import { useEntityDetailPageState } from "../hooks/useEntityDetailPageState";
-import type { TopicDetailData } from "../types";
 import {
   type DetailClickHandler,
   type DetailHrefBuilder,
-  EntityDetailHero,
-  EntityWorksSection,
-  EntityYearChartSection,
+  DetailHero,
+  DetailWorksSection,
+  DetailYearChartSection,
   OverviewRow,
   RelatedTopicList,
-} from "./EntityDetailShared";
+} from "@/features/detail/detailShared";
+import { useDetailNavigation } from "@/features/detail/hooks/useDetailNavigation";
+
+import { useTopicDetailPageState } from "../hooks/useTopicDetailPageState";
+import type { TopicDetailData } from "../types";
 
 export default function TopicDetailPage() {
-  const { buildDetailHref, handleDetailClick } = useEntityDetailNavigation();
-  const { detail, errorMessage, isLoading } =
-    useEntityDetailPageState("topics");
+  const { buildDetailHref, handleDetailClick } = useDetailNavigation();
+  const { detail, errorMessage, isLoading } = useTopicDetailPageState();
 
   if (isLoading) {
     return <PaperDetailLoadingState />;
@@ -41,7 +41,7 @@ export default function TopicDetailPage() {
 
   return (
     <section className="space-y-6">
-      <EntityDetailHero detail={detail} />
+      <DetailHero detail={detail} />
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.65fr)_minmax(320px,1fr)]">
         <div className="space-y-6">
@@ -50,7 +50,7 @@ export default function TopicDetailPage() {
             buildDetailHref={buildDetailHref}
             handleDetailClick={handleDetailClick}
           />
-          <EntityWorksSection
+          <DetailWorksSection
             detail={detail}
             buildDetailHref={buildDetailHref}
           />
@@ -58,7 +58,7 @@ export default function TopicDetailPage() {
 
         <div className="space-y-6">
           <TopicMetricsSection detail={detail} />
-          <EntityYearChartSection detail={detail} />
+          <DetailYearChartSection detail={detail} />
           <TopicTypeBreakdownSection
             detail={detail}
             buildDetailHref={buildDetailHref}
