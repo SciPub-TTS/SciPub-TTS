@@ -3,6 +3,7 @@ import {
     CircleGauge,
     ChartNoAxesCombined,
     MousePointerClick,
+    Palette,
     Target,
     TrendingUp,
     X,
@@ -62,7 +63,7 @@ export function RadarHelpDialog({
                     <HelpItem
                         icon={<Target size={18} />}
                         title="What is being compared?"
-                        description="The selected research topic is compared against the overall average across all research momentum metrics."
+                        description="You can compare multiple research topics side by side, and optionally include the overall average, across all research momentum metrics."
                     />
 
                     <HelpItem
@@ -72,9 +73,15 @@ export function RadarHelpDialog({
                     />
 
                     <HelpItem
+                        icon={<Palette size={18} />}
+                        title="Multiple series, multiple colors"
+                        description="Each topic you select is drawn as its own colored shape, and the overall average is always shown in green when selected, so you can quickly tell them apart on the chart and in the legend."
+                    />
+
+                    <HelpItem
                         icon={<CircleGauge size={18} />}
                         title="Comparing shapes"
-                        description="When the blue area extends beyond the green area, the selected topic performs above the overall average for that metric. When it stays inside, it performs below average."
+                        description="When a topic's area extends beyond the green average area, it performs above the overall average for that metric. When it stays inside, it performs below average. The same logic applies when comparing two or more topics against each other."
                     />
 
                     <HelpItem
@@ -85,8 +92,8 @@ export function RadarHelpDialog({
 
                     <HelpItem
                         icon={<MousePointerClick size={18} />}
-                        title="Choose a topic"
-                        description="Use the topic selector to instantly compare different research topics with the field average using the same set of metrics."
+                        title="Choose topics to compare"
+                        description="Use the topic picker to check or uncheck any number of topics, plus the overall average, and the chart updates instantly to reflect your selection."
                     />
                 </div>
 

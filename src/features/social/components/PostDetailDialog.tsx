@@ -30,13 +30,13 @@ export default function PostDetailDialog({
             >
                 <div className="flex items-start justify-between gap-4">
                     <p className="text-xs font-extrabold uppercase tracking-[0.32em] text-[#14532D]">
-                        Chi tiết bài viết
+                        Post Details
                     </p>
 
                     <button
                         type="button"
                         onClick={onClose}
-                        aria-label="Đóng"
+                        aria-label="Close"
                         className="rounded-full border border-black p-1.5 text-black transition hover:bg-slate-100"
                     >
                         <X className="h-4 w-4" />
@@ -46,11 +46,11 @@ export default function PostDetailDialog({
                 {isLoading ? (
                     <div className="flex items-center justify-center gap-2 py-16 text-slate-500">
                         <Loader2 className="h-5 w-5 animate-spin" />
-                        Đang tải...
+                        Loading...
                     </div>
                 ) : hasError || !postDetail ? (
                     <div className="py-16 text-center text-rose-600">
-                        Không tải được nội dung bài viết. Vui lòng thử lại.
+                        Failed to load post content. Please try again.
                     </div>
                 ) : (
                     <>
@@ -89,7 +89,7 @@ export default function PostDetailDialog({
 
                         <div className="mt-6 flex items-center gap-2 border-t border-black/8 pt-5 text-sm font-semibold text-[#F33E58]">
                             <Heart className="h-4 w-4 fill-current" />
-                            {postDetail.likeCount} lượt thích
+                            {postDetail.likeCount} {postDetail.likeCount === 1 ? 'like' : 'likes'}
                         </div>
                     </>
                 )}

@@ -1,4 +1,13 @@
-import {Legend, PolarAngleAxis, PolarGrid, PolarRadiusAxis, Radar, RadarChart, ResponsiveContainer} from "recharts";
+import {
+    Legend,
+    PolarAngleAxis,
+    PolarGrid,
+    PolarRadiusAxis,
+    Radar,
+    RadarChart,
+    ResponsiveContainer,
+    Tooltip
+} from "recharts";
 import {useEffect, useMemo, useRef, useState} from "react";
 import {ResponsiveHeatMap} from "@nivo/heatmap";
 import type {TopicRadarData} from "@/features/dashboard/topic/types/radar.ts";
@@ -250,6 +259,8 @@ function RadarPart({ data }: RadarPartProps) {
                                 tick={false}
                                 axisLine={false}
                             />
+
+                            <Tooltip />
 
                             {seriesList.map((series) => (
                                 <Radar
