@@ -9,6 +9,8 @@ import {KeywordHotListPart} from "@/features/dashboard/keyword/components/Keywor
 import {useHotKeyword} from "@/features/dashboard/keyword/hooks/useHotKeyword.ts";
 import type {KeywordFormulaType} from "@/features/dashboard/keyword/types/keyword.ts";
 import {saveSearchHistory} from "@/features/search/services";
+import {CircleQuestionMark} from "lucide-react";
+import TopicDashboardHelpDialog from "@/features/dashboard/topic/TopicDashboardHelpDialog.tsx";
 
 export default function TopicDashboardPage() {
 
@@ -27,14 +29,10 @@ export default function TopicDashboardPage() {
         return formatDate(date);
     }, [endDate]);
 
-    // const longStartDate = useMemo(() => {
-    //     const date = new Date(endDate);
-    //     date.setFullYear(date.getFullYear() - 5);
-    //     return formatDate(date);
-    // }, [endDate]);
     const [fieldId, setFieldId] = useState("17");
     const [topicFormula, setTopicFormula] = useState("balanced");
     const [keywordFormula, setKeywordFormula] = useState<KeywordFormulaType>("balanced");
+    const [isPageHelpOpen, setIsPageHelpOpen] = useState(false);
 
     const {keywordList, isLoading} = useHotKeyword(
         {
@@ -45,68 +43,87 @@ export default function TopicDashboardPage() {
         }
     )
 
-  return (
-    <div className="flex flex-col gap-[3vh]">
-        <div>
-            <p className="text-xs font-extrabold uppercase tracking-[0.32em] text-[#14532D]">
-                Analyze - Topic + Keyword Trends
-            </p>
-            <h1 className="font-title-page mt-3 text-4xl font-normal leading-[1.05] text-[#14532D] md:text-5xl xl:whitespace-nowrap">
-                Read the Research Pulse.
-            </h1>
-            <p className="font-subtext mt-3 max-w-4xl text-base leading-7 text-slate-500">
-                Track publication growth, citation impact, trending topics, and rising keywords.
-            </p>
-        </div>
+    return (
+        <div className="flex flex-col gap-[3vh]">
+            <div className="flex flex-row justify-between">
+                <div>
+                    <p className="text-xs font-extrabold uppercase tracking-[0.32em] text-[#14532D]">
+                        Analyze - Topic + Keyword Trends
+                    </p>
 
-        <FilterPart endDate={endDate}
-        fieldId={fieldId}
-        topicFormula={topicFormula}
-        keywordFormula={keywordFormula}
-        setEndDate={setEndDate}
-        setFieldId={setFieldId}
-        setTopicFormula={setTopicFormula}
-        setKeywordFormula={setKeywordFormula}/>
+                    <h1 className="font-title-page mt-3 text-4xl font-normal leading-[1.05] text-[#14532D] md:text-5xl xl:whitespace-nowrap">
+                        Read the Research Pulse.
+                    </h1>
+                    <p className="font-subtext mt-3 max-w-4xl text-base leading-7 text-slate-500">
+                        Track publication growth, citation impact, trending topics, and rising keywords.
+                    </p>
+                </div>
 
-        <MetricPart startDate={shortStartDate} endDate={endDate}/>
+                <button
+                    type="button"
+                    onClick={() => setIsPageHelpOpen(true)}
+                    className="inline-flex items-center gap-x-2 rounded-md bg-green-600 px-3.5 py-2.5 text-sm
+                    font-semibold text-white shadow-sm hover:bg-green-800 focus-visible:outline focus-visible:outline-2
+                    focus-visible:outline-offset-2 focus-visible:outline-green-600 transition-colors h-[5vh] cursor-pointer"
+                >
+                    <CircleQuestionMark className="h-5 w-5 shrink-0" aria-hidden="true" />
+                    About Page
+                </button>
+            </div>
 
-        <TopicGeneralChartPart startDate={shortStartDate}
-                               endDate={endDate}
-                               fieldId={fieldId}
-                               formula={topicFormula}
-        />
-
-        <div className="grid grid-cols-1 lg:grid-cols-[7fr_3fr] gap-6">
-            <TrendingPart startDate={shortStartDate}
-                          endDate={endDate}
-                          fieldId={fieldId}
-                          formula={topicFormula}
+            <TopicDashboardHelpDialog
+                isOpen={isPageHelpOpen}
+                onClose={() => setIsPageHelpOpen(false)}
             />
 
-            <KeywordHotListPart keywordList={keywordList}
-                                isLoading={isLoading}
-                                onAdd={async (keyword) => {
-                                    return saveSearchHistory(keyword.name);
-                                }}
+            <FilterPart endDate={endDate}
+                        fieldId={fieldId}
+                        topicFormula={topicFormula}
+                        keywordFormula={keywordFormula}
+                        setEndDate={setEndDate}
+                        setFieldId={setFieldId}
+                        setTopicFormula={setTopicFormula}
+                        setKeywordFormula={setKeywordFormula}/>
+
+            <MetricPart startDate={shortStartDate} endDate={endDate}/>
+
+            <TopicGeneralChartPart startDate={shortStartDate}
+                                   endDate={endDate}
+                                   fieldId={fieldId}
+                                   formula={topicFormula}
+            />
+
+            <div className="grid grid-cols-1 lg:grid-cols-[7fr_3fr] gap-6">
+                <TrendingPart startDate={shortStartDate}
+                              endDate={endDate}
+                              fieldId={fieldId}
+                              formula={topicFormula}
+                />
+
+                <KeywordHotListPart keywordList={keywordList}
+                                    isLoading={isLoading}
+                                    onAdd={async (keyword) => {
+                                        return saveSearchHistory(keyword.name);
+                                    }}
+                />
+            </div>
+
+            <TopicSpecificChartPart startDate={shortStartDate}
+                                    endDate={endDate}
+                                    fieldId={fieldId}
+            />
+
+            <KeywordGeneralChartPart keywordList={keywordList}
+                                     isLoading={isLoading}
             />
         </div>
-
-        <TopicSpecificChartPart startDate={shortStartDate}
-                                endDate={endDate}
-                                fieldId={fieldId}
-        />
-
-        <KeywordGeneralChartPart keywordList={keywordList}
-                                 isLoading={isLoading}
-        />
-    </div>
-  );
+    );
 }
 
 function getMonday(date: Date): Date {
     const result = new Date(date);
 
-    const day = result.getDay(); // 0 = Sunday, 1 = Monday
+    const day = result.getDay();
     const diff = day === 0 ? -6 : 1 - day;
 
     result.setDate(result.getDate() + diff);
