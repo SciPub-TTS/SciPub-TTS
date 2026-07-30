@@ -34,9 +34,6 @@ export default function Pagination({
   const normalizedCurrentPage = Math.min(Math.max(currentPage, 1), totalPages);
   const canGoPrevious = normalizedCurrentPage > 1;
   const canGoNext = normalizedCurrentPage < totalPages;
-  const startItem =
-    totalItems === 0 ? 0 : (normalizedCurrentPage - 1) * safePageSize + 1;
-  const endItem = Math.min(normalizedCurrentPage * safePageSize, totalItems);
   const pageItems = getPaginationItems(
     normalizedCurrentPage,
     totalPages,
@@ -52,11 +49,7 @@ export default function Pagination({
   }
 
   return (
-    <div className="flex flex-col gap-3 border-t border-black px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
-      <p className="text-sm font-semibold text-black">
-        Showing {startItem}-{endItem} of {totalItems}
-      </p>
-
+    <div className="flex flex-wrap items-center justify-center gap-2 border-t border-black px-5 py-4">
       <div className="flex flex-wrap items-center gap-2">
         <button
           aria-label="Previous page"
