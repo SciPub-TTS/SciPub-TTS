@@ -4,12 +4,10 @@ import type { SearchFilters, SearchFilterWidgetKey } from "../types";
 export const SEARCH_FILTER_OPTION_LIMIT = 100;
 
 // Number of papers returned by one search API request.
-export const SEARCH_WORKS_PER_PAGE = 20;
+export const SEARCH_WORKS_PER_PAGE = 10;
 
-// Position inside each loaded page that triggers the next search request.
-// Example: page 1 loads papers 1-20, index 10 triggers page 2;
-// page 2 loads papers 21-40, index 30 triggers page 3.
-export const SEARCH_NEXT_QUERY_TRIGGER_OFFSET = 10;
+// OpenAlex basic page-based pagination only supports the first 10,000 results.
+export const SEARCH_MAX_BASIC_PAGE_RESULTS = 10_000;
 
 // Number of recent searches requested for the search box history.
 export const SEARCH_RECENT_SEARCH_LIMIT = 10;

@@ -1,6 +1,9 @@
 import { Check, ChevronDown, LoaderCircle } from "lucide-react";
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 
+import {
+  SEARCH_MAX_BASIC_PAGE_RESULTS,
+} from "@/features/search/constants";
 import {
   getSearchEntityMetadata,
   getSearchResultSortGroups,
@@ -10,32 +13,30 @@ import {
 } from "@/features/search/services";
 import type { SearchResultsProps } from "@/features/search/types";
 import { formatFullNumber } from "@/features/search/utils";
+import Pagination from "@/layout/global/Pagination";
 
 import { SearchResultCard } from "./SearchResultCard";
 
 export function SearchResults({
   activeEntityType,
   appliedSearchQuery,
-  autoLoadAnchorIndex,
-  canLoadMoreResults,
+  currentPage,
   hasSearched,
   isTotalResultCountExact,
   isLoadingResults,
-  isLoadingMoreResults,
+  pageSize,
   resultErrorMessage,
   sortState,
   totalResultCount,
   visibleResults,
-  onLoadMoreResults,
   onApplySort,
   onClearSorts,
+  onPageChange,
   onSelectSort,
 }: SearchResultsProps) {
-  // Khối này phụ trách phần đầu ra của search:
-  // thống kê nhanh, sort và danh sách kết quả đang hiển thị.
-  const lazyLoadAnchorRef = useRef<HTMLDivElement>(null);
   const entityMetadata = getSearchEntityMetadata(activeEntityType);
-  const resultTitle = appliedSearchQuery || `all ${entityMetadata.resultLabelPlural}`;
+  const resultTitle =
+    appliedSearchQuery || `all ${entityMetadata.resultLabelPlural}`;
   const formattedResultCount = formatResultCount(
     totalResultCount,
     isTotalResultCountExact,
@@ -43,55 +44,11 @@ export function SearchResults({
   const resultMetaText = `${formattedResultCount} ${entityMetadata.resultLabelPlural}.`;
   const sortGroups = getSearchResultSortGroups(activeEntityType);
   const canSortResults =
-    hasSearched
-    && visibleResults.length > 0
-    && !isLoadingResults;
-
-  useEffect(() => {
-    // Tự động lấy thêm trang tiếp theo khi anchor lazy load đi vào viewport.
-    const anchor = lazyLoadAnchorRef.current;
-
-    if (
-      !anchor ||
-      autoLoadAnchorIndex < 0 ||
-      !canLoadMoreResults ||
-      isLoadingMoreResults
-    ) {
-      return;
-    }
-
-    anchor.dataset.autoLoadTriggered = "0";
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const anchorIsVisible = entries.some((entry) => entry.isIntersecting);
-
-        if (
-          anchorIsVisible &&
-          anchor.dataset.autoLoadTriggered !== "1"
-        ) {
-          anchor.dataset.autoLoadTriggered = "1";
-          onLoadMoreResults();
-        }
-      },
-      {
-        root: null,
-        rootMargin: "0px",
-        threshold: 0,
-      },
-    );
-
-    observer.observe(anchor);
-
-    return () => {
-      observer.disconnect();
-    };
-  }, [
-    autoLoadAnchorIndex,
-    canLoadMoreResults,
-    isLoadingMoreResults,
-    onLoadMoreResults,
-  ]);
+    hasSearched && visibleResults.length > 0 && !isLoadingResults;
+  const maxSearchPage = Math.max(
+    1,
+    Math.floor(SEARCH_MAX_BASIC_PAGE_RESULTS / Math.max(pageSize, 1)),
+  );
 
   return (
     <section>
@@ -151,24 +108,27 @@ export function SearchResults({
             </p>
           </div>
         ) : (
-          <ResultsList
-            autoLoadAnchorIndex={autoLoadAnchorIndex}
-            lazyLoadAnchorRef={lazyLoadAnchorRef}
-            visibleResults={visibleResults}
-          />
+          <>
+            <ResultsList visibleResults={visibleResults} />
+            <Pagination
+              currentPage={currentPage}
+              maxPage={maxSearchPage}
+              pageSize={pageSize}
+              showLastPageShortcut={false}
+              totalItems={totalResultCount}
+              onPageChange={onPageChange}
+            />
+          </>
         )}
-
-        {hasSearched && !isLoadingResults && isLoadingMoreResults ? (
-          <p className="py-2 text-center text-sm font-semibold text-black">
-            Loading more results...
-          </p>
-        ) : null}
       </div>
     </section>
   );
 }
 
-function formatResultCount(totalResultCount: number, isTotalResultCountExact: boolean) {
+function formatResultCount(
+  totalResultCount: number,
+  isTotalResultCountExact: boolean,
+) {
   const formattedCount = formatFullNumber(totalResultCount);
 
   return isTotalResultCountExact ? formattedCount : `${formattedCount}+`;
@@ -198,12 +158,6 @@ type SortActionsProps = {
   onSelectSort: (sortOption: string) => void;
 };
 
-type ResultsListProps = {
-  autoLoadAnchorIndex: number;
-  lazyLoadAnchorRef: { current: HTMLDivElement | null };
-  visibleResults: SearchResultsProps["visibleResults"];
-};
-
 function SortActions(props: SortActionsProps) {
   const {
     canSortResults,
@@ -220,8 +174,8 @@ function SortActions(props: SortActionsProps) {
       {sortGroups.map((group) => (
         <SortDropdown
           key={group.key}
-          group={group}
           canSortResults={canSortResults}
+          group={group}
           selectedSort={getSearchSortOptionValue(sortState, group.key)}
           onSelectSort={onSelectSort}
         />
@@ -367,34 +321,19 @@ function SortDropdown(props: SortDropdownProps) {
   );
 }
 
-function ResultsList(props: ResultsListProps) {
-  const {
-    autoLoadAnchorIndex,
-    lazyLoadAnchorRef,
-    visibleResults,
-  } = props;
-  const resultItems = [];
+type ResultsListProps = {
+  visibleResults: SearchResultsProps["visibleResults"];
+};
 
-  for (let index = 0; index < visibleResults.length; index += 1) {
-    const item = visibleResults[index];
-
-    if (index === autoLoadAnchorIndex) {
-      resultItems.push(
-        <div
-          key="auto-load-anchor"
-          ref={lazyLoadAnchorRef}
-          className="h-1 w-full"
-        />,
-      );
-    }
-
-    resultItems.push(
-      <SearchResultCard
-        key={`${item.entityType}:${item.id}`}
-        item={item}
-      />,
-    );
-  }
-
-  return <div className="space-y-4">{resultItems}</div>;
+function ResultsList({ visibleResults }: ResultsListProps) {
+  return (
+    <div className="space-y-4">
+      {visibleResults.map((item) => (
+        <SearchResultCard
+          key={`${item.entityType}:${item.id}`}
+          item={item}
+        />
+      ))}
+    </div>
+  );
 }

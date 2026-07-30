@@ -106,6 +106,10 @@ function shouldRestoreSessionNow() {
   return expiresAt - Date.now() <= ACCESS_TOKEN_REFRESH_BUFFER_MS;
 }
 
+function hasCachedAuthSessionSignal() {
+  return Boolean(getAccessToken() || getCurrentUser() || getAccessTokenExpiresAt());
+}
+
 export async function restoreAuthSession(options?: { blockUi?: boolean }) {
   if (typeof window === "undefined") {
     return;
@@ -223,6 +227,10 @@ export default function AuthSessionReset() {
     scheduleSilentRefresh();
 
     function handleWakeUpRestore() {
+      if (!hasCachedAuthSessionSignal()) {
+        return;
+      }
+
       if (!shouldRestoreSessionNow()) {
         return;
       }

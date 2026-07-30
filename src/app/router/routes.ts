@@ -7,6 +7,7 @@ export const ROUTES = {
   GUIDE: "/guide",
   SEARCH: "/search",
   TRENDING: "/trending",
+  JOURNAL: "/daily-journal",
 
   GOOGLE_REGISTER_COMPLETE: "/register/complete",
   OAUTH2_SUCCESS: "/oauth2/success",

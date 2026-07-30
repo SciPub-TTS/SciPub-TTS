@@ -101,8 +101,8 @@ export default function AdminDashboardInsights({
     <div className="grid gap-4 xl:grid-cols-[minmax(0,2fr)_minmax(260px,1fr)]">
       <ChartCard>
         <SectionTitle
-          title="API Calls by User to Open Alex"
-          subtitle="Top 5 consumers this month."
+          title="API Calls by Consumer to Open Alex"
+          subtitle="Top users and guest usage this month."
         />
 
         <div className="mt-5">

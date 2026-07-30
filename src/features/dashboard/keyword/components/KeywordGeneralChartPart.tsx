@@ -22,6 +22,10 @@ import type {
 import { useGeneralsMetric } from "@/features/dashboard/keyword/hooks/useMetric.ts";
 import type {KeywordsMetric} from "@/features/dashboard/keyword/types/keyword.ts";
 import type {KeywordMetric} from "@/features/dashboard/keyword/types/metric.ts";
+import {useState} from "react";
+import {CircleQuestionMark} from "lucide-react";
+import ScatterKeywordHelpDialog from "@/features/dashboard/keyword/components/helper/ScatterKeywordHelpDialog.tsx";
+import KeywordHotScoreHelpDialog from "@/features/dashboard/keyword/components/helper/KeywordHotScoreHelpDialog.tsx";
 
 type KeywordGeneralChartPartProps = {
     keywordList: KeywordsMetric[];
@@ -39,11 +43,27 @@ export function KeywordGeneralChartPart({
                                         }: KeywordGeneralChartPartProps) {
     const { metricList } = useGeneralsMetric(keywordList);
 
+    const [scatterHelpOpen, setScatterHelpOpen] = useState(false);
+    const [rankingHelpOpen, setRankingHelpOpen] = useState(false);
+
     return (
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 select-none">
+        <div className="grid grid-cols-1 gap-6 select-none xl:grid-cols-2">
             <ChartCard
                 title="Hot Keywords — CAGR vs Publication Share"
                 description="Bubble size reflects recent paper volume; position shows growth rate against research share."
+                help={
+                    <>
+                        <CircleQuestionMark
+                            className="h-5 w-5 cursor-pointer text-slate-400 transition-colors hover:text-slate-600"
+                            onClick={() => setScatterHelpOpen(true)}
+                        />
+
+                        <ScatterKeywordHelpDialog
+                            isOpen={scatterHelpOpen}
+                            onClose={() => setScatterHelpOpen(false)}
+                        />
+                    </>
+                }
             >
                 <ScatterHotKeywords
                     metricList={metricList}
@@ -54,6 +74,19 @@ export function KeywordGeneralChartPart({
             <ChartCard
                 title="Keyword Hot Score Ranking"
                 description="Topics ranked by overall hot score, combining momentum and attention signals."
+                help={
+                    <>
+                        <CircleQuestionMark
+                            className="h-5 w-5 cursor-pointer text-slate-400 transition-colors hover:text-slate-600"
+                            onClick={() => setRankingHelpOpen(true)}
+                        />
+
+                        <KeywordHotScoreHelpDialog
+                            isOpen={rankingHelpOpen}
+                            onClose={() => setRankingHelpOpen(false)}
+                        />
+                    </>
+                }
             >
                 <KeywordHotScoreChart
                     metricList={metricList}
@@ -64,26 +97,36 @@ export function KeywordGeneralChartPart({
     );
 }
 
+type ChartCardProps = {
+    title: string;
+    description?: string;
+    children: React.ReactNode;
+    help?: React.ReactNode;
+};
+
 function ChartCard({
                        title,
                        description,
                        children,
-                   }: {
-    title: string;
-    description?: string;
-    children: React.ReactNode;
-}) {
+                       help,
+                   }: ChartCardProps) {
     return (
         <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-            <h2 className="text-xl font-bold text-slate-900">
-                {title}
-            </h2>
+            <div className="mb-3 flex items-start justify-between">
+                <div>
+                    <h2 className="text-xl font-bold text-slate-900">
+                        {title}
+                    </h2>
 
-            {description && (
-                <p className="mb-3 text-sm text-slate-500">
-                    {description}
-                </p>
-            )}
+                    {description && (
+                        <p className="text-sm text-slate-500">
+                            {description}
+                        </p>
+                    )}
+                </div>
+
+                {help}
+            </div>
 
             {children}
         </div>
