@@ -12,9 +12,8 @@ export default function SearchPageContent() {
     activeFilterCount,
     appliedFilterSummary,
     appliedSearchQuery,
-    autoLoadAnchorIndex,
     canSaveSearch,
-    canLoadMoreResults,
+    currentResultPage,
     filterOptions,
     filters,
     filtersOpen,
@@ -26,7 +25,7 @@ export default function SearchPageContent() {
     handleEntityTypeChange,
     handleFilterOptionSearch,
     handleLoadMoreFilterOptions,
-    handleLoadMoreResults,
+    handleResultPageChange,
     handleSaveSearch,
     handleSearch,
     handleSearchQueryChange,
@@ -42,7 +41,6 @@ export default function SearchPageContent() {
     isIndexedCountExact,
     isLoadingFilterOptions,
     isLoadingMoreFilterOptions,
-    isLoadingMoreResults,
     isLoadingResults,
     isSavingSearch,
     isTotalResultCountExact,
@@ -50,6 +48,7 @@ export default function SearchPageContent() {
     recentSearches,
     resetFilters,
     resultErrorMessage,
+    resultPageSize,
     saveSearchFeedback,
     saveSearchNotice,
     saveSearchSuccessToken,
@@ -115,19 +114,18 @@ export default function SearchPageContent() {
       <SearchResults
         activeEntityType={activeEntityType}
         appliedSearchQuery={appliedSearchQuery}
-        autoLoadAnchorIndex={autoLoadAnchorIndex}
-        canLoadMoreResults={canLoadMoreResults}
+        currentPage={currentResultPage}
         hasSearched={hasSearched}
-        isLoadingMoreResults={isLoadingMoreResults}
         isLoadingResults={isLoadingResults}
         isTotalResultCountExact={isTotalResultCountExact}
+        pageSize={resultPageSize}
         resultErrorMessage={resultErrorMessage}
         sortState={sortState}
         totalResultCount={matchedResultCount}
         visibleResults={visibleResults}
         onApplySort={handleApplySort}
         onClearSorts={handleClearSorts}
-        onLoadMoreResults={handleLoadMoreResults}
+        onPageChange={handleResultPageChange}
         onSelectSort={handleSelectSort}
       />
     </section>

@@ -47,6 +47,7 @@ import GoogleRegisterCompletePage from "@/features/auth/components/pages/GoogleR
 import SocialHubPage from "@/features/social/components/SocialHubPage.tsx";
 import { ENABLE_SOCIAL_HUB } from "@/features/social/socialFeature";
 import LandingPage from "@/features/landing/components/LandingPage";
+import DailyJournalPage from "@/features/journal/components/DailyJournalPage";
 
 function getProfileBreadcrumb(search: string): AppRouteHandle["breadcrumb"] {
   const params = new URLSearchParams(search);
@@ -212,6 +213,13 @@ export const router = createBrowserRouter([
             element: <TopicDashboardPage />,
             handle: {
               breadcrumb: "Trending",
+            },
+          },
+          {
+            path: "daily-journal",
+            element: <DailyJournalPage />,
+            handle: {
+              breadcrumb: "Daily Journal",
             },
           },
 

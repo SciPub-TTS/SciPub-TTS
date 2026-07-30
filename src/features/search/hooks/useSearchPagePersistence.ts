@@ -50,8 +50,8 @@ export function useSearchPagePersistence(
   useEffect(() => {
     if (restoredSnapshot) {
       dispatch(hydrateSearchPageState(restoredSnapshot));
-    } else {
-      dispatch(resetSearchPageState(initialEntityType || undefined));
+    } else if (initialEntityType) {
+      dispatch(resetSearchPageState(initialEntityType));
     }
 
     clearSearchPageRestorePending();
@@ -65,8 +65,6 @@ export function useSearchPagePersistence(
           scrollY: window.scrollY,
         });
       }
-
-      dispatch(resetSearchPageState());
     };
   }, [dispatch, initialEntityType, restoredSnapshot]);
 

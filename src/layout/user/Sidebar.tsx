@@ -5,6 +5,7 @@ import {
   LayoutDashboard,
   LogOut,
   MessagesSquare,
+  Newspaper,
   Rss,
   Search,
   User,
@@ -33,6 +34,7 @@ const workspaceMenuItems = [
     ? [{ label: "Social Hub", path: ROUTES.SOCIAL_HUB, icon: MessagesSquare }]
     : []),
   { label: "Report", path: ROUTES.REPORT, icon: FileText },
+  { label: "Daily Journal", path: ROUTES.JOURNAL, icon: Newspaper },
   { label: "Guide & Help", path: ROUTES.GUIDE, icon: CircleHelp },
 ];
 

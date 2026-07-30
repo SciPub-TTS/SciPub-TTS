@@ -15,7 +15,7 @@ import {
   toggleVisibleFilterWidget,
   updateSearchFilter,
 } from "@/features/search/store/searchPageSlice";
-import { initialFilters } from "../constants";
+import { initialFilters, SEARCH_DEFAULT_PAGE } from "../constants";
 import {
   createSearchSortStateFromOption,
   defaultSearchSortState,
@@ -60,6 +60,9 @@ export function useSearchPageState() {
   const dispatch = useAppDispatch();
   const location = useLocation();
   const navigationType = useNavigationType();
+  const requestedEntityType = normalizeRequestedSearchEntityType(
+    (location.state as { initialEntityType?: string } | null)?.initialEntityType ?? null,
+  );
   const isSearchHistoryEnabled = isAuthenticated;
   const shouldRestoreSearchPageState =
     navigationType === "POP"
@@ -108,24 +111,21 @@ export function useSearchPageState() {
     appliedEntityType,
     appliedFilters,
     appliedSearchQuery,
-    autoLoadAnchorIndex,
-    canLoadMoreResults,
+    currentResultPage,
     hasSearched,
+    handleResultPageChange,
     isIndexedCountExact,
-    isLoadingMoreResults,
     isLoadingResults,
     isTotalResultCountExact,
     matchedResultCount,
     resultErrorMessage,
+    resultPageSize,
     totalIndexedCount,
     visibleResults,
   } = searchResults;
   const visibleFilterWidgets = getVisibleFilterWidgets(
     activeEntityType,
     storedVisibleFilterWidgets,
-  );
-  const requestedEntityType = normalizeRequestedSearchEntityType(
-    (location.state as { initialEntityType?: string } | null)?.initialEntityType ?? null,
   );
   const showFilters = true;
   const showFilterAddMenu = isWorksTab;
@@ -153,6 +153,7 @@ export function useSearchPageState() {
     nextSortState = sortState,
     nextOptionValueLookup = optionValueLookup,
   ) {
+    searchResults.handleResultPageChange(SEARCH_DEFAULT_PAGE);
     dispatch(submitSearch({
       appliedFilters: nextFilters,
       appliedSearchQuery: nextQuery,
@@ -173,6 +174,7 @@ export function useSearchPageState() {
     const normalizedQuery = nextQuery.trim();
 
     if (shouldClearSearchState(nextEntityType, normalizedQuery, nextFilters)) {
+      searchResults.handleResultPageChange(SEARCH_DEFAULT_PAGE);
       dispatch(clearSearchResults());
       return;
     }
@@ -197,6 +199,7 @@ export function useSearchPageState() {
 
     searchHistory.clearSaveSearchFeedback();
     dispatch(setActiveEntityType(nextEntityType));
+    searchResults.handleResultPageChange(SEARCH_DEFAULT_PAGE);
     const nextSortState = getNextSortStateForEntityType(
       activeEntityType,
       nextEntityType,
@@ -252,10 +255,6 @@ export function useSearchPageState() {
     dispatch(toggleVisibleFilterWidget(widgetKey));
   }
 
-  function handleLoadMoreResults() {
-    searchResults.handleLoadMoreResults();
-  }
-
   function handleSelectSort(nextSort: string) {
     const nextSortState = nextSort
       ? activeEntityType === "works"
@@ -287,6 +286,7 @@ export function useSearchPageState() {
 
   function resetFilters() {
     dispatch(resetSearchFilters());
+    searchResults.handleResultPageChange(SEARCH_DEFAULT_PAGE);
 
     if (!hasSearched) {
       return;
@@ -316,9 +316,8 @@ export function useSearchPageState() {
     activeFilterCount,
     appliedFilterSummary,
     appliedSearchQuery,
-    autoLoadAnchorIndex,
     canSaveSearch: searchHistory.canSaveSearch,
-    canLoadMoreResults,
+    currentResultPage,
     filterOptions,
     filters,
     filtersOpen,
@@ -330,7 +329,7 @@ export function useSearchPageState() {
     handleEntityTypeChange,
     handleFilterOptionSearch,
     handleLoadMoreFilterOptions,
-    handleLoadMoreResults,
+    handleResultPageChange,
     handleSaveSearch,
     handleSearch,
     handleSearchQueryChange,
@@ -346,7 +345,6 @@ export function useSearchPageState() {
     isIndexedCountExact,
     isLoadingFilterOptions,
     isLoadingMoreFilterOptions,
-    isLoadingMoreResults,
     isLoadingResults,
     isSavingSearch: searchHistory.isSavingSearch,
     isTotalResultCountExact,
@@ -354,6 +352,7 @@ export function useSearchPageState() {
     recentSearches: searchHistory.recentSearches,
     resetFilters,
     resultErrorMessage,
+    resultPageSize,
     saveSearchFeedback: searchHistory.saveSearchFeedback,
     saveSearchNotice: searchHistory.saveSearchNotice,
     saveSearchSuccessToken: searchHistory.saveSearchSuccessToken,

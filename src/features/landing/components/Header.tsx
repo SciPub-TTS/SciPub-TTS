@@ -12,6 +12,7 @@ import { LANDING_SECTION_LINKS } from "../constants/landing.constants";
 const publicNavLinks = [
   { label: "Discovery", to: ROUTES.SEARCH },
   { label: "Trending Dashboard", to: ROUTES.TRENDING },
+  { label: "Daily Journal", to: ROUTES.JOURNAL },
   { label: "Guide", to: ROUTES.GUIDE },
 ] as const;
 

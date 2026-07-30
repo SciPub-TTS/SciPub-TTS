@@ -332,24 +332,22 @@ export type OrcidFilterProps = {
 export type SearchResultsProps = {
   activeEntityType: SearchEntityType;
   appliedSearchQuery: string;
-  autoLoadAnchorIndex: number;
-  canLoadMoreResults: boolean;
+  currentPage: number;
   hasSearched: boolean;
   isTotalResultCountExact: boolean;
   isLoadingResults: boolean;
-  isLoadingMoreResults: boolean;
+  pageSize: number;
   resultErrorMessage: string;
   sortState: SearchSortState;
   totalResultCount: number;
   visibleResults: SearchResultItem[];
-  onLoadMoreResults: () => void;
   onApplySort: () => void;
   onClearSorts: () => void;
+  onPageChange: (page: number) => void;
   onSelectSort: (sortOption: string) => void;
 };
 
 export type ResultsListProps = {
-  autoLoadAnchorIndex: number;
   visibleResults: SearchResultItem[];
 };
 

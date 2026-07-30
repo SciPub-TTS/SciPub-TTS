@@ -10,6 +10,7 @@ import {
   Filter,
   Layers3,
   Library,
+  Newspaper,
   Radar,
   Rss,
   Search,
@@ -96,10 +97,11 @@ const workflowSteps = [
   {
     id: "06",
     eyebrow: "Monitor",
-    title: "Use Feed and reports to stay current after the first search",
+    title: "Use Feed, Daily Journal, and reports to stay current",
     description: "Let the system help after the first pass.",
     checkpoints: [
       "Feed for ongoing updates.",
+      "Daily Journal for curated science news and conference signals.",
       "Bookmarks to revisit saved works.",
       "Reports for summary output.",
     ],
@@ -122,6 +124,13 @@ const routeMapCards = [
     description: "Best for staring your trip here in our website",
     href: ROUTES.TRENDING,
     icon: TrendingUp,
+  },
+  {
+    title: "Daily Journal",
+    subtitle: "Science news desk",
+    description: "Read curated research news and conference signals.",
+    href: ROUTES.JOURNAL,
+    icon: Newspaper,
   },
   {
     title: "Paper Detail",
@@ -189,6 +198,11 @@ const habitCards = [
     description: "Best for discovery into monitoring.",
     icon: Tag,
   },
+  {
+    title: "Journal -> trending -> search",
+    description: "Best for turning news into research exploration.",
+    icon: Newspaper,
+  },
   ...(ENABLE_SOCIAL_HUB
     ? [
         {
@@ -232,6 +246,12 @@ export default function GuideHelpPage() {
                     className="inline-flex items-center gap-2 rounded-2xl border border-black bg-white px-5 py-3 text-sm font-semibold text-black transition hover:bg-slate-100"
                   >
                     View Trending DashBoard
+                  </Link>
+                  <Link
+                    to={ROUTES.JOURNAL}
+                    className="inline-flex items-center gap-2 rounded-2xl border border-[#14532D] bg-[#EFFAF1] px-5 py-3 text-sm font-semibold text-[#14532D] transition hover:bg-emerald-100"
+                  >
+                    Read Daily Journal
                   </Link>
                 </div>
               </div>
@@ -433,6 +453,16 @@ export default function GuideHelpPage() {
                   <ArrowRight className="h-4 w-4" />
                 </Link>
                 <Link
+                  to={ROUTES.JOURNAL}
+                  className="flex items-center justify-between rounded-2xl border border-white/15 bg-white/10 px-4 py-3 text-sm font-semibold transition hover:bg-white/15"
+                >
+                  <span className="inline-flex items-center gap-2">
+                    <Newspaper className="h-4 w-4 text-sky-200" />I want
+                    science news context
+                  </span>
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+                <Link
                   to={ROUTES.BOOKMARKS}
                   className="flex items-center justify-between rounded-2xl border border-white/15 bg-white/10 px-4 py-3 text-sm font-semibold transition hover:bg-white/15"
                 >
@@ -448,8 +478,8 @@ export default function GuideHelpPage() {
                 The strongest product loop is:{" "}
                 <span className="font-semibold text-white">
                   {ENABLE_SOCIAL_HUB
-                    ? "Search -> Detail -> Bookmark -> Social Hub -> Feed/Report"
-                    : "Search -> Detail -> Bookmark -> Feed/Report"}
+                    ? "Daily Journal -> Trending -> Search -> Detail -> Bookmark -> Social Hub -> Feed/Report"
+                    : "Daily Journal -> Trending -> Search -> Detail -> Bookmark -> Feed/Report"}
                 </span>
                 .
               </div>
