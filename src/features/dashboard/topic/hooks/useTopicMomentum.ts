@@ -4,7 +4,7 @@ import type { TopicApiRequestBody } from "@/features/dashboard/topic/types/topic
 import type { Momentum } from "@/features/dashboard/topic/types/momentum.ts";
 
 export function useTopicMomentum(params?: TopicApiRequestBody) {
-    const [loading, setLoading] = useState<boolean>(false);
+    const [loading, setLoading] = useState(false);
     const [momentumData, setMomentumData] = useState<Momentum[]>([]);
     const [error, setError] = useState<string | null>(null);
 
@@ -14,7 +14,9 @@ export function useTopicMomentum(params?: TopicApiRequestBody) {
     const formula = params?.formula;
 
     useEffect(() => {
-        if (!startDate || !endDate || !fieldId || !formula) return;
+        if (!startDate || !endDate || !fieldId || !formula) {
+            return;
+        }
 
         const controller = new AbortController();
 
@@ -27,15 +29,22 @@ export function useTopicMomentum(params?: TopicApiRequestBody) {
                     startDate,
                     endDate,
                     fieldId,
-                    formula
+                    formula,
                 });
 
                 if (!controller.signal.aborted) {
                     setMomentumData(data);
                 }
             } catch (err) {
-                if (controller.signal.aborted) return;
-                setError(err instanceof Error ? err.message : "Failed to load topic momentum data");
+                if (controller.signal.aborted) {
+                    return;
+                }
+
+                setError(
+                    err instanceof Error
+                        ? err.message
+                        : "Failed to load topic momentum data"
+                );
             } finally {
                 if (!controller.signal.aborted) {
                     setLoading(false);
@@ -45,10 +54,12 @@ export function useTopicMomentum(params?: TopicApiRequestBody) {
 
         fetchMomentum();
 
-        return () => {
-            controller.abort();
-        };
+        return () => controller.abort();
     }, [startDate, endDate, fieldId, formula]);
 
-    return { loading, momentumData, error };
+    return {
+        loading,
+        momentumData,
+        error,
+    };
 }
