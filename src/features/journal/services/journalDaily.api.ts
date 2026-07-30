@@ -4,10 +4,7 @@ import type { JournalArticle } from "../types/journal.types";
 
 export type JournalArticlePage = {
   articles: JournalArticle[];
-  currentPage: number;
-  pageSize: number;
   totalItems: number;
-  totalPages: number;
 };
 
 type JournalDailyApiArticle = {
@@ -27,10 +24,7 @@ type JournalDailyApiArticle = {
 
 type JournalDailyApiPage = {
   content?: JournalDailyApiArticle[];
-  number?: number;
-  size?: number;
   totalElements?: number;
-  totalPages?: number;
 };
 
 type FetchJournalArticlesParams = {
@@ -61,10 +55,7 @@ export async function fetchJournalDailyArticles(
 
   return {
     articles: content.map(mapJournalArticle),
-    currentPage: (data.number ?? Math.max(params.page - 1, 0)) + 1,
-    pageSize: data.size ?? params.pageSize,
     totalItems: data.totalElements ?? content.length,
-    totalPages: data.totalPages ?? 1,
   };
 }
 
@@ -78,7 +69,6 @@ function mapJournalArticle(article: JournalDailyApiArticle): JournalArticle {
     title: article.title || "Untitled article",
     author: article.author || "The Guardian",
     publishedDate: publishedAt,
-    publishedAt,
     tags: Array.isArray(article.tags) ? article.tags.filter(Boolean) : [],
     thumbnailUrl: article.thumbnailUrl || article.imgUrl || "/trending.png",
     summary: article.summary || "No summary available.",

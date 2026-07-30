@@ -4,7 +4,6 @@ export type JournalArticle = {
   title: string;
   author: string;
   publishedDate: string;
-  publishedAt?: string;
   tags: string[];
   thumbnailUrl: string;
   summary: string;

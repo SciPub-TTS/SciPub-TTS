@@ -5,7 +5,6 @@ import {
   ChevronUp,
   ExternalLink,
   LoaderCircle,
-  Link as LinkIcon,
   Search,
   Tags,
   X,
@@ -36,18 +35,6 @@ function formatDisplayDate(value: string) {
     month: "short",
     year: "numeric",
   }).format(date);
-}
-
-function getHostName(url: string) {
-  try {
-    return new URL(url).hostname.replace(/^www\./, "");
-  } catch {
-    return url;
-  }
-}
-
-function normalizeUrlForCompare(url: string) {
-  return url.trim().replace(/\/+$/, "").toLowerCase();
 }
 
 type ArticleCardProps = {
@@ -461,10 +448,6 @@ function ArticleMetadataDialog({ article, onClose }: ArticleMetadataDialogProps)
   }
 
   const articleUrl = article.webUrl || article.sourceUrl;
-  const hasDistinctSourceUrl =
-    Boolean(article.sourceUrl) &&
-    Boolean(articleUrl) &&
-    normalizeUrlForCompare(article.sourceUrl) !== normalizeUrlForCompare(articleUrl);
 
   return (
     <div
@@ -543,17 +526,6 @@ function ArticleMetadataDialog({ article, onClose }: ArticleMetadataDialogProps)
           ) : null}
 
           <div className="mt-6 flex flex-wrap gap-3 pb-2">
-            {hasDistinctSourceUrl ? (
-              <a
-                href={article.sourceUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex h-11 items-center gap-2 rounded-lg border border-black bg-white px-4 font-subtext text-sm font-bold text-black transition hover:bg-slate-100"
-              >
-                <LinkIcon className="h-4 w-4" />
-                Source: {getHostName(article.sourceUrl)}
-              </a>
-            ) : null}
             <a
               href={articleUrl}
               target="_blank"
