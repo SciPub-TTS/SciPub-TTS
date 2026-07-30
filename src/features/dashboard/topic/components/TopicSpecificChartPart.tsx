@@ -1,9 +1,21 @@
-import {Legend, PolarAngleAxis, PolarGrid, PolarRadiusAxis, Radar, RadarChart, ResponsiveContainer} from "recharts";
+import {
+    Legend,
+    PolarAngleAxis,
+    PolarGrid,
+    PolarRadiusAxis,
+    Radar,
+    RadarChart,
+    ResponsiveContainer,
+    Tooltip
+} from "recharts";
 import {useEffect, useMemo, useRef, useState} from "react";
 import {ResponsiveHeatMap} from "@nivo/heatmap";
 import type {TopicRadarData} from "@/features/dashboard/topic/types/radar.ts";
 import {useTopicRadar} from "@/features/dashboard/topic/hooks/useTopicRadar.ts";
 import {useTopicHeatmap} from "@/features/dashboard/topic/hooks/useTopicHeatmap.ts";
+import {ChevronDown, CircleQuestionMark} from "lucide-react";
+import {RadarHelpDialog} from "@/features/dashboard/topic/components/helper/RadarHelpDialog.tsx";
+import {HeatMapHelpDialog} from "@/features/dashboard/topic/components/helper/HeatMapHelpDialog.tsx";
 
 type TopicSpecificChartPartProps = {
     startDate: string;
@@ -22,15 +34,15 @@ export default function TopicSpecificChartPart({
         fieldId,
     });
 
-    const [selectedTopic, setSelectedTopic] = useState("");
+    const [heatmapTopic, setHeatmapTopic] = useState("");
     useEffect(() => {
         if (radarData?.topics && radarData.topics.length > 0) {
-            const hasDefaultTopic = radarData.topics.some(t => t.name === selectedTopic);
+            const hasDefaultTopic = radarData.topics.some(t => t.name === heatmapTopic);
             if (!hasDefaultTopic) {
-                setSelectedTopic(radarData.topics[0].name);
+                setHeatmapTopic(radarData.topics[0].name);
             }
         }
-    }, [radarData, selectedTopic]);
+    }, [radarData, heatmapTopic]);
 
     if (error) {
         return (
@@ -42,10 +54,12 @@ export default function TopicSpecificChartPart({
 
     return(
         <div className="grid grid-cols-2 gap-4">
-            <RadarPart data={radarData} selectedTopic={selectedTopic} setSelectedTopic={setSelectedTopic}/>
+            <RadarPart data={radarData} />
 
             <HeatMapPart
-                selectedTopic={selectedTopic}
+                selectedTopic={heatmapTopic}
+                setSelectedTopic={setHeatmapTopic}
+                topics={radarData?.topics ?? []}
                 startDate={startDate}
                 endDate={endDate}
                 fieldId={fieldId}
@@ -62,26 +76,89 @@ const METRIC_CONFIG = [
     { key: "newComerAuthor", label: "Newcomer Ratio" },
 ] as const;
 
+const AVERAGE_KEY = "__average__";
+
+const SERIES_COLOR_PALETTE = [
+    "#2563EB", "#DC2626", "#9333EA", "#EA580C",
+    "#0891B2", "#DB2777", "#65A30D", "#7C3AED",
+];
+
 interface RadarPartProps {
     data: TopicRadarData | null;
-    selectedTopic: string;
-    setSelectedTopic: React.Dispatch<React.SetStateAction<string>>;
 }
 
-function RadarPart({ data, selectedTopic, setSelectedTopic }: RadarPartProps
-) {
+function RadarPart({ data }: RadarPartProps) {
+    const [isHelpOpen, setIsHelpOpen] = useState(false);
+    const [isPickerOpen, setIsPickerOpen] = useState(false);
+    const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
+    const pickerRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (data?.topics && data.topics.length > 0 && selectedKeys.length === 0) {
+            setSelectedKeys([AVERAGE_KEY, data.topics[0].name]);
+        }
+    }, [data]);
+
+    useEffect(() => {
+        function handleClickOutside(e: MouseEvent) {
+            if (pickerRef.current && !pickerRef.current.contains(e.target as Node)) {
+                setIsPickerOpen(false);
+            }
+        }
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
+
+    function toggleKey(key: string) {
+        setSelectedKeys((prev) =>
+            prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key],
+        );
+    }
+
+    const seriesList = useMemo(() => {
+        if (!data) return [];
+
+        const list: { key: string; name: string; color: string }[] = [];
+        let colorIndex = 0;
+
+        selectedKeys.forEach((key) => {
+            if (key === AVERAGE_KEY) {
+                list.push({ key, name: "Overall Average", color: "#16A34A" });
+                return;
+            }
+
+            const topic = data.topics.find((t) => t.name === key);
+            if (topic) {
+                list.push({
+                    key,
+                    name: topic.name,
+                    color: SERIES_COLOR_PALETTE[colorIndex % SERIES_COLOR_PALETTE.length],
+                });
+                colorIndex += 1;
+            }
+        });
+
+        return list;
+    }, [data, selectedKeys]);
+
     const chartData = useMemo(() => {
         if (!data) return [];
 
-        const currentTopic = data.topics.find((t) => t.name === selectedTopic);
-        const averageData = data.average;
+        return METRIC_CONFIG.map((metric) => {
+            const point: Record<string, string | number> = { metric: metric.label };
 
-        return METRIC_CONFIG.map((metric) => ({
-            metric: metric.label,
-            topicValue: currentTopic ? currentTopic[metric.key] : 0,
-            averageValue: averageData ? averageData[metric.key] : 0,
-        }));
-    }, [data, selectedTopic]);
+            selectedKeys.forEach((key) => {
+                if (key === AVERAGE_KEY) {
+                    point[key] = data.average ? data.average[metric.key] : 0;
+                } else {
+                    const topic = data.topics.find((t) => t.name === key);
+                    point[key] = topic ? topic[metric.key] : 0;
+                }
+            });
+
+            return point;
+        });
+    }, [data, selectedKeys]);
 
     if (!data) {
         return (
@@ -92,68 +169,121 @@ function RadarPart({ data, selectedTopic, setSelectedTopic }: RadarPartProps
     }
 
     return (
-        <div className="rounded-lg border border-slate-200 bg-white p-4">
-            <div className="mb-4 flex items-center justify-between gap-4">
-                <div>
-                    <h2 className="text-xl font-bold text-slate-900">
-                        Topic Performance Profile
-                    </h2>
-                    <p className="text-sm text-slate-500">
-                        Compare a selected topic against the overall average
-                        across key research momentum indicators.
-                    </p>
+        <div className="rounded-lg border border-slate-200 bg-white p-4 overflow-y-auto">
+            <div className="mb-4 flex items-start justify-between gap-4">
+                <div className="flex items-start gap-2">
+                    <div>
+                        <h2 className="text-xl font-bold text-slate-900">
+                            Topic Performance Profile
+                        </h2>
+
+                        <p className="text-sm text-slate-500">
+                            Compare selected topics (and the overall average) across
+                            key research momentum indicators.
+                        </p>
+                    </div>
+
+                    <CircleQuestionMark
+                        className="mt-1 h-5 w-5 shrink-0 cursor-pointer text-slate-400 transition-colors hover:text-slate-600"
+                        onClick={() => setIsHelpOpen(true)}
+                    />
                 </div>
 
-                <TopicComboBox
-                    topics={data.topics}
-                    selectedTopic={selectedTopic}
-                    setSelectedTopic={setSelectedTopic}
-                />
+                <div ref={pickerRef} className="relative shrink-0">
+                    <button
+                        type="button"
+                        onClick={() => setIsPickerOpen((prev) => !prev)}
+                        className="flex items-center gap-2 rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50"
+                    >
+                        Compare topics ({selectedKeys.length})
+                        <ChevronDown className="h-4 w-4" />
+                    </button>
+
+                    {isPickerOpen && (
+                        <div className="absolute right-0 z-10 mt-1 max-h-72 w-64 overflow-auto rounded-md border border-slate-200 bg-white p-2 shadow-lg">
+                            <label className="flex cursor-pointer items-center gap-2 rounded px-2 py-1.5 text-sm hover:bg-slate-50">
+                                <input
+                                    type="checkbox"
+                                    checked={selectedKeys.includes(AVERAGE_KEY)}
+                                    onChange={() => toggleKey(AVERAGE_KEY)}
+                                />
+                                <span className="font-medium text-green-700">
+                                    Overall Average
+                                </span>
+                            </label>
+
+                            <div className="my-1 border-t border-slate-100" />
+
+                            {data.topics.map((topic) => (
+                                <label
+                                    key={topic.name}
+                                    className="flex cursor-pointer items-center gap-2 rounded px-2 py-1.5 text-sm hover:bg-slate-50"
+                                >
+                                    <input
+                                        type="checkbox"
+                                        checked={selectedKeys.includes(topic.name)}
+                                        onChange={() => toggleKey(topic.name)}
+                                    />
+                                    <span className="truncate">{topic.name}</span>
+                                </label>
+                            ))}
+                        </div>
+                    )}
+                </div>
             </div>
 
+            <RadarHelpDialog
+                isOpen={isHelpOpen}
+                onClose={() => setIsHelpOpen(false)}
+            />
+
             <div className="h-[500px] w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                    <RadarChart data={chartData} outerRadius="70%">
-                        <PolarGrid />
-                        <PolarAngleAxis
-                            dataKey="metric"
-                            tick={{
-                                fontSize: 12,
-                                fill: "#475569",
-                            }}
-                        />
+                {seriesList.length === 0 ? (
+                    <div className="flex h-full items-center justify-center text-sm text-slate-400">
+                        Select at least one topic or Average to compare.
+                    </div>
+                ) : (
+                    <ResponsiveContainer width="100%" height="100%">
+                        <RadarChart data={chartData} outerRadius="70%">
+                            <PolarGrid />
+                            <PolarAngleAxis
+                                dataKey="metric"
+                                tick={{
+                                    fontSize: 12,
+                                    fill: "#475569",
+                                }}
+                            />
 
-                        <PolarRadiusAxis
-                            domain={[0, 100]}
-                            tick={false}
-                            axisLine={false}
-                        />
+                            <PolarRadiusAxis
+                                domain={[0, 100]}
+                                tick={false}
+                                axisLine={false}
+                            />
 
-                        <Radar
-                            name={selectedTopic || "Selected Topic"}
-                            dataKey="topicValue"
-                            stroke="#2563EB"
-                            fill="#2563EB"
-                            fillOpacity={0.35}
-                            strokeWidth={2}
-                        />
-                        <Radar
-                            name="Overall Average"
-                            dataKey="averageValue"
-                            stroke="#16A34A"
-                            fill="#16A34A"
-                            fillOpacity={0.15}
-                            strokeWidth={2}
-                        />
-                        <Legend
-                            verticalAlign="bottom"
-                            height={40}
-                            wrapperStyle={{
-                                fontSize: "12px",
-                            }}
-                        />
-                    </RadarChart>
-                </ResponsiveContainer>
+                            <Tooltip />
+
+                            {seriesList.map((series) => (
+                                <Radar
+                                    key={series.key}
+                                    name={series.name}
+                                    dataKey={series.key}
+                                    stroke={series.color}
+                                    fill={series.color}
+                                    fillOpacity={0.25}
+                                    strokeWidth={2}
+                                />
+                            ))}
+
+                            <Legend
+                                verticalAlign="bottom"
+                                height={40}
+                                wrapperStyle={{
+                                    fontSize: "12px",
+                                }}
+                            />
+                        </RadarChart>
+                    </ResponsiveContainer>
+                )}
             </div>
         </div>
     );
@@ -280,8 +410,10 @@ function TopicComboBox({
     );
 }
 
-function HeatMapPart({ selectedTopic, startDate, endDate, fieldId }: {
+function HeatMapPart({ selectedTopic, setSelectedTopic, topics, startDate, endDate, fieldId }: {
     selectedTopic: string;
+    setSelectedTopic: (name: string) => void;
+    topics: { name: string }[];
     startDate: string;
     endDate: string;
     fieldId: string | number;
@@ -291,23 +423,41 @@ function HeatMapPart({ selectedTopic, startDate, endDate, fieldId }: {
         selectedTopic
     );
 
+    const [isHelpOpen, setIsHelpOpen] = useState(false);
+
     return (
         <div className="rounded-lg border border-slate-200 bg-white p-4">
-            <div className="mb-4">
-                <h2 className="text-xl font-bold text-slate-900">
-                    Research Metrics Heat Map
-                </h2>
-                <p className="text-sm text-slate-500">
-                    Visualize how key research indicators have evolved from
-                    2021 to 2026 across velocity, impact, diversity, and
-                    newcomer participation metrics.
-                </p>
-                <div className="mt-2 inline-flex items-center gap-2 rounded-full
-                    bg-blue-50 px-3 py-1 text-sm text-blue-700 border border-blue-200">
-                    <span className="font-medium">Current topic:</span>
-                    <span>{selectedTopic}</span>
+            <div className="mb-4 flex items-start justify-between gap-4">
+                <div className="flex items-start gap-2">
+                    <div>
+                        <h2 className="text-xl font-bold text-slate-900">
+                            Research Metrics Heat Map
+                        </h2>
+
+                        <p className="text-sm text-slate-500">
+                            Visualize how key research indicators have evolved from
+                            2021 to 2026 across velocity, impact, diversity, and
+                            newcomer participation metrics.
+                        </p>
+                    </div>
+
+                    <CircleQuestionMark
+                        className="mt-1 h-5 w-5 shrink-0 cursor-pointer text-slate-400 transition-colors hover:text-slate-600"
+                        onClick={() => setIsHelpOpen(true)}
+                    />
                 </div>
+
+                <TopicComboBox
+                    topics={topics}
+                    selectedTopic={selectedTopic}
+                    setSelectedTopic={setSelectedTopic}
+                />
             </div>
+
+            <HeatMapHelpDialog
+                isOpen={isHelpOpen}
+                onClose={() => setIsHelpOpen(false)}
+            />
 
             <div className="h-[450px]">
                 {loading && (

@@ -23,6 +23,7 @@ import {
 import { useSocialHub } from "@/features/social/hooks/useSocialHub";
 import type { SortMode } from "@/features/social/types/social.types";
 import { normalizeIdentityValue } from "@/features/social/utils/socialQueryUtils";
+import PostDetailDialog from "@/features/social/components/PostDetailDialog.tsx";
 
 export default function SocialHubPage() {
   const {
@@ -65,6 +66,12 @@ export default function SocialHubPage() {
     toggleBookmarkSelection,
     topLikedPosts,
     updateBlogField,
+      closeViewPostDialog,
+      hasPostDetailError,
+      isLoadingPostDetail,
+      openViewPostDialog,
+      viewingPostDetail,
+      viewingPostId,
   } = useSocialHub();
 
   return (
@@ -107,178 +114,179 @@ export default function SocialHubPage() {
             </section>
           ) : null}
 
-          <section className="grid gap-6 xl:grid-cols-[minmax(0,1.7fr)_minmax(320px,0.95fr)]">
-            <div className={`${SURFACE_CARD_CLASS} p-7`}>
-              <div className="inline-flex items-center gap-2 rounded-full bg-[#A3E635]/20 px-4 py-2 text-xs font-bold uppercase tracking-[0.2em] text-[#14532D] ring-1 ring-[#059669]/40">
-                <Heart className="h-3.5 w-3.5 fill-current text-[#F33E58]" />
-                Most liked this week
-              </div>
-
-              {featuredPost ? (
-                <>
-                  <div className="mt-6 flex items-start justify-between gap-4">
-                    <div className="flex items-center gap-3">
-                      <SocialAvatar
-                        avatarUrl={featuredPost.author.avatarUrl}
-                        fullName={featuredPost.author.fullName}
-                        seed={featuredPost.author.id}
-                        sizeClassName="h-12 w-12"
-                      />
-
-                      <div>
-                        <p className="text-[1.1rem] font-semibold text-black">
-                          {featuredPost.author.fullName}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-2 text-sm text-black">
-                      <Clock3 className="h-4 w-4" />
-
-                      <span>
-                        {featuredPost.updatedAt ?? featuredPost.createdAt}
-                      </span>
-                    </div>
-                  </div>
-
-                  <h2 className="font-brand mt-7 max-w-4xl text-[3rem] font-normal leading-[1.02] text-[#14532D]">
-                    {featuredPost.title}
-                  </h2>
-
-                  <p className="font-subtext mt-5 max-w-4xl text-[1.1rem] leading-9 text-slate-500">
-                    {featuredPost.bodyPreview}
-                  </p>
-
-                  <SocialReferenceList
-                    references={featuredPost.references}
-                    titleClassName="text-base font-semibold text-black"
-                    wrapperClassName="mt-6 rounded-[1.4rem] border border-black bg-slate-50/60 px-5 py-5"
-                  />
-
-                  <div className="mt-8 flex flex-wrap items-center justify-between gap-4">
-                    <div className="flex items-center gap-3">
-                      <button
-                        type="button"
-                        onClick={() => handleToggleLike(featuredPost)}
-                        disabled={pendingLikePostIds.includes(featuredPost.id)}
-                        className={`inline-flex items-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-semibold transition ${
-                          featuredPost.liked
-                            ? "border-[#F33E58] bg-[#FDECEF] text-[#F33E58]"
-                            : "border-black bg-white text-black hover:border-[#F33E58] hover:bg-[#F33E58] hover:text-white"
-                        } ${
-                          pendingLikePostIds.includes(featuredPost.id)
-                            ? "cursor-not-allowed opacity-60"
-                            : ""
-                        }`}
-                      >
-                        <Heart
-                          className={`h-4 w-4 ${featuredPost.liked ? "fill-current" : ""}`}
-                        />
-
-                        {featuredPost.likeCount}
-                      </button>
-                    </div>
-
-                    {normalizeIdentityValue(currentUserId) ===
-                    normalizeIdentityValue(featuredPost.author.id) ? (
-                      <div className="flex flex-wrap items-center gap-2">
-                        <button
-                          type="button"
-                          onClick={() => openEditBlogModal(featuredPost.id)}
-                          disabled={
-                            openEditPostMutation.isPending ||
-                            pendingDeletePostId === featuredPost.id
-                          }
-                          className={`${SECONDARY_BUTTON_CLASS} ${
-                            openEditPostMutation.isPending ||
-                            pendingDeletePostId === featuredPost.id
-                              ? "cursor-not-allowed opacity-60"
-                              : ""
-                          }`}
-                        >
-                          <Pencil className="h-4 w-4" />
-                          Edit
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={() => handleDeletePost(featuredPost.id)}
-                          disabled={pendingDeletePostId === featuredPost.id}
-                          className={`inline-flex items-center justify-center gap-2 rounded-lg border border-[#DC2626] bg-white px-4 py-3 text-sm font-semibold text-[#DC2626] transition hover:bg-[#DC2626] hover:text-white disabled:cursor-not-allowed disabled:opacity-60 ${
-                            pendingDeletePostId === featuredPost.id
-                              ? "cursor-not-allowed opacity-60"
-                              : ""
-                          }`}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                          Delete
-                        </button>
-                      </div>
-                    ) : null}
-                  </div>
-                </>
-              ) : (
-                <div className="mt-6 rounded-[1.5rem] border border-dashed border-black/10 bg-slate-50 px-6 py-10 text-center text-slate-500">
-                  {isLoading
-                    ? "Loading featured post..."
-                    : "No featured posts yet."}
-                </div>
-              )}
-            </div>
-
-            <aside className={`${SURFACE_CARD_CLASS} p-7`}>
-              <div className="flex items-center gap-3">
-                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#FFF7E8] text-[#D4A017]">
-                  <Trophy className="h-5 w-5" />
-                </div>
-
-                <h2 className="font-title-page text-[2rem] leading-none text-[#059669]">
-                  Top liked this week
-                </h2>
-              </div>
-
-              <div className="mt-8 space-y-5">
-                {topLikedPosts.length > 0 ? (
-                  topLikedPosts.map((entry, index) => (
-                    <div key={entry.id} className="flex items-center gap-4">
-                      <div className="font-title w-6 text-right text-xl text-[#14532D]">
-                        {index + 1}
-                      </div>
-
-                      <SocialAvatar
-                        avatarUrl={entry.author.avatarUrl}
-                        fullName={entry.author.fullName}
-                        seed={entry.author.id}
-                        sizeClassName="h-11 w-11 shrink-0"
-                      />
-
-                      <div className="min-w-0 flex-1">
-                        <p className="font-brand truncate text-base font-normal text-black">
-                          {entry.title}
-                        </p>
-
-                        <p className="font-subtext text-sm text-slate-500">
-                          {entry.author.fullName}
-                        </p>
-                      </div>
-
-                      <div className="font-subtext flex items-center gap-1 text-sm text-[#F33E58]">
+            <section className="grid gap-6 xl:grid-cols-[minmax(0,1.7fr)_minmax(320px,0.95fr)]">
+                <div className={`${SURFACE_CARD_CLASS} p-7`}>
+                    <div className="inline-flex items-center gap-2 rounded-full bg-[#A3E635]/20 px-4 py-2 text-xs font-bold uppercase tracking-[0.2em] text-[#14532D] ring-1 ring-[#059669]/40">
                         <Heart className="h-3.5 w-3.5 fill-current text-[#F33E58]" />
-
-                        {entry.likeCount}
-                      </div>
+                        Most liked this week
                     </div>
-                  ))
-                ) : (
-                  <div className="rounded-[1.2rem] border border-dashed border-black bg-slate-50/60 px-5 py-8 text-center text-slate-500">
-                    {isLoading
-                      ? "Loading top liked posts..."
-                      : "No liked posts yet."}
-                  </div>
-                )}
-              </div>
-            </aside>
-          </section>
+
+                    {featuredPost ? (
+                        <>
+                            <div className="mt-6 flex items-start justify-between gap-4">
+                                <div className="flex items-center gap-3">
+                                    <SocialAvatar
+                                        avatarUrl={featuredPost.author.avatarUrl}
+                                        fullName={featuredPost.author.fullName}
+                                        seed={featuredPost.author.id}
+                                        sizeClassName="h-12 w-12"
+                                    />
+
+                                    <div>
+                                        <p className="text-[1.1rem] font-semibold text-black">
+                                            {featuredPost.author.fullName}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div className="flex items-center gap-2 text-sm text-black">
+                                    <Clock3 className="h-4 w-4" />
+                                    <span>{featuredPost.updatedAt ?? featuredPost.createdAt}</span>
+                                </div>
+                            </div>
+
+                            <h2 className="font-brand mt-7 max-w-4xl text-[3rem] font-normal leading-[1.02] text-[#14532D]">
+                                {featuredPost.title}
+                            </h2>
+
+                            <p className="font-subtext mt-5 max-w-4xl text-[1.1rem] leading-9 text-slate-500">
+                                {featuredPost.bodyPreview}
+                            </p>
+
+                            <SocialReferenceList
+                                references={featuredPost.references}
+                                titleClassName="text-base font-semibold text-black"
+                                wrapperClassName="mt-6 rounded-[1.4rem] border border-black bg-slate-50/60 px-5 py-5"
+                            />
+
+                            <div className="mt-8 flex flex-wrap items-center justify-between gap-4">
+                                <div className="flex items-center gap-3">
+                                    <button
+                                        type="button"
+                                        onClick={() => handleToggleLike(featuredPost)}
+                                        disabled={pendingLikePostIds.includes(featuredPost.id)}
+                                        className={`inline-flex items-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-semibold transition ${
+                                            featuredPost.liked
+                                                ? "border-[#F33E58] bg-[#FDECEF] text-[#F33E58]"
+                                                : "border-black bg-white text-black hover:border-[#F33E58] hover:bg-[#F33E58] hover:text-white"
+                                        } ${
+                                            pendingLikePostIds.includes(featuredPost.id)
+                                                ? "cursor-not-allowed opacity-60"
+                                                : ""
+                                        }`}
+                                    >
+                                        <Heart
+                                            className={`h-4 w-4 ${featuredPost.liked ? "fill-current" : ""}`}
+                                        />
+                                        {featuredPost.likeCount}
+                                    </button>
+                                </div>
+
+                                {normalizeIdentityValue(currentUserId) ===
+                                normalizeIdentityValue(featuredPost.author.id) ? (
+                                    <div className="flex flex-wrap items-center gap-2">
+                                        <button
+                                            type="button"
+                                            onClick={() => openEditBlogModal(featuredPost.id)}
+                                            disabled={
+                                                openEditPostMutation.isPending ||
+                                                pendingDeletePostId === featuredPost.id
+                                            }
+                                            className={`${SECONDARY_BUTTON_CLASS} ${
+                                                openEditPostMutation.isPending ||
+                                                pendingDeletePostId === featuredPost.id
+                                                    ? "cursor-not-allowed opacity-60"
+                                                    : ""
+                                            }`}
+                                        >
+                                            <Pencil className="h-4 w-4" />
+                                            Edit
+                                        </button>
+
+                                        <button
+                                            type="button"
+                                            onClick={() => handleDeletePost(featuredPost.id)}
+                                            disabled={pendingDeletePostId === featuredPost.id}
+                                            className={`inline-flex items-center justify-center gap-2 rounded-lg border border-[#DC2626] bg-white px-4 py-3 text-sm font-semibold text-[#DC2626] transition hover:bg-[#DC2626] hover:text-white disabled:cursor-not-allowed disabled:opacity-60 ${
+                                                pendingDeletePostId === featuredPost.id
+                                                    ? "cursor-not-allowed opacity-60"
+                                                    : ""
+                                            }`}
+                                        >
+                                            <Trash2 className="h-4 w-4" />
+                                            Delete
+                                        </button>
+                                    </div>
+                                ) :
+                                    <button
+                                        type="button"
+                                        onClick={() => openViewPostDialog(featuredPost.id)}
+                                        className={SECONDARY_BUTTON_CLASS}
+                                    >
+                                        View more
+                                    </button>}
+                            </div>
+                        </>
+                    ) : (
+                        <div className="mt-6 rounded-[1.5rem] border border-dashed border-black/10 bg-slate-50 px-6 py-10 text-center text-slate-500">
+                            {isLoading ? "Loading featured post..." : "No featured posts yet."}
+                        </div>
+                    )}
+                </div>
+
+                <aside className={`${SURFACE_CARD_CLASS} p-7`}>
+                    <div className="flex items-center gap-3">
+                        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#FFF7E8] text-[#D4A017]">
+                            <Trophy className="h-5 w-5" />
+                        </div>
+
+                        <h2 className="font-title-page text-[2rem] leading-none text-[#059669]">
+                            Top liked this week
+                        </h2>
+                    </div>
+
+                    <div className="mt-8 space-y-5">
+                        {topLikedPosts.length > 0 ? (
+                            topLikedPosts.map((entry, index) => (
+                                <div key={entry.id} className="flex items-center gap-4">
+                                    <div className="font-title w-6 text-right text-xl text-[#14532D]">
+                                        {index + 1}
+                                    </div>
+
+                                    <SocialAvatar
+                                        avatarUrl={entry.author.avatarUrl}
+                                        fullName={entry.author.fullName}
+                                        seed={entry.author.id}
+                                        sizeClassName="h-11 w-11 shrink-0"
+                                    />
+
+                                    <div className="min-w-0 flex-1">
+                                        <p className="font-brand truncate text-base font-normal text-black">
+                                            {entry.title}
+                                        </p>
+
+                                        <p className="font-subtext text-sm text-slate-500">
+                                            {entry.author.fullName}
+                                        </p>
+                                    </div>
+
+                                    <div className="font-subtext flex items-center gap-1 text-sm text-[#F33E58]">
+                                        <Heart className="h-3.5 w-3.5 fill-current text-[#F33E58]" />
+
+                                        {entry.likeCount}
+                                    </div>
+                                </div>
+                            ))
+                        ) : (
+                            <div className="rounded-[1.2rem] border border-dashed border-black bg-slate-50/60 px-5 py-8 text-center text-slate-500">
+                                {isLoading
+                                    ? "Loading top liked posts..."
+                                    : "No liked posts yet."}
+                            </div>
+                        )}
+                    </div>
+                </aside>
+            </section>
 
           <section>
             <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
@@ -371,6 +379,7 @@ export default function SocialHubPage() {
                     onDelete={handleDeletePost}
                     onEdit={openEditBlogModal}
                     onToggleLike={handleToggleLike}
+                    onViewMore={openViewPostDialog}
                     post={post}
                   />
                 ))
@@ -419,6 +428,14 @@ export default function SocialHubPage() {
         title="Delete this post?"
         variant="danger"
       />
+
+        <PostDetailDialog
+            hasError={hasPostDetailError}
+            isLoading={isLoadingPostDetail}
+            isOpen={viewingPostId !== null}
+            onClose={closeViewPostDialog}
+            postDetail={viewingPostDetail}
+        />
     </div>
   );
 }
