@@ -20,7 +20,7 @@ export const MENU_METRICS: MetricData[] = [
         className: "bg-green-50 text-green-600 border-green-200"
     },
     {
-        title: "RISING KEYWORDS",
+        title: "ACTIVE KEYWORDS",
         value: "",
         change: "",
         changeSuffix: "% vs previous period",

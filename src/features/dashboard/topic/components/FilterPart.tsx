@@ -220,7 +220,7 @@ function FilterHelpDialog({ isOpen, onClose }: FilterHelpDialogProps) {
 
                     <HelpItem
                         icon={<Compass size={18} />}
-                        title="Discovery Goal"
+                        title="Topic Discovery Goal"
                         description="What you want to find when looking at hot topics."
                     >
                         <OptionGrid options={DISCOVERY_GOAL_OPTIONS} />

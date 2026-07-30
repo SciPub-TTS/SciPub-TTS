@@ -9,7 +9,7 @@ import {
     XAxis,
     YAxis, ZAxis
 } from "recharts";
-import {useEffect, useRef, useState} from "react";
+import {useEffect, useMemo, useRef, useState} from "react";
 import {usePublicationTrend} from "@/features/dashboard/topic/hooks/usePublicationTrend.ts";
 import {ChevronDown, CircleQuestionMark} from "lucide-react";
 import type {YearSelectProps} from "@/features/dashboard/topic/types/publication.ts";
@@ -436,6 +436,20 @@ function MomentumPart({
     const {momentumData} = useTopicMomentum({startDate, endDate, fieldId, formula});
     const [isHelpOpen, setIsHelpOpen] = useState(false);
 
+    const chartData = useMemo(() => {
+        return momentumData.map((topic) => {
+            const row: Record<string, string | number> = {
+                name: topic.name,
+            };
+
+            topic.history.forEach((point) => {
+                row[point.name] = point.average;
+            });
+
+            return row;
+        });
+    }, [momentumData]);
+
     return (
         <div className="rounded-lg border border-slate-200 bg-white p-4 flex flex-col gap-2 min-w-0">
             <div className="flex items-start justify-between">
@@ -466,7 +480,7 @@ function MomentumPart({
             <div className="w-full h-[350px] min-w-0">
                 <ResponsiveContainer width="100%" height="100%">
                     <BarChart
-                        data={momentumData}
+                        data={chartData}
                         margin={{
                             top: 30,
                             right: 20,
@@ -477,6 +491,9 @@ function MomentumPart({
                         <XAxis
                             dataKey="name"
                             tickFormatter={formatAxisTick}
+                            tick={{
+                                fontSize: 0,
+                            }}
                         />
 
                         <CartesianGrid
@@ -490,22 +507,27 @@ function MomentumPart({
 
                         <Tooltip content={<CustomTooltip />} />
 
-                        <Bar
-                            dataKey="pastAverage"
-                            name="Past Average"
-                            fill="#2563EB"
-                            barSize={18}
-                            radius={[5, 5, 0, 0]}
-                        />
+                        {momentumData.length > 0 &&
+                            momentumData[0].history.map((point, index) => {
+                                const colors = [
+                                    "#94A3B8",
+                                    "#64748B",
+                                    "#3B82F6",
+                                    "#2563EB",
+                                    "#16A34A",
+                                ];
 
-                        <Bar
-                            dataKey="currentAverage"
-                            name="Current Average"
-                            fill="#16A34A"
-                            barSize={18}
-                            radius={[5, 5, 0, 0]}
-                        >
-                        </Bar>
+                                return (
+                                    <Bar
+                                        key={point.name}
+                                        dataKey={point.name}
+                                        name={point.name}
+                                        fill={colors[index]}
+                                        barSize={14}
+                                        radius={[4, 4, 0, 0]}
+                                    />
+                                );
+                            })}
 
                         <Legend align="right" />
                     </BarChart>
@@ -515,52 +537,23 @@ function MomentumPart({
     );
 }
 
-type MomentumDataPoint = {
-    name: string;
-    currentAverage: number;
-    pastAverage: number;
-    growthPercentage: number;
-};
+const CustomTooltip = ({ active, payload, label }: any) => {
+    if (!active || !payload?.length) return null;
 
-interface CustomTooltipProps {
-    active?: boolean;
-    payload?: Array<{
-        payload: MomentumDataPoint;
-        [key: string]: any;
-    }>;
-}
+    return (
+        <div className="rounded border bg-white p-3 shadow">
+            <p className="mb-2 font-semibold">{label}</p>
 
-const CustomTooltip = ({ active, payload }: CustomTooltipProps) => {
-    if (active && payload && payload.length) {
-        const data = payload[0].payload;
-        const growth = Number(data.growthPercentage);
-        const formattedGrowth = growth > 0 ? `+${growth}%` : `${growth}%`;
-
-        return (
-            <div style={{
-                backgroundColor: '#fff',
-                padding: '10px 15px',
-                border: '1px solid #ccc',
-                borderRadius: '4px',
-                boxShadow: '0px 2px 8px rgba(0,0,0,0.15)'
-            }}>
-                <p style={{ margin: '0 0 5px', fontWeight: 'bold', fontSize: '14px', color: '#333' }}>
-                    {data.name}
-                </p>
-
-                <p style={{ margin: '0 0 5px', fontSize: '13px', color: '#16A34A' }}>
-                    Current Average : {data.currentAverage}
-                </p>
-
-                <p style={{ margin: '0 0 5px', fontSize: '13px', color: '#2563EB' }}>
-                    Past Average : {data.pastAverage}
-                </p>
-
-                <p style={{ margin: '5px 0 0', fontSize: '13px', fontWeight: '600', color: '#4B5563', borderTop: '1px solid #eee', paddingTop: '5px' }}>
-                    Growth : {formattedGrowth}
-                </p>
-            </div>
-        );
-    }
-    return null;
+            {[...payload]
+                .reverse()
+                .map((item: any) => (
+                    <p
+                        key={item.name}
+                        style={{ color: item.color }}
+                    >
+                        {item.name}: {item.value}
+                    </p>
+                ))}
+        </div>
+    );
 };
