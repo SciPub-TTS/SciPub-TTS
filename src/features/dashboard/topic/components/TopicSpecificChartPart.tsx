@@ -4,6 +4,9 @@ import {ResponsiveHeatMap} from "@nivo/heatmap";
 import type {TopicRadarData} from "@/features/dashboard/topic/types/radar.ts";
 import {useTopicRadar} from "@/features/dashboard/topic/hooks/useTopicRadar.ts";
 import {useTopicHeatmap} from "@/features/dashboard/topic/hooks/useTopicHeatmap.ts";
+import {CircleQuestionMark} from "lucide-react";
+import {RadarHelpDialog} from "@/features/dashboard/topic/components/helper/RadarHelpDialog.tsx";
+import {HeatMapHelpDialog} from "@/features/dashboard/topic/components/helper/HeatMapHelpDialog.tsx";
 
 type TopicSpecificChartPartProps = {
     startDate: string;
@@ -70,6 +73,9 @@ interface RadarPartProps {
 
 function RadarPart({ data, selectedTopic, setSelectedTopic }: RadarPartProps
 ) {
+
+    const [isHelpOpen, setIsHelpOpen] = useState(false);
+
     const chartData = useMemo(() => {
         if (!data) return [];
 
@@ -93,15 +99,23 @@ function RadarPart({ data, selectedTopic, setSelectedTopic }: RadarPartProps
 
     return (
         <div className="rounded-lg border border-slate-200 bg-white p-4">
-            <div className="mb-4 flex items-center justify-between gap-4">
-                <div>
-                    <h2 className="text-xl font-bold text-slate-900">
-                        Topic Performance Profile
-                    </h2>
-                    <p className="text-sm text-slate-500">
-                        Compare a selected topic against the overall average
-                        across key research momentum indicators.
-                    </p>
+            <div className="mb-4 flex items-start justify-between gap-4">
+                <div className="flex items-start gap-2">
+                    <div>
+                        <h2 className="text-xl font-bold text-slate-900">
+                            Topic Performance Profile
+                        </h2>
+
+                        <p className="text-sm text-slate-500">
+                            Compare a selected topic against the overall average
+                            across key research momentum indicators.
+                        </p>
+                    </div>
+
+                    <CircleQuestionMark
+                        className="mt-1 h-5 w-5 shrink-0 cursor-pointer text-slate-400 transition-colors hover:text-slate-600"
+                        onClick={() => setIsHelpOpen(true)}
+                    />
                 </div>
 
                 <TopicComboBox
@@ -110,6 +124,11 @@ function RadarPart({ data, selectedTopic, setSelectedTopic }: RadarPartProps
                     setSelectedTopic={setSelectedTopic}
                 />
             </div>
+
+            <RadarHelpDialog
+                isOpen={isHelpOpen}
+                onClose={() => setIsHelpOpen(false)}
+            />
 
             <div className="h-[500px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
@@ -291,23 +310,42 @@ function HeatMapPart({ selectedTopic, startDate, endDate, fieldId }: {
         selectedTopic
     );
 
+    const [isHelpOpen, setIsHelpOpen] = useState(false);
+
     return (
         <div className="rounded-lg border border-slate-200 bg-white p-4">
-            <div className="mb-4">
-                <h2 className="text-xl font-bold text-slate-900">
-                    Research Metrics Heat Map
-                </h2>
-                <p className="text-sm text-slate-500">
-                    Visualize how key research indicators have evolved from
-                    2021 to 2026 across velocity, impact, diversity, and
-                    newcomer participation metrics.
-                </p>
-                <div className="mt-2 inline-flex items-center gap-2 rounded-full
-                    bg-blue-50 px-3 py-1 text-sm text-blue-700 border border-blue-200">
-                    <span className="font-medium">Current topic:</span>
-                    <span>{selectedTopic}</span>
+            <div className="mb-4 flex items-start justify-between">
+                <div>
+                    <div className="flex items-start gap-2">
+                        <div>
+                            <h2 className="text-xl font-bold text-slate-900">
+                                Research Metrics Heat Map
+                            </h2>
+
+                            <p className="text-sm text-slate-500">
+                                Visualize how key research indicators have evolved from
+                                2021 to 2026 across velocity, impact, diversity, and
+                                newcomer participation metrics.
+                            </p>
+                        </div>
+
+                        <CircleQuestionMark
+                            className="mt-1 h-9 w-9 cursor-pointer text-slate-400 transition-colors hover:text-slate-600"
+                            onClick={() => setIsHelpOpen(true)}
+                        />
+                    </div>
+
+                    <div className="mt-2 inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1 text-sm text-blue-700 border border-blue-200">
+                        <span className="font-medium">Current topic:</span>
+                        <span>{selectedTopic}</span>
+                    </div>
                 </div>
             </div>
+
+            <HeatMapHelpDialog
+                isOpen={isHelpOpen}
+                onClose={() => setIsHelpOpen(false)}
+            />
 
             <div className="h-[450px]">
                 {loading && (

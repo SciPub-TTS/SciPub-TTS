@@ -14,6 +14,7 @@ export function PostCard({
   onDelete,
   onEdit,
   onToggleLike,
+  onViewMore,
   post,
 }: {
   currentUserId?: string;
@@ -23,6 +24,7 @@ export function PostCard({
   onDelete: (postId: string) => void;
   onEdit: (postId: string) => void;
   onToggleLike: (post: SocialPostSummary) => void;
+  onViewMore: (postId: string) => void;
   post: SocialPostSummary;
 }) {
   const canManagePost =
@@ -115,7 +117,14 @@ export function PostCard({
               Delete
             </button>
           </div>
-        ) : null}
+        ) :
+            <button
+                type="button"
+                onClick={() => onViewMore(post.id)}
+                className={SECONDARY_BUTTON_CLASS}
+            >
+                View more
+            </button>}
       </div>
     </article>
   );

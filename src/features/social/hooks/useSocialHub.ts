@@ -22,24 +22,60 @@ type ToggleLikeMutationContext = {
 };
 
 export function useSocialHub() {
-  
-    const queryClient = useQueryClient();
-    const { accessToken, currentUser } = useAuthSession();
-  
-    const [activeTab, setActiveTab] = useState<FeedTab>("all");
-    const [searchQuery, setSearchQuery] = useState("");
-    const [sortMode, setSortMode] = useState<SortMode>("newest");
-  
-    const [isBlogModalOpen, setIsBlogModalOpen] = useState(false);
-    const [blogModalMode, setBlogModalMode] = useState<BlogModalMode>("create");
-    const [editingPostId, setEditingPostId] = useState<string | null>(null);
+  
+
+    const queryClient = useQueryClient();
+
+    const { accessToken, currentUser } = useAuthSession();
+
+  
+
+    const [activeTab, setActiveTab] = useState<FeedTab>("all");
+
+    const [searchQuery, setSearchQuery] = useState("");
+
+    const [sortMode, setSortMode] = useState<SortMode>("newest");
+
+  
+
+    const [isBlogModalOpen, setIsBlogModalOpen] = useState(false);
+
+    const [blogModalMode, setBlogModalMode] = useState<BlogModalMode>("create");
+
+    const [editingPostId, setEditingPostId] = useState<string | null>(null);
+
     const [blogForm, setBlogForm] = useState<BlogFormState>(INITIAL_BLOG_FORM);
-    const [blogError, setBlogError] = useState<string | null>(null);
-    const [deleteDialogPostId, setDeleteDialogPostId] = useState<string | null>(null);
-    const [pendingLikePostIds, setPendingLikePostIds] = useState<string[]>([]);
-    const [pendingDeletePostId, setPendingDeletePostId] = useState<string | null>(null);
-    const pendingLikePostIdsRef = useRef<Set<string>>(new Set());
-  
+    const [blogError, setBlogError] = useState<string | null>(null);
+
+    const [deleteDialogPostId, setDeleteDialogPostId] = useState<string | null>(null);
+
+    const [pendingLikePostIds, setPendingLikePostIds] = useState<string[]>([]);
+
+    const [pendingDeletePostId, setPendingDeletePostId] = useState<string | null>(null);
+
+    const pendingLikePostIdsRef = useRef<Set<string>>(new Set());
+
+    const [viewingPostId, setViewingPostId] = useState<string | null>(null);
+
+    const {
+        data: viewingPostDetail,
+        isPending: isLoadingPostDetail,
+        isError: hasPostDetailError,
+    } = useQuery({
+        enabled: viewingPostId !== null,
+        queryFn: () => socialApi.getPostDetail(viewingPostId as string),
+        queryKey: ["social", "post-detail", viewingPostId],
+        retry: false,
+    });
+
+    function openViewPostDialog(postId: string) {
+        setViewingPostId(postId);
+    }
+
+    function closeViewPostDialog() {
+        setViewingPostId(null);
+    }
+
     const {
       data: newestPostsPage,
       error: newestPostsError,
@@ -71,20 +107,34 @@ export function useSocialHub() {
       queryKey: ["social", "bookmark-options"],
       retry: false,
     });
-  
-    const openEditPostMutation = useMutation({
-      mutationFn: (postId: string) => socialApi.getPostDetail(postId),
-      onError: (error) => {
-        setBlogError(
-          getApiErrorMessage(
-            error,
-            "Cannot open this post for editing right now. Please try again.",
-          ),
-        );
-      },
-      onSuccess: (postDetail: SocialPostDetail) => {
-        setBlogModalMode("edit");
-        setEditingPostId(postDetail.id);
+  
+
+    const openEditPostMutation = useMutation({
+
+      mutationFn: (postId: string) => socialApi.getPostDetail(postId),
+
+      onError: (error) => {
+
+        setBlogError(
+
+          getApiErrorMessage(
+
+            error,
+
+            "Cannot open this post for editing right now. Please try again.",
+
+          ),
+
+        );
+
+      },
+
+      onSuccess: (postDetail: SocialPostDetail) => {
+
+        setBlogModalMode("edit");
+
+        setEditingPostId(postDetail.id);
+
         setBlogForm({
           title: postDetail.title,
           body: postDetail.body ?? "",
@@ -92,75 +142,144 @@ export function useSocialHub() {
             (reference) => normalizeSocialOpenAlexId(reference.openalexId),
           ),
         });
-        setBlogError(null);
-        setIsBlogModalOpen(true);
-      },
-    });
-  
-    const createPostMutation = useMutation({
-      mutationFn: (payload: CreateSocialPostRequest) => socialApi.createPost(payload),
-      onSuccess: () => {
-        resetBlogModal();
-        void queryClient.invalidateQueries({ queryKey: ["social"] });
-      },
-      onError: (error) => {
-        setBlogError(
-          getApiErrorMessage(
-            error,
-            "Cannot publish this research blog right now. Please try again.",
-          ),
-        );
-      },
-    });
-  
-    const updatePostMutation = useMutation({
-      mutationFn: ({
-        payload,
-        postId,
-      }: {
-        payload: UpdateSocialPostRequest;
-        postId: string;
-      }) => socialApi.updatePost(postId, payload),
-      onSuccess: () => {
-        resetBlogModal();
-        void queryClient.invalidateQueries({ queryKey: ["social"] });
-      },
-      onError: (error) => {
-        setBlogError(
-          getApiErrorMessage(
-            error,
-            "Cannot save blog changes right now. Please try again.",
-          ),
-        );
-      },
-    });
-  
-    const deletePostMutation = useMutation({
-      mutationFn: (postId: string) => socialApi.deletePost(postId),
-      onMutate: (postId: string) => {
-        setPendingDeletePostId(postId);
-      },
-      onSuccess: (_response, postId) => {
-        if (editingPostId === postId) {
-          resetBlogModal();
-        }
-  
-        void queryClient.invalidateQueries({ queryKey: ["social"] });
-      },
-      onError: (error) => {
-        setBlogError(
-          getApiErrorMessage(
-            error,
-            "Cannot delete this post right now. Please try again.",
-          ),
-        );
-      },
-      onSettled: () => {
-        setDeleteDialogPostId(null);
-        setPendingDeletePostId(null);
-      },
-    });
-  
+        setBlogError(null);
+
+        setIsBlogModalOpen(true);
+
+      },
+
+    });
+
+  
+
+    const createPostMutation = useMutation({
+
+      mutationFn: (payload: CreateSocialPostRequest) => socialApi.createPost(payload),
+
+      onSuccess: () => {
+
+        resetBlogModal();
+
+        void queryClient.invalidateQueries({ queryKey: ["social"] });
+
+      },
+
+      onError: (error) => {
+
+        setBlogError(
+
+          getApiErrorMessage(
+
+            error,
+
+            "Cannot publish this research blog right now. Please try again.",
+
+          ),
+
+        );
+
+      },
+
+    });
+
+  
+
+    const updatePostMutation = useMutation({
+
+      mutationFn: ({
+
+        payload,
+
+        postId,
+
+      }: {
+
+        payload: UpdateSocialPostRequest;
+
+        postId: string;
+
+      }) => socialApi.updatePost(postId, payload),
+
+      onSuccess: () => {
+
+        resetBlogModal();
+
+        void queryClient.invalidateQueries({ queryKey: ["social"] });
+
+      },
+
+      onError: (error) => {
+
+        setBlogError(
+
+          getApiErrorMessage(
+
+            error,
+
+            "Cannot save blog changes right now. Please try again.",
+
+          ),
+
+        );
+
+      },
+
+    });
+
+  
+
+    const deletePostMutation = useMutation({
+
+      mutationFn: (postId: string) => socialApi.deletePost(postId),
+
+      onMutate: (postId: string) => {
+
+        setPendingDeletePostId(postId);
+
+      },
+
+      onSuccess: (_response, postId) => {
+
+        if (editingPostId === postId) {
+
+          resetBlogModal();
+
+        }
+
+  
+
+        void queryClient.invalidateQueries({ queryKey: ["social"] });
+
+      },
+
+      onError: (error) => {
+
+        setBlogError(
+
+          getApiErrorMessage(
+
+            error,
+
+            "Cannot delete this post right now. Please try again.",
+
+          ),
+
+        );
+
+      },
+
+      onSettled: () => {
+
+        setDeleteDialogPostId(null);
+
+        setPendingDeletePostId(null);
+
+      },
+
+    });
+
+  
+
     const feedSourcePosts = (newestPostsPage?.content ?? []).map(
       normalizeSocialPost,
     );
@@ -168,92 +287,177 @@ export function useSocialHub() {
       normalizeSocialPost,
     );
     const bookmarks = bookmarkList;
-  
-    const toggleLikeMutation = useMutation<
-      LikeToggleResponse,
-      Error,
-      ToggleLikeMutationVariables,
-      ToggleLikeMutationContext
-    >({
-      mutationFn: ({ postId }) => socialApi.toggleLike(postId),
-      onMutate: async ({ fallbackLikeCount, fallbackLiked, postId }) => {
-        await Promise.all([
-          queryClient.cancelQueries({ queryKey: SOCIAL_NEWEST_QUERY_KEY }),
-          queryClient.cancelQueries({ queryKey: SOCIAL_TOP_QUERY_KEY }),
-        ]);
-  
-        const previousNewestPosts = queryClient.getQueryData<SocialPostPageResponse>(
-          SOCIAL_NEWEST_QUERY_KEY,
-        );
-        const previousTopPosts = queryClient.getQueryData<SocialPostPageResponse>(
-          SOCIAL_TOP_QUERY_KEY,
-        );
-  
-        const currentPost =
-          findSocialPostInPage(previousNewestPosts, postId)
-          ?? findSocialPostInPage(previousTopPosts, postId);
-        const currentLikeCount = currentPost?.likeCount ?? fallbackLikeCount;
-        const currentLiked = currentPost?.liked ?? fallbackLiked;
-        const optimisticState: LikeToggleResponse = {
-          liked: !currentLiked,
-          likeCount: Math.max(0, currentLikeCount + (currentLiked ? -1 : 1)),
-        };
-  
-        queryClient.setQueryData<SocialPostPageResponse | undefined>(
-          SOCIAL_NEWEST_QUERY_KEY,
-          (current) => updateSocialPostPageLikeState(current, postId, optimisticState),
-        );
-        queryClient.setQueryData<SocialPostPageResponse | undefined>(
-          SOCIAL_TOP_QUERY_KEY,
-          (current) => updateSocialPostPageLikeState(current, postId, optimisticState),
-        );
-        return {
-          previousNewestPosts,
-          previousTopPosts,
-        };
-      },
-      onError: (_error, _variables, context) => {
-        if (context?.previousNewestPosts) {
-          queryClient.setQueryData(SOCIAL_NEWEST_QUERY_KEY, context.previousNewestPosts);
-        }
-  
-        if (context?.previousTopPosts) {
-          queryClient.setQueryData(SOCIAL_TOP_QUERY_KEY, context.previousTopPosts);
-        }
-  
-      },
-      onSuccess: (response, { postId }) => {
-        queryClient.setQueryData<SocialPostPageResponse | undefined>(
-          SOCIAL_NEWEST_QUERY_KEY,
-          (current) => updateSocialPostPageLikeState(current, postId, response),
-        );
-        queryClient.setQueryData<SocialPostPageResponse | undefined>(
-          SOCIAL_TOP_QUERY_KEY,
-          (current) => updateSocialPostPageLikeState(current, postId, response),
-        );
-      },
-      onSettled: (_response, _error, variables) => {
-        if (!variables) {
-          return;
-        }
-  
-        pendingLikePostIdsRef.current.delete(variables.postId);
-        setPendingLikePostIds((previous) =>
-          previous.filter((currentPostId) => currentPostId !== variables.postId),
-        );
-        void queryClient.invalidateQueries({ queryKey: SOCIAL_NEWEST_QUERY_KEY });
-        void queryClient.invalidateQueries({ queryKey: SOCIAL_TOP_QUERY_KEY });
-      },
-    });
-  
+  
+
+    const toggleLikeMutation = useMutation<
+
+      LikeToggleResponse,
+
+      Error,
+
+      ToggleLikeMutationVariables,
+
+      ToggleLikeMutationContext
+
+    >({
+
+      mutationFn: ({ postId }) => socialApi.toggleLike(postId),
+
+      onMutate: async ({ fallbackLikeCount, fallbackLiked, postId }) => {
+
+        await Promise.all([
+
+          queryClient.cancelQueries({ queryKey: SOCIAL_NEWEST_QUERY_KEY }),
+
+          queryClient.cancelQueries({ queryKey: SOCIAL_TOP_QUERY_KEY }),
+
+        ]);
+
+  
+
+        const previousNewestPosts = queryClient.getQueryData<SocialPostPageResponse>(
+
+          SOCIAL_NEWEST_QUERY_KEY,
+
+        );
+
+        const previousTopPosts = queryClient.getQueryData<SocialPostPageResponse>(
+
+          SOCIAL_TOP_QUERY_KEY,
+
+        );
+
+  
+
+        const currentPost =
+
+          findSocialPostInPage(previousNewestPosts, postId)
+
+          ?? findSocialPostInPage(previousTopPosts, postId);
+
+        const currentLikeCount = currentPost?.likeCount ?? fallbackLikeCount;
+
+        const currentLiked = currentPost?.liked ?? fallbackLiked;
+
+        const optimisticState: LikeToggleResponse = {
+
+          liked: !currentLiked,
+
+          likeCount: Math.max(0, currentLikeCount + (currentLiked ? -1 : 1)),
+
+        };
+
+  
+
+        queryClient.setQueryData<SocialPostPageResponse | undefined>(
+
+          SOCIAL_NEWEST_QUERY_KEY,
+
+          (current) => updateSocialPostPageLikeState(current, postId, optimisticState),
+
+        );
+
+        queryClient.setQueryData<SocialPostPageResponse | undefined>(
+
+          SOCIAL_TOP_QUERY_KEY,
+
+          (current) => updateSocialPostPageLikeState(current, postId, optimisticState),
+
+        );
+
+        return {
+
+          previousNewestPosts,
+
+          previousTopPosts,
+
+        };
+
+      },
+
+      onError: (_error, _variables, context) => {
+
+        if (context?.previousNewestPosts) {
+
+          queryClient.setQueryData(SOCIAL_NEWEST_QUERY_KEY, context.previousNewestPosts);
+
+        }
+
+  
+
+        if (context?.previousTopPosts) {
+
+          queryClient.setQueryData(SOCIAL_TOP_QUERY_KEY, context.previousTopPosts);
+
+        }
+
+  
+
+      },
+
+      onSuccess: (response, { postId }) => {
+
+        queryClient.setQueryData<SocialPostPageResponse | undefined>(
+
+          SOCIAL_NEWEST_QUERY_KEY,
+
+          (current) => updateSocialPostPageLikeState(current, postId, response),
+
+        );
+
+        queryClient.setQueryData<SocialPostPageResponse | undefined>(
+
+          SOCIAL_TOP_QUERY_KEY,
+
+          (current) => updateSocialPostPageLikeState(current, postId, response),
+
+        );
+
+      },
+
+      onSettled: (_response, _error, variables) => {
+
+        if (!variables) {
+
+          return;
+
+        }
+
+  
+
+        pendingLikePostIdsRef.current.delete(variables.postId);
+
+        setPendingLikePostIds((previous) =>
+
+          previous.filter((currentPostId) => currentPostId !== variables.postId),
+
+        );
+
+        void queryClient.invalidateQueries({ queryKey: SOCIAL_NEWEST_QUERY_KEY });
+
+        void queryClient.invalidateQueries({ queryKey: SOCIAL_TOP_QUERY_KEY });
+
+      },
+
+    });
+
+  
+
     const featuredPost = topSourcePosts[0] ?? feedSourcePosts[0] ?? null;
-  
-    const currentUserId = (
-      normalizeIdentityValue(currentUser?.id)
-      ?? decodeJwtSubject(accessToken)
-      ?? undefined
-    );
-  
+  
+
+    const currentUserId = (
+
+      normalizeIdentityValue(currentUser?.id)
+
+      ?? decodeJwtSubject(accessToken)
+
+      ?? undefined
+
+    );
+
+  
+
     const selectedBookmarks = bookmarks.filter((bookmark) =>
       blogForm.selectedOpenAlexIds.includes(
         normalizeSocialOpenAlexId(bookmark.openAlexId),
@@ -277,53 +481,98 @@ export function useSocialHub() {
           ?? (featuredPost?.id === deleteDialogPostId ? featuredPost : null)
         )
       : null;
-  
-    function resetBlogModal() {
-      setIsBlogModalOpen(false);
-      setBlogModalMode("create");
-      setEditingPostId(null);
+  
+
+    function resetBlogModal() {
+
+      setIsBlogModalOpen(false);
+
+      setBlogModalMode("create");
+
+      setEditingPostId(null);
+
       setBlogForm(INITIAL_BLOG_FORM);
-      setBlogError(null);
-    }
-  
-    function openCreateBlogModal() {
-      setBlogModalMode("create");
-      setEditingPostId(null);
+      setBlogError(null);
+
+    }
+
+  
+
+    function openCreateBlogModal() {
+
+      setBlogModalMode("create");
+
+      setEditingPostId(null);
+
       setBlogForm(INITIAL_BLOG_FORM);
-      setBlogError(null);
-      setIsBlogModalOpen(true);
-    }
-  
-    function openEditBlogModal(postId: string) {
-      if (openEditPostMutation.isPending) {
-        return;
-      }
-  
-      setBlogError(null);
-      openEditPostMutation.mutate(postId);
-    }
-  
-    function closeBlogModal() {
-      if (createPostMutation.isPending || updatePostMutation.isPending) {
-        return;
-      }
-  
-      resetBlogModal();
-    }
-  
-    function updateBlogField(field: "title" | "body") {
-      return (
-        event: ChangeEvent<HTMLInputElement> | ChangeEvent<HTMLTextAreaElement>,
-      ) => {
-        const nextValue = event.target.value;
-  
-        setBlogForm((previous) => ({
-          ...previous,
-          [field]: nextValue,
-        }));
-      };
-    }
-  
+      setBlogError(null);
+
+      setIsBlogModalOpen(true);
+
+    }
+
+  
+
+    function openEditBlogModal(postId: string) {
+
+      if (openEditPostMutation.isPending) {
+
+        return;
+
+      }
+
+  
+
+      setBlogError(null);
+
+      openEditPostMutation.mutate(postId);
+
+    }
+
+  
+
+    function closeBlogModal() {
+
+      if (createPostMutation.isPending || updatePostMutation.isPending) {
+
+        return;
+
+      }
+
+  
+
+      resetBlogModal();
+
+    }
+
+  
+
+    function updateBlogField(field: "title" | "body") {
+
+      return (
+
+        event: ChangeEvent<HTMLInputElement> | ChangeEvent<HTMLTextAreaElement>,
+
+      ) => {
+
+        const nextValue = event.target.value;
+
+  
+
+        setBlogForm((previous) => ({
+
+          ...previous,
+
+          [field]: nextValue,
+
+        }));
+
+      };
+
+    }
+
+  
+
     function toggleBookmarkSelection(openAlexId: string) {
       const normalizedOpenAlexId = normalizeSocialOpenAlexId(openAlexId);
   
@@ -342,12 +591,18 @@ export function useSocialHub() {
             ),
           };
         }
-  
-        if (previous.selectedOpenAlexIds.length >= 3) {
-          setBlogError("You can add up to 3 bookmarked papers to one blog post.");
-          return previous;
-        }
-  
+  
+
+        if (previous.selectedOpenAlexIds.length >= 3) {
+
+          setBlogError("You can add up to 3 bookmarked papers to one blog post.");
+
+          return previous;
+
+        }
+
+  
+
         return {
           ...previous,
           selectedOpenAlexIds: [
@@ -357,36 +612,59 @@ export function useSocialHub() {
         };
       });
     }
-  
-    function handleBlogSubmit(event: FormEvent<HTMLFormElement>) {
-      event.preventDefault();
-  
-      const normalizedTitle = blogForm.title.trim();
-      const normalizedBody = blogForm.body.trim();
-      const topicTag = buildTopicTagValue(selectedTopics);
-  
+  
+
+    function handleBlogSubmit(event: FormEvent<HTMLFormElement>) {
+
+      event.preventDefault();
+
+  
+
+      const normalizedTitle = blogForm.title.trim();
+
+      const normalizedBody = blogForm.body.trim();
+
+      const topicTag = buildTopicTagValue(selectedTopics);
+
+  
+
       if (!normalizedTitle) {
         setBlogError("Please enter a title before saving.");
         return;
       }
-  
-      if (normalizedTitle.length < 10 || normalizedTitle.length > 300) {
-        setBlogError("Title must be between 10 and 300 characters.");
-        return;
-      }
-  
+  
+
+      if (normalizedTitle.length < 10 || normalizedTitle.length > 300) {
+
+        setBlogError("Title must be between 10 and 300 characters.");
+
+        return;
+
+      }
+
+  
+
       if (blogForm.selectedOpenAlexIds.length > 3) {
         setBlogError("You can add up to 3 bookmarked papers to one blog post.");
         return;
-      }
-  
-      if (topicTag && topicTag.length > 500) {
-        setBlogError(
-          "Selected topics are too long for one post. Please choose fewer papers.",
-        );
-        return;
-      }
-  
+      }
+
+  
+
+      if (topicTag && topicTag.length > 500) {
+
+        setBlogError(
+
+          "Selected topics are too long for one post. Please choose fewer papers.",
+
+        );
+
+        return;
+
+      }
+
+  
+
       const selectedOpenAlexIds = Array.from(
         new Set(blogForm.selectedOpenAlexIds.map(normalizeSocialOpenAlexId)),
       ).filter(Boolean);
@@ -397,53 +675,100 @@ export function useSocialHub() {
         topicTag,
         references: selectedOpenAlexIds,
       };
-  
-      setBlogError(null);
-  
-      if (blogModalMode === "edit" && editingPostId) {
-        updatePostMutation.mutate({
-          payload,
-          postId: editingPostId,
-        });
-        return;
-      }
-  
-      createPostMutation.mutate(payload);
-    }
-  
-    function handleToggleLike(post: SocialPostSummary) {
-      if (pendingLikePostIdsRef.current.has(post.id)) {
-        return;
-      }
-  
-      pendingLikePostIdsRef.current.add(post.id);
-      setPendingLikePostIds((previous) =>
-        previous.includes(post.id) ? previous : [...previous, post.id],
-      );
-  
-      toggleLikeMutation.mutate({
-        fallbackLikeCount: post.likeCount,
-        fallbackLiked: post.liked,
-        postId: post.id,
-      });
-    }
-  
-    function handleDeletePost(postId: string) {
-      if (deletePostMutation.isPending) {
-        return;
-      }
-  
-      setDeleteDialogPostId(postId);
-    }
-  
-    function closeDeletePostDialog() {
-      if (deletePostMutation.isPending) {
-        return;
-      }
-  
-      setDeleteDialogPostId(null);
-    }
-  
+  
+
+      setBlogError(null);
+
+  
+
+      if (blogModalMode === "edit" && editingPostId) {
+
+        updatePostMutation.mutate({
+
+          payload,
+
+          postId: editingPostId,
+
+        });
+
+        return;
+
+      }
+
+  
+
+      createPostMutation.mutate(payload);
+
+    }
+
+  
+
+    function handleToggleLike(post: SocialPostSummary) {
+
+      if (pendingLikePostIdsRef.current.has(post.id)) {
+
+        return;
+
+      }
+
+  
+
+      pendingLikePostIdsRef.current.add(post.id);
+
+      setPendingLikePostIds((previous) =>
+
+        previous.includes(post.id) ? previous : [...previous, post.id],
+
+      );
+
+  
+
+      toggleLikeMutation.mutate({
+
+        fallbackLikeCount: post.likeCount,
+
+        fallbackLiked: post.liked,
+
+        postId: post.id,
+
+      });
+
+    }
+
+  
+
+    function handleDeletePost(postId: string) {
+
+      if (deletePostMutation.isPending) {
+
+        return;
+
+      }
+
+  
+
+      setDeleteDialogPostId(postId);
+
+    }
+
+  
+
+    function closeDeletePostDialog() {
+
+      if (deletePostMutation.isPending) {
+
+        return;
+
+      }
+
+  
+
+      setDeleteDialogPostId(null);
+
+    }
+
+  
+
     async function handleConfirmDeletePost() {
       if (!deleteDialogPostId || deletePostMutation.isPending) {
         return;
@@ -452,13 +777,20 @@ export function useSocialHub() {
       setBlogError(null);
       await deletePostMutation.mutateAsync(deleteDialogPostId);
     }
-  
-    function handleBlogModalKeyDown(event: KeyboardEvent<HTMLInputElement>) {
-      if (event.key === "Enter") {
-        event.preventDefault();
-      }
-    }
-  
+  
+
+    function handleBlogModalKeyDown(event: KeyboardEvent<HTMLInputElement>) {
+
+      if (event.key === "Enter") {
+
+        event.preventDefault();
+
+      }
+
+    }
+
+  
+
     const isLoading = isLoadingNewestPosts || isLoadingTopPosts;
     const isSubmittingBlog =
       createPostMutation.isPending || updatePostMutation.isPending;
@@ -516,5 +848,11 @@ export function useSocialHub() {
     toggleBookmarkSelection,
     topLikedPosts,
     updateBlogField,
+      closeViewPostDialog,
+      hasPostDetailError,
+      isLoadingPostDetail,
+      openViewPostDialog,
+      viewingPostDetail,
+      viewingPostId,
   };
 }

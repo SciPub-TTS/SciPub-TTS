@@ -11,11 +11,13 @@ import {
 } from "recharts";
 import {useEffect, useRef, useState} from "react";
 import {usePublicationTrend} from "@/features/dashboard/topic/hooks/usePublicationTrend.ts";
-import {ChevronDown} from "lucide-react";
+import {ChevronDown, CircleQuestionMark} from "lucide-react";
 import type {YearSelectProps} from "@/features/dashboard/topic/types/publication.ts";
 import {useTopicMomentum} from "@/features/dashboard/topic/hooks/useTopicMomentum.ts";
 import type {TopicBubble} from "@/features/dashboard/topic/types/scatter.ts";
 import {useTopicScatter} from "@/features/dashboard/topic/hooks/useTopicScatter.ts";
+import ScatterHelpDialog from "@/features/dashboard/topic/components/helper/ScatterHelpDialog.tsx";
+import {MomentumHelpDialog} from "@/features/dashboard/topic/components/helper/MomentumHelpDialog.tsx";
 
 const MIN_YEAR = 1900;
 const MAX_YEAR = new Date().getFullYear();
@@ -299,6 +301,7 @@ function ScatterHotTopics({
                               formula
                           }:ScatterPartProps) {
     const { topicList, isLoading, error } = useTopicScatter({startDate, endDate, fieldId, formula});
+    const [isHelpOpen, setIsHelpOpen] = useState(false);
 
     if (isLoading) {
         return (
@@ -318,15 +321,27 @@ function ScatterHotTopics({
 
     return (
         <div className="rounded-lg border border-slate-200 bg-white p-4 flex flex-col gap-2 min-w-0">
-            <div className="flex flex-col">
-                <h2 className="text-xl font-bold text-slate-900">
-                    Research topics — works vs citations
-                </h2>
+            <div className="flex items-start justify-between">
+                <div>
+                    <h2 className="text-xl font-bold text-slate-900">
+                        Research topics — works vs citations
+                    </h2>
 
-                <p className="text-sm opacity-75">
-                    Bubble size reflects topic score. Hover for details.
-                </p>
+                    <p className="text-sm opacity-75">
+                        Bubble size reflects topic score. Hover for details.
+                    </p>
+                </div>
+
+                <CircleQuestionMark
+                    className="h-5 w-5 shrink-0 cursor-pointer text-slate-400 transition-colors hover:text-slate-600"
+                    onClick={() => setIsHelpOpen(true)}
+                />
             </div>
+
+            <ScatterHelpDialog
+                isOpen={isHelpOpen}
+                onClose={() => setIsHelpOpen(false)}
+            />
 
             <div className="w-full min-w-0 h-[440px]">
                 <ResponsiveContainer width="100%" height="100%">
@@ -419,22 +434,35 @@ function MomentumPart({
     };
 
     const {momentumData} = useTopicMomentum({startDate, endDate, fieldId, formula});
+    const [isHelpOpen, setIsHelpOpen] = useState(false);
 
     return (
         <div className="rounded-lg border border-slate-200 bg-white p-4 flex flex-col gap-2 min-w-0">
-            <div className="flex flex-row justify-between">
-                <div className="flex flex-col">
-                    <h1 className="text-xl font-bold text-slate-900">
-                        Topic Momentum Analysis
-                    </h1>
+            <div className="flex items-start justify-between">
+                <div className="flex flex-row justify-between">
+                    <div className="flex flex-col">
+                        <h1 className="text-xl font-bold text-slate-900">
+                            Topic Momentum Analysis
+                        </h1>
 
-                    <h2 className="text-sm opacity-75">
-                        Comparison of current and historical topic scores with
-                        percentage growth trends.
-                    </h2>
+                        <h2 className="text-sm opacity-75">
+                            Comparison of current and historical topic scores with
+                            percentage growth trends.
+                        </h2>
+                    </div>
                 </div>
+
+                <CircleQuestionMark
+                    className="h-5 w-5 shrink-0 cursor-pointer text-slate-400 transition-colors hover:text-slate-600"
+                    onClick={() => setIsHelpOpen(true)}
+                />
             </div>
 
+            <MomentumHelpDialog
+                isOpen={isHelpOpen}
+                onClose={() => setIsHelpOpen(false)}
+            />
+            
             <div className="w-full h-[350px] min-w-0">
                 <ResponsiveContainer width="100%" height="100%">
                     <BarChart

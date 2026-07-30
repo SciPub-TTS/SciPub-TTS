@@ -23,6 +23,7 @@ import {
 import { useSocialHub } from "@/features/social/hooks/useSocialHub";
 import type { SortMode } from "@/features/social/types/social.types";
 import { normalizeIdentityValue } from "@/features/social/utils/socialQueryUtils";
+import PostDetailDialog from "@/features/social/components/PostDetailDialog.tsx";
 
 export default function SocialHubPage() {
   const {
@@ -65,6 +66,12 @@ export default function SocialHubPage() {
     toggleBookmarkSelection,
     topLikedPosts,
     updateBlogField,
+      closeViewPostDialog,
+      hasPostDetailError,
+      isLoadingPostDetail,
+      openViewPostDialog,
+      viewingPostDetail,
+      viewingPostId,
   } = useSocialHub();
 
   return (
@@ -371,6 +378,7 @@ export default function SocialHubPage() {
                     onDelete={handleDeletePost}
                     onEdit={openEditBlogModal}
                     onToggleLike={handleToggleLike}
+                    onViewMore={openViewPostDialog}
                     post={post}
                   />
                 ))
@@ -419,6 +427,14 @@ export default function SocialHubPage() {
         title="Delete this post?"
         variant="danger"
       />
+
+        <PostDetailDialog
+            hasError={hasPostDetailError}
+            isLoading={isLoadingPostDetail}
+            isOpen={viewingPostId !== null}
+            onClose={closeViewPostDialog}
+            postDetail={viewingPostDetail}
+        />
     </div>
   );
 }
