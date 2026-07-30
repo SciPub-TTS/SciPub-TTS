@@ -50,9 +50,10 @@ export default function TrendingPart ({
 }
 
 const stateStyle = {
-    hot: "bg-red-100 text-red-700",
     breakout: "bg-purple-100 text-purple-700",
-    rising: "bg-yellow-100 text-yellow-700"
+    hot: "bg-red-100 text-red-700",
+    rising: "bg-yellow-100 text-yellow-700",
+    declining: "bg-slate-100 text-slate-700"
 };
 
 function Topic({topic, id}:
