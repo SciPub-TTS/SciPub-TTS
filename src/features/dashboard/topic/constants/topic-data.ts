@@ -214,62 +214,102 @@ export const publicationTrend = [
 export const topicGrowthMetrics: Momentum[] = [
     {
         name: "Large Language Models (LLMs)",
-        currentAverage: 80.2,
-        pastAverage: 70.41,
-        growthPercentage: 13.9
+        history: [
+            { name: "2026-06-22", average: 63.5 },
+            { name: "2026-06-29", average: 68.9 },
+            { name: "2026-07-06", average: 72.4 },
+            { name: "2026-07-13", average: 76.8 },
+            { name: "2026-07-20", average: 80.2 },
+        ],
     },
     {
         name: "Quantum Machine Learning",
-        currentAverage: 69.6,
-        pastAverage: 52.55,
-        growthPercentage: 32.45
+        history: [
+            { name: "2026-06-22", average: 45.2 },
+            { name: "2026-06-29", average: 52.5 },
+            { name: "2026-07-06", average: 58.4 },
+            { name: "2026-07-13", average: 63.9 },
+            { name: "2026-07-20", average: 69.6 },
+        ],
     },
     {
         name: "CRISPR Gene Editing",
-        currentAverage: 71.8,
-        pastAverage: 57.8,
-        growthPercentage: 24.22
+        history: [
+            { name: "2026-06-22", average: 50.4 },
+            { name: "2026-06-29", average: 56.8 },
+            { name: "2026-07-06", average: 61.7 },
+            { name: "2026-07-13", average: 67.5 },
+            { name: "2026-07-20", average: 71.8 },
+        ],
     },
     {
         name: "Autonomous Vehicle Safety",
-        currentAverage: 66.0,
-        pastAverage: 52.45,
-        growthPercentage: 25.83
+        history: [
+            { name: "2026-06-22", average: 46.8 },
+            { name: "2026-06-29", average: 52.4 },
+            { name: "2026-07-06", average: 58.1 },
+            { name: "2026-07-13", average: 62.7 },
+            { name: "2026-07-20", average: 66.0 },
+        ],
     },
     {
         name: "Edge Computing Architecture",
-        currentAverage: 60.2,
-        pastAverage: 54.02,
-        growthPercentage: 11.44
+        history: [
+            { name: "2026-06-22", average: 49.6 },
+            { name: "2026-06-29", average: 52.3 },
+            { name: "2026-07-06", average: 55.8 },
+            { name: "2026-07-13", average: 57.9 },
+            { name: "2026-07-20", average: 60.2 },
+        ],
     },
     {
         name: "Solid-State Batteries",
-        currentAverage: 75.6,
-        pastAverage: 66.93,
-        growthPercentage: 12.95
+        history: [
+            { name: "2026-06-22", average: 60.7 },
+            { name: "2026-06-29", average: 65.3 },
+            { name: "2026-07-06", average: 68.8 },
+            { name: "2026-07-13", average: 72.4 },
+            { name: "2026-07-20", average: 75.6 },
+        ],
     },
     {
         name: "Neuromorphic Computing",
-        currentAverage: 75.4,
-        pastAverage: 70.0,
-        growthPercentage: 7.71
+        history: [
+            { name: "2026-06-22", average: 62.5 },
+            { name: "2026-06-29", average: 66.1 },
+            { name: "2026-07-06", average: 69.4 },
+            { name: "2026-07-13", average: 72.2 },
+            { name: "2026-07-20", average: 75.4 },
+        ],
     },
     {
         name: "Graph Neural Networks",
-        currentAverage: 66.6,
-        pastAverage: 51.11,
-        growthPercentage: 30.31
+        history: [
+            { name: "2026-06-22", average: 40.8 },
+            { name: "2026-06-29", average: 47.6 },
+            { name: "2026-07-06", average: 54.1 },
+            { name: "2026-07-13", average: 60.3 },
+            { name: "2026-07-20", average: 66.6 },
+        ],
     },
     {
         name: "Generative AI in Drug Discovery",
-        currentAverage: 82.8,
-        pastAverage: 69.09,
-        growthPercentage: 19.84
+        history: [
+            { name: "2026-06-22", average: 61.9 },
+            { name: "2026-06-29", average: 67.4 },
+            { name: "2026-07-06", average: 72.3 },
+            { name: "2026-07-13", average: 77.5 },
+            { name: "2026-07-20", average: 82.8 },
+        ],
     },
     {
         name: "Perovskite Solar Cells",
-        currentAverage: 60.6,
-        pastAverage: 45.81,
-        growthPercentage: 32.29
-    }
+        history: [
+            { name: "2026-06-22", average: 39.6 },
+            { name: "2026-06-29", average: 45.8 },
+            { name: "2026-07-06", average: 51.7 },
+            { name: "2026-07-13", average: 56.2 },
+            { name: "2026-07-20", average: 60.6 },
+        ],
+    },
 ];

@@ -1,8 +1,11 @@
+export type MomentumPoint = {
+    name: string;
+    average: number;
+};
+
 export type Momentum = {
     name: string;
-    currentAverage: number;
-    pastAverage: number;
-    growthPercentage: number;
+    history: MomentumPoint[];
 };
 
 export type TopicMomentumApiResponse = {
